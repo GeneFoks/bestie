@@ -1,101 +1,61 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg: #080810;
-  --card: #0f0f1e;
-  --card2: #13132a;
-  --gold: #d4af37;
-  --neon: #39ff14;
-  --text: #e8e0ff;
-  --muted: #9b93c0;
-  --border: rgba(212, 175, 55, 0.15);
-  --border-hover: rgba(212, 175, 55, 0.35);
-}
-
 * {
   box-sizing: border-box;
-  margin: 0;
   padding: 0;
+  margin: 0;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
+html,
 body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: "Plus Jakarta Sans", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  max-width: 100vw;
   overflow-x: hidden;
+  background: #080810;
+  color: #E8E0FF;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-::selection {
-  background: rgba(212, 175, 55, 0.25);
-  color: var(--text);
+::placeholder {
+  color: #9B93C0;
+  opacity: 1;
 }
 
 ::-webkit-scrollbar {
   width: 6px;
 }
+
 ::-webkit-scrollbar-track {
-  background: var(--bg);
+  background: #080810;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: rgba(212, 175, 55, 0.2);
+  background: #1a1a30;
   border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(212, 175, 55, 0.4);
+  background: #D4AF37;
 }
 
-@layer components {
-  .btn-gold {
-    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gold text-bg font-bold text-sm transition-all hover:bg-yellow-400 hover:-translate-y-px active:scale-95;
-  }
+a {
+  color: inherit;
+  text-decoration: none;
+}
 
-  .btn-outline {
-    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/20 text-bestie font-medium text-sm transition-all hover:border-white/40 hover:bg-white/5 active:scale-95;
-  }
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 
-  .btn-gold-outline {
-    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-gold text-gold font-semibold text-sm transition-all hover:bg-gold/10 active:scale-95;
-  }
-
-  .card-base {
-    @apply bg-card border border-gold/15 rounded-[14px] transition-all;
-  }
-
-  .card-hover {
-    @apply card-base hover:border-gold/35 hover:-translate-y-1;
-  }
-
-  .input-base {
-    @apply w-full bg-white/[0.03] border border-gold/15 rounded-lg px-4 py-3 text-bestie text-sm font-sans placeholder:text-muted/60 outline-none focus:border-gold/40 transition-colors;
-  }
-
-  .label-base {
-    @apply block text-xs font-medium text-muted mb-2 tracking-wide uppercase;
-  }
-
-  .section-label {
-    @apply text-xs font-bold tracking-widest uppercase text-gold mb-3;
-  }
-
-  .neon-dot {
-    @apply w-1.5 h-1.5 rounded-full bg-neon animate-pulse-dot;
-  }
-
-  .verified-badge {
-    @apply inline-flex items-center gap-1 text-[11px] font-bold text-neon bg-neon/8 border border-neon/20 rounded-full px-2.5 py-0.5;
-  }
-
-  .bestie-score {
-    @apply font-bold text-gold tabular-nums;
-  }
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }

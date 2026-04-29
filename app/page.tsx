@@ -1,323 +1,361 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { Search, MapPin, Star, Shield, Users, Zap } from "lucide-react";
-import { ACTIVITY_TYPES } from "@/types";
-import MatchModal from "@/components/modals/MatchModal";
-import ProviderCard from "@/components/cards/ProviderCard";
+import { useState } from 'react'
+import Link from 'next/link'
+import ProviderCard from '@/components/ProviderCard'
+import MatchModal from '@/components/MatchModal'
 
-const DEMO_PROVIDERS = [
+const MOCK_PROVIDERS = [
   {
-    id: "1",
-    full_name: "Maya Chen",
-    username: "mayachen",
-    photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&q=80",
-    city: "Brooklyn, NY",
-    average_rating: 4.9,
-    completed_session_count: 128,
-    bestie_score: 892,
-    is_provider_active: true,
-    bio: "Cozy coffee chats, hikes, and museum visits. Let's make a normal day a little brighter.",
-    id_verified: true,
-    verification_status: "verified",
-    package: { name: "Saturday Coffee & Walk", activity_type: "Meet IRL", price: 45, pricing_unit: "per hour" },
-  },
-  {
-    id: "2",
-    full_name: "Caspian Valle",
-    username: "caspianv",
-    photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80",
-    city: "Austin, TX",
-    average_rating: 4.8,
-    completed_session_count: 94,
-    bestie_score: 847,
-    is_provider_active: true,
-    bio: "Trail runs, board games, deep conversations. I show up as I am and expect the same.",
-    id_verified: true,
-    verification_status: "verified",
-    package: { name: "Coastal Hike Experience", activity_type: "Trail Crew", price: 80, pricing_unit: "per session" },
-  },
-  {
-    id: "3",
-    full_name: "Isolde Park",
-    username: "isoldepark",
-    photo: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&q=80",
-    city: "Seoul",
-    average_rating: 5.0,
-    completed_session_count: 61,
+    id: '1',
+    username: 'isolde_park',
+    full_name: 'Isolde Park',
+    avatar_url: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600&q=80',
+    city: 'Seoul',
+    country: 'KR',
+    bio: 'Watch parties, late-night chats, festival companion. I love film, indie music, and good stories.',
     bestie_score: 921,
-    is_provider_active: true,
-    bio: "Watch parties, late-night chats, festival companion. I love film, indie music, and good stories.",
-    id_verified: true,
-    verification_status: "verified",
-    package: { name: "Cozy Watch Party Night", activity_type: "Watch Together", price: 20, pricing_unit: "per session" },
+    is_verified: true,
+    avg_rating: 5.0,
+    total_sessions: 61,
+    activity_packages: [
+      { title: 'Cozy Watch Party Night', activity_type: 'watch_together', price_per_session: 20 },
+    ],
   },
-];
+  {
+    id: '2',
+    username: 'marco_vega',
+    full_name: 'Marco Vega',
+    avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80',
+    city: 'Austin',
+    country: 'TX',
+    bio: 'Hiking trails, outdoor adventures, and real conversations under open skies.',
+    bestie_score: 874,
+    is_verified: true,
+    avg_rating: 4.9,
+    total_sessions: 43,
+    activity_packages: [
+      { title: 'Sunrise Trail Run', activity_type: 'trail_crew', price_per_session: 15 },
+      { title: 'Weekend Adventure', activity_type: 'epic_journey', price_per_session: 35 },
+    ],
+  },
+  {
+    id: '3',
+    username: 'yuna_kim',
+    full_name: 'Yuna Kim',
+    avatar_url: 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=600&q=80',
+    city: 'New York',
+    country: 'NY',
+    bio: "Deep talks, jazz bars, gallery walks. Let's have a real conversation over good coffee.",
+    bestie_score: 756,
+    is_verified: false,
+    avg_rating: 4.7,
+    total_sessions: 28,
+    activity_packages: [
+      { title: 'Coffee & Deep Chat', activity_type: 'deep_chat', price_per_session: 12 },
+    ],
+  },
+]
+
+const ACTIVITIES = [
+  { id: 'meet_irl', emoji: '🤝', label: 'Meet IRL' },
+  { id: 'dance_crew', emoji: '💃', label: 'Dance Crew' },
+  { id: 'trail_crew', emoji: '🥾', label: 'Trail Crew' },
+  { id: 'travel_buddy', emoji: '✈️', label: 'Travel Buddy' },
+  { id: 'game_night', emoji: '🎮', label: 'Game Night' },
+  { id: 'watch_together', emoji: '🎬', label: 'Watch Together' },
+  { id: 'vibe_call', emoji: '📱', label: 'Vibe Call' },
+  { id: 'deep_chat', emoji: '🫂', label: 'Deep Chat' },
+  { id: 'festival_crew', emoji: '🎪', label: 'Festival Crew' },
+  { id: 'epic_journey', emoji: '🌍', label: 'Epic Journey' },
+]
 
 export default function HomePage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showMatchModal, setShowMatchModal] = useState(false);
-  const [searchFocused, setSearchFocused] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showMatchModal, setShowMatchModal] = useState(false)
+  const [activeActivity, setActiveActivity] = useState<string | null>(null)
 
   return (
-    <main className="min-h-screen bg-bg">
-      {/* NAV */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 h-16 bg-bg/85 backdrop-blur-md border-b border-gold/10">
-        <Link href="/" className="font-serif text-2xl text-gold tracking-wider">
+    <div style={{ background: '#080810', minHeight: '100vh', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+
+      {/* ─── NAV ─── */}
+      <nav style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '16px 24px',
+        background: 'rgba(8,8,16,0.85)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+      }}>
+        <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>
           BESTIE
         </Link>
-        <ul className="hidden md:flex items-center gap-8 list-none">
-          {["Browse Besties", "How It Works", "Dashboard"].map((item) => (
-            <li key={item}>
-              <Link
-                href={`/${item.toLowerCase().replace(/ /g, "-")}`}
-                className="text-muted text-sm font-medium hover:text-bestie transition-colors"
-              >
-                {item}
-              </Link>
-            </li>
-          ))}
-        </ul>
-        <div className="flex gap-3">
-          <Link href="/auth/login" className="btn-outline text-sm px-4 py-2">
-            Log in
-          </Link>
-          <Link href="/auth/signup" className="btn-gold text-sm px-4 py-2">
-            Sign up
+        <div style={{ display: 'flex', gap: '32px', fontSize: '14px', color: '#9B93C0' }}>
+          <Link href="/browse" style={{ color: '#9B93C0', textDecoration: 'none' }}>Browse</Link>
+          <Link href="#how-it-works" style={{ color: '#9B93C0', textDecoration: 'none' }}>How It Works</Link>
+          <Link href="#score" style={{ color: '#9B93C0', textDecoration: 'none' }}>Bestie Score</Link>
+        </div>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <Link href="/login" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none' }}>Log in</Link>
+          <Link href="/signup" style={{
+            fontSize: '14px', fontWeight: 600, padding: '8px 20px', borderRadius: '12px',
+            background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none',
+          }}>
+            Join Free
           </Link>
         </div>
       </nav>
 
-      {/* HERO */}
-      <section className="min-h-screen grid md:grid-cols-2 items-center px-6 md:px-12 pt-16 gap-12 relative overflow-hidden">
-        <div
-          className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(212,175,55,0.06) 0%, transparent 70%)" }}
-        />
+      {/* ─── HERO ─── */}
+      <section style={{ position: 'relative', paddingTop: '128px', paddingBottom: '64px', paddingLeft: '24px', paddingRight: '24px', overflow: 'hidden' }}>
+        {/* Glow bg */}
+        <div style={{
+          position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+          width: '800px', height: '600px', borderRadius: '50%', opacity: 0.08, pointerEvents: 'none',
+          background: 'radial-gradient(circle, #D4AF37 0%, transparent 70%)',
+        }} />
 
-        <div className="animate-slide-up">
-          {/* Eyebrow */}
-          <div className="flex items-center gap-2 mb-6">
-            <span className="neon-dot" />
-            <span className="text-xs font-bold tracking-widest uppercase text-neon">
-              Verified humans · Real connections · 2026
-            </span>
+        <div style={{ maxWidth: '896px', margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
+          {/* Badge */}
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: '8px',
+            padding: '8px 16px', borderRadius: '999px', marginBottom: '32px', fontSize: '13px',
+            background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37',
+          }}>
+            <span style={{ color: '#39FF14' }}>●</span>
+            Your social passport — live now in Austin
           </div>
 
-          <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl leading-[1.05] mb-6">
-            Find a Bestie
-            <br />
-            for the{" "}
-            <em className="text-gold not-italic">moments</em>
-            <br />
-            that matter.
+          <h1 style={{
+            fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(40px, 8vw, 72px)',
+            fontWeight: 700, color: '#E8E0FF', lineHeight: 1.1, marginBottom: '24px',
+          }}>
+            Real people.<br />
+            <em style={{ color: '#D4AF37', fontStyle: 'italic' }}>Real moments.</em>
           </h1>
 
-          <p className="text-muted text-lg leading-relaxed max-w-md mb-10">
-            Browse identity-verified companions for coffee chats, hikes,
-            festivals, voice calls, and travel adventures.
+          <p style={{ fontSize: '18px', color: '#9B93C0', marginBottom: '40px', maxWidth: '560px', margin: '0 auto 40px', lineHeight: 1.6 }}>
+            Find a Bestie for any activity — hiking, deep chats, game nights. Verified profiles. Bestie Score. No awkwardness.
           </p>
 
-          {/* HERO SEARCH */}
-          <div className="relative mb-8 max-w-md">
-            <div
-              className={`flex items-center gap-3 bg-card border rounded-2xl px-5 py-4 transition-all ${
-                searchFocused ? "border-gold/50" : "border-gold/20"
-              }`}
+          {/* Search */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '12px',
+            maxWidth: '520px', margin: '0 auto 20px', padding: '8px',
+            background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '16px', boxShadow: '0 0 40px rgba(212,175,55,0.08)',
+          }}>
+            <span style={{ paddingLeft: '12px', fontSize: '20px' }}>🔍</span>
+            <input
+              type="text"
+              placeholder="Search by name, activity, or city..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                flex: 1, background: 'transparent', border: 'none', outline: 'none',
+                fontSize: '14px', color: '#E8E0FF', padding: '8px 0',
+              }}
+            />
+            <Link
+              href={`/browse${searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ''}`}
+              style={{
+                padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600,
+                background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none',
+              }}
             >
-              <Search size={18} className="text-muted flex-shrink-0" />
-              <input
-                type="text"
-                placeholder="Search any name — see their Bestie Score"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-                className="flex-1 bg-transparent text-bestie text-sm placeholder:text-muted/50 outline-none"
-              />
-            </div>
-            {searchQuery && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-gold/20 rounded-xl overflow-hidden z-10">
-                <div className="px-4 py-3 text-sm text-muted text-center">
-                  Searching for "{searchQuery}"...
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="flex gap-3 flex-wrap mb-10">
-            <button
-              onClick={() => setShowMatchModal(true)}
-              className="btn-gold"
-            >
-              ✦ Find My Bestie
-            </button>
-            <Link href="/how-it-works" className="btn-gold-outline">
-              How It Works
+              Find
             </Link>
           </div>
 
-          {/* TRUST */}
-          <div className="flex gap-6 flex-wrap">
+          <button
+            onClick={() => setShowMatchModal(true)}
+            style={{ fontSize: '14px', color: '#9B93C0', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '4px' }}
+          >
+            ✨ Try Smart Match — let us find your Bestie
+          </button>
+        </div>
+      </section>
+
+      {/* ─── ACTIVITY PILLS ─── */}
+      <section style={{ paddingBottom: '48px', paddingLeft: '24px', paddingRight: '24px' }}>
+        <div style={{ maxWidth: '960px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
+          {ACTIVITIES.map((a) => {
+            const active = activeActivity === a.id
+            return (
+              <button
+                key={a.id}
+                onClick={() => setActiveActivity(active ? null : a.id)}
+                style={{
+                  padding: '8px 16px', borderRadius: '999px', fontSize: '14px', fontWeight: 500,
+                  cursor: 'pointer', transition: 'all 0.2s',
+                  background: active ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)',
+                  border: active ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.08)',
+                  color: active ? '#D4AF37' : '#9B93C0',
+                }}
+              >
+                {a.emoji} {a.label}
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* ─── PROVIDER CARDS ─── */}
+      <section style={{ paddingBottom: '80px', paddingLeft: '24px', paddingRight: '24px' }}>
+        <div style={{ maxWidth: '960px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: '#E8E0FF' }}>
+              Featured Besties
+            </h2>
+            <Link href="/browse" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none' }}>See all →</Link>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: '20px',
+          }}>
+            {MOCK_PROVIDERS.map((provider, i) => (
+              <ProviderCard key={provider.id} provider={provider} featured={i === 0} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── HOW IT WORKS ─── */}
+      <section id="how-it-works" style={{ padding: '80px 24px' }}>
+        <div style={{
+          maxWidth: '960px', margin: '0 auto', borderRadius: '24px', padding: '64px 48px',
+          background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)',
+        }}>
+          <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+            <p style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '12px' }}>HOW IT WORKS</p>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '16px' }}>
+              Simple. Safe. Human.
+            </h2>
+            <p style={{ fontSize: '16px', color: '#9B93C0' }}>Three steps from landing here to real company.</p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '40px' }}>
             {[
-              { icon: Shield, label: "ID-verified" },
-              { icon: Star, label: "Rated by real people" },
-              { icon: Users, label: "Judgment-free" },
-            ].map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center gap-2 text-muted text-sm">
-                <Icon size={16} className="text-gold" />
-                {label}
+              { num: '01', icon: '🎯', title: 'Tell us what you need', desc: "Pick an activity, your city, and when you're free. Smart Match finds Besties who fit." },
+              { num: '02', icon: '📋', title: 'Browse & book', desc: 'View verified profiles, read real reviews, and send a booking request — no pressure.' },
+              { num: '03', icon: '🤝', title: 'Meet your Bestie', desc: 'Show up, connect, and leave a review. Every session is rated so quality stays high.' },
+            ].map((step) => (
+              <div key={step.num}>
+                <div style={{ fontSize: '64px', fontWeight: 700, color: 'rgba(212,175,55,0.07)', fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>
+                  {step.num}
+                </div>
+                <div style={{ fontSize: '32px', margin: '12px 0' }}>{step.icon}</div>
+                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#E8E0FF', marginBottom: '12px' }}>
+                  {step.title}
+                </h3>
+                <p style={{ fontSize: '14px', color: '#9B93C0', lineHeight: 1.7 }}>{step.desc}</p>
               </div>
             ))}
           </div>
         </div>
-
-        {/* HERO IMAGE */}
-        <div className="relative hidden md:flex justify-center">
-          <div className="relative w-full max-w-lg rounded-3xl overflow-hidden border border-gold/15 aspect-[4/3]">
-            <Image
-              src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80"
-              alt="Friends together"
-              fill
-              className="object-cover"
-              priority
-            />
-            <div className="absolute bottom-5 left-5 bg-bg/90 border border-gold/20 rounded-xl p-4 backdrop-blur-sm">
-              <span className="block text-2xl font-bold text-gold">4.9★</span>
-              <span className="block text-xs text-muted mt-0.5">Average Bestie Score</span>
-            </div>
-          </div>
-        </div>
       </section>
 
-      {/* BROWSE SECTION */}
-      <section id="browse" className="px-6 md:px-12 py-20 border-t border-gold/10">
-        <div className="flex items-end justify-between mb-8 flex-wrap gap-4">
+      {/* ─── BESTIE SCORE ─── */}
+      <section id="score" style={{ padding: '80px 24px' }}>
+        <div style={{ maxWidth: '960px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '64px', alignItems: 'center' }}>
           <div>
-            <p className="section-label">Browse verified Besties</p>
-            <h2 className="font-serif text-4xl mb-2">Find your match</h2>
-            <p className="text-muted">Search by name or interest, then narrow it down.</p>
+            <p style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '2px', color: '#39FF14', marginBottom: '16px' }}>THE SOCIAL PASSPORT</p>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 700, color: '#E8E0FF', lineHeight: 1.2, marginBottom: '24px' }}>
+              Your <em style={{ color: '#D4AF37', fontStyle: 'italic' }}>Bestie Score</em> says it all.
+            </h2>
+            <p style={{ fontSize: '16px', color: '#9B93C0', marginBottom: '24px', lineHeight: 1.7 }}>
+              Like a credit score — but for who you are as a person. It reflects your reliability, reviews, activity, and how others see you.
+            </p>
+            <blockquote style={{ borderLeft: '2px solid #D4AF37', paddingLeft: '16px', marginBottom: '32px', fontSize: '16px', color: '#9B93C0', fontStyle: 'italic' }}>
+              "Check them on Bestie."
+            </blockquote>
+            <Link href="/signup" style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              padding: '12px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600,
+              background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none',
+            }}>
+              Build your Bestie Score →
+            </Link>
           </div>
-          <button
-            onClick={() => setShowMatchModal(true)}
-            className="btn-gold"
-          >
-            <Zap size={15} />
-            Smart Match Request
-          </button>
-        </div>
 
-        {/* FILTERS */}
-        <div className="flex gap-2 flex-wrap mb-10">
-          {["All activities", "All cities", "Any price", "Any language", "Any day"].map(
-            (filter) => (
-              <select
-                key={filter}
-                className="bg-card border border-gold/15 rounded-full px-4 py-2 text-muted text-sm outline-none focus:border-gold/35 cursor-pointer appearance-none pr-8"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239B93C0' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E")`,
-                  backgroundRepeat: "no-repeat",
-                  backgroundPosition: "right 12px center",
-                }}
-              >
-                <option>{filter}</option>
-                {filter === "All activities" &&
-                  ACTIVITY_TYPES.map((t) => <option key={t}>{t}</option>)}
-              </select>
-            )
-          )}
-        </div>
-
-        {/* PROVIDER CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {DEMO_PROVIDERS.map((provider) => (
-            <ProviderCard key={provider.id} provider={provider as any} />
-          ))}
-        </div>
-      </section>
-
-      {/* HOW IT WORKS */}
-      <section id="how-it-works" className="px-6 md:px-12 py-20 bg-card border-y border-gold/10">
-        <div className="text-center max-w-lg mx-auto mb-16">
-          <p className="section-label">How it works</p>
-          <h2 className="font-serif text-4xl mb-3">Simple. Safe. Human.</h2>
-          <p className="text-muted">Three steps from landing here to having real company.</p>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-px bg-gold/10 rounded-2xl overflow-hidden">
-          {[
-            {
-              n: "01",
-              title: "Tell us what you need",
-              desc: "Pick an activity, your city, and when you're free. Our Smart Match finds Besties who fit.",
-            },
-            {
-              n: "02",
-              title: "Browse & book",
-              desc: "View verified profiles, read real reviews, and send a booking request — no pressure.",
-            },
-            {
-              n: "03",
-              title: "Meet your Bestie",
-              desc: "Show up, connect, and leave a review. Every session is rated so quality stays high.",
-            },
-          ].map(({ n, title, desc }) => (
-            <div key={n} className="bg-card p-10">
-              <span className="font-serif text-6xl text-gold/15 leading-none block mb-5">
-                {n}
-              </span>
-              <h3 className="text-lg font-semibold text-bestie mb-2">{title}</h3>
-              <p className="text-muted text-sm leading-relaxed">{desc}</p>
+          {/* Score visual card */}
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div style={{
+              width: '280px', padding: '32px', borderRadius: '24px', textAlign: 'center',
+              background: '#0F0F1E', border: '1px solid rgba(57,255,20,0.2)',
+              boxShadow: '0 0 60px rgba(57,255,20,0.08)',
+            }}>
+              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '8px' }}>BESTIE SCORE</p>
+              <div style={{ fontSize: '80px', fontWeight: 700, color: '#39FF14', fontFamily: 'DM Serif Display, serif', lineHeight: 1, margin: '8px 0 16px' }}>
+                874
+              </div>
+              <div style={{ height: '8px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', marginBottom: '8px', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: '87.4%', borderRadius: '999px', background: 'linear-gradient(90deg, #39FF14 0%, #D4AF37 100%)' }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#9B93C0', marginBottom: '24px' }}>
+                <span>0</span>
+                <span style={{ color: '#39FF14', fontWeight: 600 }}>Excellent</span>
+                <span>1000</span>
+              </div>
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                {[{ label: 'Sessions', val: '43' }, { label: 'Rating', val: '4.9' }, { label: 'Lights', val: '127' }].map((s) => (
+                  <div key={s.label} style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#E8E0FF' }}>{s.val}</div>
+                    <div style={{ fontSize: '11px', color: '#9B93C0' }}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
+          </div>
         </div>
       </section>
 
-      {/* BESTIE SCORE BANNER */}
-      <section className="px-6 md:px-12 py-20 text-center">
-        <p className="section-label">The social passport</p>
-        <h2 className="font-serif text-4xl md:text-5xl mb-4">
-          Your <em className="text-gold not-italic">Bestie Score</em> says it all.
-        </h2>
-        <p className="text-muted text-lg max-w-xl mx-auto mb-10">
-          Like a credit score — but for who you are as a person. Share your
-          profile in your Instagram bio, on dates, or at work.
-          <br />
-          <em className="text-bestie/70 not-italic">"Check them on Bestie."</em>
-        </p>
-        <Link href="/auth/signup" className="btn-gold text-base px-8 py-3">
-          Build your Bestie Score →
-        </Link>
+      {/* ─── CTA ─── */}
+      <section style={{ padding: '40px 24px 80px' }}>
+        <div style={{
+          maxWidth: '720px', margin: '0 auto', borderRadius: '24px', padding: '56px 32px', textAlign: 'center',
+          background: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(57,255,20,0.05) 100%)',
+          border: '1px solid rgba(212,175,55,0.2)',
+        }}>
+          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '16px' }}>
+            Ready to meet your Bestie?
+          </h2>
+          <p style={{ fontSize: '16px', color: '#9B93C0', marginBottom: '32px' }}>
+            Join thousands building real connections in their city.
+          </p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/signup" style={{
+              padding: '14px 32px', borderRadius: '12px', fontSize: '14px', fontWeight: 600,
+              background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none',
+            }}>
+              Become a Bestie →
+            </Link>
+            <Link href="/browse" style={{
+              padding: '14px 32px', borderRadius: '12px', fontSize: '14px', fontWeight: 600,
+              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: '#E8E0FF', textDecoration: 'none',
+            }}>
+              Browse Besties
+            </Link>
+          </div>
+        </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="px-6 md:px-12 py-10 border-t border-gold/10 flex items-center justify-between flex-wrap gap-4">
-        <span className="font-serif text-xl text-gold">BESTIE</span>
-        <ul className="flex gap-6 list-none">
-          {["Browse Besties", "How It Works", "Become a Bestie", "Privacy"].map(
-            (item) => (
-              <li key={item}>
-                <Link
-                  href="#"
-                  className="text-muted text-sm hover:text-bestie transition-colors"
-                >
-                  {item}
-                </Link>
-              </li>
-            )
-          )}
-        </ul>
-        <span className="text-muted/40 text-xs">
-          © 2026 bestiehere.com · @join.bestie
-        </span>
+      {/* ─── FOOTER ─── */}
+      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '32px 24px' }}>
+        <div style={{ maxWidth: '960px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+          <span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37' }}>BESTIE</span>
+          <div style={{ display: 'flex', gap: '24px', fontSize: '14px' }}>
+            <Link href="/browse" style={{ color: '#9B93C0', textDecoration: 'none' }}>Browse Besties</Link>
+            <Link href="#how-it-works" style={{ color: '#9B93C0', textDecoration: 'none' }}>How It Works</Link>
+            <Link href="/signup" style={{ color: '#9B93C0', textDecoration: 'none' }}>Become a Bestie</Link>
+          </div>
+          <p style={{ fontSize: '12px', color: '#9B93C0' }}>© 2026 Bestie. Austin, TX. 18+</p>
+        </div>
       </footer>
 
-      {/* MATCH MODAL */}
-      {showMatchModal && (
-        <MatchModal onClose={() => setShowMatchModal(false)} />
-      )}
-    </main>
-  );
+      {showMatchModal && <MatchModal onClose={() => setShowMatchModal(false)} />}
+    </div>
+  )
 }
