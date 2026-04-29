@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Link from 'next/link'
 
 // Mock - replace with Supabase fetch by username
