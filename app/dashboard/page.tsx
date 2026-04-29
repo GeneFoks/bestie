@@ -117,6 +117,7 @@ export default function DashboardPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {[
                 { emoji: '🔍', label: 'Browse Besties', sub: 'Find someone for your activity', href: '/browse' },
+                { emoji: '✏️', label: 'Edit profile', sub: 'Update your bio, photo, city', href: '/profile/edit' },
                 { emoji: '👤', label: 'View my profile', sub: 'See how others see you', href: `/${profile?.username}` },
                 { emoji: '✉️', label: 'Messages', sub: 'Check your conversations', href: '/messages' },
               ].map((action) => (
