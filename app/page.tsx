@@ -46,7 +46,7 @@ const ACTIVITIES = [
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showMatchModal, setShowMatchModal] = useState(false)
-  const [activeActivity, setActiveActivity] = useState(null)
+  const [activeActivity, setActiveActivity] = useState<string | null>(null)
   const [loggedIn, setLoggedIn] = useState(false)
 
   useEffect(() => {
