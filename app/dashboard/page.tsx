@@ -55,6 +55,14 @@ export default function DashboardPage() {
   const scoreColor = score >= 800 ? '#39FF14' : score >= 600 ? '#D4AF37' : '#9B93C0'
   const scoreLabel = score >= 800 ? 'Excellent' : score >= 600 ? 'Good' : score >= 400 ? 'Fair' : 'New'
 
+  const boostItems = [
+    { icon: '📸', label: 'Add profile photo', points: '+50 BS', done: !!profile?.avatar_url, href: '/profile/edit' },
+    { icon: '✍️', label: 'Complete your bio', points: '+30 BS', done: !!profile?.bio, href: '/profile/edit' },
+    { icon: '📍', label: 'Add your city', points: '+20 BS', done: !!profile?.city, href: '/profile/edit' },
+    { icon: '🎯', label: 'Create an activity', points: '+50 BS', done: profile?.activity_packages?.length > 0, href: '/profile/edit' },
+  ]
+  const remainingBoost = boostItems.filter(i => !i.done)
+
   return (
     <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -157,27 +165,43 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Boost score */}
-        <div style={{ marginTop: '20px', background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(57,255,20,0.04) 100%)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '20px', padding: '24px' }}>
-          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '16px' }}>🚀 Boost your Bestie Score</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
-            {[
-              { icon: '📸', label: 'Add photo', points: '+50 BS' },
-              { icon: '✍️', label: 'Complete bio', points: '+30 BS' },
-              { icon: '🤝', label: 'Complete session', points: '+100 BS' },
-              { icon: '⭐', label: 'Get 5-star review', points: '+80 BS' },
-              { icon: '✨', label: 'Receive a Spark', points: '+20 BS' },
-            ].map((tip) => (
-              <div key={tip.label} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)' }}>
-                <span style={{ fontSize: '20px' }}>{tip.icon}</span>
-                <div>
-                  <p style={{ fontSize: '13px', fontWeight: 500, color: '#E8E0FF' }}>{tip.label}</p>
-                  <p style={{ fontSize: '12px', color: '#39FF14', fontWeight: 600 }}>{tip.points}</p>
-                </div>
-              </div>
-            ))}
+        {/* Smart Boost — показывает только незавершённые */}
+        {remainingBoost.length > 0 && (
+          <div style={{ marginTop: '20px', background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(57,255,20,0.04) 100%)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '20px', padding: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF' }}>🚀 Boost your Bestie Score</h3>
+              <Link href="/score-guide" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>How it works →</Link>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+              {remainingBoost.map(tip => (
+                <Link key={tip.label} href={tip.href} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', textDecoration: 'none' }}>
+                  <span style={{ fontSize: '20px' }}>{tip.icon}</span>
+                  <div>
+                    <p style={{ fontSize: '13px', fontWeight: 500, color: '#E8E0FF' }}>{tip.label}</p>
+                    <p style={{ fontSize: '12px', color: '#39FF14', fontWeight: 600 }}>{tip.points}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* All done — show score guide link */}
+        {remainingBoost.length === 0 && (
+          <div style={{ marginTop: '20px', background: 'rgba(57,255,20,0.05)', border: '1px solid rgba(57,255,20,0.15)', borderRadius: '20px', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '24px' }}>🎉</span>
+              <div>
+                <p style={{ fontSize: '14px', fontWeight: 600, color: '#39FF14' }}>Profile complete!</p>
+                <p style={{ fontSize: '13px', color: '#9B93C0' }}>Keep earning sessions and Sparks to grow your Score</p>
+              </div>
+            </div>
+            <Link href="/score-guide" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(212,175,55,0.3)', whiteSpace: 'nowrap' }}>
+              How it works →
+            </Link>
+          </div>
+        )}
+
       </div>
     </div>
   )
