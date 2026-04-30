@@ -35,7 +35,7 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await supabase.auth.getUser()
       if (!session) { router.push('/login'); return }
       setUserId(session.user.id)
       const name = session.user.user_metadata?.full_name
