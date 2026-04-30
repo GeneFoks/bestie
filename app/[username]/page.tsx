@@ -8,6 +8,25 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
 
+const SPARK_TYPES = [
+  { id: 'kind', emoji: '💛', label: 'Kind' },
+  { id: 'fun', emoji: '🎉', label: 'Fun' },
+  { id: 'reliable', emoji: '🔒', label: 'Reliable' },
+  { id: 'genuine', emoji: '💎', label: 'Genuine' },
+  { id: 'safe', emoji: '🛡️', label: 'Safe' },
+  { id: 'energetic', emoji: '⚡', label: 'Energetic' },
+  { id: 'good_listener', emoji: '👂', label: 'Good listener' },
+  { id: 'social', emoji: '🌟', label: 'Social' },
+  { id: 'punctual', emoji: '⏰', label: 'Punctual' },
+  { id: 'open', emoji: '🌊', label: 'Open' },
+]
+
+const ACTIVITY_EMOJI = {
+  meet_irl: '🤝', dance_crew: '💃', trail_crew: '🥾', travel_buddy: '✈️',
+  game_night: '🎮', watch_together: '🎬', vibe_call: '📱', deep_chat: '🫂',
+  real_talk: '💬', festival_crew: '🎪', epic_journey: '🌍', fishing_crew: '🎣',
+}
+
 export default async function ProfilePage({ params }) {
   const { data: profile } = await supabase
     .from('users')
@@ -28,18 +47,31 @@ export default async function ProfilePage({ params }) {
     )
   }
 
+  // Загружаем Sparks
+  const { data: sparks } = await supabase
+    .from('sparks')
+    .select('spark_type')
+    .eq('receiver_id', profile.id)
+
+  // Считаем количество каждого типа
+  const sparkCounts = {}
+  sparks?.forEach(s => {
+    sparkCounts[s.spark_type] = (sparkCounts[s.spark_type] || 0) + 1
+  })
+  const totalSparks = sparks?.length || 0
+  const topSparks = SPARK_TYPES
+    .map(s => ({ ...s, count: sparkCounts[s.id] || 0 }))
+    .filter(s => s.count > 0)
+    .sort((a, b) => b.count - a.count)
+
   const score = profile.bestie_score || 0
   const scoreColor = score >= 800 ? '#39FF14' : score >= 600 ? '#D4AF37' : '#9B93C0'
+  const scoreLabel = score >= 800 ? 'Excellent' : score >= 600 ? 'Good' : score >= 400 ? 'Fair' : 'New'
   const initials = profile.full_name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?'
-
-  const ACTIVITY_EMOJI = {
-    meet_irl: '🤝', dance_crew: '💃', trail_crew: '🥾', travel_buddy: '✈️',
-    game_night: '🎮', watch_together: '🎬', vibe_call: '📱', deep_chat: '🫂',
-    real_talk: '💬', festival_crew: '🎪', epic_journey: '🌍', fishing_crew: '🎣',
-  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      {/* Nav */}
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <div style={{ display: 'flex', gap: '12px' }}>
@@ -50,47 +82,120 @@ export default async function ProfilePage({ params }) {
 
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: '40px 24px' }}>
 
-        <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap' }}>
-          <div style={{ width: '120px', height: '120px', borderRadius: '24px', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(212,175,55,0.3)', background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {profile.avatar_url
-              ? <img src={profile.avatar_url} alt={profile.full_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : <span style={{ fontSize: '40px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>{initials}</span>
-            }
+        {/* ── SOCIAL PASSPORT CARD ── */}
+        <div style={{ background: 'linear-gradient(135deg, #0F0F1E 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: '28px', padding: '32px', marginBottom: '20px', position: 'relative', overflow: 'hidden' }}>
+          {/* Background glow */}
+          <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '14px', fontWeight: 700, color: '#D4AF37' }}>BESTIE</span>
+              <span style={{ fontSize: '11px', color: '#9B93C0', letterSpacing: '1px' }}>SOCIAL PASSPORT</span>
+            </div>
+            {profile.is_verified && (
+              <span style={{ fontSize: '12px', padding: '4px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', fontWeight: 600 }}>✓ Verified</span>
+            )}
           </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
-              <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: '#E8E0FF' }}>{profile.full_name}</h1>
-              {profile.is_verified && (
-                <span style={{ fontSize: '12px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', fontWeight: 600 }}>✓ Verified</span>
-              )}
+
+          {/* Profile info */}
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', marginBottom: '28px' }}>
+            <div style={{ width: '88px', height: '88px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(212,175,55,0.3)', background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {profile.avatar_url
+                ? <img src={profile.avatar_url} alt={profile.full_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <span style={{ fontSize: '32px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>{initials}</span>
+              }
             </div>
-            <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '12px' }}>
-              {profile.city && `📍 ${profile.city}${profile.country ? `, ${profile.country}` : ''} · `}@{profile.username}
-            </p>
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              {score > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '10px', background: `rgba(${scoreColor === '#39FF14' ? '57,255,20' : scoreColor === '#D4AF37' ? '212,175,55' : '155,147,192'},0.1)`, border: `1px solid ${scoreColor}30` }}>
-                  <span style={{ fontSize: '11px', color: '#9B93C0' }}>BS</span>
-                  <span style={{ fontSize: '16px', fontWeight: 700, color: scoreColor }}>{score}</span>
-                </div>
-              )}
-              {profile.avg_rating > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', color: '#9B93C0' }}>
-                  ⭐ {Number(profile.avg_rating).toFixed(1)} · {profile.total_sessions} sessions
-                </div>
-              )}
+            <div style={{ flex: 1 }}>
+              <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '26px', fontWeight: 700, color: '#E8E0FF', marginBottom: '4px' }}>{profile.full_name}</h1>
+              <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '12px' }}>
+                {profile.city && `📍 ${profile.city}${profile.country ? `, ${profile.country}` : ''} · `}@{profile.username}
+              </p>
+              {profile.bio && <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.6 }}>{profile.bio}</p>}
             </div>
+          </div>
+
+          {/* Score + Stats */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '12px', marginBottom: '24px' }}>
+            {/* Bestie Score */}
+            <div style={{ gridColumn: 'span 2', background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '16px', border: `1px solid ${scoreColor}20` }}>
+              <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '8px' }}>BESTIE SCORE</p>
+              <div style={{ fontSize: '48px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif', lineHeight: 1, marginBottom: '8px' }}>{score}</div>
+              <div style={{ height: '4px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden', marginBottom: '6px' }}>
+                <div style={{ height: '100%', width: `${score / 10}%`, borderRadius: '999px', background: `linear-gradient(90deg, ${scoreColor} 0%, #D4AF37 100%)` }} />
+              </div>
+              <p style={{ fontSize: '11px', fontWeight: 600, color: scoreColor }}>{scoreLabel}</p>
+            </div>
+
+            {/* Sessions */}
+            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>SESSIONS</p>
+              <div style={{ fontSize: '28px', fontWeight: 700, color: '#E8E0FF', fontFamily: 'DM Serif Display, serif' }}>{profile.total_sessions || 0}</div>
+            </div>
+
+            {/* Sparks */}
+            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>SPARKS</p>
+              <div style={{ fontSize: '28px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>✨ {totalSparks}</div>
+            </div>
+          </div>
+
+          {/* Top Sparks */}
+          {topSparks.length > 0 && (
+            <div style={{ marginBottom: '20px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '10px' }}>TOP SPARKS</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {topSparks.map(s => (
+                  <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)' }}>
+                    <span style={{ fontSize: '14px' }}>{s.emoji}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 500, color: '#E8E0FF' }}>{s.label}</span>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#D4AF37' }}>×{s.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Rating */}
+          {profile.avg_rating > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <span style={{ fontSize: '16px' }}>⭐</span>
+              <span style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF' }}>{Number(profile.avg_rating).toFixed(1)}</span>
+              <span style={{ fontSize: '13px', color: '#9B93C0' }}>average rating from {profile.total_sessions} sessions</span>
+            </div>
+          )}
+
+          {/* Passport footer */}
+          <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <p style={{ fontSize: '11px', color: '#9B93C0' }}>bestiehere.com/{profile.username}</p>
+            <p style={{ fontSize: '11px', color: '#9B93C0' }}>Social Passport · 2026</p>
           </div>
         </div>
 
-        {profile.bio && (
-          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '20px', marginBottom: '16px' }}>
-            <p style={{ fontSize: '15px', color: '#E8E0FF', lineHeight: 1.7 }}>{profile.bio}</p>
+        {/* ── GIVE SPARKS ── */}
+        <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justify: 'space-between', marginBottom: '16px' }}>
+            <div>
+              <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '4px' }}>Give a Spark ✨</h3>
+              <p style={{ fontSize: '13px', color: '#9B93C0' }}>Show respect — each Spark is rare. Max 3 per person.</p>
+            </div>
           </div>
-        )}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '16px' }}>
+            {SPARK_TYPES.map(s => (
+              <Link key={s.id} href={`/sparks/give?to=${profile.username}&type=${s.id}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 6px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', textDecoration: 'none', transition: 'all 0.2s' }}>
+                <span style={{ fontSize: '20px' }}>{s.emoji}</span>
+                <span style={{ fontSize: '10px', fontWeight: 500, color: '#9B93C0', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
+              </Link>
+            ))}
+          </div>
+          <p style={{ fontSize: '12px', color: '#9B93C0', textAlign: 'center' }}>
+            <Link href="/login" style={{ color: '#D4AF37', textDecoration: 'none' }}>Log in</Link> to give Sparks
+          </p>
+        </div>
 
+        {/* ── ACTIVITIES ── */}
         {profile.activity_packages?.length > 0 && (
-          <div style={{ marginBottom: '16px' }}>
+          <div style={{ marginBottom: '20px' }}>
             <h3 style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '12px' }}>ACTIVITIES</h3>
             {profile.activity_packages.map((pkg) => (
               <div key={pkg.id} style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '20px', marginBottom: '12px' }}>
@@ -125,16 +230,12 @@ export default async function ProfilePage({ params }) {
           </div>
         )}
 
-        {(!profile.activity_packages || profile.activity_packages.length === 0) && (
-          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px', marginBottom: '16px', textAlign: 'center' }}>
-            <p style={{ fontSize: '14px', color: '#9B93C0' }}>No activities listed yet</p>
-          </div>
-        )}
-
+        {/* ── CTA ── */}
         <div style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(57,255,20,0.04) 100%)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '16px', padding: '24px', textAlign: 'center' }}>
-          <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '12px' }}>Want your own Bestie Score? It's free.</p>
+          <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '4px' }}>Want your own Social Passport?</p>
+          <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '16px' }}>Build your Bestie Score, collect Sparks, get verified.</p>
           <Link href="/signup" style={{ display: 'inline-block', padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
-            Build your Social Passport →
+            Create my Social Passport →
           </Link>
         </div>
       </div>
