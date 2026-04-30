@@ -14,14 +14,18 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/login'); return }
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) { router.push('/login'); return }
       setUser(session.user)
       const { data } = await supabase.from('users').select('*, activity_packages(*)').eq('id', session.user.id).single()
       setProfile(data)
       setLoading(false)
     }
     getUser()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) router.push('/login')
+    })
+    return () => subscription.unsubscribe()
   }, [])
 
   const handleLogout = async () => {
