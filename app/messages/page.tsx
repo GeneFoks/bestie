@@ -19,7 +19,7 @@ export default function MessagesPage() {
 
   useEffect(() => {
     const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await supabase.auth.getUser()
       if (!session) { router.push('/login'); return }
       setUserId(session.user.id)
       await loadConversations(session.user.id)
