@@ -36,7 +36,7 @@ export default function EditProfilePage() {
 
   useEffect(() => {
     const load = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await supabase.auth.getUser()
       if (!session) { router.push('/login'); return }
       setUserId(session.user.id)
       const { data } = await supabase.from('users').select('*, activity_packages(*)').eq('id', session.user.id).single()
