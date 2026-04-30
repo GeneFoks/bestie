@@ -40,7 +40,6 @@ export default async function ProfilePage({ params }) {
 
   return (
     <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      {/* Nav */}
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <div style={{ display: 'flex', gap: '12px' }}>
@@ -51,16 +50,13 @@ export default async function ProfilePage({ params }) {
 
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: '40px 24px' }}>
 
-        {/* Profile header */}
         <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap' }}>
-          {/* Avatar */}
           <div style={{ width: '120px', height: '120px', borderRadius: '24px', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(212,175,55,0.3)', background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {profile.avatar_url
               ? <img src={profile.avatar_url} alt={profile.full_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : <span style={{ fontSize: '40px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>{initials}</span>
             }
           </div>
-
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
               <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: '#E8E0FF' }}>{profile.full_name}</h1>
@@ -68,11 +64,9 @@ export default async function ProfilePage({ params }) {
                 <span style={{ fontSize: '12px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', fontWeight: 600 }}>✓ Verified</span>
               )}
             </div>
-
             <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '12px' }}>
               {profile.city && `📍 ${profile.city}${profile.country ? `, ${profile.country}` : ''} · `}@{profile.username}
             </p>
-
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
               {score > 0 && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '10px', background: `rgba(${scoreColor === '#39FF14' ? '57,255,20' : scoreColor === '#D4AF37' ? '212,175,55' : '155,147,192'},0.1)`, border: `1px solid ${scoreColor}30` }}>
@@ -89,14 +83,12 @@ export default async function ProfilePage({ params }) {
           </div>
         </div>
 
-        {/* Bio */}
         {profile.bio && (
           <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '20px', marginBottom: '16px' }}>
             <p style={{ fontSize: '15px', color: '#E8E0FF', lineHeight: 1.7 }}>{profile.bio}</p>
           </div>
         )}
 
-        {/* Activities */}
         {profile.activity_packages?.length > 0 && (
           <div style={{ marginBottom: '16px' }}>
             <h3 style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '12px' }}>ACTIVITIES</h3>
@@ -122,22 +114,23 @@ export default async function ProfilePage({ params }) {
                     }
                   </div>
                 </div>
-                <Link href={`/messages?to=${profile.username}`} style={{ display: 'block', marginTop: '16px', padding: '12px', borderRadius: '12px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
-                  Message {profile.full_name?.split(' ')[0]} →
+                <Link href={`/book/${profile.username}`} style={{ display: 'block', marginTop: '16px', padding: '12px', borderRadius: '12px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
+                  Book a session →
+                </Link>
+                <Link href={`/messages?to=${profile.username}`} style={{ display: 'block', marginTop: '8px', padding: '12px', borderRadius: '12px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', textDecoration: 'none' }}>
+                  💬 Message {profile.full_name?.split(' ')[0]}
                 </Link>
               </div>
             ))}
           </div>
         )}
 
-        {/* No activities */}
         {(!profile.activity_packages || profile.activity_packages.length === 0) && (
           <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px', marginBottom: '16px', textAlign: 'center' }}>
             <p style={{ fontSize: '14px', color: '#9B93C0' }}>No activities listed yet</p>
           </div>
         )}
 
-        {/* CTA */}
         <div style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(57,255,20,0.04) 100%)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '16px', padding: '24px', textAlign: 'center' }}>
           <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '12px' }}>Want your own Bestie Score? It's free.</p>
           <Link href="/signup" style={{ display: 'inline-block', padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
