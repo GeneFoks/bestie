@@ -59,20 +59,37 @@ export default function EditProfilePage() {
 
   const handleSave = async () => {
     setSaving(true)
+
+    // перепроверяем сессию
+    const { data: { session } } = await supabase.auth.getSession()
+    const uid = session?.user?.id || userId
+    if (!uid) { setSaving(false); return }
+
     let avatar_url = form.avatar_url
     if (avatarFile) {
       const ext = avatarFile.name.split('.').pop()
-      const path = `${userId}/avatar.${ext}`
+      const path = `${uid}/avatar.${ext}`
       const { error: uploadError } = await supabase.storage.from('avatars').upload(path, avatarFile, { upsert: true, contentType: avatarFile.type })
       if (!uploadError) {
         const { data } = supabase.storage.from('avatars').getPublicUrl(path)
         avatar_url = `${data.publicUrl}?t=${Date.now()}`
       }
     }
-    await supabase.from('users').update({ full_name: form.full_name, username: form.username, bio: form.bio, city: form.city, country: form.country, avatar_url }).eq('id', userId)
+
+    const { error } = await supabase.from('users').update({
+      full_name: form.full_name,
+      username: form.username,
+      bio: form.bio,
+      city: form.city,
+      country: form.country,
+      avatar_url,
+    }).eq('id', uid)
+
     setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    if (!error) {
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    }
   }
 
   const handleDeletePackage = async (id) => {
@@ -82,9 +99,15 @@ export default function EditProfilePage() {
 
   const handleAddPackage = async () => {
     if (!newPkg.title || !newPkg.activity_type) return
+    const { data: { session } } = await supabase.auth.getSession()
+    const uid = session?.user?.id || userId
     const { data } = await supabase.from('activity_packages').insert({
-      user_id: userId, title: newPkg.title, activity_type: newPkg.activity_type,
-      description: newPkg.description, price_per_session: newPkg.is_free ? 0 : parseFloat(newPkg.price_per_session) || 0, is_free: newPkg.is_free,
+      user_id: uid,
+      title: newPkg.title,
+      activity_type: newPkg.activity_type,
+      description: newPkg.description,
+      price_per_session: newPkg.is_free ? 0 : parseFloat(newPkg.price_per_session) || 0,
+      is_free: newPkg.is_free,
     }).select().single()
     if (data) {
       setPackages(p => [...p, data])
@@ -119,7 +142,6 @@ export default function EditProfilePage() {
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: '40px 24px' }}>
         <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: '#E8E0FF', marginBottom: '32px' }}>Edit Profile</h1>
 
-        {/* Avatar */}
         <div style={sectionStyle}>
           <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '20px' }}>Profile Photo</h3>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -136,7 +158,6 @@ export default function EditProfilePage() {
           </div>
         </div>
 
-        {/* Basic info */}
         <div style={sectionStyle}>
           <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '20px' }}>Basic Info</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -158,7 +179,6 @@ export default function EditProfilePage() {
           </div>
         </div>
 
-        {/* Location */}
         <div style={sectionStyle}>
           <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '20px' }}>Location</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
@@ -173,7 +193,6 @@ export default function EditProfilePage() {
           </div>
         </div>
 
-        {/* Activities */}
         <div style={sectionStyle}>
           <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '16px' }}>My Activities</h3>
           {packages.length === 0 && <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '16px' }}>No activities yet.</p>}
@@ -186,7 +205,6 @@ export default function EditProfilePage() {
               <button onClick={() => handleDeletePackage(pkg.id)} style={{ background: 'none', border: 'none', color: '#9B93C0', cursor: 'pointer', fontSize: '20px', padding: '4px 8px' }}>×</button>
             </div>
           ))}
-
           {!showAddForm ? (
             <button onClick={() => setShowAddForm(true)} style={{ width: '100%', padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 500, background: 'rgba(212,175,55,0.08)', border: '1px dashed rgba(212,175,55,0.3)', color: '#D4AF37', cursor: 'pointer', marginTop: '8px' }}>
               + Add activity
