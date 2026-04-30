@@ -1,5 +1,32 @@
 // @ts-nocheck
 export const revalidate = 0
+export async function generateMetadata({ params }) {
+  const { data: profile } = await supabase
+    .from('users')
+    .select('*')
+    .eq('username', params.username)
+    .single()
+
+  if (!profile) return { title: 'Bestie' }
+
+  return {
+    title: `${profile.full_name} — BS ${profile.bestie_score || 0} · Bestie`,
+    description: `${profile.bio || 'Check my Social Passport on Bestie.'} · ${profile.city || ''} · Bestie Score: ${profile.bestie_score || 0}`,
+    openGraph: {
+      title: `${profile.full_name} — Bestie Score ${profile.bestie_score || 0}`,
+      description: profile.bio || 'Check my Social Passport on Bestie.',
+      images: profile.avatar_url ? [{ url: profile.avatar_url, width: 400, height: 400 }] : [],
+      url: `https://bestiehere.com/${profile.username}`,
+      type: 'profile',
+    },
+    twitter: {
+      card: 'summary',
+      title: `${profile.full_name} — BS ${profile.bestie_score || 0}`,
+      description: profile.bio || 'Check my Social Passport on Bestie.',
+      images: profile.avatar_url ? [profile.avatar_url] : [],
+    },
+  }
+}
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 
