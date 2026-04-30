@@ -11,6 +11,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     const getUser = async () => {
@@ -31,6 +32,13 @@ export default function DashboardPage() {
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/')
+  }
+
+  const handleShare = () => {
+    const url = `https://bestiehere.com/${profile?.username}`
+    navigator.clipboard.writeText(url)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   if (loading) return (
@@ -58,6 +66,8 @@ export default function DashboardPage() {
       </nav>
 
       <div style={{ maxWidth: '960px', margin: '0 auto', padding: '40px 24px' }}>
+
+        {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '32px', fontWeight: 700, color: '#E8E0FF', marginBottom: '4px' }}>
@@ -65,11 +75,17 @@ export default function DashboardPage() {
             </h1>
             <p style={{ fontSize: '14px', color: '#9B93C0' }}>@{profile?.username || user?.email?.split('@')[0]}</p>
           </div>
-          <Link href={`/${profile?.username}`} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', textDecoration: 'none' }}>
-            View my profile →
-          </Link>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button onClick={handleShare} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: copied ? 'rgba(57,255,20,0.15)' : 'linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0.08) 100%)', border: copied ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(212,175,55,0.3)', color: copied ? '#39FF14' : '#D4AF37', cursor: 'pointer' }}>
+              {copied ? '✓ Copied!' : '🔗 Share my Passport'}
+            </button>
+            <Link href={`/${profile?.username}`} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', textDecoration: 'none' }}>
+              View my profile →
+            </Link>
+          </div>
         </div>
 
+        {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' }}>
           <div style={{ background: '#0F0F1E', border: `1px solid ${scoreColor}25`, borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '8px' }}>BESTIE SCORE</p>
@@ -98,6 +114,7 @@ export default function DashboardPage() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+          {/* Complete profile */}
           <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px' }}>
             <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '16px' }}>Complete your profile</h3>
             {[
@@ -116,6 +133,7 @@ export default function DashboardPage() {
             ))}
           </div>
 
+          {/* Quick actions */}
           <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px' }}>
             <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '16px' }}>Quick actions</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -139,6 +157,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Boost score */}
         <div style={{ marginTop: '20px', background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(57,255,20,0.04) 100%)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '20px', padding: '24px' }}>
           <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '16px' }}>🚀 Boost your Bestie Score</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
@@ -147,6 +166,7 @@ export default function DashboardPage() {
               { icon: '✍️', label: 'Complete bio', points: '+30 BS' },
               { icon: '🤝', label: 'Complete session', points: '+100 BS' },
               { icon: '⭐', label: 'Get 5-star review', points: '+80 BS' },
+              { icon: '✨', label: 'Receive a Spark', points: '+20 BS' },
             ].map((tip) => (
               <div key={tip.label} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)' }}>
                 <span style={{ fontSize: '20px' }}>{tip.icon}</span>
