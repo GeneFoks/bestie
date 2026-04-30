@@ -14,7 +14,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await supabase.auth.getUser()
       if (!session) { router.push('/login'); return }
       setUser(session.user)
       const { data } = await supabase.from('users').select('*, activity_packages(*)').eq('id', session.user.id).single()
