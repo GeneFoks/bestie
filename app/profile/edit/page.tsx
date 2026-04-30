@@ -63,12 +63,14 @@ export default function EditProfilePage() {
 
     if (avatarFile) {
       const ext = avatarFile.name.split('.').pop()
-      const path = `avatars/${userId}.${ext}`
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(path, avatarFile, { upsert: true })
-      if (!uploadError) {
-        const { data } = supabase.storage.from('avatars').getPublicUrl(path)
-        avatar_url = data.publicUrl
-      }
+const path = `${userId}/avatar.${ext}`
+const { error: uploadError } = await supabase.storage
+  .from('avatars')
+  .upload(path, avatarFile, { upsert: true, contentType: avatarFile.type })
+if (!uploadError) {
+  const { data } = supabase.storage.from('avatars').getPublicUrl(path)
+  avatar_url = `${data.publicUrl}?t=${Date.now()}`
+}
     }
 
     await supabase.from('users').update({
