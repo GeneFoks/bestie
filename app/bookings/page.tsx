@@ -25,8 +25,8 @@ export default function BookingsPage() {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
-      setUserId(session.user.id)
-      await loadBookings(session.user.id)
+      setUserId(user.id)
+      await loadBookings(user.id)
       setLoading(false)
     }
     init()
@@ -69,7 +69,6 @@ export default function BookingsPage() {
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: '40px 24px' }}>
         <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: '#E8E0FF', marginBottom: '24px' }}>Bookings</h1>
 
-        {/* Tabs */}
         <div style={{ display: 'flex', gap: '4px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '4px', marginBottom: '24px' }}>
           {[
             { id: 'incoming', label: `Incoming (${incoming.length})` },
@@ -81,7 +80,6 @@ export default function BookingsPage() {
           ))}
         </div>
 
-        {/* Bookings list */}
         {current.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 0' }}>
             <p style={{ fontSize: '40px', marginBottom: '16px' }}>📋</p>
@@ -99,7 +97,6 @@ export default function BookingsPage() {
           return (
             <div key={booking.id} style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '20px', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', marginBottom: '16px' }}>
-                {/* Avatar */}
                 <div style={{ width: '48px', height: '48px', borderRadius: '14px', overflow: 'hidden', background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   {other?.avatar_url
                     ? <img src={other.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -129,7 +126,6 @@ export default function BookingsPage() {
                 </div>
               </div>
 
-              {/* Actions */}
               <div style={{ display: 'flex', gap: '8px' }}>
                 {tab === 'incoming' && booking.status === 'pending' && (
                   <>
