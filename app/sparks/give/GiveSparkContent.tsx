@@ -19,7 +19,7 @@ const SPARK_TYPES = [
   { id: 'open', emoji: '🌊', label: 'Open' },
 ]
 
-export default function GiveSparkPage() {
+export default function GiveSparkContent() {
   const params = useSearchParams()
   const router = useRouter()
   const toUsername = params.get('to')
@@ -37,29 +37,33 @@ export default function GiveSparkPage() {
 
   useEffect(() => {
     const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) { router.push(`/login?next=/sparks/give?to=${toUsername}&type=${preselectedType}`); return }
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) { router.push('/login'); return }
 
-      setMe(session.user)
+        setMe(session.user)
 
-      const [{ data: myData }, { data: recipientData }] = await Promise.all([
-        supabase.from('users').select('sparks_balance, full_name, username').eq('id', session.user.id).single(),
-        supabase.from('users').select('id, full_name, username, avatar_url, bestie_score').eq('username', toUsername).single(),
-      ])
+        const [{ data: myData }, { data: recipientData }] = await Promise.all([
+          supabase.from('users').select('sparks_balance, full_name, username').eq('id', session.user.id).single(),
+          supabase.from('users').select('id, full_name, username, avatar_url, bestie_score').eq('username', toUsername).single(),
+        ])
 
-      setMyProfile(myData)
-      setRecipient(recipientData)
+        setMyProfile(myData)
+        setRecipient(recipientData)
 
-      if (recipientData) {
-        const { data: given } = await supabase
-          .from('sparks')
-          .select('spark_type')
-          .eq('giver_id', session.user.id)
-          .eq('receiver_id', recipientData.id)
-        setAlreadyGiven(given?.map(s => s.spark_type) || [])
+        if (recipientData) {
+          const { data: given } = await supabase
+            .from('sparks')
+            .select('spark_type')
+            .eq('giver_id', session.user.id)
+            .eq('receiver_id', recipientData.id)
+          setAlreadyGiven(given?.map(s => s.spark_type) || [])
+        }
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setLoading(false)
       }
-
-      setLoading(false)
     }
     init()
   }, [])
@@ -131,8 +135,6 @@ export default function GiveSparkPage() {
       </nav>
 
       <div style={{ maxWidth: '480px', margin: '0 auto', padding: '48px 24px' }}>
-
-        {/* Recipient */}
         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
           <div style={{ width: '72px', height: '72px', borderRadius: '18px', overflow: 'hidden', background: '#1a1a35', border: '2px solid rgba(212,175,55,0.3)', margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {recipient.avatar_url
@@ -144,7 +146,6 @@ export default function GiveSparkPage() {
           <p style={{ fontSize: '14px', color: '#9B93C0' }}>to <span style={{ color: '#E8E0FF', fontWeight: 500 }}>{recipient.full_name}</span></p>
         </div>
 
-        {/* Balance & limit */}
         <div style={{ display: 'flex', gap: '10px', marginBottom: '24px' }}>
           <div style={{ flex: 1, background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
             <div style={{ fontSize: '22px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>{sparksLeft}</div>
@@ -168,7 +169,6 @@ export default function GiveSparkPage() {
           </div>
         )}
 
-        {/* Spark types */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '24px' }}>
           {SPARK_TYPES.map(s => {
             const given = alreadyGiven.includes(s.id)
@@ -194,14 +194,12 @@ export default function GiveSparkPage() {
           })}
         </div>
 
-        {/* Error */}
         {error && (
           <div style={{ background: 'rgba(255,107,107,0.1)', border: '1px solid rgba(255,107,107,0.3)', borderRadius: '12px', padding: '12px', textAlign: 'center', marginBottom: '16px' }}>
             <p style={{ fontSize: '13px', color: '#FF6B6B' }}>{error}</p>
           </div>
         )}
 
-        {/* Confirm button */}
         <button
           onClick={handleGive}
           disabled={!selectedType || sending || sparksLeft <= 0 || givenCount >= 3}
