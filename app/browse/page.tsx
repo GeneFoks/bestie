@@ -31,6 +31,7 @@ export default function BrowsePage() {
       let query = supabase
         .from('users')
         .select('*, activity_packages(*)')
+        .eq('is_provider_active', true)
         .order('bestie_score', { ascending: false })
 
       if (search) {
@@ -40,9 +41,10 @@ export default function BrowsePage() {
       if (filter !== 'all') {
         const { data: pkgs } = await supabase
           .from('activity_packages')
-          .select('user_id')
+          .select('provider_id')
           .eq('activity_type', filter)
-        const userIds = pkgs?.map(p => p.user_id) || []
+          .eq('is_active', true)
+        const userIds = pkgs?.map(p => p.provider_id) || []
         if (userIds.length > 0) {
           query = query.in('id', userIds)
         } else {
@@ -71,7 +73,6 @@ export default function BrowsePage() {
       </nav>
 
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 24px' }}>
-        {/* Header */}
         <div style={{ marginBottom: '32px' }}>
           <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', fontWeight: 700, color: '#E8E0FF', marginBottom: '8px' }}>Browse Besties</h1>
           <p style={{ fontSize: '15px', color: '#9B93C0' }}>
@@ -79,7 +80,6 @@ export default function BrowsePage() {
           </p>
         </div>
 
-        {/* Search */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 16px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', marginBottom: '16px' }}>
           <span style={{ fontSize: '18px' }}>🔍</span>
           <input
@@ -94,7 +94,6 @@ export default function BrowsePage() {
           )}
         </div>
 
-        {/* Filters */}
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '32px' }}>
           {FILTERS.map(f => (
             <button key={f.id} onClick={() => setFilter(f.id)} style={{ padding: '8px 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', background: filter === f.id ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', border: filter === f.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.08)', color: filter === f.id ? '#D4AF37' : '#9B93C0' }}>
@@ -103,7 +102,6 @@ export default function BrowsePage() {
           ))}
         </div>
 
-        {/* Grid */}
         {loading ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
             {[1,2,3,4,5,6].map(i => (
