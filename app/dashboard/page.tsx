@@ -151,6 +151,7 @@ export default function DashboardPage() {
                 { emoji: '👤', label: 'View my profile', sub: 'See how others see you', href: `/${profile?.username}` },
                 { emoji: '📋', label: 'Bookings', sub: 'View your booking requests', href: '/bookings' },
                 { emoji: '✉️', label: 'Messages', sub: 'Check your conversations', href: '/messages' },
+                { emoji: '⚡', label: 'Going to', sub: 'Share what you\'re up to today', href: '/going-to' },
               ].map((action) => (
                 <Link key={action.label} href={action.href} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', borderRadius: '14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', textDecoration: 'none' }}>
                   <span style={{ fontSize: '24px' }}>{action.emoji}</span>
