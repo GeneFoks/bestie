@@ -151,6 +151,7 @@ export default function DashboardPage() {
                 { emoji: '✏️', label: 'Edit profile', sub: 'Update your bio, photo, city', href: '/profile/edit' },
                 { emoji: '👤', label: 'View my profile', sub: 'See how others see you', href: `/${profile?.username}` },
                 { emoji: '📋', label: 'Bookings', sub: 'View your booking requests', href: '/bookings' },
+                { emoji: '📅', label: 'My Sessions', sub: 'Upcoming accepted sessions', href: '/sessions' },
                 { emoji: '✉️', label: 'Messages', sub: 'Check your conversations', href: '/messages' },
                 { emoji: '⚡', label: 'Going to', sub: 'Share what you\'re up to today', href: '/going-to' },
               ].map((action) => (
