@@ -31,7 +31,6 @@ export default function BrowsePage() {
       let query = supabase
         .from('users')
         .select('*, activity_packages(*)')
-        .eq('is_provider_active', true)
         .order('bestie_score', { ascending: false })
 
       if (search) {
