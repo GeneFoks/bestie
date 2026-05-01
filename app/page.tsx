@@ -31,16 +31,21 @@ const MOCK_PROVIDERS = [
 ]
 
 const ACTIVITIES = [
-  { id: 'meet_irl', emoji: '🤝', label: 'Meet IRL' },
-  { id: 'dance_crew', emoji: '💃', label: 'Dance Crew' },
-  { id: 'trail_crew', emoji: '🥾', label: 'Trail Crew' },
-  { id: 'travel_buddy', emoji: '✈️', label: 'Travel Buddy' },
-  { id: 'game_night', emoji: '🎮', label: 'Game Night' },
-  { id: 'watch_together', emoji: '🎬', label: 'Watch Together' },
-  { id: 'vibe_call', emoji: '📱', label: 'Vibe Call' },
+  { id: 'hiking', emoji: '🥾', label: 'Hiking' },
   { id: 'deep_chat', emoji: '🫂', label: 'Deep Chat' },
+  { id: 'game_night', emoji: '🎮', label: 'Game Night' },
+  { id: 'travel_buddy', emoji: '✈️', label: 'Travel Buddy' },
+  { id: 'meditation', emoji: '🧘', label: 'Meditation' },
+  { id: 'coffee_chat', emoji: '☕', label: 'Coffee Chat' },
+  { id: 'music_lesson', emoji: '🎸', label: 'Music Lesson' },
+  { id: 'night_out', emoji: '🍸', label: 'Night Out' },
+  { id: 'breathwork', emoji: '🌬️', label: 'Breathwork' },
+  { id: 'book_club', emoji: '📚', label: 'Book Club' },
   { id: 'festival_crew', emoji: '🎪', label: 'Festival Crew' },
-  { id: 'epic_journey', emoji: '🌍', label: 'Epic Journey' },
+  { id: 'vent_session', emoji: '💬', label: 'Vent Session' },
+  { id: 'yoga', emoji: '🧘', label: 'Yoga' },
+  { id: 'talk_3am', emoji: '🌙', label: '3am Talk' },
+  { id: 'coworking', emoji: '💻', label: 'Coworking' },
 ]
 
 export default function HomePage() {
