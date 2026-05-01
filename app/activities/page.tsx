@@ -61,7 +61,7 @@ export default function ActivitiesPage() {
           activity_type: form.activity_type,
           description: form.description,
           price_per_session: form.is_free ? 0 : parseFloat(form.price_per_session) || 0,
-          is_free: form.is_free,
+          is_free: form.is_free === true,
         })
         .eq('id', editingId)
         .select().single()
