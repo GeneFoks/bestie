@@ -27,15 +27,10 @@ export default function SessionsPage() {
 
         const { data } = await supabase
           .from('bookings')
-          .select(`
-            *,
-            package:activity_packages(*),
-            seeker:users!bookings_seeker_id_fkey(id, full_name, username, avatar_url),
-            provider:users!bookings_provider_id_fkey(id, full_name, username, avatar_url)
-          `)
+          .select(`*, package:activity_packages(*), seeker:users!bookings_seeker_id_fkey(id, full_name, username, avatar_url), provider:users!bookings_provider_id_fkey(id, full_name, username, avatar_url)`)
           .or(`seeker_id.eq.${user.id},provider_id.eq.${user.id}`)
           .eq('status', 'accepted')
-          .order('proposed_datetime', { ascending: true })
+          .order('scheduled_at', { ascending: true })
 
         setSessions(data || [])
       } catch (e) {
@@ -65,9 +60,9 @@ export default function SessionsPage() {
     </div>
   )
 
-  const upcoming = sessions.filter(s => s.proposed_datetime && new Date(s.proposed_datetime) >= new Date())
-  const noDates = sessions.filter(s => !s.proposed_datetime)
-  const past = sessions.filter(s => s.proposed_datetime && new Date(s.proposed_datetime) < new Date())
+  const upcoming = sessions.filter(s => s.scheduled_at && new Date(s.scheduled_at) >= new Date())
+  const noDates = sessions.filter(s => !s.scheduled_at)
+  const past = sessions.filter(s => s.scheduled_at && new Date(s.scheduled_at) < new Date())
 
   return (
     <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
@@ -89,16 +84,15 @@ export default function SessionsPage() {
           </div>
         ) : (
           <>
-            {/* Upcoming */}
             {upcoming.length > 0 && (
               <div style={{ marginBottom: '32px' }}>
                 <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '12px' }}>UPCOMING</p>
                 {upcoming.map((s, i) => {
                   const other = s.seeker_id === userId ? s.provider : s.seeker
-                  const date = formatDate(s.proposed_datetime)
+                  const date = formatDate(s.scheduled_at)
                   const isNext = i === 0
                   return (
-                    <div key={s.id} style={{ background: isNext ? 'linear-gradient(135deg, #0F0F1E 0%, #141428 100%)' : '#0F0F1E', border: isNext ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '20px', marginBottom: '12px', position: 'relative', overflow: 'hidden' }}>
+                    <div key={s.id} style={{ background: isNext ? 'linear-gradient(135deg, #0F0F1E 0%, #141428 100%)' : '#0F0F1E', border: isNext ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '20px', marginBottom: '12px', position: 'relative' }}>
                       {isNext && <div style={{ position: 'absolute', top: '12px', right: '12px', fontSize: '11px', fontWeight: 600, padding: '3px 10px', borderRadius: '999px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37' }}>Next up</div>}
                       <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                         <div style={{ width: '52px', height: '52px', borderRadius: '14px', overflow: 'hidden', background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -134,7 +128,6 @@ export default function SessionsPage() {
               </div>
             )}
 
-            {/* No date */}
             {noDates.length > 0 && (
               <div style={{ marginBottom: '32px' }}>
                 <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '12px' }}>DATE NOT SET</p>
@@ -163,13 +156,12 @@ export default function SessionsPage() {
               </div>
             )}
 
-            {/* Past */}
             {past.length > 0 && (
               <div>
                 <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '12px' }}>PAST</p>
                 {past.map(s => {
                   const other = s.seeker_id === userId ? s.provider : s.seeker
-                  const date = formatDate(s.proposed_datetime)
+                  const date = formatDate(s.scheduled_at)
                   return (
                     <div key={s.id} style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '20px', padding: '20px', marginBottom: '12px', opacity: 0.6 }}>
                       <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
