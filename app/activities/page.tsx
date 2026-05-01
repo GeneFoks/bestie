@@ -50,36 +50,46 @@ export default function ActivitiesPage() {
   }, [])
 
   const handleSave = async () => {
-    if (!form.title || !form.activity_type) return
-    setSaving(true)
+  if (!form.title || !form.activity_type) return
+  setSaving(true)
 
-    if (editingId) {
-      const { data } = await supabase
-        .from('activity_packages')
-        .update({
-          title: form.title,
-          activity_type: form.activity_type,
-          description: form.description,
-          price_per_session: form.is_free ? 0 : parseFloat(form.price_per_session) || 0,
-          is_free: form.is_free === true,
-        })
-        .eq('id', editingId)
-        .select().single()
-      if (data) setPackages(p => p.map(pkg => pkg.id === editingId ? data : pkg))
-    } else {
-      const { data } = await supabase
-        .from('activity_packages')
-        .insert({
-          user_id: userId,
-          title: form.title,
-          activity_type: form.activity_type,
-          description: form.description,
-          price_per_session: form.is_free ? 0 : parseFloat(form.price_per_session) || 0,
-          is_free: form.is_free,
-        })
-        .select().single()
-      if (data) setPackages(p => [data, ...p])
-    }
+  const { data: { session } } = await supabase.auth.getSession()
+  const uid = session?.user?.id || userId
+
+  if (editingId) {
+    const { data } = await supabase
+      .from('activity_packages')
+      .update({
+        title: form.title,
+        activity_type: form.activity_type,
+        description: form.description,
+        price_per_session: form.is_free ? 0 : parseFloat(form.price_per_session) || 0,
+        is_free: form.is_free === true,
+      })
+      .eq('id', editingId)
+      .select().single()
+    if (data) setPackages(p => p.map(pkg => pkg.id === editingId ? data : pkg))
+  } else {
+    const { data, error } = await supabase
+      .from('activity_packages')
+      .insert({
+        user_id: uid,
+        title: form.title,
+        activity_type: form.activity_type,
+        description: form.description,
+        price_per_session: form.is_free ? 0 : parseFloat(form.price_per_session) || 0,
+        is_free: form.is_free === true,
+      })
+      .select().single()
+    if (data) setPackages(p => [data, ...p])
+    if (error) console.error(error)
+  }
+
+  setForm(EMPTY_FORM)
+  setShowForm(false)
+  setEditingId(null)
+  setSaving(false)
+}
 
     setForm(EMPTY_FORM)
     setShowForm(false)
