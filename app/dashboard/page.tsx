@@ -147,6 +147,7 @@ export default function DashboardPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {[
                 { emoji: '🔍', label: 'Browse Besties', sub: 'Find someone for your activity', href: '/browse' },
+                { emoji: '🎯', label: 'My Activities', sub: 'Manage what you offer', href: '/activities' },
                 { emoji: '✏️', label: 'Edit profile', sub: 'Update your bio, photo, city', href: '/profile/edit' },
                 { emoji: '👤', label: 'View my profile', sub: 'See how others see you', href: `/${profile?.username}` },
                 { emoji: '📋', label: 'Bookings', sub: 'View your booking requests', href: '/bookings' },
