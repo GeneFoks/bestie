@@ -1,3 +1,4 @@
+```tsx
 // @ts-nocheck
 'use client'
 
@@ -22,23 +23,10 @@ export default function DashboardPage() {
       setUser(session.user)
       const { data } = await supabase.from('users').select('*, activity_packages(*)').eq('id', session.user.id).single()
       setProfile(data)
-
-      // Unread messages
-      const { count: msgCount } = await supabase
-        .from('messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('receiver_id', session.user.id)
-        .eq('read', false)
+      const { count: msgCount } = await supabase.from('messages').select('*', { count: 'exact', head: true }).eq('receiver_id', session.user.id).eq('read', false)
       setUnreadMessages(msgCount || 0)
-
-      // Pending incoming bookings
-      const { count: bookCount } = await supabase
-        .from('bookings')
-        .select('*', { count: 'exact', head: true })
-        .eq('provider_id', session.user.id)
-        .eq('status', 'pending')
+      const { count: bookCount } = await supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('provider_id', session.user.id).eq('status', 'pending')
       setPendingBookings(bookCount || 0)
-
       setLoading(false)
     }
     getUser()
@@ -86,6 +74,7 @@ export default function DashboardPage() {
     { emoji: '✉️', label: 'Messages', sub: 'Check your conversations', href: '/messages', badge: unreadMessages },
     { emoji: '📋', label: 'Bookings', sub: 'View your booking requests', href: '/bookings', badge: pendingBookings },
     { emoji: '📅', label: 'My Sessions', sub: 'Upcoming accepted sessions', href: '/sessions' },
+    { emoji: '✨', label: 'Bestie Type', sub: 'Your Energy · Mind · Vibe', href: '/bestie-type' },
     { emoji: '🔍', label: 'Browse Besties', sub: 'Find someone for your activity', href: '/browse' },
     { emoji: '🎯', label: 'My Activities', sub: 'Manage what you offer', href: '/activities' },
     { emoji: '✏️', label: 'Edit profile', sub: 'Update your bio, photo, city', href: '/profile/edit' },
@@ -104,6 +93,7 @@ export default function DashboardPage() {
       </nav>
 
       <div style={{ maxWidth: '960px', margin: '0 auto', padding: '40px 24px' }}>
+
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '32px', fontWeight: 700, color: '#E8E0FF', marginBottom: '4px' }}>
@@ -121,7 +111,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' }}>
+        {/* Stats */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
           <div style={{ background: '#0F0F1E', border: `1px solid ${scoreColor}25`, borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '8px' }}>BESTIE SCORE</p>
             <div style={{ fontSize: '56px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{score}</div>
@@ -148,6 +139,40 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Bestie Type banner */}
+        {!profile?.bestie_type_completed && (
+          <div style={{ marginBottom: '24px', background: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(155,143,255,0.08) 100%)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: '20px', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <span style={{ fontSize: '32px' }}>✨</span>
+              <div>
+                <p style={{ fontSize: '15px', fontWeight: 700, color: '#E8E0FF', marginBottom: '2px' }}>Узнай свой Bestie Type</p>
+                <p style={{ fontSize: '13px', color: '#9B93C0' }}>12 вопросов · Energy · Mind · Vibe · появится на твоём паспорте</p>
+              </div>
+            </div>
+            <Link href="/bestie-type" style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+              Пройти тест →
+            </Link>
+          </div>
+        )}
+
+        {/* Bestie Type result */}
+        {profile?.bestie_type_completed && (
+          <div style={{ marginBottom: '24px', background: '#0F0F1E', border: '1px solid rgba(155,143,255,0.25)', borderRadius: '20px', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <span style={{ fontSize: '32px' }}>✨</span>
+              <div>
+                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '1.5px', color: '#9B8FFF', marginBottom: '4px' }}>BESTIE TYPE</p>
+                <p style={{ fontSize: '16px', fontWeight: 700, color: '#E8E0FF', fontFamily: 'DM Serif Display, serif' }}>
+                  {profile.energy_type} · {profile.mind_type} · {profile.vibe_type}
+                </p>
+              </div>
+            </div>
+            <Link href="/bestie-type" style={{ padding: '8px 18px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', textDecoration: 'none' }}>
+              Пройти заново
+            </Link>
+          </div>
+        )}
+
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
           <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px' }}>
             <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '16px' }}>Complete your profile</h3>
@@ -156,6 +181,7 @@ export default function DashboardPage() {
               { label: 'Write your bio', done: !!profile?.bio },
               { label: 'Add your city', done: !!profile?.city },
               { label: 'Create an activity', done: profile?.activity_packages?.length > 0 },
+              { label: 'Get your Bestie Type', done: !!profile?.bestie_type_completed },
             ].map((item) => (
               <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                 <div style={{ width: '20px', height: '20px', borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: item.done ? 'rgba(57,255,20,0.15)' : 'rgba(255,255,255,0.06)', border: item.done ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(255,255,255,0.1)', fontSize: '11px', color: '#39FF14' }}>
@@ -225,3 +251,6 @@ export default function DashboardPage() {
     </div>
   )
 }
+```
+
+Замени и задеплой.
