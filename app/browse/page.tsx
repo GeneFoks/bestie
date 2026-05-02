@@ -101,7 +101,6 @@ export default function BrowsePage() {
 
       let result = data || []
 
-      // Сортируем по совместимости если включён режим и есть профиль
       if (myProfile && compatMode) {
         result = result
           .filter(p => p.id !== myProfile.id)
@@ -143,28 +142,26 @@ export default function BrowsePage() {
             </p>
           </div>
 
-          {/* Compat toggle — только если у пользователя есть Bestie Type */}
           {myProfile && (
             <button
               onClick={() => setCompatMode(!compatMode)}
               style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', background: compatMode ? 'rgba(57,255,20,0.12)' : 'rgba(255,255,255,0.04)', border: compatMode ? '1px solid rgba(57,255,20,0.35)' : '1px solid rgba(255,255,255,0.1)', color: compatMode ? '#39FF14' : '#9B93C0', transition: 'all 0.2s' }}
             >
               <span>✨</span>
-              {compatMode ? '✨ Compatibility ON' : '✨ Compatibility'}
+              {compatMode ? 'Compatibility ON' : 'Compatibility'}
             </button>
           )}
         </div>
 
-        {/* Compat banner */}
         {myProfile && compatMode && (
           <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(57,255,20,0.06)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '13px', color: '#9B93C0' }}>
-            Showing people compatible with your type <span style={{ color: '#39FF14', fontWeight: 600 }}>{myProfile.energy_type} · {myProfile.mind_type} · {myProfile.vibe_type}</span> — сначала лучшие совпадения
+            Showing people compatible with your type <span style={{ color: '#39FF14', fontWeight: 600 }}>{myProfile.energy_type} · {myProfile.mind_type} · {myProfile.vibe_type}</span> — best matches first
           </div>
         )}
 
         {!myProfile && (
           <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', fontSize: '13px', color: '#9B93C0' }}>
-            <Link href="/bestie-type" style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>Пройди тест Bestie Type →</Link> и мы покажем самых совместимых людей первыми
+            <Link href="/bestie-type" style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>Take the Bestie Type quiz →</Link> and we'll show the most compatible people first
           </div>
         )}
 
