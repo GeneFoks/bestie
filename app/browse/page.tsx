@@ -150,7 +150,7 @@ export default function BrowsePage() {
               style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', background: compatMode ? 'rgba(57,255,20,0.12)' : 'rgba(255,255,255,0.04)', border: compatMode ? '1px solid rgba(57,255,20,0.35)' : '1px solid rgba(255,255,255,0.1)', color: compatMode ? '#39FF14' : '#9B93C0', transition: 'all 0.2s' }}
             >
               <span>✨</span>
-              {compatMode ? 'Совместимость вкл.' : 'По совместимости'}
+              {compatMode ? '✨ Compatibility ON' : '✨ Compatibility'}
             </button>
           )}
         </div>
