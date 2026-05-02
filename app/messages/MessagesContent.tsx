@@ -131,8 +131,14 @@ if (toUsername) {
       .order('created_at', { ascending: true })
 
     setMessages(data || [])
-  }
 
+    await supabase
+      .from('messages')
+      .update({ read: true })
+      .eq('sender_id', partnerId)
+      .eq('receiver_id', userId)
+      .eq('read', false)
+  }
   const sendMessage = async () => {
     if (!newMessage.trim() || !activeConv) return
     setSending(true)
