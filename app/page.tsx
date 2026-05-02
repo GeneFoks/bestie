@@ -31,16 +31,18 @@ const MOCK_PROVIDERS = [
 ]
 
 const ACTIVITIES = [
-  { id: 'hiking', emoji: '🥾', label: 'Hiking' },
+  { id: 'meet_irl', emoji: '🤝', label: 'Meet IRL' },
   { id: 'deep_chat', emoji: '🫂', label: 'Deep Chat' },
   { id: 'game_night', emoji: '🎮', label: 'Game Night' },
   { id: 'travel_buddy', emoji: '✈️', label: 'Travel Buddy' },
-  { id: 'coffee_chat', emoji: '☕', label: 'Coffee Chat' },
-  { id: 'festival_crew', emoji: '🎪', label: 'Festival Crew' },
-  { id: 'watch_together', emoji: '🎬', label: 'Watch Together' },
+  { id: 'trail_crew', emoji: '🥾', label: 'Trail Crew' },
   { id: 'dance_crew', emoji: '💃', label: 'Dance Crew' },
+  { id: 'watch_together', emoji: '🎬', label: 'Watch Together' },
   { id: 'vibe_call', emoji: '📱', label: 'Vibe Call' },
-  { id: 'night_out', emoji: '🍸', label: 'Night Out' },
+  { id: 'festival_crew', emoji: '🎪', label: 'Festival Crew' },
+  { id: 'epic_journey', emoji: '🌍', label: 'Epic Journey' },
+  { id: 'fishing_crew', emoji: '🎣', label: 'Fishing Crew' },
+  { id: 'real_talk', emoji: '💬', label: 'Real Talk' },
 ]
 
 const FEATURES = [
