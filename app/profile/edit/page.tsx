@@ -21,6 +21,12 @@ const ACTIVITIES = [
   { id: 'fishing_crew', emoji: '🎣', label: 'Fishing Crew' },
 ]
 
+const LANGUAGES = [
+  'English', 'Spanish', 'Russian', 'French', 'German', 'Portuguese',
+  'Mandarin', 'Japanese', 'Korean', 'Arabic', 'Hindi', 'Italian',
+  'Turkish', 'Dutch', 'Polish', 'Ukrainian', 'Hebrew', 'Swahili',
+]
+
 export default function EditProfilePage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -32,6 +38,7 @@ export default function EditProfilePage() {
   const [packages, setPackages] = useState([])
   const [showAddForm, setShowAddForm] = useState(false)
   const [newPkg, setNewPkg] = useState({ title: '', activity_type: '', description: '', price_per_session: '', is_free: false })
+  const [selectedLanguages, setSelectedLanguages] = useState([])
   const [form, setForm] = useState({ full_name: '', username: '', bio: '', city: '', country: '', avatar_url: '' })
 
   useEffect(() => {
@@ -43,6 +50,7 @@ export default function EditProfilePage() {
       if (data) {
         setForm({ full_name: data.full_name || '', username: data.username || '', bio: data.bio || '', city: data.city || '', country: data.country || '', avatar_url: data.avatar_url || '' })
         setPackages(data.activity_packages || [])
+        setSelectedLanguages(data.languages || [])
         if (data.avatar_url) setAvatarPreview(data.avatar_url)
       }
       setLoading(false)
@@ -57,10 +65,14 @@ export default function EditProfilePage() {
     setAvatarPreview(URL.createObjectURL(file))
   }
 
+  const toggleLanguage = (lang) => {
+    setSelectedLanguages(prev =>
+      prev.includes(lang) ? prev.filter(l => l !== lang) : [...prev, lang]
+    )
+  }
+
   const handleSave = async () => {
     setSaving(true)
-
-    // перепроверяем сессию
     const { data: { session } } = await supabase.auth.getSession()
     const uid = session?.user?.id || userId
     if (!uid) { setSaving(false); return }
@@ -83,6 +95,7 @@ export default function EditProfilePage() {
       city: form.city,
       country: form.country,
       avatar_url,
+      languages: selectedLanguages,
     }).eq('id', uid)
 
     setSaving(false)
@@ -142,6 +155,7 @@ export default function EditProfilePage() {
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: '40px 24px' }}>
         <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: '#E8E0FF', marginBottom: '32px' }}>Edit Profile</h1>
 
+        {/* Photo */}
         <div style={sectionStyle}>
           <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '20px' }}>Profile Photo</h3>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -158,6 +172,7 @@ export default function EditProfilePage() {
           </div>
         </div>
 
+        {/* Basic Info */}
         <div style={sectionStyle}>
           <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '20px' }}>Basic Info</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -179,6 +194,7 @@ export default function EditProfilePage() {
           </div>
         </div>
 
+        {/* Location */}
         <div style={sectionStyle}>
           <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '20px' }}>Location</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
@@ -193,6 +209,42 @@ export default function EditProfilePage() {
           </div>
         </div>
 
+        {/* Languages */}
+        <div style={sectionStyle}>
+          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '8px' }}>Languages</h3>
+          <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '16px' }}>Select languages you speak</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {LANGUAGES.map(lang => {
+              const selected = selectedLanguages.includes(lang)
+              return (
+                <button
+                  key={lang}
+                  onClick={() => toggleLanguage(lang)}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '999px',
+                    fontSize: '13px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    background: selected ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)',
+                    border: selected ? '1px solid rgba(212,175,55,0.5)' : '1px solid rgba(255,255,255,0.08)',
+                    color: selected ? '#D4AF37' : '#9B93C0',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {lang}
+                </button>
+              )
+            })}
+          </div>
+          {selectedLanguages.length > 0 && (
+            <p style={{ fontSize: '12px', color: '#D4AF37', marginTop: '12px' }}>
+              Selected: {selectedLanguages.join(', ')}
+            </p>
+          )}
+        </div>
+
+        {/* Activities */}
         <div style={sectionStyle}>
           <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '16px' }}>My Activities</h3>
           {packages.length === 0 && <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '16px' }}>No activities yet.</p>}
