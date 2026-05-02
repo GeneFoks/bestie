@@ -17,7 +17,6 @@ export default function SessionsPage() {
   const [userId, setUserId] = useState(null)
   const [sessions, setSessions] = useState([])
   const [loading, setLoading] = useState(true)
-  const [ratingModal, setRatingModal] = useState(null) // { bookingId, otherName }
 
   useEffect(() => {
     const init = async () => {
@@ -52,11 +51,11 @@ export default function SessionsPage() {
     await loadSessions(userId)
   }
 
-  const submitRating = async (bookingId, rating, isSeeker) => {
+  const submitRating = async (bookingId, rating, isSeeker, otherUsername) => {
     const field = isSeeker ? 'rating_seeker' : 'rating_provider'
-    await supabase.from('bookings').update({ [field]: rating, status: 'completed' }).eq('id', bookingId)
-    setRatingModal(null)
+    await supabase.from('bookings').update({ [field]: rating }).eq('id', bookingId)
     await loadSessions(userId)
+    router.push(`/sparks/give?to=${otherUsername}`)
   }
 
   const formatDate = (ts) => {
@@ -107,7 +106,6 @@ export default function SessionsPage() {
           </div>
         ) : (
           <>
-            {/* Needs your confirmation */}
             {needsConfirm.length > 0 && (
               <div style={{ marginBottom: '32px' }}>
                 <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#39FF14', marginBottom: '12px' }}>⚡ WAITING FOR YOUR CONFIRMATION</p>
@@ -137,7 +135,6 @@ export default function SessionsPage() {
               </div>
             )}
 
-            {/* Both confirmed — rate now */}
             {bothConfirmed.length > 0 && (
               <div style={{ marginBottom: '32px' }}>
                 <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '12px' }}>⭐ RATE YOUR SESSION</p>
@@ -157,13 +154,18 @@ export default function SessionsPage() {
                         </div>
                       </div>
                       {myRating ? (
-                        <p style={{ fontSize: '14px', color: '#9B93C0', textAlign: 'center' }}>You rated {'⭐'.repeat(myRating)} — thanks!</p>
+                        <>
+                          <p style={{ fontSize: '14px', color: '#9B93C0', textAlign: 'center', marginBottom: '12px' }}>You rated {'⭐'.repeat(myRating)} — thanks!</p>
+                          <Link href={`/sparks/give?to=${other?.username}`} style={{ display: 'block', padding: '10px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', textDecoration: 'none', textAlign: 'center' }}>
+                            ✨ Give a Spark to {other?.full_name?.split(' ')[0]}
+                          </Link>
+                        </>
                       ) : (
                         <>
                           <p style={{ fontSize: '13px', color: '#D4AF37', marginBottom: '12px' }}>Both confirmed! Rate your experience:</p>
                           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '12px' }}>
                             {[1,2,3,4,5].map(star => (
-                              <button key={star} onClick={() => submitRating(s.id, star, isSeeker)} style={{ fontSize: '28px', background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, transition: 'all 0.1s' }}
+                              <button key={star} onClick={() => submitRating(s.id, star, isSeeker, other?.username)} style={{ fontSize: '28px', background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, transition: 'all 0.1s' }}
                                 onMouseEnter={e => e.target.style.opacity = 1}
                                 onMouseLeave={e => e.target.style.opacity = 0.6}
                               >⭐</button>
@@ -180,7 +182,6 @@ export default function SessionsPage() {
               </div>
             )}
 
-            {/* Upcoming */}
             {upcoming.length > 0 && (
               <div style={{ marginBottom: '32px' }}>
                 <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '12px' }}>UPCOMING</p>
@@ -232,7 +233,6 @@ export default function SessionsPage() {
               </div>
             )}
 
-            {/* Past */}
             {past.length > 0 && (
               <div>
                 <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '12px' }}>PAST</p>
