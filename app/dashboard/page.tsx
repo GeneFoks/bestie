@@ -12,6 +12,8 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
+  const [unreadMessages, setUnreadMessages] = useState(0)
+  const [pendingBookings, setPendingBookings] = useState(0)
 
   useEffect(() => {
     const getUser = async () => {
@@ -20,6 +22,23 @@ export default function DashboardPage() {
       setUser(session.user)
       const { data } = await supabase.from('users').select('*, activity_packages(*)').eq('id', session.user.id).single()
       setProfile(data)
+
+      // Unread messages
+      const { count: msgCount } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('receiver_id', session.user.id)
+        .eq('read', false)
+      setUnreadMessages(msgCount || 0)
+
+      // Pending incoming bookings
+      const { count: bookCount } = await supabase
+        .from('bookings')
+        .select('*', { count: 'exact', head: true })
+        .eq('provider_id', session.user.id)
+        .eq('status', 'pending')
+      setPendingBookings(bookCount || 0)
+
       setLoading(false)
     }
     getUser()
@@ -63,6 +82,17 @@ export default function DashboardPage() {
   ]
   const remainingBoost = boostItems.filter(i => !i.done)
 
+  const actions = [
+    { emoji: '✉️', label: 'Messages', sub: 'Check your conversations', href: '/messages', badge: unreadMessages },
+    { emoji: '📋', label: 'Bookings', sub: 'View your booking requests', href: '/bookings', badge: pendingBookings },
+    { emoji: '📅', label: 'My Sessions', sub: 'Upcoming accepted sessions', href: '/sessions' },
+    { emoji: '🔍', label: 'Browse Besties', sub: 'Find someone for your activity', href: '/browse' },
+    { emoji: '🎯', label: 'My Activities', sub: 'Manage what you offer', href: '/activities' },
+    { emoji: '✏️', label: 'Edit profile', sub: 'Update your bio, photo, city', href: '/profile/edit' },
+    { emoji: '👤', label: 'View my profile', sub: 'See how others see you', href: `/${profile?.username}` },
+    { emoji: '⚡', label: 'Going to', sub: 'Share what you\'re up to today', href: '/going-to' },
+  ]
+
   return (
     <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -74,8 +104,6 @@ export default function DashboardPage() {
       </nav>
 
       <div style={{ maxWidth: '960px', margin: '0 auto', padding: '40px 24px' }}>
-
-        {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '32px', fontWeight: 700, color: '#E8E0FF', marginBottom: '4px' }}>
@@ -93,7 +121,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' }}>
           <div style={{ background: '#0F0F1E', border: `1px solid ${scoreColor}25`, borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '8px' }}>BESTIE SCORE</p>
@@ -122,7 +149,6 @@ export default function DashboardPage() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-          {/* Complete profile */}
           <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px' }}>
             <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '16px' }}>Complete your profile</h3>
             {[
@@ -141,34 +167,26 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          {/* Quick actions */}
           <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px' }}>
             <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '16px' }}>Quick actions</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {[
-                { emoji: '🔍', label: 'Browse Besties', sub: 'Find someone for your activity', href: '/browse' },
-                { emoji: '🎯', label: 'My Activities', sub: 'Manage what you offer', href: '/activities' },
-                { emoji: '✏️', label: 'Edit profile', sub: 'Update your bio, photo, city', href: '/profile/edit' },
-                { emoji: '👤', label: 'View my profile', sub: 'See how others see you', href: `/${profile?.username}` },
-                { emoji: '📋', label: 'Bookings', sub: 'View your booking requests', href: '/bookings' },
-                { emoji: '📅', label: 'My Sessions', sub: 'Upcoming accepted sessions', href: '/sessions' },
-                { emoji: '✉️', label: 'Messages', sub: 'Check your conversations', href: '/messages' },
-                { emoji: '⚡', label: 'Going to', sub: 'Share what you\'re up to today', href: '/going-to' },
-              ].map((action) => (
-                <Link key={action.label} href={action.href} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', borderRadius: '14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', textDecoration: 'none' }}>
+              {actions.map((action) => (
+                <Link key={action.label} href={action.href} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', borderRadius: '14px', background: action.badge > 0 ? 'rgba(212,175,55,0.06)' : 'rgba(255,255,255,0.03)', border: action.badge > 0 ? '1px solid rgba(212,175,55,0.2)' : '1px solid rgba(255,255,255,0.06)', textDecoration: 'none' }}>
                   <span style={{ fontSize: '24px' }}>{action.emoji}</span>
-                  <div>
+                  <div style={{ flex: 1 }}>
                     <p style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF', marginBottom: '2px' }}>{action.label}</p>
                     <p style={{ fontSize: '12px', color: '#9B93C0' }}>{action.sub}</p>
                   </div>
-                  <span style={{ marginLeft: 'auto', color: '#9B93C0' }}>→</span>
+                  {action.badge > 0 && (
+                    <span style={{ background: '#D4AF37', color: '#080810', fontSize: '12px', fontWeight: 700, borderRadius: '999px', padding: '2px 8px', flexShrink: 0 }}>{action.badge}</span>
+                  )}
+                  <span style={{ color: '#9B93C0' }}>→</span>
                 </Link>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Smart Boost — показывает только незавершённые */}
         {remainingBoost.length > 0 && (
           <div style={{ marginTop: '20px', background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(57,255,20,0.04) 100%)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '20px', padding: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
@@ -189,7 +207,6 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* All done — show score guide link */}
         {remainingBoost.length === 0 && (
           <div style={{ marginTop: '20px', background: 'rgba(57,255,20,0.05)', border: '1px solid rgba(57,255,20,0.15)', borderRadius: '20px', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -204,7 +221,6 @@ export default function DashboardPage() {
             </Link>
           </div>
         )}
-
       </div>
     </div>
   )
