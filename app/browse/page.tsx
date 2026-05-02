@@ -19,11 +19,55 @@ const FILTERS = [
   { id: 'festival_crew', label: '🎪 Festival Crew' },
 ]
 
+const VIBE_COMPAT = {
+  fire: ['air', 'fire'],
+  earth: ['water', 'earth'],
+  air: ['fire', 'air'],
+  water: ['earth', 'water'],
+}
+
+const MIND_COMPAT = {
+  visionary: ['connector', 'visionary'],
+  connector: ['visionary', 'connector'],
+  anchor: ['explorer', 'anchor'],
+  explorer: ['anchor', 'explorer'],
+}
+
+const ENERGY_COMPAT = {
+  spark: ['builder', 'guide'],
+  builder: ['spark', 'dynamo'],
+  dynamo: ['builder', 'guide'],
+  guide: ['spark', 'dynamo'],
+  mirror: ['spark', 'builder', 'dynamo', 'guide', 'mirror'],
+}
+
+function compatScore(me, other) {
+  if (!me?.energy_type) return 0
+  let score = 0
+  if (VIBE_COMPAT[me.vibe_type]?.includes(other.vibe_type)) score += 3
+  if (MIND_COMPAT[me.mind_type]?.includes(other.mind_type)) score += 3
+  if (ENERGY_COMPAT[me.energy_type]?.includes(other.energy_type)) score += 2
+  return score
+}
+
 export default function BrowsePage() {
   const [providers, setProviders] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('all')
+  const [myProfile, setMyProfile] = useState(null)
+  const [compatMode, setCompatMode] = useState(false)
+
+  useEffect(() => {
+    const loadMe = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase.from('users').select('id, energy_type, mind_type, vibe_type, bestie_type_completed').eq('id', user.id).single()
+        if (data?.bestie_type_completed) setMyProfile(data)
+      }
+    }
+    loadMe()
+  }, [])
 
   useEffect(() => {
     const fetchProviders = async () => {
@@ -53,31 +97,76 @@ export default function BrowsePage() {
         }
       }
 
-      const { data } = await query.limit(24)
-      setProviders(data || [])
+      const { data } = await query.limit(48)
+
+      let result = data || []
+
+      // Сортируем по совместимости если включён режим и есть профиль
+      if (myProfile && compatMode) {
+        result = result
+          .filter(p => p.id !== myProfile.id)
+          .map(p => ({ ...p, _compat: compatScore(myProfile, p) }))
+          .sort((a, b) => b._compat - a._compat || b.bestie_score - a.bestie_score)
+      } else {
+        result = result.filter(p => p.id !== myProfile?.id)
+      }
+
+      setProviders(result.slice(0, 24))
       setLoading(false)
     }
     fetchProviders()
-  }, [search, filter])
+  }, [search, filter, compatMode, myProfile])
+
+  const getCompatLabel = (p) => {
+    if (!myProfile || !compatMode || !p._compat) return null
+    if (p._compat >= 7) return { label: '🔥 Great match', color: '#39FF14' }
+    if (p._compat >= 4) return { label: '✨ Good match', color: '#D4AF37' }
+    return null
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      {/* Nav */}
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <div style={{ display: 'flex', gap: '12px' }}>
-         <Link href="/dashboard" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>Dashboard</Link>
+          <Link href="/dashboard" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>Dashboard</Link>
           <Link href="/signup" style={{ fontSize: '14px', fontWeight: 600, padding: '8px 20px', borderRadius: '12px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>Join Free</Link>
         </div>
       </nav>
 
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 24px' }}>
-        <div style={{ marginBottom: '32px' }}>
-          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', fontWeight: 700, color: '#E8E0FF', marginBottom: '8px' }}>Browse Besties</h1>
-          <p style={{ fontSize: '15px', color: '#9B93C0' }}>
-            {loading ? 'Loading...' : `${providers.length} Bestie${providers.length !== 1 ? 's' : ''} available`}
-          </p>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
+          <div>
+            <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', fontWeight: 700, color: '#E8E0FF', marginBottom: '8px' }}>Browse Besties</h1>
+            <p style={{ fontSize: '15px', color: '#9B93C0' }}>
+              {loading ? 'Loading...' : `${providers.length} Bestie${providers.length !== 1 ? 's' : ''} available`}
+            </p>
+          </div>
+
+          {/* Compat toggle — только если у пользователя есть Bestie Type */}
+          {myProfile && (
+            <button
+              onClick={() => setCompatMode(!compatMode)}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', background: compatMode ? 'rgba(57,255,20,0.12)' : 'rgba(255,255,255,0.04)', border: compatMode ? '1px solid rgba(57,255,20,0.35)' : '1px solid rgba(255,255,255,0.1)', color: compatMode ? '#39FF14' : '#9B93C0', transition: 'all 0.2s' }}
+            >
+              <span>✨</span>
+              {compatMode ? 'Совместимость вкл.' : 'По совместимости'}
+            </button>
+          )}
         </div>
+
+        {/* Compat banner */}
+        {myProfile && compatMode && (
+          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(57,255,20,0.06)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '13px', color: '#9B93C0' }}>
+            Показываем людей совместимых с твоим типом <span style={{ color: '#39FF14', fontWeight: 600 }}>{myProfile.energy_type} · {myProfile.mind_type} · {myProfile.vibe_type}</span> — сначала лучшие совпадения
+          </div>
+        )}
+
+        {!myProfile && (
+          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', fontSize: '13px', color: '#9B93C0' }}>
+            <Link href="/bestie-type" style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>Пройди тест Bestie Type →</Link> и мы покажем самых совместимых людей первыми
+          </div>
+        )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 16px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', marginBottom: '16px' }}>
           <span style={{ fontSize: '18px' }}>🔍</span>
@@ -110,9 +199,19 @@ export default function BrowsePage() {
           </div>
         ) : providers.length > 0 ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-            {providers.map((p, i) => (
-              <ProviderCard key={p.id} provider={p} featured={i === 0} />
-            ))}
+            {providers.map((p, i) => {
+              const compat = getCompatLabel(p)
+              return (
+                <div key={p.id} style={{ position: 'relative' }}>
+                  {compat && (
+                    <div style={{ position: 'absolute', top: '12px', left: '12px', zIndex: 10, padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 700, background: 'rgba(0,0,0,0.7)', border: `1px solid ${compat.color}40`, color: compat.color }}>
+                      {compat.label}
+                    </div>
+                  )}
+                  <ProviderCard provider={p} featured={i === 0 && !compatMode} />
+                </div>
+              )
+            })}
           </div>
         ) : (
           <div style={{ textAlign: 'center', padding: '80px 0' }}>
