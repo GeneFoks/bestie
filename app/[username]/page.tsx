@@ -189,6 +189,20 @@ export default async function ProfilePage({ params }) {
             </div>
           )}
 
+         {/* Languages */}
+{profile.languages?.length > 0 && (
+  <div style={{ marginBottom: '16px' }}>
+    <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '10px' }}>LANGUAGES</p>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+      {profile.languages.map(lang => (
+        <div key={lang} style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(155,143,192,0.1)', border: '1px solid rgba(155,143,192,0.2)', fontSize: '12px', color: '#9B93C0', fontWeight: 500 }}>
+          {lang}
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+         
           {/* Top Sparks */}
           {topSparks.length > 0 && (
             <div style={{ marginBottom: '16px' }}>
