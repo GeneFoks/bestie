@@ -10,7 +10,7 @@ async function sendEmail(to: string, subject: string, html: string) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'Bestie <onboarding@resend.dev>',
+      from: 'Bestie <noreply@bestiehere.com>',
       to,
       subject,
       html,
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
         `${data.senderName} sent you a message`,
         `"${data.preview}"`,
         'Reply →',
-        `https://bestiehere.com/messages`
+        'https://bestiehere.com/messages'
       )
     }
 
