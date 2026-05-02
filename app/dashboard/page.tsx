@@ -1,4 +1,3 @@
-```tsx
 // @ts-nocheck
 'use client'
 
@@ -251,6 +250,3 @@ export default function DashboardPage() {
     </div>
   )
 }
-```
-
-Замени и задеплой.
