@@ -28,11 +28,31 @@ export default function MessagesPage() {
         const convs = await loadConversations(user.id)
 
         // Если пришли с ?to=username — открыть тот чат
-        const toUsername = searchParams.get('to')
-        if (toUsername && convs) {
-          const found = convs.find(c => c.user.username === toUsername)
-          if (found) setActiveConv(found)
-        }
+      const toUsername = searchParams.get('to')
+if (toUsername) {
+  if (convs && convs.length > 0) {
+    const found = convs.find(c => c.user.username === toUsername)
+    if (found) {
+      setActiveConv(found)
+    } else {
+      // Человек есть но переписки нет — загружаем его профиль
+      const { data: toUser } = await supabase
+        .from('users')
+        .select('id, full_name, username, avatar_url, bestie_score')
+        .eq('username', toUsername)
+        .single()
+      if (toUser) setActiveConv({ user: toUser, lastMessage: null, unread: 0 })
+    }
+  } else {
+    // Переписок вообще нет — загружаем профиль напрямую
+    const { data: toUser } = await supabase
+      .from('users')
+      .select('id, full_name, username, avatar_url, bestie_score')
+      .eq('username', toUsername)
+      .single()
+    if (toUser) setActiveConv({ user: toUser, lastMessage: null, unread: 0 })
+  }
+}
       } catch (e) {
         console.error(e)
       } finally {
