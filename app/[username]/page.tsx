@@ -1,4 +1,4 @@
-// @ts-nocheck
+ // @ts-nocheck
 export const revalidate = 0
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
@@ -108,7 +108,6 @@ export default async function ProfilePage({ params }) {
         <div style={{ background: 'linear-gradient(135deg, #0F0F1E 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: '28px', padding: '32px', marginBottom: '20px', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-          {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '14px', fontWeight: 700, color: '#D4AF37' }}>BESTIE</span>
@@ -126,7 +125,6 @@ export default async function ProfilePage({ params }) {
             </div>
           </div>
 
-          {/* Profile info */}
           <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', marginBottom: '24px' }}>
             <div style={{ width: '88px', height: '88px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(212,175,55,0.3)', background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {profile.avatar_url
@@ -148,7 +146,6 @@ export default async function ProfilePage({ params }) {
             </div>
           </div>
 
-          {/* Score + Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '12px', marginBottom: '20px' }}>
             <div style={{ gridColumn: 'span 2', background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '16px', border: `1px solid ${scoreColor}20` }}>
               <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '8px' }}>BESTIE SCORE</p>
@@ -168,6 +165,30 @@ export default async function ProfilePage({ params }) {
             </div>
           </div>
 
+          {/* Bestie Type */}
+          {(profile.energy_type || profile.mind_type || profile.vibe_type) && (
+            <div style={{ marginBottom: '16px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '10px' }}>BESTIE TYPE</p>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {profile.energy_type && (
+                  <div style={{ padding: '6px 14px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', fontSize: '13px', color: '#D4AF37', fontWeight: 500 }}>
+                    ⚡ {profile.energy_type}
+                  </div>
+                )}
+                {profile.mind_type && (
+                  <div style={{ padding: '6px 14px', borderRadius: '999px', background: 'rgba(155,143,255,0.1)', border: '1px solid rgba(155,143,255,0.25)', fontSize: '13px', color: '#9B8FFF', fontWeight: 500 }}>
+                    💡 {profile.mind_type}
+                  </div>
+                )}
+                {profile.vibe_type && (
+                  <div style={{ padding: '6px 14px', borderRadius: '999px', background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '13px', color: '#39FF14', fontWeight: 500 }}>
+                    🌊 {profile.vibe_type}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Top Sparks */}
           {topSparks.length > 0 && (
             <div style={{ marginBottom: '16px' }}>
@@ -184,7 +205,6 @@ export default async function ProfilePage({ params }) {
             </div>
           )}
 
-          {/* Rating */}
           {profile.avg_rating > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '16px' }}>
               <span>⭐</span>
@@ -193,7 +213,6 @@ export default async function ProfilePage({ params }) {
             </div>
           )}
 
-          {/* Passport footer */}
           <div style={{ paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <p style={{ fontSize: '11px', color: '#9B93C0' }}>bestiehere.com/{profile.username}</p>
             <p style={{ fontSize: '11px', color: '#9B93C0' }}>Social Passport · 2026</p>
@@ -260,7 +279,6 @@ export default async function ProfilePage({ params }) {
           </div>
         )}
 
-        {/* CTA */}
         <div style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(57,255,20,0.04) 100%)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '16px', padding: '24px', textAlign: 'center' }}>
           <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '4px' }}>Want your own Social Passport?</p>
           <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '16px' }}>Build your Bestie Score, collect Sparks, get verified.</p>
