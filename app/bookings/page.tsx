@@ -35,15 +35,31 @@ export default function BookingsPage() {
   const loadBookings = async (uid) => {
     const { data } = await supabase
       .from('bookings')
-      .select(`*, package:activity_packages(*), seeker:users!bookings_seeker_id_fkey(id,full_name,username,avatar_url,bestie_score), provider:users!bookings_provider_id_fkey(id,full_name,username,avatar_url,bestie_score)`)
+      .select(`*, package:activity_packages(*), seeker:users!bookings_seeker_id_fkey(id,full_name,username,avatar_url,bestie_score,email), provider:users!bookings_provider_id_fkey(id,full_name,username,avatar_url,bestie_score,email)`)
       .or(`seeker_id.eq.${uid},provider_id.eq.${uid}`)
       .order('created_at', { ascending: false })
     setBookings(data || [])
   }
 
   const updateStatus = async (id, status) => {
+    const booking = bookings.find(b => b.id === id)
     await supabase.from('bookings').update({ status }).eq('id', id)
-    setBookings(b => b.map(booking => booking.id === id ? { ...booking, status } : booking))
+    setBookings(b => b.map(b2 => b2.id === id ? { ...b2, status } : b2))
+
+    if (status === 'accepted' && booking?.seeker?.email) {
+      await fetch('/api/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'booking_accepted',
+          to: booking.seeker.email,
+          data: {
+            providerName: booking.provider?.full_name || 'Your Bestie',
+            activityTitle: booking.package?.title || 'Session',
+          }
+        })
+      })
+    }
   }
 
   const incoming = bookings.filter(b => b.provider_id === userId)
