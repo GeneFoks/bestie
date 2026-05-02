@@ -158,7 +158,7 @@ export default function BrowsePage() {
         {/* Compat banner */}
         {myProfile && compatMode && (
           <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(57,255,20,0.06)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '13px', color: '#9B93C0' }}>
-            Показываем людей совместимых с твоим типом <span style={{ color: '#39FF14', fontWeight: 600 }}>{myProfile.energy_type} · {myProfile.mind_type} · {myProfile.vibe_type}</span> — сначала лучшие совпадения
+            Showing people compatible with your type <span style={{ color: '#39FF14', fontWeight: 600 }}>{myProfile.energy_type} · {myProfile.mind_type} · {myProfile.vibe_type}</span> — сначала лучшие совпадения
           </div>
         )}
 
