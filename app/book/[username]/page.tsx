@@ -10,6 +10,7 @@ export default function BookPage({ params }) {
   const router = useRouter()
   const [provider, setProvider] = useState(null)
   const [userId, setUserId] = useState(null)
+  const [myProfile, setMyProfile] = useState(null)
   const [selectedPackage, setSelectedPackage] = useState(null)
   const [message, setMessage] = useState('')
   const [date, setDate] = useState('')
@@ -23,17 +24,17 @@ export default function BookPage({ params }) {
       if (!session) { router.push('/login'); return }
       setUserId(session.user.id)
 
-      const { data } = await supabase
-        .from('users')
-        .select('*, activity_packages(*)')
-        .eq('username', params.username)
-        .single()
+      const [{ data: providerData }, { data: meData }] = await Promise.all([
+        supabase.from('users').select('*, activity_packages(*)').eq('username', params.username).single(),
+        supabase.from('users').select('full_name, email').eq('id', session.user.id).single(),
+      ])
 
-      if (!data) { router.push('/browse'); return }
-      if (data.id === session.user.id) { router.push('/dashboard'); return }
+      if (!providerData) { router.push('/browse'); return }
+      if (providerData.id === session.user.id) { router.push('/dashboard'); return }
 
-      setProvider(data)
-      if (data.activity_packages?.length > 0) setSelectedPackage(data.activity_packages[0])
+      setProvider(providerData)
+      setMyProfile(meData)
+      if (providerData.activity_packages?.length > 0) setSelectedPackage(providerData.activity_packages[0])
       setLoading(false)
     }
     init()
@@ -50,6 +51,22 @@ export default function BookPage({ params }) {
       scheduled_at: date ? new Date(date).toISOString() : null,
       status: 'pending',
     })
+
+    if (provider.email) {
+      await fetch('/api/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'new_booking',
+          to: provider.email,
+          data: {
+            seekerName: myProfile?.full_name || 'Someone',
+            activityTitle: selectedPackage.title,
+          }
+        })
+      })
+    }
+
     setSent(true)
     setSending(false)
   }
@@ -97,7 +114,6 @@ export default function BookPage({ params }) {
         <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: '#E8E0FF', marginBottom: '8px' }}>Book a session</h1>
         <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '32px' }}>with {provider.full_name}</p>
 
-        {/* Provider mini card */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', marginBottom: '24px' }}>
           <div style={{ width: '56px', height: '56px', borderRadius: '16px', overflow: 'hidden', background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             {provider.avatar_url
@@ -115,16 +131,11 @@ export default function BookPage({ params }) {
           </div>
         </div>
 
-        {/* Select activity */}
         <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px', marginBottom: '16px' }}>
           <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '16px' }}>Select activity</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {provider.activity_packages?.map(pkg => (
-              <button
-                key={pkg.id}
-                onClick={() => setSelectedPackage(pkg)}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: '14px', border: selectedPackage?.id === pkg.id ? '2px solid rgba(212,175,55,0.5)' : '1px solid rgba(255,255,255,0.08)', background: selectedPackage?.id === pkg.id ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.03)', cursor: 'pointer', textAlign: 'left' }}
-              >
+              <button key={pkg.id} onClick={() => setSelectedPackage(pkg)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: '14px', border: selectedPackage?.id === pkg.id ? '2px solid rgba(212,175,55,0.5)' : '1px solid rgba(255,255,255,0.08)', background: selectedPackage?.id === pkg.id ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.03)', cursor: 'pointer', textAlign: 'left' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{ fontSize: '20px' }}>{ACTIVITY_EMOJI[pkg.activity_type] || '✨'}</span>
                   <div>
@@ -140,7 +151,6 @@ export default function BookPage({ params }) {
           </div>
         </div>
 
-        {/* Date + message */}
         <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px', marginBottom: '16px' }}>
           <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '16px' }}>Details</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -150,18 +160,11 @@ export default function BookPage({ params }) {
             </div>
             <div>
               <label style={{ fontSize: '13px', fontWeight: 500, color: '#9B93C0', display: 'block', marginBottom: '8px' }}>Message to {provider.full_name?.split(' ')[0]}</label>
-              <textarea
-                value={message}
-                onChange={e => setMessage(e.target.value)}
-                placeholder={`Hi ${provider.full_name?.split(' ')[0]}! I'd love to book a session...`}
-                rows={4}
-                style={{ ...inputStyle, resize: 'none', lineHeight: 1.6 }}
-              />
+              <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder={`Hi ${provider.full_name?.split(' ')[0]}! I'd love to book a session...`} rows={4} style={{ ...inputStyle, resize: 'none', lineHeight: 1.6 }} />
             </div>
           </div>
         </div>
 
-        {/* Summary */}
         {selectedPackage && (
           <div style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '16px', padding: '16px', marginBottom: '16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -179,11 +182,7 @@ export default function BookPage({ params }) {
           </div>
         )}
 
-        <button
-          onClick={handleBook}
-          disabled={sending || !selectedPackage}
-          style={{ width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: sending || !selectedPackage ? 'not-allowed' : 'pointer', opacity: !selectedPackage ? 0.5 : 1 }}
-        >
+        <button onClick={handleBook} disabled={sending || !selectedPackage} style={{ width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: sending || !selectedPackage ? 'not-allowed' : 'pointer', opacity: !selectedPackage ? 0.5 : 1 }}>
           {sending ? 'Sending request...' : 'Send booking request →'}
         </button>
       </div>
