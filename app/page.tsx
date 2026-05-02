@@ -19,7 +19,7 @@ const MOCK_PROVIDERS = [
     avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80',
     city: 'Austin', country: 'TX', bio: 'Hiking trails, outdoor adventures, and real conversations under open skies.',
     bestie_score: 874, is_verified: true, avg_rating: 4.9, total_sessions: 43,
-    activity_packages: [{ title: 'Sunrise Trail Run', activity_type: 'trail_crew', price_per_session: 15 }, { title: 'Weekend Adventure', activity_type: 'epic_journey', price_per_session: 35 }],
+    activity_packages: [{ title: 'Sunrise Trail Run', activity_type: 'trail_crew', price_per_session: 15 }],
   },
   {
     id: '3', username: 'yuna_kim', full_name: 'Yuna Kim',
@@ -35,17 +35,21 @@ const ACTIVITIES = [
   { id: 'deep_chat', emoji: '🫂', label: 'Deep Chat' },
   { id: 'game_night', emoji: '🎮', label: 'Game Night' },
   { id: 'travel_buddy', emoji: '✈️', label: 'Travel Buddy' },
-  { id: 'meditation', emoji: '🧘', label: 'Meditation' },
   { id: 'coffee_chat', emoji: '☕', label: 'Coffee Chat' },
-  { id: 'music_lesson', emoji: '🎸', label: 'Music Lesson' },
-  { id: 'night_out', emoji: '🍸', label: 'Night Out' },
-  { id: 'breathwork', emoji: '🌬️', label: 'Breathwork' },
-  { id: 'book_club', emoji: '📚', label: 'Book Club' },
   { id: 'festival_crew', emoji: '🎪', label: 'Festival Crew' },
-  { id: 'vent_session', emoji: '💬', label: 'Vent Session' },
-  { id: 'yoga', emoji: '🧘', label: 'Yoga' },
-  { id: 'talk_3am', emoji: '🌙', label: '3am Talk' },
-  { id: 'coworking', emoji: '💻', label: 'Coworking' },
+  { id: 'watch_together', emoji: '🎬', label: 'Watch Together' },
+  { id: 'dance_crew', emoji: '💃', label: 'Dance Crew' },
+  { id: 'vibe_call', emoji: '📱', label: 'Vibe Call' },
+  { id: 'night_out', emoji: '🍸', label: 'Night Out' },
+]
+
+const FEATURES = [
+  { emoji: '🪪', title: 'Social Passport', desc: 'Every user gets a verified profile with Bestie Score, sparks, sessions, and badge history.' },
+  { emoji: '⭐', title: 'Mutual Reviews', desc: 'Both sides confirm the session happened, then rate each other. No fake reviews.' },
+  { emoji: '✨', title: 'Sparks', desc: '30 rare tokens you earn at signup. Give up to 3 per person to signal real trust.' },
+  { emoji: '📅', title: 'Session Calendar', desc: 'Book, accept, and track upcoming sessions. See what\'s next and who you\'re meeting.' },
+  { emoji: '⚡', title: 'Going To', desc: '24h status stories — share what you\'re up to today and find someone to join you.' },
+  { emoji: '💬', title: 'Direct Messages', desc: 'Chat with any Bestie directly. Conversations tied to bookings stay in context.' },
 ]
 
 export default function HomePage() {
@@ -55,12 +59,8 @@ export default function HomePage() {
   const [loggedIn, setLoggedIn] = useState(false)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setLoggedIn(!!session)
-    })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      setLoggedIn(!!session)
-    })
+    supabase.auth.getSession().then(({ data: { session } }) => setLoggedIn(!!session))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setLoggedIn(!!session))
     return () => subscription.unsubscribe()
   }, [])
 
@@ -77,9 +77,7 @@ export default function HomePage() {
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           {loggedIn ? (
-            <Link href="/dashboard" style={{ fontSize: '14px', fontWeight: 600, padding: '8px 20px', borderRadius: '12px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
-              Dashboard →
-            </Link>
+            <Link href="/dashboard" style={{ fontSize: '14px', fontWeight: 600, padding: '8px 20px', borderRadius: '12px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>Dashboard →</Link>
           ) : (
             <>
               <Link href="/login" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none' }}>Log in</Link>
@@ -149,19 +147,39 @@ export default function HomePage() {
           <div style={{ textAlign: 'center', marginBottom: '56px' }}>
             <p style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '12px' }}>HOW IT WORKS</p>
             <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '16px' }}>Simple. Safe. Human.</h2>
-            <p style={{ fontSize: '16px', color: '#9B93C0' }}>Three steps from landing here to real company.</p>
+            <p style={{ fontSize: '16px', color: '#9B93C0' }}>Four steps from landing here to real company.</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '40px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '40px' }}>
             {[
-              { num: '01', icon: '🎯', title: 'Tell us what you need', desc: "Pick an activity, your city, and when you're free. Smart Match finds Besties who fit." },
-              { num: '02', icon: '📋', title: 'Browse & book', desc: 'View verified profiles, read real reviews, and send a booking request — no pressure.' },
-              { num: '03', icon: '🤝', title: 'Meet your Bestie', desc: 'Show up, connect, and leave a review. Every session is rated so quality stays high.' },
+              { num: '01', icon: '🪪', title: 'Create your Social Passport', desc: 'Fill in your bio, add activities, get verified. Your Bestie Score starts building from day one.' },
+              { num: '02', icon: '🔍', title: 'Browse & book', desc: 'Filter by activity, city, and score. Send a booking request — no pressure, no awkwardness.' },
+              { num: '03', icon: '🤝', title: 'Meet your Bestie', desc: 'Show up, connect, enjoy. After the session both sides confirm it happened.' },
+              { num: '04', icon: '⭐', title: 'Rate & give Sparks', desc: 'Leave a star rating and give a Spark to signal real trust. Scores update automatically.' },
             ].map((step) => (
               <div key={step.num}>
                 <div style={{ fontSize: '64px', fontWeight: 700, color: 'rgba(212,175,55,0.07)', fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{step.num}</div>
                 <div style={{ fontSize: '32px', margin: '12px 0' }}>{step.icon}</div>
                 <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#E8E0FF', marginBottom: '12px' }}>{step.title}</h3>
                 <p style={{ fontSize: '14px', color: '#9B93C0', lineHeight: 1.7 }}>{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURES GRID */}
+      <section style={{ padding: '0 24px 80px' }}>
+        <div style={{ maxWidth: '960px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+            <p style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '12px' }}>WHAT'S INSIDE</p>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 700, color: '#E8E0FF' }}>Everything you need to connect safely</h2>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+            {FEATURES.map((f) => (
+              <div key={f.title} style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px' }}>
+                <div style={{ fontSize: '32px', marginBottom: '12px' }}>{f.emoji}</div>
+                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', fontWeight: 700, color: '#E8E0FF', marginBottom: '8px' }}>{f.title}</h3>
+                <p style={{ fontSize: '14px', color: '#9B93C0', lineHeight: 1.6 }}>{f.desc}</p>
               </div>
             ))}
           </div>
@@ -176,9 +194,22 @@ export default function HomePage() {
             <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 700, color: '#E8E0FF', lineHeight: 1.2, marginBottom: '24px' }}>
               Your <em style={{ color: '#D4AF37', fontStyle: 'italic' }}>Bestie Score</em> says it all.
             </h2>
-            <p style={{ fontSize: '16px', color: '#9B93C0', marginBottom: '24px', lineHeight: 1.7 }}>Like a credit score — but for who you are as a person.</p>
-            <blockquote style={{ borderLeft: '2px solid #D4AF37', paddingLeft: '16px', marginBottom: '32px', fontSize: '16px', color: '#9B93C0', fontStyle: 'italic' }}>"Check them on Bestie."</blockquote>
-            <Link href="/signup" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>Build your Bestie Score →</Link>
+            <p style={{ fontSize: '16px', color: '#9B93C0', marginBottom: '16px', lineHeight: 1.7 }}>Like a credit score — but for who you are as a person. Built from real sessions, ratings, sparks, and verification.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '32px' }}>
+              {[
+                { label: '🌱 New Bestie', desc: 'Just joined — under 1 month' },
+                { label: '⭐ Regular', desc: '3+ months, consistent sessions' },
+                { label: '🔥 Veteran', desc: '6+ months, high rating' },
+                { label: '💎 Legend', desc: '1+ year, trusted by many' },
+                { label: '👑 OG Bestie', desc: '2+ years — the real ones' },
+              ].map(b => (
+                <div key={b.label} style={{ display: 'flex', gap: '12px', alignItems: 'center', fontSize: '14px' }}>
+                  <span style={{ color: '#E8E0FF', fontWeight: 600, minWidth: '120px' }}>{b.label}</span>
+                  <span style={{ color: '#9B93C0' }}>{b.desc}</span>
+                </div>
+              ))}
+            </div>
+            <Link href="/score-guide" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>Build your Bestie Score →</Link>
           </div>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <div style={{ width: '280px', padding: '32px', borderRadius: '24px', textAlign: 'center', background: '#0F0F1E', border: '1px solid rgba(57,255,20,0.2)', boxShadow: '0 0 60px rgba(57,255,20,0.08)' }}>
@@ -191,7 +222,7 @@ export default function HomePage() {
                 <span>0</span><span style={{ color: '#39FF14', fontWeight: 600 }}>Excellent</span><span>1000</span>
               </div>
               <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-                {[{ label: 'Sessions', val: '43' }, { label: 'Rating', val: '4.9' }, { label: 'Lights', val: '127' }].map((s) => (
+                {[{ label: 'Sessions', val: '43' }, { label: 'Rating', val: '4.9' }, { label: 'Sparks', val: '127' }].map((s) => (
                   <div key={s.label} style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '20px', fontWeight: 700, color: '#E8E0FF' }}>{s.val}</div>
                     <div style={{ fontSize: '11px', color: '#9B93C0' }}>{s.label}</div>
@@ -203,11 +234,36 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* SPARKS */}
+      <section style={{ padding: '0 24px 80px' }}>
+        <div style={{ maxWidth: '720px', margin: '0 auto', borderRadius: '24px', padding: '48px 40px', background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(57,255,20,0.04) 100%)', border: '1px solid rgba(212,175,55,0.2)', textAlign: 'center' }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>✨</div>
+          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 4vw, 36px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '16px' }}>Sparks — rare tokens of real trust</h2>
+          <p style={{ fontSize: '16px', color: '#9B93C0', marginBottom: '32px', lineHeight: 1.7, maxWidth: '520px', margin: '0 auto 32px' }}>
+            Every new member gets 30 Sparks. You can give max 3 to any one person. Sparks signal something deeper than a star rating — they say "I genuinely trust this person."
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center', marginBottom: '32px' }}>
+            {[
+              { emoji: '💛', label: 'Kind' }, { emoji: '🎉', label: 'Fun' }, { emoji: '🔒', label: 'Reliable' },
+              { emoji: '💎', label: 'Genuine' }, { emoji: '🛡️', label: 'Safe' }, { emoji: '⚡', label: 'Energetic' },
+              { emoji: '👂', label: 'Good listener' }, { emoji: '🌟', label: 'Social' }, { emoji: '⏰', label: 'Punctual' }, { emoji: '🌊', label: 'Open' },
+            ].map(s => (
+              <div key={s.label} style={{ padding: '8px 14px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', fontSize: '13px', color: '#E8E0FF', display: 'flex', gap: '6px', alignItems: 'center' }}>
+                <span>{s.emoji}</span><span>{s.label}</span>
+              </div>
+            ))}
+          </div>
+          <Link href="/signup" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 28px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
+            Get your 30 Sparks →
+          </Link>
+        </div>
+      </section>
+
       {/* CTA */}
-      <section style={{ padding: '40px 24px 80px' }}>
+      <section style={{ padding: '0 24px 80px' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto', borderRadius: '24px', padding: '56px 32px', textAlign: 'center', background: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(57,255,20,0.05) 100%)', border: '1px solid rgba(212,175,55,0.2)' }}>
           <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '16px' }}>Ready to meet your Bestie?</h2>
-          <p style={{ fontSize: '16px', color: '#9B93C0', marginBottom: '32px' }}>Join thousands building real connections in their city.</p>
+          <p style={{ fontSize: '16px', color: '#9B93C0', marginBottom: '32px' }}>Join people building real connections in their city.</p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link href="/signup" style={{ padding: '14px 32px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>Become a Bestie →</Link>
             <Link href="/browse" style={{ padding: '14px 32px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: '#E8E0FF', textDecoration: 'none' }}>Browse Besties</Link>
@@ -220,9 +276,10 @@ export default function HomePage() {
         <div style={{ maxWidth: '960px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
           <span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37' }}>BESTIE</span>
           <div style={{ display: 'flex', gap: '24px', fontSize: '14px' }}>
-            <Link href="/browse" style={{ color: '#9B93C0', textDecoration: 'none' }}>Browse Besties</Link>
+            <Link href="/browse" style={{ color: '#9B93C0', textDecoration: 'none' }}>Browse</Link>
             <Link href="#how-it-works" style={{ color: '#9B93C0', textDecoration: 'none' }}>How It Works</Link>
-            <Link href="/signup" style={{ color: '#9B93C0', textDecoration: 'none' }}>Become a Bestie</Link>
+            <Link href="/score-guide" style={{ color: '#9B93C0', textDecoration: 'none' }}>Bestie Score</Link>
+            <Link href="/signup" style={{ color: '#9B93C0', textDecoration: 'none' }}>Join</Link>
           </div>
           <p style={{ fontSize: '12px', color: '#9B93C0' }}>© 2026 Bestie. Austin, TX. 18+</p>
         </div>
