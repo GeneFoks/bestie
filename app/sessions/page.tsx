@@ -17,6 +17,7 @@ export default function SessionsPage() {
   const [userId, setUserId] = useState(null)
   const [sessions, setSessions] = useState([])
   const [loading, setLoading] = useState(true)
+  const [ratingModal, setRatingModal] = useState(null) // { bookingId, otherName }
 
   useEffect(() => {
     const init = async () => {
@@ -24,15 +25,7 @@ export default function SessionsPage() {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) { router.push('/login'); return }
         setUserId(user.id)
-
-        const { data } = await supabase
-          .from('bookings')
-          .select(`*, package:activity_packages(*), seeker:users!bookings_seeker_id_fkey(id, full_name, username, avatar_url), provider:users!bookings_provider_id_fkey(id, full_name, username, avatar_url)`)
-          .or(`seeker_id.eq.${user.id},provider_id.eq.${user.id}`)
-          .eq('status', 'accepted')
-          .order('scheduled_at', { ascending: true })
-
-        setSessions(data || [])
+        await loadSessions(user.id)
       } catch (e) {
         console.error(e)
       } finally {
@@ -41,6 +34,30 @@ export default function SessionsPage() {
     }
     init()
   }, [])
+
+  const loadSessions = async (uid) => {
+    const { data } = await supabase
+      .from('bookings')
+      .select(`*, package:activity_packages(*), seeker:users!bookings_seeker_id_fkey(id, full_name, username, avatar_url), provider:users!bookings_provider_id_fkey(id, full_name, username, avatar_url)`)
+      .or(`seeker_id.eq.${uid},provider_id.eq.${uid}`)
+      .eq('status', 'accepted')
+      .order('scheduled_at', { ascending: true })
+    setSessions(data || [])
+  }
+
+  const confirmSession = async (booking) => {
+    const isSeeker = booking.seeker_id === userId
+    const field = isSeeker ? 'confirmed_by_seeker' : 'confirmed_by_provider'
+    await supabase.from('bookings').update({ [field]: true }).eq('id', booking.id)
+    await loadSessions(userId)
+  }
+
+  const submitRating = async (bookingId, rating, isSeeker) => {
+    const field = isSeeker ? 'rating_seeker' : 'rating_provider'
+    await supabase.from('bookings').update({ [field]: rating, status: 'completed' }).eq('id', bookingId)
+    setRatingModal(null)
+    await loadSessions(userId)
+  }
 
   const formatDate = (ts) => {
     if (!ts) return null
@@ -60,8 +77,14 @@ export default function SessionsPage() {
     </div>
   )
 
-  const upcoming = sessions.filter(s => s.scheduled_at && new Date(s.scheduled_at) >= new Date())
-  const noDates = sessions.filter(s => !s.scheduled_at)
+  const upcoming = sessions.filter(s => !s.scheduled_at || new Date(s.scheduled_at) >= new Date())
+  const needsConfirm = sessions.filter(s => {
+    const isSeeker = s.seeker_id === userId
+    const myConfirm = isSeeker ? s.confirmed_by_seeker : s.confirmed_by_provider
+    const theirConfirm = isSeeker ? s.confirmed_by_provider : s.confirmed_by_seeker
+    return theirConfirm && !myConfirm
+  })
+  const bothConfirmed = sessions.filter(s => s.confirmed_by_seeker && s.confirmed_by_provider)
   const past = sessions.filter(s => s.scheduled_at && new Date(s.scheduled_at) < new Date())
 
   return (
@@ -84,43 +107,124 @@ export default function SessionsPage() {
           </div>
         ) : (
           <>
+            {/* Needs your confirmation */}
+            {needsConfirm.length > 0 && (
+              <div style={{ marginBottom: '32px' }}>
+                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#39FF14', marginBottom: '12px' }}>⚡ WAITING FOR YOUR CONFIRMATION</p>
+                {needsConfirm.map(s => {
+                  const isSeeker = s.seeker_id === userId
+                  const other = isSeeker ? s.provider : s.seeker
+                  return (
+                    <div key={s.id} style={{ background: 'linear-gradient(135deg, rgba(57,255,20,0.06) 0%, #0F0F1E 100%)', border: '1px solid rgba(57,255,20,0.25)', borderRadius: '20px', padding: '20px', marginBottom: '12px' }}>
+                      <div style={{ display: 'flex', gap: '14px', alignItems: 'center', marginBottom: '16px' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', overflow: 'hidden', background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          {other?.avatar_url ? <img src={other.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{other?.full_name?.[0]}</span>}
+                        </div>
+                        <div>
+                          <p style={{ fontSize: '15px', fontWeight: 600, color: '#E8E0FF', marginBottom: '2px' }}>{other?.full_name}</p>
+                          <p style={{ fontSize: '13px', color: '#9B93C0' }}>{ACTIVITY_EMOJI[s.package?.activity_type] || '✨'} {s.package?.name || s.package?.title || 'Session'}</p>
+                        </div>
+                      </div>
+                      <p style={{ fontSize: '13px', color: '#39FF14', marginBottom: '12px' }}>
+                        {other?.full_name?.split(' ')[0]} confirmed this session happened. Did it?
+                      </p>
+                      <button onClick={() => confirmSession(s)} style={{ width: '100%', padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #39FF14 0%, #2AE600 100%)', color: '#080810', border: 'none', cursor: 'pointer' }}>
+                        ✓ Yes, confirm session
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* Both confirmed — rate now */}
+            {bothConfirmed.length > 0 && (
+              <div style={{ marginBottom: '32px' }}>
+                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '12px' }}>⭐ RATE YOUR SESSION</p>
+                {bothConfirmed.map(s => {
+                  const isSeeker = s.seeker_id === userId
+                  const other = isSeeker ? s.provider : s.seeker
+                  const myRating = isSeeker ? s.rating_seeker : s.rating_provider
+                  return (
+                    <div key={s.id} style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, #0F0F1E 100%)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '20px', padding: '20px', marginBottom: '12px' }}>
+                      <div style={{ display: 'flex', gap: '14px', alignItems: 'center', marginBottom: '16px' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', overflow: 'hidden', background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          {other?.avatar_url ? <img src={other.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{other?.full_name?.[0]}</span>}
+                        </div>
+                        <div>
+                          <p style={{ fontSize: '15px', fontWeight: 600, color: '#E8E0FF', marginBottom: '2px' }}>{other?.full_name}</p>
+                          <p style={{ fontSize: '13px', color: '#9B93C0' }}>{ACTIVITY_EMOJI[s.package?.activity_type] || '✨'} {s.package?.name || s.package?.title || 'Session'}</p>
+                        </div>
+                      </div>
+                      {myRating ? (
+                        <p style={{ fontSize: '14px', color: '#9B93C0', textAlign: 'center' }}>You rated {'⭐'.repeat(myRating)} — thanks!</p>
+                      ) : (
+                        <>
+                          <p style={{ fontSize: '13px', color: '#D4AF37', marginBottom: '12px' }}>Both confirmed! Rate your experience:</p>
+                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '12px' }}>
+                            {[1,2,3,4,5].map(star => (
+                              <button key={star} onClick={() => submitRating(s.id, star, isSeeker)} style={{ fontSize: '28px', background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, transition: 'all 0.1s' }}
+                                onMouseEnter={e => e.target.style.opacity = 1}
+                                onMouseLeave={e => e.target.style.opacity = 0.6}
+                              >⭐</button>
+                            ))}
+                          </div>
+                          <Link href={`/sparks/give?to=${other?.username}`} style={{ display: 'block', padding: '10px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', textDecoration: 'none', textAlign: 'center' }}>
+                            ✨ Give a Spark to {other?.full_name?.split(' ')[0]}
+                          </Link>
+                        </>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* Upcoming */}
             {upcoming.length > 0 && (
               <div style={{ marginBottom: '32px' }}>
                 <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '12px' }}>UPCOMING</p>
                 {upcoming.map((s, i) => {
-                  const other = s.seeker_id === userId ? s.provider : s.seeker
-                  const date = formatDate(s.scheduled_at)
+                  const isSeeker = s.seeker_id === userId
+                  const other = isSeeker ? s.provider : s.seeker
+                  const date = s.scheduled_at ? formatDate(s.scheduled_at) : null
+                  const myConfirm = isSeeker ? s.confirmed_by_seeker : s.confirmed_by_provider
                   const isNext = i === 0
                   return (
                     <div key={s.id} style={{ background: isNext ? 'linear-gradient(135deg, #0F0F1E 0%, #141428 100%)' : '#0F0F1E', border: isNext ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '20px', marginBottom: '12px', position: 'relative' }}>
                       {isNext && <div style={{ position: 'absolute', top: '12px', right: '12px', fontSize: '11px', fontWeight: 600, padding: '3px 10px', borderRadius: '999px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37' }}>Next up</div>}
                       <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                         <div style={{ width: '52px', height: '52px', borderRadius: '14px', overflow: 'hidden', background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          {other?.avatar_url
-                            ? <img src={other.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            : <span style={{ color: '#D4AF37', fontWeight: 700, fontSize: '18px' }}>{other?.full_name?.[0]}</span>
-                          }
+                          {other?.avatar_url ? <img src={other.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700, fontSize: '18px' }}>{other?.full_name?.[0]}</span>}
                         </div>
                         <div style={{ flex: 1 }}>
                           <p style={{ fontSize: '15px', fontWeight: 600, color: '#E8E0FF', marginBottom: '2px' }}>{other?.full_name}</p>
                           <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '10px' }}>
                             {ACTIVITY_EMOJI[s.package?.activity_type] || '✨'} {s.package?.name || s.package?.title || 'Session'}
                           </p>
-                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: '12px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', background: date.isToday ? 'rgba(57,255,20,0.1)' : 'rgba(212,175,55,0.1)', border: date.isToday ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(212,175,55,0.2)', color: date.isToday ? '#39FF14' : '#D4AF37' }}>
-                              {date.label}
-                            </span>
-                            <span style={{ fontSize: '12px', color: '#9B93C0' }}>{date.dateStr} · {date.timeStr}</span>
-                          </div>
+                          {date && (
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: '12px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', background: date.isToday ? 'rgba(57,255,20,0.1)' : 'rgba(212,175,55,0.1)', border: date.isToday ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(212,175,55,0.2)', color: date.isToday ? '#39FF14' : '#D4AF37' }}>
+                                {date.label}
+                              </span>
+                              <span style={{ fontSize: '12px', color: '#9B93C0' }}>{date.dateStr} · {date.timeStr}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: '8px', marginTop: '14px' }}>
                         <Link href={`/messages?to=${other?.username}`} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', textDecoration: 'none', textAlign: 'center' }}>
                           💬 Message
                         </Link>
-                        <Link href={`/${other?.username}`} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', textDecoration: 'none', textAlign: 'center' }}>
-                          👤 Profile
-                        </Link>
+                        {!myConfirm ? (
+                          <button onClick={() => confirmSession(s)} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', color: '#39FF14', cursor: 'pointer' }}>
+                            ✓ Session happened
+                          </button>
+                        ) : (
+                          <div style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(57,255,20,0.04)', border: '1px solid rgba(57,255,20,0.1)', color: '#9B93C0', textAlign: 'center' }}>
+                            ✓ Waiting for them
+                          </div>
+                        )}
                       </div>
                     </div>
                   )
@@ -128,52 +232,23 @@ export default function SessionsPage() {
               </div>
             )}
 
-            {noDates.length > 0 && (
-              <div style={{ marginBottom: '32px' }}>
-                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '12px' }}>DATE NOT SET</p>
-                {noDates.map(s => {
-                  const other = s.seeker_id === userId ? s.provider : s.seeker
-                  return (
-                    <div key={s.id} style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '20px', marginBottom: '12px' }}>
-                      <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
-                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', overflow: 'hidden', background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          {other?.avatar_url
-                            ? <img src={other.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{other?.full_name?.[0]}</span>
-                          }
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <p style={{ fontSize: '15px', fontWeight: 600, color: '#E8E0FF', marginBottom: '2px' }}>{other?.full_name}</p>
-                          <p style={{ fontSize: '13px', color: '#9B93C0' }}>{ACTIVITY_EMOJI[s.package?.activity_type] || '✨'} {s.package?.name || s.package?.title || 'Session'}</p>
-                        </div>
-                        <Link href={`/messages?to=${other?.username}`} style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', textDecoration: 'none' }}>
-                          💬 Set date
-                        </Link>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-
+            {/* Past */}
             {past.length > 0 && (
               <div>
                 <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '12px' }}>PAST</p>
                 {past.map(s => {
-                  const other = s.seeker_id === userId ? s.provider : s.seeker
+                  const isSeeker = s.seeker_id === userId
+                  const other = isSeeker ? s.provider : s.seeker
                   const date = formatDate(s.scheduled_at)
                   return (
                     <div key={s.id} style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '20px', padding: '20px', marginBottom: '12px', opacity: 0.6 }}>
                       <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
                         <div style={{ width: '48px', height: '48px', borderRadius: '14px', overflow: 'hidden', background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          {other?.avatar_url
-                            ? <img src={other.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{other?.full_name?.[0]}</span>
-                          }
+                          {other?.avatar_url ? <img src={other.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{other?.full_name?.[0]}</span>}
                         </div>
                         <div style={{ flex: 1 }}>
                           <p style={{ fontSize: '15px', fontWeight: 600, color: '#E8E0FF', marginBottom: '2px' }}>{other?.full_name}</p>
-                          <p style={{ fontSize: '13px', color: '#9B93C0' }}>{ACTIVITY_EMOJI[s.package?.activity_type] || '✨'} {s.package?.name || s.package?.title || 'Session'} · {date.dateStr}</p>
+                          <p style={{ fontSize: '13px', color: '#9B93C0' }}>{ACTIVITY_EMOJI[s.package?.activity_type] || '✨'} {s.package?.name || s.package?.title || 'Session'} · {date?.dateStr}</p>
                         </div>
                       </div>
                     </div>
