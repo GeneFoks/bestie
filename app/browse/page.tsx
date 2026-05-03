@@ -130,10 +130,12 @@ export default function BrowsePage() {
 
       if (result.length > 0) {
         const userIds = result.map(p => p.id)
-        const { data: sparksData } = await supabase
+        const { data: sparksData, error: sparksError } = await supabase
           .from('sparks')
           .select('receiver_id, spark_type')
           .in('receiver_id', userIds)
+
+        console.log('sparks data:', sparksData, 'error:', sparksError)
 
         const sparksByUser = {}
         sparksData?.forEach(s => {
@@ -148,6 +150,7 @@ export default function BrowsePage() {
             .filter(s => s.count > 0)
             .sort((a, b) => b.count - a.count)
             .slice(0, 3)
+          console.log('user:', p.username, 'topSparks:', topSparks)
           return { ...p, top_sparks: topSparks }
         })
       }
