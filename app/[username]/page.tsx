@@ -245,22 +245,25 @@ export default async function ProfilePage({ params }) {
           </div>
         </div>
 
-        {/* GIVE SPARKS */}
-        <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px', marginBottom: '20px' }}>
-          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '4px' }}>Give a Spark ✨</h3>
-          <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '16px' }}>Rare tokens of respect. Max 3 per person, 1 per type.</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '12px' }}>
-            {SPARK_TYPES.map(s => (
-              <Link key={s.id} href={`/sparks/give?to=${profile.username}&type=${s.id}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 6px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', textDecoration: 'none' }}>
-                <span style={{ fontSize: '20px' }}>{s.emoji}</span>
-                <span style={{ fontSize: '10px', fontWeight: 500, color: '#9B93C0', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
-              </Link>
-            ))}
-          </div>
-          <p style={{ fontSize: '12px', color: '#9B93C0', textAlign: 'center' }}>
-            <Link href="/login" style={{ color: '#D4AF37', textDecoration: 'none' }}>Log in</Link> to give Sparks
-          </p>
-        </div>
+       {/* GIVE SPARKS */}
+<div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px', marginBottom: '20px' }}>
+  <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '4px' }}>Give a Spark ✨</h3>
+  <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '16px' }}>Rare tokens of respect. Max 3 per person, 1 per type.</p>
+  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '12px' }}>
+    {SPARK_TYPES.slice(0, 10).map(s => (
+      <Link key={s.id} href={`/sparks/give?to=${profile.username}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 6px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', textDecoration: 'none' }}>
+        <span style={{ fontSize: '20px' }}>{s.emoji}</span>
+        <span style={{ fontSize: '10px', fontWeight: 500, color: '#9B93C0', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
+      </Link>
+    ))}
+  </div>
+  <Link href={`/sparks/give?to=${profile.username}`} style={{ display: 'block', textAlign: 'center', fontSize: '13px', color: '#D4AF37', textDecoration: 'none', marginBottom: '8px' }}>
+    See all 22 Spark types →
+  </Link>
+  <p style={{ fontSize: '12px', color: '#9B93C0', textAlign: 'center' }}>
+    <Link href="/login" style={{ color: '#D4AF37', textDecoration: 'none' }}>Log in</Link> to give Sparks
+  </p>
+</div>
 
         {/* ACTIVITIES */}
         {profile.activity_packages?.length > 0 && (
