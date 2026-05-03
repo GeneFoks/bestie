@@ -167,7 +167,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <Link href="/bestie-type" style={{ padding: '8px 18px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', textDecoration: 'none' }}>
-              Пройти заново
+              Retake quiz
             </Link>
           </div>
         )}
