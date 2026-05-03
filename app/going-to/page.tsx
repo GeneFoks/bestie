@@ -24,11 +24,19 @@ const ACTIVITIES = [
 export default function GoingToPage() {
   const router = useRouter()
   const [userId, setUserId] = useState(null)
+  const [myProfile, setMyProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [posting, setPosting] = useState(false)
   const [current, setCurrent] = useState(null)
   const [stories, setStories] = useState([])
-  const [form, setForm] = useState({ activity_type: '', description: '', location: '' })
+  const [joinedIds, setJoinedIds] = useState([])
+  const [joiningId, setJoiningId] = useState(null)
+  const [form, setForm] = useState({
+    activity_type: '',
+    description: '',
+    location: '',
+    scheduled_at: '',
+  })
 
   useEffect(() => {
     const init = async () => {
@@ -36,7 +44,13 @@ export default function GoingToPage() {
       if (!session) { router.push('/login'); return }
       setUserId(session.user.id)
 
-      // Мой текущий статус
+      const { data: me } = await supabase
+        .from('users')
+        .select('full_name, username, avatar_url')
+        .eq('id', session.user.id)
+        .single()
+      setMyProfile(me)
+
       const { data: my } = await supabase
         .from('going_to')
         .select('*')
@@ -45,14 +59,21 @@ export default function GoingToPage() {
         .single()
       setCurrent(my)
 
-      // Все активные истории
       const { data: all } = await supabase
         .from('going_to')
-        .select('*, users(full_name, username, avatar_url, city)')
+        .select('*, users(id, full_name, username, avatar_url, city)')
         .gt('expires_at', new Date().toISOString())
         .neq('user_id', session.user.id)
         .order('created_at', { ascending: false })
       setStories(all || [])
+
+      // Проверяем кому уже отправили запрос
+      const { data: sentMessages } = await supabase
+        .from('messages')
+        .select('receiver_id')
+        .eq('sender_id', session.user.id)
+      setJoinedIds(sentMessages?.map(m => m.receiver_id) || [])
+
       setLoading(false)
     }
     init()
@@ -61,8 +82,6 @@ export default function GoingToPage() {
   const handlePost = async () => {
     if (!form.activity_type) return
     setPosting(true)
-
-    // Удаляем старый статус
     await supabase.from('going_to').delete().eq('user_id', userId)
 
     const { data } = await supabase.from('going_to').insert({
@@ -70,16 +89,35 @@ export default function GoingToPage() {
       activity_type: form.activity_type,
       description: form.description,
       location: form.location,
+      scheduled_at: form.scheduled_at ? new Date(form.scheduled_at).toISOString() : null,
     }).select().single()
 
     setCurrent(data)
-    setForm({ activity_type: '', description: '', location: '' })
+    setForm({ activity_type: '', description: '', location: '', scheduled_at: '' })
     setPosting(false)
   }
 
   const handleDelete = async () => {
     await supabase.from('going_to').delete().eq('user_id', userId)
     setCurrent(null)
+  }
+
+  const handleJoin = async (story) => {
+    if (!story.users?.id || joiningId) return
+    setJoiningId(story.id)
+
+    const activity = getActivity(story.activity_type)
+    const msg = `Hey! I saw you're going to ${activity?.label}${story.location ? ` at ${story.location}` : ''}${story.scheduled_at ? ` on ${formatDate(story.scheduled_at)}` : ''}. I'd love to join! 🙌`
+
+    await supabase.from('messages').insert({
+      sender_id: userId,
+      receiver_id: story.users.id,
+      content: msg,
+      read: false,
+    })
+
+    setJoinedIds(prev => [...prev, story.users.id])
+    setJoiningId(null)
   }
 
   const getTimeLeft = (expiresAt) => {
@@ -90,7 +128,18 @@ export default function GoingToPage() {
     return `${mins}m left`
   }
 
+  const formatDate = (dt) => {
+    if (!dt) return null
+    return new Date(dt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+  }
+
   const getActivity = (id) => ACTIVITIES.find(a => a.id === id)
+
+  const inputStyle = {
+    width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px',
+    outline: 'none', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+    color: '#E8E0FF', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif',
+  }
 
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -124,17 +173,16 @@ export default function GoingToPage() {
               <span style={{ fontSize: '16px', fontWeight: 600, color: '#E8E0FF' }}>{getActivity(current.activity_type)?.label}</span>
             </div>
             {current.description && <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '4px' }}>{current.description}</p>}
-            {current.location && <p style={{ fontSize: '13px', color: '#9B93C0' }}>📍 {current.location}</p>}
+            {current.location && <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '4px' }}>📍 {current.location}</p>}
+            {current.scheduled_at && <p style={{ fontSize: '13px', color: '#D4AF37' }}>🗓 {formatDate(current.scheduled_at)}</p>}
             <button onClick={handleDelete} style={{ marginTop: '12px', fontSize: '13px', color: '#ff6b6b', background: 'none', border: '1px solid rgba(255,80,80,0.2)', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer' }}>
               Remove status
             </button>
           </div>
         ) : (
-          /* Post new status */
           <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px', marginBottom: '24px' }}>
             <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '16px' }}>What are you up to?</h3>
 
-            {/* Activity picker */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '16px' }}>
               {ACTIVITIES.map(a => {
                 const selected = form.activity_type === a.id
@@ -152,14 +200,25 @@ export default function GoingToPage() {
                 value={form.description}
                 onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                 placeholder="What's the vibe? (optional)"
-                style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', boxSizing: 'border-box' }}
+                style={inputStyle}
               />
               <input
                 value={form.location}
                 onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
                 placeholder="📍 Location (optional)"
-                style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', boxSizing: 'border-box' }}
+                style={inputStyle}
               />
+              <div>
+                <label style={{ fontSize: '12px', color: '#9B93C0', display: 'block', marginBottom: '6px' }}>
+                  🗓 Date & time <span style={{ color: '#6B5EA8' }}>(optional)</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  value={form.scheduled_at}
+                  onChange={e => setForm(f => ({ ...f, scheduled_at: e.target.value }))}
+                  style={{ ...inputStyle, colorScheme: 'dark' }}
+                />
+              </div>
             </div>
 
             <button onClick={handlePost} disabled={posting || !form.activity_type} style={{ width: '100%', padding: '13px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: form.activity_type ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.06)', color: form.activity_type ? '#080810' : '#9B93C0', border: 'none', cursor: form.activity_type ? 'pointer' : 'not-allowed' }}>
@@ -185,6 +244,7 @@ export default function GoingToPage() {
               {stories.map(story => {
                 const activity = getActivity(story.activity_type)
                 const initials = story.users?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?'
+                const alreadyJoined = joinedIds.includes(story.users?.id)
                 return (
                   <div key={story.id} style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px', display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                     <Link href={`/${story.users?.username}`} style={{ textDecoration: 'none', flexShrink: 0 }}>
@@ -208,10 +268,31 @@ export default function GoingToPage() {
                         {story.users?.city && <span style={{ fontSize: '12px', color: '#9B93C0' }}>· 📍 {story.users.city}</span>}
                       </div>
                       {story.description && <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '4px' }}>{story.description}</p>}
-                      {story.location && <p style={{ fontSize: '12px', color: '#9B93C0' }}>📍 {story.location}</p>}
-                      <Link href={`/messages?to=${story.users?.username}`} style={{ display: 'inline-block', marginTop: '10px', fontSize: '12px', fontWeight: 600, padding: '6px 14px', borderRadius: '8px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', textDecoration: 'none' }}>
-                        💬 Join them
-                      </Link>
+                      {story.location && <p style={{ fontSize: '12px', color: '#9B93C0', marginBottom: '4px' }}>📍 {story.location}</p>}
+                      {story.scheduled_at && (
+                        <p style={{ fontSize: '12px', color: '#D4AF37', marginBottom: '8px' }}>🗓 {formatDate(story.scheduled_at)}</p>
+                      )}
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                        <button
+                          onClick={() => handleJoin(story)}
+                          disabled={alreadyJoined || joiningId === story.id}
+                          style={{
+                            fontSize: '12px', fontWeight: 600, padding: '7px 16px', borderRadius: '8px',
+                            background: alreadyJoined ? 'rgba(57,255,20,0.1)' : 'rgba(212,175,55,0.1)',
+                            border: alreadyJoined ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(212,175,55,0.2)',
+                            color: alreadyJoined ? '#39FF14' : '#D4AF37',
+                            cursor: alreadyJoined ? 'default' : 'pointer',
+                          }}
+                        >
+                          {alreadyJoined ? '✓ Request sent' : joiningId === story.id ? 'Sending...' : '⚡ Join them'}
+                        </button>
+                        <Link
+                          href={`/messages?to=${story.users?.username}`}
+                          style={{ fontSize: '12px', fontWeight: 600, padding: '7px 16px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#9B93C0', textDecoration: 'none' }}
+                        >
+                          💬 Message
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 )
