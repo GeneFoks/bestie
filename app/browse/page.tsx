@@ -9,14 +9,42 @@ import ProviderCard from '@/components/ProviderCard'
 const FILTERS = [
   { id: 'all', label: 'All' },
   { id: 'meet_irl', label: '🤝 Meet IRL' },
+  { id: 'deep_chat', label: '🫂 Deep Chat' },
+  { id: 'real_talk', label: '💬 Real Talk' },
   { id: 'trail_crew', label: '🥾 Trail Crew' },
   { id: 'game_night', label: '🎮 Game Night' },
   { id: 'watch_together', label: '🎬 Watch Together' },
   { id: 'dance_crew', label: '💃 Dance Crew' },
-  { id: 'deep_chat', label: '🫂 Deep Chat' },
   { id: 'vibe_call', label: '📱 Vibe Call' },
   { id: 'travel_buddy', label: '✈️ Travel Buddy' },
   { id: 'festival_crew', label: '🎪 Festival Crew' },
+  { id: 'epic_journey', label: '🌍 Epic Journey' },
+  { id: 'fishing_crew', label: '🎣 Fishing Crew' },
+]
+
+const SPARK_TYPES = [
+  { id: 'kind', emoji: '💛', label: 'Kind' },
+  { id: 'fun', emoji: '🎉', label: 'Fun' },
+  { id: 'reliable', emoji: '🔒', label: 'Reliable' },
+  { id: 'genuine', emoji: '💎', label: 'Genuine' },
+  { id: 'safe', emoji: '🛡️', label: 'Safe' },
+  { id: 'energetic', emoji: '⚡', label: 'Energetic' },
+  { id: 'good_listener', emoji: '👂', label: 'Good listener' },
+  { id: 'social', emoji: '🌟', label: 'Social' },
+  { id: 'punctual', emoji: '⏰', label: 'Punctual' },
+  { id: 'open', emoji: '🌊', label: 'Open' },
+  { id: 'focused', emoji: '🎯', label: 'Focused' },
+  { id: 'insightful', emoji: '🧠', label: 'Insightful' },
+  { id: 'motivating', emoji: '💪', label: 'Motivating' },
+  { id: 'supportive', emoji: '🌱', label: 'Supportive' },
+  { id: 'creative', emoji: '🎨', label: 'Creative' },
+  { id: 'inspiring', emoji: '🔥', label: 'Inspiring' },
+  { id: 'professional', emoji: '🤝', label: 'Professional' },
+  { id: 'articulate', emoji: '💬', label: 'Articulate' },
+  { id: 'calming', emoji: '🧘', label: 'Calming' },
+  { id: 'high_energy', emoji: '⚡', label: 'High energy' },
+  { id: 'worldly', emoji: '🌍', label: 'Worldly' },
+  { id: 'knowledgeable', emoji: '🎓', label: 'Knowledgeable' },
 ]
 
 const VIBE_COMPAT = {
@@ -98,8 +126,31 @@ export default function BrowsePage() {
       }
 
       const { data } = await query.limit(48)
-
       let result = data || []
+
+      if (result.length > 0) {
+        const userIds = result.map(p => p.id)
+        const { data: sparksData } = await supabase
+          .from('sparks')
+          .select('receiver_id, spark_type')
+          .in('receiver_id', userIds)
+
+        const sparksByUser = {}
+        sparksData?.forEach(s => {
+          if (!sparksByUser[s.receiver_id]) sparksByUser[s.receiver_id] = {}
+          sparksByUser[s.receiver_id][s.spark_type] = (sparksByUser[s.receiver_id][s.spark_type] || 0) + 1
+        })
+
+        result = result.map(p => {
+          const userSparks = sparksByUser[p.id] || {}
+          const topSparks = SPARK_TYPES
+            .map(s => ({ ...s, count: userSparks[s.id] || 0 }))
+            .filter(s => s.count > 0)
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 3)
+          return { ...p, top_sparks: topSparks }
+        })
+      }
 
       if (myProfile && compatMode) {
         result = result
