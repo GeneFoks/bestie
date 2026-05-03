@@ -20,6 +20,18 @@ const SPARK_TYPES = [
   { id: 'social', emoji: '🌟', label: 'Social' },
   { id: 'punctual', emoji: '⏰', label: 'Punctual' },
   { id: 'open', emoji: '🌊', label: 'Open' },
+  { id: 'focused', emoji: '🎯', label: 'Focused' },
+  { id: 'insightful', emoji: '🧠', label: 'Insightful' },
+  { id: 'motivating', emoji: '💪', label: 'Motivating' },
+  { id: 'supportive', emoji: '🌱', label: 'Supportive' },
+  { id: 'creative', emoji: '🎨', label: 'Creative' },
+  { id: 'inspiring', emoji: '🔥', label: 'Inspiring' },
+  { id: 'professional', emoji: '🤝', label: 'Professional' },
+  { id: 'articulate', emoji: '💬', label: 'Articulate' },
+  { id: 'calming', emoji: '🧘', label: 'Calming' },
+  { id: 'high_energy', emoji: '⚡', label: 'High energy' },
+  { id: 'worldly', emoji: '🌍', label: 'Worldly' },
+  { id: 'knowledgeable', emoji: '🎓', label: 'Knowledgeable' },
 ]
 
 const ACTIVITY_EMOJI = {
