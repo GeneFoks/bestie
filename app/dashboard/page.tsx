@@ -144,8 +144,8 @@ export default function DashboardPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
               <span style={{ fontSize: '32px' }}>✨</span>
               <div>
-                <p style={{ fontSize: '15px', fontWeight: 700, color: '#E8E0FF', marginBottom: '2px' }}>Узнай свой Bestie Type</p>
-                <p style={{ fontSize: '13px', color: '#9B93C0' }}>12 вопросов · Energy · Mind · Vibe · появится на твоём паспорте</p>
+                <p style={{ fontSize: '15px', fontWeight: 700, color: '#E8E0FF', marginBottom: '2px' }}>Discover your Bestie Type</p>
+                <p style={{ fontSize: '13px', color: '#9B93C0' }}>12 questions · Energy · Mind · Vibe · shows on your passport</p>
               </div>
             </div>
             <Link href="/bestie-type" style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none', whiteSpace: 'nowrap' }}>
