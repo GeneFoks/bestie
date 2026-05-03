@@ -44,6 +44,8 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
   const score = provider.bestie_score || 0
   const scoreColor = score >= 800 ? '#39FF14' : score >= 600 ? '#D4AF37' : '#9B93C0'
   const initials = provider.full_name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || '??'
+  const totalSessions = provider.total_sessions ?? 0
+  const sparksReceived = provider.sparks_received ?? 0
 
   return (
     <div
@@ -112,8 +114,8 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
       <div className="px-4 pb-4 pt-3 space-y-3">
         <div className="flex items-center gap-3 text-xs" style={{ color: '#9B93C0' }}>
           {provider.avg_rating ? <span>⭐ {provider.avg_rating.toFixed(1)}</span> : null}
-          {provider.total_sessions > 0 ? <span>· {provider.total_sessions} sessions</span> : null}
-          {provider.sparks_received > 0 ? <span>· ✨ {provider.sparks_received}</span> : null}
+          {totalSessions > 0 ? <span>· {totalSessions} sessions</span> : null}
+          {sparksReceived > 0 ? <span>· ✨ {sparksReceived}</span> : null}
         </div>
 
         {provider.bio && (
