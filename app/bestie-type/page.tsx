@@ -7,151 +7,148 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
 const QUESTIONS = [
-  // Energy Type (4 вопроса)
   {
     id: 'e1', block: 'energy', blockLabel: 'Energy',
-    question: 'Как ты обычно инициируешь встречи?',
+    question: 'How do you usually initiate plans with people?',
     options: [
-      { text: 'Сам предлагаю идею и зову людей', scores: { spark: 3, dynamo: 2 } },
-      { text: 'Отвечаю когда меня зовут, и тогда включаюсь полностью', scores: { builder: 3, anchor: 1 } },
-      { text: 'Жду подходящего момента и приглашения', scores: { guide: 3 } },
-      { text: 'Зависит от настроения и людей вокруг', scores: { mirror: 3, dynamo: 1 } },
+      { text: 'I come up with the idea and invite people myself', scores: { spark: 3, dynamo: 2 } },
+      { text: 'I respond when invited and then fully commit', scores: { builder: 3, anchor: 1 } },
+      { text: 'I wait for the right moment and invitation', scores: { guide: 3 } },
+      { text: 'It depends on my mood and who\'s around', scores: { mirror: 3, dynamo: 1 } },
     ],
   },
   {
     id: 'e2', block: 'energy', blockLabel: 'Energy',
-    question: 'После насыщенного социального дня ты чувствуешь...',
+    question: 'After a full social day, you feel...',
     options: [
-      { text: 'Подъём — хочется ещё', scores: { spark: 2, builder: 3 } },
-      { text: 'Усталость, нужно побыть одному', scores: { guide: 3, mirror: 2 } },
-      { text: 'Всё зависит от компании', scores: { mirror: 3 } },
-      { text: 'Успел сделать кучу всего и теперь устал', scores: { dynamo: 3 } },
+      { text: 'Energized — I want more', scores: { spark: 2, builder: 3 } },
+      { text: 'Drained — I need time alone', scores: { guide: 3, mirror: 2 } },
+      { text: 'It depends entirely on the company', scores: { mirror: 3 } },
+      { text: 'Accomplished but tired — I did a lot', scores: { dynamo: 3 } },
     ],
   },
   {
     id: 'e3', block: 'energy', blockLabel: 'Energy',
-    question: 'Твой стиль в группе людей:',
+    question: 'Your style in a group of people:',
     options: [
-      { text: 'Задаю направление, предлагаю что делать', scores: { spark: 3, dynamo: 2 } },
-      { text: 'Делаю работу — надёжно и в потоке', scores: { builder: 3 } },
-      { text: 'Вижу людей насквозь, даю ценный совет', scores: { guide: 3 } },
-      { text: 'Отражаю энергию группы, адаптируюсь', scores: { mirror: 3 } },
+      { text: 'I set the direction and suggest what to do', scores: { spark: 3, dynamo: 2 } },
+      { text: 'I do the work — reliably and in flow', scores: { builder: 3 } },
+      { text: 'I read people deeply and offer valuable insight', scores: { guide: 3 } },
+      { text: 'I mirror the group\'s energy and adapt', scores: { mirror: 3 } },
     ],
   },
   {
     id: 'e4', block: 'energy', blockLabel: 'Energy',
-    question: 'Как ты принимаешь решения?',
+    question: 'How do you make decisions?',
     options: [
-      { text: 'Быстро, интуитивно, потом корректирую', scores: { spark: 2, dynamo: 3 } },
-      { text: 'Методично, когда всё понятно — действую', scores: { builder: 3 } },
-      { text: 'Наблюдаю, жду ясности — иногда долго', scores: { mirror: 3, guide: 2 } },
-      { text: 'Когда меня спрашивают — тогда думаю', scores: { guide: 3 } },
+      { text: 'Fast and intuitive — I adjust later', scores: { spark: 2, dynamo: 3 } },
+      { text: 'Methodically — once it\'s clear, I act', scores: { builder: 3 } },
+      { text: 'I observe and wait for clarity — sometimes for a while', scores: { mirror: 3, guide: 2 } },
+      { text: 'When someone asks me — that\'s when I think', scores: { guide: 3 } },
     ],
   },
-  // Mind Type (4 вопроса)
   {
     id: 'm1', block: 'mind', blockLabel: 'Mind',
-    question: 'Что тебя больше всего заряжает в разговоре?',
+    question: 'What energizes you most in a conversation?',
     options: [
-      { text: 'Идеи, концепции, "а что если..."', scores: { visionary: 3 } },
-      { text: 'Глубина, эмоции, настоящая связь', scores: { connector: 3 } },
-      { text: 'Конкретика, планы, реальные шаги', scores: { anchor: 3 } },
-      { text: 'Спонтанность, юмор, живой момент', scores: { explorer: 3 } },
+      { text: 'Ideas, concepts, "what if..." thinking', scores: { visionary: 3 } },
+      { text: 'Depth, emotions, real connection', scores: { connector: 3 } },
+      { text: 'Concrete plans and actionable steps', scores: { anchor: 3 } },
+      { text: 'Spontaneity, humor, living in the moment', scores: { explorer: 3 } },
     ],
   },
   {
     id: 'm2', block: 'mind', blockLabel: 'Mind',
-    question: 'Как ты готовишься к встрече с новым человеком?',
+    question: 'How do you prepare to meet someone new?',
     options: [
-      { text: 'Думаю о темах для разговора заранее', scores: { visionary: 2, anchor: 2 } },
-      { text: 'Представляю как мы могли бы понять друг друга', scores: { connector: 3 } },
-      { text: 'Договариваюсь о месте и времени — и всё', scores: { anchor: 2, explorer: 2 } },
-      { text: 'Не готовлюсь — просто иду', scores: { explorer: 3 } },
+      { text: 'I think of topics to discuss in advance', scores: { visionary: 2, anchor: 2 } },
+      { text: 'I imagine how we might understand each other', scores: { connector: 3 } },
+      { text: 'I confirm the place and time — that\'s it', scores: { anchor: 2, explorer: 2 } },
+      { text: 'I don\'t prepare — I just show up', scores: { explorer: 3 } },
     ],
   },
   {
     id: 'm3', block: 'mind', blockLabel: 'Mind',
-    question: 'Что для тебя важнее в дружбе?',
+    question: 'What matters most to you in a friendship?',
     options: [
-      { text: 'Интеллектуальная стимуляция и рост', scores: { visionary: 3 } },
-      { text: 'Эмоциональная близость и понимание', scores: { connector: 3 } },
-      { text: 'Надёжность и стабильность', scores: { anchor: 3 } },
-      { text: 'Совместные приключения и веселье', scores: { explorer: 3 } },
+      { text: 'Intellectual stimulation and growth', scores: { visionary: 3 } },
+      { text: 'Emotional closeness and understanding', scores: { connector: 3 } },
+      { text: 'Reliability and stability', scores: { anchor: 3 } },
+      { text: 'Shared adventures and fun', scores: { explorer: 3 } },
     ],
   },
   {
     id: 'm4', block: 'mind', blockLabel: 'Mind',
-    question: 'Как ты реагируешь на конфликт?',
+    question: 'How do you handle conflict?',
     options: [
-      { text: 'Анализирую и нахожу логическое решение', scores: { visionary: 3 } },
-      { text: 'Стараюсь понять чувства всех сторон', scores: { connector: 3 } },
-      { text: 'Придерживаюсь договорённостей и правил', scores: { anchor: 3 } },
-      { text: 'Разряжаю обстановку юмором или дистанцией', scores: { explorer: 3 } },
+      { text: 'I analyze and find a logical solution', scores: { visionary: 3 } },
+      { text: 'I try to understand everyone\'s feelings', scores: { connector: 3 } },
+      { text: 'I stick to agreements and principles', scores: { anchor: 3 } },
+      { text: 'I defuse it with humor or step back', scores: { explorer: 3 } },
     ],
   },
-  // Vibe Type (4 вопроса)
   {
     id: 'v1', block: 'vibe', blockLabel: 'Vibe',
-    question: 'Какая активность тебя больше всего привлекает?',
+    question: 'What kind of activity appeals to you most?',
     options: [
-      { text: 'Что-то новое, яркое, с адреналином', scores: { fire: 3 } },
-      { text: 'Спокойное и качественное — поход, кофе, природа', scores: { earth: 3 } },
-      { text: 'Разговоры, идеи, новые знакомства', scores: { air: 3 } },
-      { text: 'Глубокое и камерное — музыка, кино, доверие', scores: { water: 3 } },
+      { text: 'Something new, exciting, with adrenaline', scores: { fire: 3 } },
+      { text: 'Something calm and quality — hike, coffee, nature', scores: { earth: 3 } },
+      { text: 'Conversations, ideas, meeting new people', scores: { air: 3 } },
+      { text: 'Something deep and intimate — music, film, trust', scores: { water: 3 } },
     ],
   },
   {
     id: 'v2', block: 'vibe', blockLabel: 'Vibe',
-    question: 'Как ты себя чувствуешь на большой вечеринке?',
+    question: 'How do you feel at a big party?',
     options: [
-      { text: 'В своей стихии — это моё', scores: { fire: 3, air: 2 } },
-      { text: 'Нормально, но предпочту уютный ужин', scores: { earth: 3 } },
-      { text: 'Люблю познакомиться с новыми людьми', scores: { air: 3 } },
-      { text: 'Устаю — слишком много поверхностного', scores: { water: 3 } },
+      { text: 'In my element — this is my scene', scores: { fire: 3, air: 2 } },
+      { text: 'Fine, but I\'d prefer a cozy dinner', scores: { earth: 3 } },
+      { text: 'I love meeting new people', scores: { air: 3 } },
+      { text: 'I get drained — too much surface level', scores: { water: 3 } },
     ],
   },
   {
     id: 'v3', block: 'vibe', blockLabel: 'Vibe',
-    question: 'Что тебя описывает лучше всего?',
+    question: 'Which describes you best?',
     options: [
-      { text: 'Страстный, смелый, зажигаю других', scores: { fire: 3 } },
-      { text: 'Надёжный, практичный, люблю порядок', scores: { earth: 3 } },
-      { text: 'Общительный, любопытный, гибкий', scores: { air: 3 } },
-      { text: 'Чуткий, глубокий, интуитивный', scores: { water: 3 } },
+      { text: 'Passionate, bold, I ignite others', scores: { fire: 3 } },
+      { text: 'Reliable, practical, I like order', scores: { earth: 3 } },
+      { text: 'Social, curious, flexible', scores: { air: 3 } },
+      { text: 'Sensitive, deep, intuitive', scores: { water: 3 } },
     ],
   },
   {
     id: 'v4', block: 'vibe', blockLabel: 'Vibe',
-    question: 'Что тебя больше всего раздражает в людях?',
+    question: 'What bothers you most in other people?',
     options: [
-      { text: 'Пассивность и нерешительность', scores: { fire: 3 } },
-      { text: 'Ненадёжность и хаос', scores: { earth: 3 } },
-      { text: 'Закрытость и скука', scores: { air: 3 } },
-      { text: 'Поверхностность и неискренность', scores: { water: 3 } },
+      { text: 'Passivity and indecisiveness', scores: { fire: 3 } },
+      { text: 'Unreliability and chaos', scores: { earth: 3 } },
+      { text: 'Closed-mindedness and dullness', scores: { air: 3 } },
+      { text: 'Superficiality and insincerity', scores: { water: 3 } },
     ],
   },
 ]
 
 const ENERGY_INFO = {
-  spark:   { emoji: '⚡', label: 'The Spark',   desc: 'Инициируешь, зажигаешь, создаёшь движение. Твоя энергия мощная — вспышками.' },
-  builder: { emoji: '🔥', label: 'The Builder',  desc: 'Надёжный и в потоке. Когда включаешься — идёшь до конца.' },
-  dynamo:  { emoji: '🌀', label: 'The Dynamo',   desc: 'Быстрый, многозадачный. Скучно не бывает — ты везде.' },
-  guide:   { emoji: '🌙', label: 'The Guide',    desc: 'Видишь людей глубоко. Редкий дар — быть по-настоящему услышанным тобой.' },
-  mirror:  { emoji: '🪞', label: 'The Mirror',   desc: 'Отражаешь среду. Очень чуткий к атмосфере и людям вокруг.' },
+  spark:   { emoji: '⚡', label: 'The Spark',   desc: 'You initiate, ignite, and create movement. Your energy is powerful — in bursts.' },
+  builder: { emoji: '🔥', label: 'The Builder',  desc: 'Reliable and in flow. Once you\'re in — you go all the way.' },
+  dynamo:  { emoji: '🌀', label: 'The Dynamo',   desc: 'Fast, multitasking, always moving. You\'re everywhere at once.' },
+  guide:   { emoji: '🌙', label: 'The Guide',    desc: 'You see people deeply. It\'s rare to feel truly heard — you make that happen.' },
+  mirror:  { emoji: '🪞', label: 'The Mirror',   desc: 'You reflect your environment. Highly attuned to atmosphere and the people around you.' },
 }
 
 const MIND_INFO = {
-  visionary: { emoji: '💡', label: 'Visionary', desc: 'Стратег и идейный. Любишь глубокие дискуссии и системное мышление.' },
-  connector: { emoji: '💛', label: 'Connector', desc: 'Эмпатичный, ищешь смысл и настоящую связь с людьми.' },
-  anchor:    { emoji: '⚓', label: 'Anchor',    desc: 'Надёжный и конкретный. Всегда приходишь вовремя и держишь слово.' },
-  explorer:  { emoji: '🧭', label: 'Explorer',  desc: 'Живёшь моментом. Спонтанный, физически активный, любишь новое.' },
+  visionary: { emoji: '💡', label: 'Visionary', desc: 'Strategic and idea-driven. You love deep discussions and systems thinking.' },
+  connector: { emoji: '💛', label: 'Connector', desc: 'Empathetic and meaning-seeking. You\'re here for real connection.' },
+  anchor:    { emoji: '⚓', label: 'Anchor',    desc: 'Reliable and grounded. You show up on time and keep your word.' },
+  explorer:  { emoji: '🧭', label: 'Explorer',  desc: 'You live in the moment. Spontaneous, active, always up for something new.' },
 }
 
 const VIBE_INFO = {
-  fire:  { emoji: '🔥', label: 'Fire',  desc: 'Страстный и инициативный. Хочешь экшн и вдохновение.' },
-  earth: { emoji: '🌿', label: 'Earth', desc: 'Стабильный и надёжный. Ценишь качество и конкретику.' },
-  air:   { emoji: '💨', label: 'Air',   desc: 'Интеллектуальный и общительный. Лучший собеседник.' },
-  water: { emoji: '🌊', label: 'Water', desc: 'Интуитивный и глубокий. Ищешь настоящую связь.' },
+  fire:  { emoji: '🔥', label: 'Fire',  desc: 'Passionate and driven. You want action, excitement, and inspiration.' },
+  earth: { emoji: '🌿', label: 'Earth', desc: 'Stable and grounded. You value quality, consistency, and the real.' },
+  air:   { emoji: '💨', label: 'Air',   desc: 'Intellectual and social. You\'re the best conversation partner in the room.' },
+  water: { emoji: '🌊', label: 'Water', desc: 'Intuitive and deep. You\'re searching for genuine, lasting connection.' },
 }
 
 function calcType(answers: Record<string, any>) {
@@ -242,15 +239,15 @@ export default function BestieTypePage() {
     <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ maxWidth: '480px', padding: '0 24px', textAlign: 'center' }}>
         <div style={{ fontSize: '56px', marginBottom: '24px' }}>✨</div>
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', color: '#E8E0FF', marginBottom: '12px' }}>Узнай свой Bestie Type</h1>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', color: '#E8E0FF', marginBottom: '12px' }}>Discover your Bestie Type</h1>
         <p style={{ fontSize: '15px', color: '#9B93C0', lineHeight: 1.7, marginBottom: '32px' }}>
-          12 вопросов. Три слоя — Energy, Mind, Vibe. Результат появится на твоём Social Passport.
+          12 questions. Three layers — Energy, Mind, Vibe. Your result will appear on your Social Passport.
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginBottom: '32px' }}>
           {[
-            { emoji: '⚡', label: 'Energy', sub: 'Как ты социально заряжаешься' },
-            { emoji: '💡', label: 'Mind', sub: 'Как ты думаешь и общаешься' },
-            { emoji: '🌊', label: 'Vibe', sub: 'Твой природный темперамент' },
+            { emoji: '⚡', label: 'Energy', sub: 'How you charge socially' },
+            { emoji: '💡', label: 'Mind', sub: 'How you think and connect' },
+            { emoji: '🌊', label: 'Vibe', sub: 'Your natural temperament' },
           ].map(b => (
             <div key={b.label} style={{ flex: 1, padding: '16px 12px', borderRadius: '16px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ fontSize: '24px', marginBottom: '8px' }}>{b.emoji}</div>
@@ -261,15 +258,15 @@ export default function BestieTypePage() {
         </div>
         <div style={{ marginBottom: '24px' }}>
           <label style={{ fontSize: '13px', color: '#9B93C0', display: 'block', marginBottom: '8px', textAlign: 'left' }}>
-            Дата рождения <span style={{ color: '#6B5EA8' }}>(необязательно — для Vibe)</span>
+            Date of birth <span style={{ color: '#6B5EA8' }}>(optional — used for Vibe)</span>
           </label>
           <input type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)}
             style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', outline: 'none', boxSizing: 'border-box', colorScheme: 'dark' }} />
         </div>
         <button onClick={() => setStep('quiz')} style={{ width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: 'pointer' }}>
-          Начать →
+          Start →
         </button>
-        <Link href="/dashboard" style={{ display: 'block', marginTop: '16px', fontSize: '13px', color: '#9B93C0', textDecoration: 'none' }}>Пропустить</Link>
+        <Link href="/dashboard" style={{ display: 'block', marginTop: '16px', fontSize: '13px', color: '#9B93C0', textDecoration: 'none' }}>Skip for now</Link>
       </div>
     </div>
   )
@@ -277,7 +274,6 @@ export default function BestieTypePage() {
   if (step === 'quiz') return (
     <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 24px' }}>
-        {/* Progress */}
         <div style={{ marginBottom: '32px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -292,12 +288,10 @@ export default function BestieTypePage() {
           </div>
         </div>
 
-        {/* Question */}
         <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '26px', color: '#E8E0FF', marginBottom: '32px', lineHeight: 1.4 }}>
           {q.question}
         </h2>
 
-        {/* Options */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {q.options.map((opt, i) => (
             <button key={i} onClick={() => handleAnswer(i)} style={{ padding: '18px 20px', borderRadius: '16px', fontSize: '15px', textAlign: 'left', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.08)', color: '#E8E0FF', cursor: 'pointer', transition: 'all 0.15s', lineHeight: 1.5 }}
@@ -310,7 +304,7 @@ export default function BestieTypePage() {
         </div>
 
         {currentQ > 0 && (
-          <button onClick={() => setCurrentQ(currentQ - 1)} style={{ marginTop: '24px', background: 'none', border: 'none', fontSize: '13px', color: '#9B93C0', cursor: 'pointer' }}>← Назад</button>
+          <button onClick={() => setCurrentQ(currentQ - 1)} style={{ marginTop: '24px', background: 'none', border: 'none', fontSize: '13px', color: '#9B93C0', cursor: 'pointer' }}>← Back</button>
         )}
       </div>
     </div>
@@ -324,14 +318,13 @@ export default function BestieTypePage() {
       <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
         <div style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 24px' }}>
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <p style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '16px' }}>ТВОЙ BESTIE TYPE</p>
+            <p style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '16px' }}>YOUR BESTIE TYPE</p>
             <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '32px', color: '#E8E0FF', marginBottom: '8px' }}>
               {e.emoji} {e.label} · {m.label} · {v.label}
             </h1>
-            <p style={{ fontSize: '14px', color: '#9B93C0' }}>Уникальная комбинация из ~400 возможных</p>
+            <p style={{ fontSize: '14px', color: '#9B93C0' }}>One of ~400 unique combinations</p>
           </div>
 
-          {/* Three cards */}
           {[
             { info: e, label: 'Energy', color: '#D4AF37', borderColor: 'rgba(212,175,55,0.3)' },
             { info: m, label: 'Mind', color: '#9B8FFF', borderColor: 'rgba(155,143,255,0.3)' },
@@ -350,11 +343,11 @@ export default function BestieTypePage() {
           ))}
 
           <button onClick={handleSave} disabled={saving} style={{ width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: 'pointer', marginTop: '8px' }}>
-            {saving ? 'Сохраняем...' : 'Сохранить и добавить в паспорт →'}
+            {saving ? 'Saving...' : 'Save and add to passport →'}
           </button>
 
           <button onClick={() => { setStep('quiz'); setCurrentQ(0); setAnswers({}) }} style={{ width: '100%', marginTop: '12px', padding: '14px', borderRadius: '14px', fontSize: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#9B93C0', cursor: 'pointer' }}>
-            Пройти заново
+            Retake quiz
           </button>
         </div>
       </div>
