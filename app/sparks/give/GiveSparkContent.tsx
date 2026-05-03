@@ -17,6 +17,18 @@ const SPARK_TYPES = [
   { id: 'social', emoji: '🌟', label: 'Social' },
   { id: 'punctual', emoji: '⏰', label: 'Punctual' },
   { id: 'open', emoji: '🌊', label: 'Open' },
+  { id: 'focused', emoji: '🎯', label: 'Focused' },
+  { id: 'insightful', emoji: '🧠', label: 'Insightful' },
+  { id: 'motivating', emoji: '💪', label: 'Motivating' },
+  { id: 'supportive', emoji: '🌱', label: 'Supportive' },
+  { id: 'creative', emoji: '🎨', label: 'Creative' },
+  { id: 'inspiring', emoji: '🔥', label: 'Inspiring' },
+  { id: 'professional', emoji: '🤝', label: 'Professional' },
+  { id: 'articulate', emoji: '💬', label: 'Articulate' },
+  { id: 'calming', emoji: '🧘', label: 'Calming' },
+  { id: 'high_energy', emoji: '⚡', label: 'High energy' },
+  { id: 'worldly', emoji: '🌍', label: 'Worldly' },
+  { id: 'knowledgeable', emoji: '🎓', label: 'Knowledgeable' },
 ]
 
 export default function GiveSparkContent() {
@@ -28,11 +40,12 @@ export default function GiveSparkContent() {
   const [me, setMe] = useState(null)
   const [myProfile, setMyProfile] = useState(null)
   const [recipient, setRecipient] = useState(null)
-  const [selectedType, setSelectedType] = useState(preselectedType || null)
+  const [selectedTypes, setSelectedTypes] = useState(preselectedType ? [preselectedType] : [])
   const [alreadyGiven, setAlreadyGiven] = useState([])
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [done, setDone] = useState(false)
+  const [sentTypes, setSentTypes] = useState([])
   const [error, setError] = useState(null)
 
   useEffect(() => {
@@ -40,7 +53,6 @@ export default function GiveSparkContent() {
       try {
         const { data: { session } } = await supabase.auth.getSession()
         if (!session) { router.push('/login'); return }
-
         setMe(session.user)
 
         const [{ data: myData }, { data: recipientData }] = await Promise.all([
@@ -53,8 +65,7 @@ export default function GiveSparkContent() {
 
         if (recipientData) {
           const { data: given } = await supabase
-            .from('sparks')
-            .select('spark_type')
+            .from('sparks').select('spark_type')
             .eq('giver_id', session.user.id)
             .eq('receiver_id', recipientData.id)
           setAlreadyGiven(given?.map(s => s.spark_type) || [])
@@ -68,28 +79,39 @@ export default function GiveSparkContent() {
     init()
   }, [])
 
+  const toggleType = (id) => {
+    if (alreadyGiven.includes(id)) return
+    setSelectedTypes(prev => {
+      if (prev.includes(id)) return prev.filter(t => t !== id)
+      const available = 3 - alreadyGiven.length
+      if (prev.length >= available) return prev
+      return [...prev, id]
+    })
+  }
+
   const handleGive = async () => {
-    if (!selectedType || !recipient || !me) return
+    if (!selectedTypes.length || !recipient || !me) return
     setSending(true)
     setError(null)
 
-    const { error: err } = await supabase.from('sparks').insert({
+    const inserts = selectedTypes.map(t => ({
       giver_id: me.id,
       receiver_id: recipient.id,
-      spark_type: selectedType,
-    })
+      spark_type: t,
+    }))
+
+    const { error: err } = await supabase.from('sparks').insert(inserts)
 
     if (err) {
-      setError(err.code === '23505' ? 'You already gave this Spark.' : 'Something went wrong. Try again.')
+      setError(err.code === '23505' ? 'You already gave one of these Sparks.' : 'Something went wrong. Try again.')
       setSending(false)
       return
     }
 
+    setSentTypes(selectedTypes)
     setDone(true)
     setSending(false)
   }
-
-  const spark = SPARK_TYPES.find(s => s.id === selectedType)
 
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -111,11 +133,16 @@ export default function GiveSparkContent() {
   if (done) return (
     <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ textAlign: 'center', maxWidth: '360px', padding: '0 24px' }}>
-        <div style={{ fontSize: '64px', marginBottom: '16px' }}>{spark?.emoji}</div>
-        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#E8E0FF', marginBottom: '8px' }}>Spark sent!</h2>
+        <div style={{ fontSize: '48px', marginBottom: '16px' }}>
+          {sentTypes.map(t => SPARK_TYPES.find(s => s.id === t)?.emoji).join(' ')}
+        </div>
+        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#E8E0FF', marginBottom: '8px' }}>
+          {sentTypes.length > 1 ? 'Sparks sent!' : 'Spark sent!'}
+        </h2>
         <p style={{ fontSize: '15px', color: '#9B93C0', marginBottom: '28px' }}>
-          You gave <span style={{ color: '#D4AF37', fontWeight: 600 }}>{spark?.label}</span> to {recipient.full_name}.
-          You have <span style={{ color: '#D4AF37', fontWeight: 600 }}>{(myProfile?.sparks_balance || 30) - 1}</span> Sparks left.
+          You gave <span style={{ color: '#D4AF37', fontWeight: 600 }}>
+            {sentTypes.map(t => SPARK_TYPES.find(s => s.id === t)?.label).join(', ')}
+          </span> to {recipient.full_name}.
         </p>
         <Link href={`/${recipient.username}`} style={{ display: 'inline-block', padding: '12px 28px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
           Back to profile →
@@ -126,6 +153,8 @@ export default function GiveSparkContent() {
 
   const sparksLeft = myProfile?.sparks_balance ?? 30
   const givenCount = alreadyGiven.length
+  const canGiveMore = 3 - givenCount
+  const canSelect = canGiveMore - selectedTypes.length
 
   return (
     <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
@@ -134,61 +163,75 @@ export default function GiveSparkContent() {
         <Link href={`/${recipient.username}`} style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none' }}>← Back</Link>
       </nav>
 
-      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '48px 24px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+      <div style={{ maxWidth: '520px', margin: '0 auto', padding: '40px 24px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div style={{ width: '72px', height: '72px', borderRadius: '18px', overflow: 'hidden', background: '#1a1a35', border: '2px solid rgba(212,175,55,0.3)', margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {recipient.avatar_url
               ? <img src={recipient.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : <span style={{ fontSize: '28px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>{recipient.full_name?.[0]}</span>
             }
           </div>
-          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#E8E0FF', marginBottom: '4px' }}>Give a Spark ✨</h1>
+          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#E8E0FF', marginBottom: '4px' }}>Give Sparks ✨</h1>
           <p style={{ fontSize: '14px', color: '#9B93C0' }}>to <span style={{ color: '#E8E0FF', fontWeight: 500 }}>{recipient.full_name}</span></p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
           <div style={{ flex: 1, background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
             <div style={{ fontSize: '22px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>{sparksLeft}</div>
             <div style={{ fontSize: '11px', color: '#9B93C0', marginTop: '2px' }}>your balance</div>
           </div>
           <div style={{ flex: 1, background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
-            <div style={{ fontSize: '22px', fontWeight: 700, color: givenCount >= 3 ? '#FF6B6B' : '#E8E0FF', fontFamily: 'DM Serif Display, serif' }}>{3 - givenCount}</div>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: canGiveMore === 0 ? '#FF6B6B' : '#E8E0FF', fontFamily: 'DM Serif Display, serif' }}>{canGiveMore}</div>
             <div style={{ fontSize: '11px', color: '#9B93C0', marginTop: '2px' }}>left for this person</div>
+          </div>
+          <div style={{ flex: 1, background: selectedTypes.length > 0 ? 'rgba(212,175,55,0.1)' : '#0F0F1E', border: selectedTypes.length > 0 ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>{selectedTypes.length}</div>
+            <div style={{ fontSize: '11px', color: '#9B93C0', marginTop: '2px' }}>selected</div>
           </div>
         </div>
 
+        {canGiveMore > 0 && canSelect > 0 && (
+          <div style={{ padding: '10px 14px', borderRadius: '12px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', marginBottom: '16px', textAlign: 'center' }}>
+            <p style={{ fontSize: '13px', color: '#D4AF37' }}>Select up to {canGiveMore} Spark{canGiveMore > 1 ? 's' : ''} — {canSelect} more to pick</p>
+          </div>
+        )}
+
+        {canGiveMore === 0 && (
+          <div style={{ padding: '10px 14px', borderRadius: '12px', background: 'rgba(255,107,107,0.08)', border: '1px solid rgba(255,107,107,0.2)', marginBottom: '16px', textAlign: 'center' }}>
+            <p style={{ fontSize: '13px', color: '#FF6B6B' }}>You've given the max 3 Sparks to this person.</p>
+          </div>
+        )}
+
         {sparksLeft <= 0 && (
-          <div style={{ background: 'rgba(255,107,107,0.1)', border: '1px solid rgba(255,107,107,0.3)', borderRadius: '14px', padding: '16px', textAlign: 'center', marginBottom: '20px' }}>
-            <p style={{ fontSize: '14px', color: '#FF6B6B' }}>You've used all your Sparks.</p>
+          <div style={{ padding: '10px 14px', borderRadius: '12px', background: 'rgba(255,107,107,0.08)', border: '1px solid rgba(255,107,107,0.2)', marginBottom: '16px', textAlign: 'center' }}>
+            <p style={{ fontSize: '13px', color: '#FF6B6B' }}>You've used all your Sparks.</p>
           </div>
         )}
 
-        {givenCount >= 3 && sparksLeft > 0 && (
-          <div style={{ background: 'rgba(255,107,107,0.1)', border: '1px solid rgba(255,107,107,0.3)', borderRadius: '14px', padding: '16px', textAlign: 'center', marginBottom: '20px' }}>
-            <p style={{ fontSize: '14px', color: '#FF6B6B' }}>You've given 3 Sparks to this person already — that's the max.</p>
-          </div>
-        )}
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '24px' }}>
           {SPARK_TYPES.map(s => {
             const given = alreadyGiven.includes(s.id)
-            const selected = selectedType === s.id
+            const selected = selectedTypes.includes(s.id)
+            const disabled = given || sparksLeft <= 0 || canGiveMore === 0 || (!selected && canSelect === 0)
             return (
               <button
                 key={s.id}
-                onClick={() => !given && setSelectedType(s.id)}
-                disabled={given || sparksLeft <= 0 || givenCount >= 3}
+                onClick={() => !given && toggleType(s.id)}
+                disabled={disabled}
                 style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
-                  padding: '10px 6px', borderRadius: '12px', cursor: given ? 'not-allowed' : 'pointer',
+                  padding: '12px 6px', borderRadius: '12px',
+                  cursor: disabled ? 'not-allowed' : 'pointer',
                   background: selected ? 'rgba(212,175,55,0.15)' : given ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)',
                   border: selected ? '1px solid rgba(212,175,55,0.5)' : given ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(255,255,255,0.08)',
-                  opacity: given ? 0.4 : 1, transition: 'all 0.15s',
+                  opacity: disabled && !selected ? 0.4 : 1,
+                  transition: 'all 0.15s',
                 }}
               >
                 <span style={{ fontSize: '20px' }}>{s.emoji}</span>
                 <span style={{ fontSize: '10px', fontWeight: 500, color: selected ? '#D4AF37' : '#9B93C0', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
                 {given && <span style={{ fontSize: '9px', color: '#9B93C0' }}>✓ given</span>}
+                {selected && !given && <span style={{ fontSize: '9px', color: '#D4AF37' }}>✓</span>}
               </button>
             )
           })}
@@ -202,16 +245,20 @@ export default function GiveSparkContent() {
 
         <button
           onClick={handleGive}
-          disabled={!selectedType || sending || sparksLeft <= 0 || givenCount >= 3}
+          disabled={!selectedTypes.length || sending || sparksLeft <= 0 || canGiveMore === 0}
           style={{
             width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 700,
-            background: selectedType && sparksLeft > 0 && givenCount < 3 ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.06)',
-            color: selectedType && sparksLeft > 0 && givenCount < 3 ? '#080810' : '#9B93C0',
-            border: 'none', cursor: selectedType && sparksLeft > 0 && givenCount < 3 ? 'pointer' : 'not-allowed',
+            background: selectedTypes.length > 0 && sparksLeft > 0 && canGiveMore > 0
+              ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)'
+              : 'rgba(255,255,255,0.06)',
+            color: selectedTypes.length > 0 && sparksLeft > 0 && canGiveMore > 0 ? '#080810' : '#9B93C0',
+            border: 'none', cursor: selectedTypes.length > 0 && sparksLeft > 0 && canGiveMore > 0 ? 'pointer' : 'not-allowed',
             transition: 'all 0.2s',
           }}
         >
-          {sending ? 'Sending...' : selectedType ? `Give ${spark?.emoji} ${spark?.label}` : 'Select a Spark'}
+          {sending ? 'Sending...' : selectedTypes.length > 0
+            ? `Give ${selectedTypes.map(t => SPARK_TYPES.find(s => s.id === t)?.emoji).join('')} ${selectedTypes.map(t => SPARK_TYPES.find(s => s.id === t)?.label).join(', ')}`
+            : 'Select Sparks'}
         </button>
 
         <p style={{ fontSize: '12px', color: '#9B93C0', textAlign: 'center', marginTop: '16px' }}>
