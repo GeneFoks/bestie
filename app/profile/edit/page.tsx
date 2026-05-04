@@ -6,20 +6,102 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
-const ACTIVITIES = [
-  { id: 'meet_irl', emoji: '🤝', label: 'Meet IRL' },
-  { id: 'dance_crew', emoji: '💃', label: 'Dance Crew' },
-  { id: 'trail_crew', emoji: '🥾', label: 'Trail Crew' },
-  { id: 'travel_buddy', emoji: '✈️', label: 'Travel Buddy' },
-  { id: 'game_night', emoji: '🎮', label: 'Game Night' },
-  { id: 'watch_together', emoji: '🎬', label: 'Watch Together' },
-  { id: 'vibe_call', emoji: '📱', label: 'Vibe Call' },
-  { id: 'deep_chat', emoji: '🫂', label: 'Deep Chat' },
-  { id: 'real_talk', emoji: '💬', label: 'Real Talk' },
-  { id: 'festival_crew', emoji: '🎪', label: 'Festival Crew' },
-  { id: 'epic_journey', emoji: '🌍', label: 'Epic Journey' },
-  { id: 'fishing_crew', emoji: '🎣', label: 'Fishing Crew' },
+const ACTIVITY_GROUPS = [
+  {
+    label: '🏃 Active & Outdoors',
+    activities: [
+      { id: 'hiking', emoji: '🥾', label: 'Hiking' },
+      { id: 'running', emoji: '🏃', label: 'Running' },
+      { id: 'gym_partner', emoji: '💪', label: 'Gym Partner' },
+      { id: 'cycling', emoji: '🚴', label: 'Cycling' },
+      { id: 'swimming', emoji: '🏊', label: 'Swimming' },
+      { id: 'cold_plunge', emoji: '🧊', label: 'Cold Plunge/Sauna' },
+      { id: 'yoga', emoji: '🧘', label: 'Yoga' },
+      { id: 'martial_arts', emoji: '🥋', label: 'Martial Arts' },
+      { id: 'climbing', emoji: '🧗', label: 'Climbing' },
+    ],
+  },
+  {
+    label: '🎮 Fun & Social',
+    activities: [
+      { id: 'game_night', emoji: '🎮', label: 'Game Night' },
+      { id: 'movie_night', emoji: '🎬', label: 'Movie Night' },
+      { id: 'night_out', emoji: '🍸', label: 'Night Out' },
+      { id: 'bar_hopping', emoji: '🍺', label: 'Bar Hopping' },
+      { id: 'karaoke', emoji: '🎤', label: 'Karaoke' },
+      { id: 'festival_crew', emoji: '🎪', label: 'Festival Crew' },
+      { id: 'travel_buddy', emoji: '✈️', label: 'Travel Buddy' },
+      { id: 'wing_person', emoji: '😎', label: 'Wing Person' },
+      { id: 'comedy_show', emoji: '😂', label: 'Comedy Show' },
+    ],
+  },
+  {
+    label: '🧠 Mind & Growth',
+    activities: [
+      { id: 'deep_chat', emoji: '🫂', label: 'Deep Chat' },
+      { id: 'debate_club', emoji: '🗣️', label: 'Debate Club' },
+      { id: 'book_club', emoji: '📚', label: 'Book Club' },
+      { id: 'language_exchange', emoji: '🌐', label: 'Language Exchange' },
+      { id: 'career_talk', emoji: '💼', label: 'Career Talk' },
+      { id: 'money_talk', emoji: '💰', label: 'Money Talk' },
+      { id: 'journaling', emoji: '📓', label: 'Journaling Together' },
+      { id: 'accountability_partner', emoji: '🎯', label: 'Accountability Partner' },
+      { id: 'storytelling_night', emoji: '📖', label: 'Storytelling Night' },
+    ],
+  },
+  {
+    label: '🎨 Creative & Skills',
+    activities: [
+      { id: 'music_lesson', emoji: '🎸', label: 'Music Lesson' },
+      { id: 'art_together', emoji: '🎨', label: 'Art Together' },
+      { id: 'photography_walk', emoji: '📸', label: 'Photography Walk' },
+      { id: 'cooking_together', emoji: '🍳', label: 'Cooking Together' },
+      { id: 'dance', emoji: '💃', label: 'Dance' },
+      { id: 'improv_acting', emoji: '🎭', label: 'Improv/Acting' },
+      { id: 'writing_club', emoji: '✍️', label: 'Writing Club' },
+    ],
+  },
+  {
+    label: '🫂 Emotional & Support',
+    activities: [
+      { id: 'vent_session', emoji: '💬', label: 'Vent Session' },
+      { id: '3am_talk', emoji: '🌙', label: '3am Talk' },
+      { id: 'hype_person', emoji: '🔥', label: 'Hype Person' },
+      { id: 'sobriety_buddy', emoji: '🌿', label: 'Sobriety Buddy' },
+      { id: 'silence_buddy', emoji: '🤫', label: 'Silence Buddy' },
+      { id: 'grief_support', emoji: '🤍', label: 'Grief Support' },
+      { id: 'ugly_cry_buddy', emoji: '😭', label: 'Ugly Cry Buddy' },
+    ],
+  },
+  {
+    label: '🔮 Spiritual & Sacred',
+    activities: [
+      { id: 'meditation_circle', emoji: '🧘', label: 'Meditation Circle' },
+      { id: 'breathwork', emoji: '🌬️', label: 'Breathwork' },
+      { id: 'sound_healing', emoji: '🔔', label: 'Sound Healing' },
+      { id: 'cacao_ceremony', emoji: '🍫', label: 'Cacao Ceremony' },
+      { id: 'tarot', emoji: '🔮', label: 'Tarot/Human Design' },
+      { id: 'retreat_buddy', emoji: '🏕️', label: 'Retreat Buddy' },
+      { id: 'psychedelic_integration', emoji: '🌀', label: 'Psychedelic Integration' },
+      { id: 'nature_ritual', emoji: '🌿', label: 'Nature Ritual' },
+      { id: 'lucid_dream_club', emoji: '💫', label: 'Lucid Dream Club' },
+    ],
+  },
+  {
+    label: '☕ Chill & Everyday',
+    activities: [
+      { id: 'coffee_chat', emoji: '☕', label: 'Coffee Chat' },
+      { id: 'digital_detox_walk', emoji: '📵', label: 'Digital Detox Walk' },
+      { id: 'skincare_night', emoji: '✨', label: 'Skincare Night' },
+      { id: 'smoke_buddy', emoji: '💨', label: 'Smoke Buddy' },
+      { id: 'astrology_session', emoji: '⭐', label: 'Astrology Session' },
+      { id: 'coworking', emoji: '💻', label: 'Coworking' },
+      { id: 'errand_buddy', emoji: '🛒', label: 'Errand Buddy' },
+    ],
+  },
 ]
+
+const ALL_ACTIVITIES = ACTIVITY_GROUPS.flatMap(g => g.activities)
 
 const LANGUAGES = [
   'English', 'Spanish', 'Russian', 'French', 'German', 'Portuguese',
@@ -129,6 +211,11 @@ export default function EditProfilePage() {
     }
   }
 
+  const getActivityLabel = (id) => {
+    const a = ALL_ACTIVITIES.find(a => a.id === id)
+    return a ? `${a.emoji} ${a.label}` : id.replace(/_/g, ' ')
+  }
+
   const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
   const labelStyle = { fontSize: '13px', fontWeight: 500, color: '#9B93C0', display: 'block', marginBottom: '8px' }
   const sectionStyle = { background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px', marginBottom: '20px' }
@@ -217,30 +304,14 @@ export default function EditProfilePage() {
             {LANGUAGES.map(lang => {
               const selected = selectedLanguages.includes(lang)
               return (
-                <button
-                  key={lang}
-                  onClick={() => toggleLanguage(lang)}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '999px',
-                    fontSize: '13px',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    background: selected ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)',
-                    border: selected ? '1px solid rgba(212,175,55,0.5)' : '1px solid rgba(255,255,255,0.08)',
-                    color: selected ? '#D4AF37' : '#9B93C0',
-                    transition: 'all 0.15s',
-                  }}
-                >
+                <button key={lang} onClick={() => toggleLanguage(lang)} style={{ padding: '8px 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', background: selected ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', border: selected ? '1px solid rgba(212,175,55,0.5)' : '1px solid rgba(255,255,255,0.08)', color: selected ? '#D4AF37' : '#9B93C0', transition: 'all 0.15s' }}>
                   {lang}
                 </button>
               )
             })}
           </div>
           {selectedLanguages.length > 0 && (
-            <p style={{ fontSize: '12px', color: '#D4AF37', marginTop: '12px' }}>
-              Selected: {selectedLanguages.join(', ')}
-            </p>
+            <p style={{ fontSize: '12px', color: '#D4AF37', marginTop: '12px' }}>Selected: {selectedLanguages.join(', ')}</p>
           )}
         </div>
 
@@ -252,7 +323,7 @@ export default function EditProfilePage() {
             <div key={pkg.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '8px' }}>
               <div>
                 <p style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF' }}>{pkg.title}</p>
-                <p style={{ fontSize: '12px', color: '#9B93C0', marginTop: '2px' }}>{pkg.activity_type.replace(/_/g, ' ')} · {pkg.is_free ? 'Free' : `$${pkg.price_per_session}/session`}</p>
+                <p style={{ fontSize: '12px', color: '#9B93C0', marginTop: '2px' }}>{getActivityLabel(pkg.activity_type)} · {pkg.is_free ? 'Free' : `$${pkg.price_per_session}/session`}</p>
               </div>
               <button onClick={() => handleDeletePackage(pkg.id)} style={{ background: 'none', border: 'none', color: '#9B93C0', cursor: 'pointer', fontSize: '20px', padding: '4px 8px' }}>×</button>
             </div>
@@ -271,8 +342,14 @@ export default function EditProfilePage() {
                 <div>
                   <label style={labelStyle}>Type</label>
                   <select value={newPkg.activity_type} onChange={e => setNewPkg(p => ({ ...p, activity_type: e.target.value }))} style={{ ...inputStyle, cursor: 'pointer' }}>
-                    <option value="">Select...</option>
-                    {ACTIVITIES.map(a => <option key={a.id} value={a.id}>{a.emoji} {a.label}</option>)}
+                    <option value="">Select activity type...</option>
+                    {ACTIVITY_GROUPS.map(group => (
+                      <optgroup key={group.label} label={group.label}>
+                        {group.activities.map(a => (
+                          <option key={a.id} value={a.id}>{a.emoji} {a.label}</option>
+                        ))}
+                      </optgroup>
+                    ))}
                   </select>
                 </div>
                 <div>
