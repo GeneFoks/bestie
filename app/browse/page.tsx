@@ -6,21 +6,102 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import ProviderCard from '@/components/ProviderCard'
 
-const FILTERS = [
-  { id: 'all', label: 'All' },
-  { id: 'meet_irl', label: '🤝 Meet IRL' },
-  { id: 'deep_chat', label: '🫂 Deep Chat' },
-  { id: 'real_talk', label: '💬 Real Talk' },
-  { id: 'trail_crew', label: '🥾 Trail Crew' },
-  { id: 'game_night', label: '🎮 Game Night' },
-  { id: 'watch_together', label: '🎬 Watch Together' },
-  { id: 'dance_crew', label: '💃 Dance Crew' },
-  { id: 'vibe_call', label: '📱 Vibe Call' },
-  { id: 'travel_buddy', label: '✈️ Travel Buddy' },
-  { id: 'festival_crew', label: '🎪 Festival Crew' },
-  { id: 'epic_journey', label: '🌍 Epic Journey' },
-  { id: 'fishing_crew', label: '🎣 Fishing Crew' },
+const FILTER_GROUPS = [
+  {
+    label: '🏃 Active & Outdoors',
+    filters: [
+      { id: 'hiking', label: '🥾 Hiking' },
+      { id: 'running', label: '🏃 Running' },
+      { id: 'gym_partner', label: '💪 Gym Partner' },
+      { id: 'cycling', label: '🚴 Cycling' },
+      { id: 'swimming', label: '🏊 Swimming' },
+      { id: 'cold_plunge', label: '🧊 Cold Plunge' },
+      { id: 'yoga', label: '🧘 Yoga' },
+      { id: 'martial_arts', label: '🥋 Martial Arts' },
+      { id: 'climbing', label: '🧗 Climbing' },
+    ],
+  },
+  {
+    label: '🎮 Fun & Social',
+    filters: [
+      { id: 'game_night', label: '🎮 Game Night' },
+      { id: 'movie_night', label: '🎬 Movie Night' },
+      { id: 'night_out', label: '🍸 Night Out' },
+      { id: 'bar_hopping', label: '🍺 Bar Hopping' },
+      { id: 'karaoke', label: '🎤 Karaoke' },
+      { id: 'festival_crew', label: '🎪 Festival Crew' },
+      { id: 'travel_buddy', label: '✈️ Travel Buddy' },
+      { id: 'wing_person', label: '😎 Wing Person' },
+      { id: 'comedy_show', label: '😂 Comedy Show' },
+    ],
+  },
+  {
+    label: '🧠 Mind & Growth',
+    filters: [
+      { id: 'deep_chat', label: '🫂 Deep Chat' },
+      { id: 'debate_club', label: '🗣️ Debate Club' },
+      { id: 'book_club', label: '📚 Book Club' },
+      { id: 'language_exchange', label: '🌐 Language Exchange' },
+      { id: 'career_talk', label: '💼 Career Talk' },
+      { id: 'money_talk', label: '💰 Money Talk' },
+      { id: 'journaling', label: '📓 Journaling' },
+      { id: 'accountability_partner', label: '🎯 Accountability' },
+      { id: 'storytelling_night', label: '📖 Storytelling' },
+    ],
+  },
+  {
+    label: '🎨 Creative & Skills',
+    filters: [
+      { id: 'music_lesson', label: '🎸 Music Lesson' },
+      { id: 'art_together', label: '🎨 Art Together' },
+      { id: 'photography_walk', label: '📸 Photography' },
+      { id: 'cooking_together', label: '🍳 Cooking' },
+      { id: 'dance', label: '💃 Dance' },
+      { id: 'improv_acting', label: '🎭 Improv' },
+      { id: 'writing_club', label: '✍️ Writing Club' },
+    ],
+  },
+  {
+    label: '🫂 Emotional & Support',
+    filters: [
+      { id: 'vent_session', label: '💬 Vent Session' },
+      { id: '3am_talk', label: '🌙 3am Talk' },
+      { id: 'hype_person', label: '🔥 Hype Person' },
+      { id: 'sobriety_buddy', label: '🌿 Sobriety Buddy' },
+      { id: 'silence_buddy', label: '🤫 Silence Buddy' },
+      { id: 'grief_support', label: '🤍 Grief Support' },
+      { id: 'ugly_cry_buddy', label: '😭 Ugly Cry Buddy' },
+    ],
+  },
+  {
+    label: '🔮 Spiritual & Sacred',
+    filters: [
+      { id: 'meditation_circle', label: '🧘 Meditation' },
+      { id: 'breathwork', label: '🌬️ Breathwork' },
+      { id: 'sound_healing', label: '🔔 Sound Healing' },
+      { id: 'cacao_ceremony', label: '🍫 Cacao Ceremony' },
+      { id: 'tarot', label: '🔮 Tarot' },
+      { id: 'retreat_buddy', label: '🏕️ Retreat Buddy' },
+      { id: 'psychedelic_integration', label: '🌀 Psychedelic' },
+      { id: 'nature_ritual', label: '🌿 Nature Ritual' },
+      { id: 'lucid_dream_club', label: '💫 Lucid Dream' },
+    ],
+  },
+  {
+    label: '☕ Chill & Everyday',
+    filters: [
+      { id: 'coffee_chat', label: '☕ Coffee Chat' },
+      { id: 'digital_detox_walk', label: '📵 Digital Detox' },
+      { id: 'skincare_night', label: '✨ Skincare Night' },
+      { id: 'smoke_buddy', label: '💨 Smoke Buddy' },
+      { id: 'astrology_session', label: '⭐ Astrology' },
+      { id: 'coworking', label: '💻 Coworking' },
+      { id: 'errand_buddy', label: '🛒 Errand Buddy' },
+    ],
+  },
 ]
+
+const ALL_FILTERS = FILTER_GROUPS.flatMap(g => g.filters)
 
 const SPARK_TYPES = [
   { id: 'kind', emoji: '💛', label: 'Kind' },
@@ -83,6 +164,7 @@ export default function BrowsePage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('all')
+  const [activeGroup, setActiveGroup] = useState(null)
   const [myProfile, setMyProfile] = useState(null)
   const [compatMode, setCompatMode] = useState(false)
 
@@ -114,7 +196,6 @@ export default function BrowsePage() {
           .from('activity_packages')
           .select('provider_id')
           .eq('activity_type', filter)
-          .eq('is_active', true)
         const userIds = pkgs?.map(p => p.provider_id) || []
         if (userIds.length > 0) {
           query = query.in('id', userIds)
@@ -130,12 +211,10 @@ export default function BrowsePage() {
 
       if (result.length > 0) {
         const userIds = result.map(p => p.id)
-        const { data: sparksData, error: sparksError } = await supabase
+        const { data: sparksData } = await supabase
           .from('sparks')
           .select('receiver_id, spark_type')
           .in('receiver_id', userIds)
-
-        console.log('sparks data:', sparksData, 'error:', sparksError)
 
         const sparksByUser = {}
         sparksData?.forEach(s => {
@@ -150,7 +229,6 @@ export default function BrowsePage() {
             .filter(s => s.count > 0)
             .sort((a, b) => b.count - a.count)
             .slice(0, 3)
-          console.log('user:', p.username, 'topSparks:', topSparks)
           return { ...p, top_sparks: topSparks }
         })
       }
@@ -177,6 +255,11 @@ export default function BrowsePage() {
     return null
   }
 
+  const toggleGroup = (groupLabel) => {
+    setActiveGroup(prev => prev === groupLabel ? null : groupLabel)
+    setFilter('all')
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -195,12 +278,8 @@ export default function BrowsePage() {
               {loading ? 'Loading...' : `${providers.length} Bestie${providers.length !== 1 ? 's' : ''} available`}
             </p>
           </div>
-
           {myProfile && (
-            <button
-              onClick={() => setCompatMode(!compatMode)}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', background: compatMode ? 'rgba(57,255,20,0.12)' : 'rgba(255,255,255,0.04)', border: compatMode ? '1px solid rgba(57,255,20,0.35)' : '1px solid rgba(255,255,255,0.1)', color: compatMode ? '#39FF14' : '#9B93C0', transition: 'all 0.2s' }}
-            >
+            <button onClick={() => setCompatMode(!compatMode)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', background: compatMode ? 'rgba(57,255,20,0.12)' : 'rgba(255,255,255,0.04)', border: compatMode ? '1px solid rgba(57,255,20,0.35)' : '1px solid rgba(255,255,255,0.1)', color: compatMode ? '#39FF14' : '#9B93C0', transition: 'all 0.2s' }}>
               <span>✨</span>
               {compatMode ? 'Compatibility ON' : 'Compatibility'}
             </button>
@@ -221,25 +300,32 @@ export default function BrowsePage() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 16px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', marginBottom: '16px' }}>
           <span style={{ fontSize: '18px' }}>🔍</span>
-          <input
-            type="text"
-            placeholder="Search by name, city, or activity..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px', color: '#E8E0FF', padding: '6px 0' }}
-          />
-          {search && (
-            <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', color: '#9B93C0', cursor: 'pointer', fontSize: '18px' }}>×</button>
-          )}
+          <input type="text" placeholder="Search by name, city, or activity..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px', color: '#E8E0FF', padding: '6px 0' }} />
+          {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', color: '#9B93C0', cursor: 'pointer', fontSize: '18px' }}>×</button>}
         </div>
 
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '32px' }}>
-          {FILTERS.map(f => (
-            <button key={f.id} onClick={() => setFilter(f.id)} style={{ padding: '8px 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', background: filter === f.id ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', border: filter === f.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.08)', color: filter === f.id ? '#D4AF37' : '#9B93C0' }}>
-              {f.label}
+        {/* Group tabs */}
+        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '12px', scrollbarWidth: 'none' }}>
+          <button onClick={() => { setActiveGroup(null); setFilter('all') }} style={{ padding: '8px 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: !activeGroup && filter === 'all' ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', border: !activeGroup && filter === 'all' ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.08)', color: !activeGroup && filter === 'all' ? '#D4AF37' : '#9B93C0' }}>
+            All
+          </button>
+          {FILTER_GROUPS.map(group => (
+            <button key={group.label} onClick={() => toggleGroup(group.label)} style={{ padding: '8px 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: activeGroup === group.label ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', border: activeGroup === group.label ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.08)', color: activeGroup === group.label ? '#D4AF37' : '#9B93C0' }}>
+              {group.label}
             </button>
           ))}
         </div>
+
+        {/* Sub-filters when group selected */}
+        {activeGroup && (
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px', padding: '16px', background: '#0F0F1E', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            {FILTER_GROUPS.find(g => g.label === activeGroup)?.filters.map(f => (
+              <button key={f.id} onClick={() => setFilter(f.id)} style={{ padding: '7px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', background: filter === f.id ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', border: filter === f.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.06)', color: filter === f.id ? '#D4AF37' : '#9B93C0' }}>
+                {f.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {loading ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
@@ -269,7 +355,7 @@ export default function BrowsePage() {
             <p style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</p>
             <h3 style={{ fontSize: '20px', fontWeight: 600, color: '#E8E0FF', marginBottom: '8px' }}>No Besties found</h3>
             <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '24px' }}>Try a different search or filter</p>
-            <button onClick={() => { setSearch(''); setFilter('all') }} style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: 'pointer' }}>
+            <button onClick={() => { setSearch(''); setFilter('all'); setActiveGroup(null) }} style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: 'pointer' }}>
               Clear filters
             </button>
           </div>
