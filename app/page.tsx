@@ -65,7 +65,7 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showMatchModal, setShowMatchModal] = useState(false)
   const [loggedIn, setLoggedIn] = useState(false)
-  const [topProviders, setTopProviders] = useState([])
+  const [topProviders, setTopProviders] = useState<any[]>([])
   const [activeGroup, setActiveGroup] = useState(null)
   const [groupProviders, setGroupProviders] = useState([])
   const [groupLoading, setGroupLoading] = useState(false)
