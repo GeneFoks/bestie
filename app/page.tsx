@@ -87,7 +87,7 @@ export default function HomePage() {
     return () => subscription.unsubscribe()
   }, [])
 
-  const handleGroupClick = async (group) => {
+  const handleGroupClick = async (group: any) => {
     if (activeGroup?.id === group.id) {
       setActiveGroup(null)
       setGroupProviders([])
