@@ -41,23 +41,51 @@ export default function BookingsPage() {
     setBookings(data || [])
   }
 
+  const sendEmail = async (type, to, data) => {
+    try {
+      await fetch('/api/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, to, data })
+      })
+    } catch (e) {
+      console.error('Email send failed:', e)
+    }
+  }
+
   const updateStatus = async (id, status) => {
     const booking = bookings.find(b => b.id === id)
     await supabase.from('bookings').update({ status }).eq('id', id)
     setBookings(b => b.map(b2 => b2.id === id ? { ...b2, status } : b2))
 
+    const activityTitle = booking.package?.title || 'Session'
+
     if (status === 'accepted' && booking?.seeker?.email) {
-      await fetch('/api/email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'booking_accepted',
-          to: booking.seeker.email,
-          data: {
-            providerName: booking.provider?.full_name || 'Your Bestie',
-            activityTitle: booking.package?.title || 'Session',
-          }
-        })
+      await sendEmail('booking_accepted', booking.seeker.email, {
+        providerName: booking.provider?.full_name || 'Your Bestie',
+        activityTitle,
+      })
+    }
+
+    if (status === 'declined' && booking?.seeker?.email) {
+      await sendEmail('booking_declined', booking.seeker.email, {
+        providerName: booking.provider?.full_name || 'Your Bestie',
+        activityTitle,
+      })
+    }
+
+    if (status === 'cancelled' && booking?.provider?.email) {
+      await sendEmail('booking_cancelled', booking.provider.email, {
+        seekerName: booking.seeker?.full_name || 'Someone',
+        activityTitle,
+      })
+    }
+
+    if (status === 'completed' && booking?.seeker?.email) {
+      await sendEmail('booking_completed', booking.seeker.email, {
+        providerName: booking.provider?.full_name || 'Your Bestie',
+        activityTitle,
+        reviewUrl: `https://bestiehere.com/review/${id}`,
       })
     }
   }
@@ -155,7 +183,7 @@ export default function BookingsPage() {
                 )}
                 {tab === 'incoming' && booking.status === 'accepted' && (
                   <button onClick={() => updateStatus(booking.id, 'completed')} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: 'pointer' }}>
-                    Mark as completed
+                    ✓ Mark as completed
                   </button>
                 )}
                 {tab === 'outgoing' && booking.status === 'pending' && (
