@@ -38,7 +38,6 @@ function emailTemplate(title: string, body: string, ctaText: string, ctaUrl: str
 export async function POST(req: NextRequest) {
   try {
     const { type, to, data } = await req.json()
-
     let subject = ''
     let html = ''
 
@@ -53,12 +52,42 @@ export async function POST(req: NextRequest) {
     }
 
     if (type === 'booking_accepted') {
-      subject = `Your booking was accepted!`
+      subject = `Your booking was accepted! 🎉`
       html = emailTemplate(
         'Booking accepted! 🎉',
         `<strong style="color:#E8E0FF">${data.providerName}</strong> accepted your session request for <strong style="color:#E8E0FF">${data.activityTitle}</strong>. Check your sessions for details.`,
         'View my sessions →',
         'https://bestiehere.com/sessions'
+      )
+    }
+
+    if (type === 'booking_declined') {
+      subject = `Booking update for ${data.activityTitle}`
+      html = emailTemplate(
+        'Booking not available',
+        `Unfortunately <strong style="color:#E8E0FF">${data.providerName}</strong> wasn't able to accept your request for <strong style="color:#E8E0FF">${data.activityTitle}</strong> this time. Browse other Besties and find your match!`,
+        'Browse Besties →',
+        'https://bestiehere.com/browse'
+      )
+    }
+
+    if (type === 'booking_cancelled') {
+      subject = `Booking cancelled for ${data.activityTitle}`
+      html = emailTemplate(
+        'A booking was cancelled',
+        `<strong style="color:#E8E0FF">${data.seekerName}</strong> cancelled their request for <strong style="color:#E8E0FF">${data.activityTitle}</strong>. Your calendar is now open for new bookings.`,
+        'View bookings →',
+        'https://bestiehere.com/bookings'
+      )
+    }
+
+    if (type === 'booking_completed') {
+      subject = `Session completed — leave a review! ⭐`
+      html = emailTemplate(
+        'How was your session?',
+        `Your session with <strong style="color:#E8E0FF">${data.providerName}</strong> for <strong style="color:#E8E0FF">${data.activityTitle}</strong> is marked as completed. Leave a review and give Sparks!`,
+        'Leave a review →',
+        data.reviewUrl || 'https://bestiehere.com/sessions'
       )
     }
 
