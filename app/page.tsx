@@ -124,7 +124,7 @@ export default function HomePage() {
         .mobile-menu-btn { display: none; }
         .mobile-menu { display: none; }
         .hero-title { font-size: clamp(36px, 8vw, 72px); }
-        .providers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .providers-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
         .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
         .how-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; }
         .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 64px; align-items: center; }
