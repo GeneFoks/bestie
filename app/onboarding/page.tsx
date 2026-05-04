@@ -5,21 +5,81 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
-const ACTIVITIES = [
-  { id: 'meet_irl', emoji: '🤝', label: 'Meet IRL' },
-  { id: 'dance_crew', emoji: '💃', label: 'Dance Crew' },
-  { id: 'trail_crew', emoji: '🥾', label: 'Trail Crew' },
-  { id: 'travel_buddy', emoji: '✈️', label: 'Travel Buddy' },
-  { id: 'game_night', emoji: '🎮', label: 'Game Night' },
-  { id: 'watch_together', emoji: '🎬', label: 'Watch Together' },
-  { id: 'vibe_call', emoji: '📱', label: 'Vibe Call' },
-  { id: 'deep_chat', emoji: '🫂', label: 'Deep Chat' },
-  { id: 'real_talk', emoji: '💬', label: 'Real Talk' },
-  { id: 'festival_crew', emoji: '🎪', label: 'Festival Crew' },
-  { id: 'epic_journey', emoji: '🌍', label: 'Epic Journey' },
-  { id: 'fishing_crew', emoji: '🎣', label: 'Fishing Crew' },
+const ACTIVITY_GROUPS = [
+  { label: '🏃 Active', activities: [
+    { id: 'hiking', emoji: '🥾', label: 'Hiking' },
+    { id: 'running', emoji: '🏃', label: 'Running' },
+    { id: 'gym_partner', emoji: '💪', label: 'Gym' },
+    { id: 'cycling', emoji: '🚴', label: 'Cycling' },
+    { id: 'swimming', emoji: '🏊', label: 'Swimming' },
+    { id: 'cold_plunge', emoji: '🧊', label: 'Cold Plunge' },
+    { id: 'yoga', emoji: '🧘', label: 'Yoga' },
+    { id: 'martial_arts', emoji: '🥋', label: 'Martial Arts' },
+    { id: 'climbing', emoji: '🧗', label: 'Climbing' },
+  ]},
+  { label: '🎮 Social', activities: [
+    { id: 'game_night', emoji: '🎮', label: 'Game Night' },
+    { id: 'movie_night', emoji: '🎬', label: 'Movie Night' },
+    { id: 'night_out', emoji: '🍸', label: 'Night Out' },
+    { id: 'bar_hopping', emoji: '🍺', label: 'Bar Hopping' },
+    { id: 'karaoke', emoji: '🎤', label: 'Karaoke' },
+    { id: 'festival_crew', emoji: '🎪', label: 'Festival' },
+    { id: 'travel_buddy', emoji: '✈️', label: 'Travel' },
+    { id: 'wing_person', emoji: '😎', label: 'Wing Person' },
+    { id: 'comedy_show', emoji: '😂', label: 'Comedy' },
+  ]},
+  { label: '🧠 Mind', activities: [
+    { id: 'deep_chat', emoji: '🫂', label: 'Deep Chat' },
+    { id: 'debate_club', emoji: '🗣️', label: 'Debate' },
+    { id: 'book_club', emoji: '📚', label: 'Book Club' },
+    { id: 'language_exchange', emoji: '🌐', label: 'Language' },
+    { id: 'career_talk', emoji: '💼', label: 'Career Talk' },
+    { id: 'money_talk', emoji: '💰', label: 'Money Talk' },
+    { id: 'journaling', emoji: '📓', label: 'Journaling' },
+    { id: 'accountability_partner', emoji: '🎯', label: 'Accountability' },
+    { id: 'storytelling_night', emoji: '📖', label: 'Storytelling' },
+  ]},
+  { label: '🎨 Creative', activities: [
+    { id: 'music_lesson', emoji: '🎸', label: 'Music' },
+    { id: 'art_together', emoji: '🎨', label: 'Art' },
+    { id: 'photography_walk', emoji: '📸', label: 'Photography' },
+    { id: 'cooking_together', emoji: '🍳', label: 'Cooking' },
+    { id: 'dance', emoji: '💃', label: 'Dance' },
+    { id: 'improv_acting', emoji: '🎭', label: 'Improv' },
+    { id: 'writing_club', emoji: '✍️', label: 'Writing' },
+  ]},
+  { label: '🫂 Support', activities: [
+    { id: 'vent_session', emoji: '💬', label: 'Vent Session' },
+    { id: '3am_talk', emoji: '🌙', label: '3am Talk' },
+    { id: 'hype_person', emoji: '🔥', label: 'Hype Person' },
+    { id: 'sobriety_buddy', emoji: '🌿', label: 'Sobriety' },
+    { id: 'silence_buddy', emoji: '🤫', label: 'Silence' },
+    { id: 'grief_support', emoji: '🤍', label: 'Grief' },
+    { id: 'ugly_cry_buddy', emoji: '😭', label: 'Ugly Cry' },
+  ]},
+  { label: '🔮 Spiritual', activities: [
+    { id: 'meditation_circle', emoji: '🧘', label: 'Meditation' },
+    { id: 'breathwork', emoji: '🌬️', label: 'Breathwork' },
+    { id: 'sound_healing', emoji: '🔔', label: 'Sound Healing' },
+    { id: 'cacao_ceremony', emoji: '🍫', label: 'Cacao' },
+    { id: 'tarot', emoji: '🔮', label: 'Tarot' },
+    { id: 'retreat_buddy', emoji: '🏕️', label: 'Retreat' },
+    { id: 'psychedelic_integration', emoji: '🌀', label: 'Integration' },
+    { id: 'nature_ritual', emoji: '🌿', label: 'Nature' },
+    { id: 'lucid_dream_club', emoji: '💫', label: 'Lucid Dream' },
+  ]},
+  { label: '☕ Chill', activities: [
+    { id: 'coffee_chat', emoji: '☕', label: 'Coffee Chat' },
+    { id: 'digital_detox_walk', emoji: '📵', label: 'Detox Walk' },
+    { id: 'skincare_night', emoji: '✨', label: 'Skincare' },
+    { id: 'smoke_buddy', emoji: '💨', label: 'Smoke' },
+    { id: 'astrology_session', emoji: '⭐', label: 'Astrology' },
+    { id: 'coworking', emoji: '💻', label: 'Coworking' },
+    { id: 'errand_buddy', emoji: '🛒', label: 'Errands' },
+  ]},
 ]
 
+const ALL_ACTIVITIES = ACTIVITY_GROUPS.flatMap(g => g.activities)
 const STEP_TITLES = ['Who are you?', 'Where are you?', 'What are you into?', 'Your first activity']
 
 export default function OnboardingPage() {
@@ -27,6 +87,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [userId, setUserId] = useState(null)
+  const [activeGroup, setActiveGroup] = useState(ACTIVITY_GROUPS[0].label)
   const [form, setForm] = useState({
     full_name: '', bio: '', city: '', country: '',
     activities: [], activityTitle: '', activityType: '',
@@ -36,9 +97,9 @@ export default function OnboardingPage() {
   useEffect(() => {
     const getSession = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-        if (!user) { router.push('/login'); return }
-      setUserId(session.user.id)
-      const name = session.user.user_metadata?.full_name
+      if (!user) { router.push('/login'); return }
+      setUserId(user.id)
+      const name = user.user_metadata?.full_name
       if (name) setForm(f => ({ ...f, full_name: name }))
     }
     getSession()
@@ -71,6 +132,8 @@ export default function OnboardingPage() {
   const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
   const labelStyle = { fontSize: '13px', fontWeight: 500, color: '#9B93C0', display: 'block', marginBottom: '8px' }
 
+  const currentGroup = ACTIVITY_GROUPS.find(g => g.label === activeGroup)
+
   return (
     <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ width: '100%', maxWidth: '520px' }}>
@@ -92,7 +155,7 @@ export default function OnboardingPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label style={labelStyle}>Your name</label>
-                <input value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))} placeholder="Gennadii Fokin" style={inputStyle} />
+                <input value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))} placeholder="Your full name" style={inputStyle} />
               </div>
               <div>
                 <label style={labelStyle}>Bio <span style={{ fontWeight: 400 }}>(what makes you, you)</span></label>
@@ -119,9 +182,16 @@ export default function OnboardingPage() {
 
           {step === 3 && (
             <div>
-              <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '16px' }}>Pick everything you're open to:</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                {ACTIVITIES.map(a => {
+              <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '12px' }}>Pick everything you're open to:</p>
+              <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '10px', marginBottom: '12px', scrollbarWidth: 'none' }}>
+                {ACTIVITY_GROUPS.map(g => (
+                  <button key={g.label} onClick={() => setActiveGroup(g.label)} style={{ padding: '6px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: activeGroup === g.label ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', border: activeGroup === g.label ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.06)', color: activeGroup === g.label ? '#D4AF37' : '#9B93C0' }}>
+                    {g.label}
+                  </button>
+                ))}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', maxHeight: '300px', overflowY: 'auto' }}>
+                {currentGroup?.activities.map(a => {
                   const selected = form.activities.includes(a.id)
                   return (
                     <button key={a.id} onClick={() => toggleActivity(a.id)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '12px 8px', borderRadius: '14px', border: selected ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.06)', background: selected ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.03)', cursor: 'pointer' }}>
@@ -131,6 +201,11 @@ export default function OnboardingPage() {
                   )
                 })}
               </div>
+              {form.activities.length > 0 && (
+                <p style={{ fontSize: '12px', color: '#D4AF37', marginTop: '12px' }}>
+                  {form.activities.length} selected across all groups
+                </p>
+              )}
             </div>
           )}
 
@@ -145,7 +220,13 @@ export default function OnboardingPage() {
                 <label style={labelStyle}>Activity type</label>
                 <select value={form.activityType} onChange={e => setForm(f => ({ ...f, activityType: e.target.value }))} style={{ ...inputStyle, cursor: 'pointer' }}>
                   <option value="">Select type...</option>
-                  {ACTIVITIES.map(a => <option key={a.id} value={a.id}>{a.emoji} {a.label}</option>)}
+                  {ACTIVITY_GROUPS.map(group => (
+                    <optgroup key={group.label} label={group.label}>
+                      {group.activities.map(a => (
+                        <option key={a.id} value={a.id}>{a.emoji} {a.label}</option>
+                      ))}
+                    </optgroup>
+                  ))}
                 </select>
               </div>
               <div>
