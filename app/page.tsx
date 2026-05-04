@@ -67,7 +67,7 @@ export default function HomePage() {
   const [loggedIn, setLoggedIn] = useState(false)
   const [topProviders, setTopProviders] = useState<any[]>([])
   const [activeGroup, setActiveGroup] = useState(null)
-  const [groupProviders, setGroupProviders] = useState([])
+  const [groupProviders, setGroupProviders] = useState<any[]>([])
   const [groupLoading, setGroupLoading] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
