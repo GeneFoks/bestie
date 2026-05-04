@@ -17,6 +17,8 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const messagesEndRef = useRef(null)
+  const activeConvRef = useRef(null)
+  const userIdRef = useRef(null)
 
   useEffect(() => {
     const init = async () => {
@@ -24,35 +26,34 @@ export default function MessagesPage() {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) { router.push('/login'); return }
         setUserId(user.id)
+        userIdRef.current = user.id
 
         const convs = await loadConversations(user.id)
 
-        // Если пришли с ?to=username — открыть тот чат
-      const toUsername = searchParams.get('to')
-if (toUsername) {
-  if (convs && convs.length > 0) {
-    const found = convs.find(c => c.user.username === toUsername)
-    if (found) {
-      setActiveConv(found)
-    } else {
-      // Человек есть но переписки нет — загружаем его профиль
-      const { data: toUser } = await supabase
-        .from('users')
-        .select('id, full_name, username, avatar_url, bestie_score')
-        .eq('username', toUsername)
-        .single()
-      if (toUser) setActiveConv({ user: toUser, lastMessage: null, unread: 0 })
-    }
-  } else {
-    // Переписок вообще нет — загружаем профиль напрямую
-    const { data: toUser } = await supabase
-      .from('users')
-      .select('id, full_name, username, avatar_url, bestie_score')
-      .eq('username', toUsername)
-      .single()
-    if (toUser) setActiveConv({ user: toUser, lastMessage: null, unread: 0 })
-  }
-}
+        const toUsername = searchParams.get('to')
+        if (toUsername) {
+          if (convs && convs.length > 0) {
+            const found = convs.find(c => c.user.username === toUsername)
+            if (found) {
+              setActiveConv(found)
+              activeConvRef.current = found
+            } else {
+              const { data: toUser } = await supabase.from('users').select('id, full_name, username, avatar_url, bestie_score').eq('username', toUsername).single()
+              if (toUser) {
+                const conv = { user: toUser, lastMessage: null, unread: 0 }
+                setActiveConv(conv)
+                activeConvRef.current = conv
+              }
+            }
+          } else {
+            const { data: toUser } = await supabase.from('users').select('id, full_name, username, avatar_url, bestie_score').eq('username', toUsername).single()
+            if (toUser) {
+              const conv = { user: toUser, lastMessage: null, unread: 0 }
+              setActiveConv(conv)
+              activeConvRef.current = conv
+            }
+          }
+        }
       } catch (e) {
         console.error(e)
       } finally {
@@ -62,32 +63,44 @@ if (toUsername) {
     init()
   }, [])
 
+  // Real-time subscription
   useEffect(() => {
-    if (!userId || !activeConv) return
-    loadMessages(activeConv.user.id)
+    if (!userId) return
 
     const sub = supabase
-      .channel('messages')
+      .channel(`messages-realtime-${userId}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
         filter: `receiver_id=eq.${userId}`,
       }, (payload) => {
-        if (payload.new.sender_id === activeConv.user.id) {
-          setMessages(m => [...m, payload.new])
+        const newMsg = payload.new
+        // Добавляем сообщение если это активный чат
+        if (activeConvRef.current?.user.id === newMsg.sender_id) {
+          setMessages(m => [...m, newMsg])
           scrollToBottom()
+          // Помечаем как прочитанное
+          supabase.from('messages').update({ read: true }).eq('id', newMsg.id)
         }
+        // Обновляем список разговоров
+        loadConversations(userId)
       })
       .subscribe()
 
     return () => supabase.removeChannel(sub)
+  }, [userId])
+
+  useEffect(() => {
+    if (!userId || !activeConv) return
+    activeConvRef.current = activeConv
+    loadMessages(activeConv.user.id)
   }, [activeConv, userId])
 
   useEffect(() => { scrollToBottom() }, [messages])
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
   }
 
   const loadConversations = async (uid) => {
@@ -101,21 +114,25 @@ if (toUsername) {
 
     if (partnerIds.length === 0) { setConversations([]); return [] }
 
-    const { data: users } = await supabase
-      .from('users')
-      .select('id, full_name, username, avatar_url, bestie_score')
-      .in('id', partnerIds)
+    const { data: users } = await supabase.from('users').select('id, full_name, username, avatar_url, bestie_score').in('id', partnerIds)
 
     const convs = await Promise.all((users || []).map(async (user) => {
       const { data: last } = await supabase
         .from('messages')
-        .select('content, created_at, sender_id')
+        .select('content, created_at, sender_id, read')
         .or(`and(sender_id.eq.${uid},receiver_id.eq.${user.id}),and(sender_id.eq.${user.id},receiver_id.eq.${uid})`)
         .order('created_at', { ascending: false })
         .limit(1)
         .single()
 
-      return { user, lastMessage: last, unread: 0 }
+      const { count: unread } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('sender_id', user.id)
+        .eq('receiver_id', uid)
+        .eq('read', false)
+
+      return { user, lastMessage: last, unread: unread || 0 }
     }))
 
     convs.sort((a, b) => new Date(b.lastMessage?.created_at || 0) - new Date(a.lastMessage?.created_at || 0))
@@ -131,18 +148,15 @@ if (toUsername) {
       .order('created_at', { ascending: true })
 
     setMessages(data || [])
+    scrollToBottom()
 
-    await supabase
-      .from('messages')
-      .update({ read: true })
-      .eq('sender_id', partnerId)
-      .eq('receiver_id', userId)
-      .eq('read', false)
+    await supabase.from('messages').update({ read: true }).eq('sender_id', partnerId).eq('receiver_id', userId).eq('read', false)
   }
+
   const sendMessage = async () => {
     if (!newMessage.trim() || !activeConv) return
     setSending(true)
-    const msg = { sender_id: userId, receiver_id: activeConv.user.id, content: newMessage.trim() }
+    const msg = { sender_id: userId, receiver_id: activeConv.user.id, content: newMessage.trim(), read: false }
     const { data } = await supabase.from('messages').insert(msg).select().single()
     if (data) {
       setMessages(m => [...m, data])
@@ -179,6 +193,8 @@ if (toUsername) {
       </nav>
 
       <div style={{ flex: 1, display: 'flex', maxWidth: '1100px', width: '100%', margin: '0 auto', padding: '24px', gap: '20px', height: 'calc(100vh - 65px)' }}>
+
+        {/* Sidebar */}
         <div style={{ width: '320px', flexShrink: 0, background: '#0F0F1E', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#E8E0FF' }}>Messages</h2>
@@ -192,15 +208,22 @@ if (toUsername) {
               </div>
             ) : conversations.map(conv => (
               <button key={conv.user.id} onClick={() => setActiveConv(conv)} style={{ width: '100%', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px', background: activeConv?.user.id === conv.user.id ? 'rgba(212,175,55,0.08)' : 'transparent', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer', textAlign: 'left' }}>
-                <div style={{ width: '44px', height: '44px', borderRadius: '14px', overflow: 'hidden', flexShrink: 0, background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {conv.user.avatar_url ? <img src={conv.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700, fontSize: '14px' }}>{initials(conv.user.full_name)}</span>}
+                <div style={{ position: 'relative', flexShrink: 0 }}>
+                  <div style={{ width: '44px', height: '44px', borderRadius: '14px', overflow: 'hidden', background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {conv.user.avatar_url ? <img src={conv.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700, fontSize: '14px' }}>{initials(conv.user.full_name)}</span>}
+                  </div>
+                  {conv.unread > 0 && (
+                    <div style={{ position: 'absolute', top: '-4px', right: '-4px', width: '18px', height: '18px', borderRadius: '50%', background: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: '#080810' }}>
+                      {conv.unread > 9 ? '9+' : conv.unread}
+                    </div>
+                  )}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF' }}>{conv.user.full_name}</span>
+                    <span style={{ fontSize: '14px', fontWeight: conv.unread > 0 ? 700 : 600, color: '#E8E0FF' }}>{conv.user.full_name}</span>
                     {conv.lastMessage && <span style={{ fontSize: '11px', color: '#9B93C0' }}>{formatTime(conv.lastMessage.created_at)}</span>}
                   </div>
-                  <span style={{ fontSize: '13px', color: '#9B93C0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                  <span style={{ fontSize: '13px', color: conv.unread > 0 ? '#E8E0FF' : '#9B93C0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', fontWeight: conv.unread > 0 ? 500 : 400 }}>
                     {conv.lastMessage ? (conv.lastMessage.sender_id === userId ? 'You: ' : '') + conv.lastMessage.content : 'Start a conversation'}
                   </span>
                 </div>
@@ -209,6 +232,7 @@ if (toUsername) {
           </div>
         </div>
 
+        {/* Chat area */}
         <div style={{ flex: 1, background: '#0F0F1E', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {!activeConv ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
