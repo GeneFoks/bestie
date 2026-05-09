@@ -21,17 +21,6 @@ export default function BookingsPage() {
   const [tab, setTab] = useState('incoming')
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/login'); return }
-      setUserId(user.id)
-      await loadBookings(user.id)
-      setLoading(false)
-    }
-    init()
-  }, [])
-
   const loadBookings = async (uid) => {
     const { data } = await supabase
       .from('bookings')
@@ -40,6 +29,35 @@ export default function BookingsPage() {
       .order('created_at', { ascending: false })
     setBookings(data || [])
   }
+
+  useEffect(() => {
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/login'); return }
+      setUserId(user.id)
+      await loadBookings(user.id)
+      setLoading(false)
+
+      const channel = supabase
+        .channel('bookings-realtime')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'bookings',
+          filter: `seeker_id=eq.${user.id}`,
+        }, () => loadBookings(user.id))
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'bookings',
+          filter: `provider_id=eq.${user.id}`,
+        }, () => loadBookings(user.id))
+        .subscribe()
+
+      return () => supabase.removeChannel(channel)
+    }
+    init()
+  }, [])
 
   const sendEmail = async (type, to, data) => {
     try {
