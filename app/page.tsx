@@ -180,7 +180,7 @@ export default function HomePage() {
         <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '7px 14px', borderRadius: '999px', marginBottom: '24px', fontSize: '13px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37' }}>
             <span style={{ color: '#39FF14' }}>●</span>
-            Your social passport — live now in Austin
+            Your social passport — live worldwide
           </div>
           <h1 className="hero-title" style={{ fontFamily: 'DM Serif Display, serif', fontWeight: 700, color: '#E8E0FF', lineHeight: 1.1, marginBottom: '20px' }}>
             Real people.<br /><em style={{ color: '#D4AF37', fontStyle: 'italic' }}>Real moments.</em>
@@ -440,7 +440,7 @@ export default function HomePage() {
             <Link href="/score-guide" style={{ color: '#9B93C0', textDecoration: 'none' }}>Bestie Score</Link>
             <Link href="/signup" style={{ color: '#9B93C0', textDecoration: 'none' }}>Join</Link>
           </div>
-          <p style={{ fontSize: '12px', color: '#9B93C0' }}>© 2026 Bestie. Austin, TX. 18+</p>
+          <p style={{ fontSize: '12px', color: '#9B93C0' }}>© 2026 Bestie. Worldwide. 18+</p>
         </div>
       </footer>
 
