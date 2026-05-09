@@ -79,13 +79,13 @@ const ACTIVITY_GROUPS = [
   ]},
 ]
 
-const ALL_ACTIVITIES = ACTIVITY_GROUPS.flatMap(g => g.activities)
 const STEP_TITLES = ['Who are you?', 'Where are you?', 'What are you into?', 'Your first activity']
 
 export default function OnboardingPage() {
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
+  const [checking, setChecking] = useState(true)
   const [userId, setUserId] = useState(null)
   const [activeGroup, setActiveGroup] = useState(ACTIVITY_GROUPS[0].label)
   const [form, setForm] = useState({
@@ -98,9 +98,31 @@ export default function OnboardingPage() {
     const getSession = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
+
       setUserId(user.id)
-      const name = user.user_metadata?.full_name
-      if (name) setForm(f => ({ ...f, full_name: name }))
+
+      const { data: profile } = await supabase
+        .from('users')
+        .select('full_name, bio, city, country, onboarding_completed')
+        .eq('id', user.id)
+        .single()
+
+      // If already onboarded — skip straight to dashboard
+      if (profile?.onboarding_completed) {
+        router.push('/dashboard')
+        return
+      }
+
+      // Pre-fill existing data so user doesn't re-enter
+      setForm(f => ({
+        ...f,
+        full_name: profile?.full_name || user.user_metadata?.full_name || '',
+        bio: profile?.bio || '',
+        city: profile?.city || '',
+        country: profile?.country || '',
+      }))
+
+      setChecking(false)
     }
     getSession()
   }, [])
@@ -108,31 +130,48 @@ export default function OnboardingPage() {
   const toggleActivity = (id) => {
     setForm(f => ({
       ...f,
-      activities: f.activities.includes(id) ? f.activities.filter(a => a !== id) : [...f.activities, id]
+      activities: f.activities.includes(id)
+        ? f.activities.filter(a => a !== id)
+        : [...f.activities, id]
     }))
   }
 
   const handleFinish = async () => {
     setLoading(true)
+
     await supabase.from('users').update({
-      full_name: form.full_name, bio: form.bio,
-      city: form.city, country: form.country, bestie_score: 80,
+      full_name: form.full_name,
+      bio: form.bio,
+      city: form.city,
+      country: form.country,
+      bestie_score: 80,
+      activities: form.activities,
+      onboarding_completed: true,
     }).eq('id', userId)
+
     if (form.activityTitle && form.activityType) {
       await supabase.from('activity_packages').insert({
-        user_id: userId, title: form.activityTitle,
-        activity_type: form.activityType, description: form.activityDesc,
+        user_id: userId,
+        title: form.activityTitle,
+        activity_type: form.activityType,
+        description: form.activityDesc,
         price_per_session: form.activityFree ? 0 : parseFloat(form.activityPrice) || 0,
         is_free: form.activityFree,
       })
     }
+
     router.push('/dashboard')
   }
 
   const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
   const labelStyle = { fontSize: '13px', fontWeight: 500, color: '#9B93C0', display: 'block', marginBottom: '8px' }
-
   const currentGroup = ACTIVITY_GROUPS.find(g => g.label === activeGroup)
+
+  if (checking) return (
+    <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <span style={{ color: '#9B93C0', fontSize: '14px' }}>Loading...</span>
+    </div>
+  )
 
   return (
     <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
