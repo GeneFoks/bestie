@@ -1,7 +1,7 @@
 // @ts-nocheck
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -20,39 +20,43 @@ export default function BookingsPage() {
   const [bookings, setBookings] = useState([])
   const [tab, setTab] = useState('incoming')
   const [loading, setLoading] = useState(true)
+  const userIdRef = useRef(null)
 
   const loadBookings = async (uid) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('bookings')
       .select(`*, package:activity_packages(*), seeker:users!bookings_seeker_id_fkey(id,full_name,username,avatar_url,bestie_score,email), provider:users!bookings_provider_id_fkey(id,full_name,username,avatar_url,bestie_score,email)`)
       .or(`seeker_id.eq.${uid},provider_id.eq.${uid}`)
       .order('created_at', { ascending: false })
-    setBookings(data || [])
+    if (!error) setBookings(data || [])
   }
 
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
+      
+      userIdRef.current = user.id
       setUserId(user.id)
       await loadBookings(user.id)
       setLoading(false)
 
-      const channel = supabase
-        .channel('bookings-realtime')
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'bookings',
-          filter: `seeker_id=eq.${user.id}`,
-        }, () => loadBookings(user.id))
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'bookings',
-          filter: `provider_id=eq.${user.id}`,
-        }, () => loadBookings(user.id))
-        .subscribe()
+      // FIX: subscribe first, then add listeners
+      const channel = supabase.channel('bookings-realtime')
+      
+      channel.on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'bookings',
+      }, (payload) => {
+        const uid = userIdRef.current
+        if (!uid) return
+        const { new: n, old: o } = payload
+        const relevant = n?.seeker_id === uid || n?.provider_id === uid || o?.seeker_id === uid || o?.provider_id === uid
+        if (relevant) loadBookings(uid)
+      })
+      
+      channel.subscribe()
 
       return () => supabase.removeChannel(channel)
     }
@@ -75,43 +79,24 @@ export default function BookingsPage() {
     const booking = bookings.find(b => b.id === id)
     await supabase.from('bookings').update({ status }).eq('id', id)
     setBookings(b => b.map(b2 => b2.id === id ? { ...b2, status } : b2))
-
     const activityTitle = booking.package?.title || 'Session'
-
     if (status === 'accepted' && booking?.seeker?.email) {
-      await sendEmail('booking_accepted', booking.seeker.email, {
-        providerName: booking.provider?.full_name || 'Your Bestie',
-        activityTitle,
-      })
+      await sendEmail('booking_accepted', booking.seeker.email, { providerName: booking.provider?.full_name || 'Your Bestie', activityTitle })
     }
-
     if (status === 'declined' && booking?.seeker?.email) {
-      await sendEmail('booking_declined', booking.seeker.email, {
-        providerName: booking.provider?.full_name || 'Your Bestie',
-        activityTitle,
-      })
+      await sendEmail('booking_declined', booking.seeker.email, { providerName: booking.provider?.full_name || 'Your Bestie', activityTitle })
     }
-
     if (status === 'cancelled' && booking?.provider?.email) {
-      await sendEmail('booking_cancelled', booking.provider.email, {
-        seekerName: booking.seeker?.full_name || 'Someone',
-        activityTitle,
-      })
+      await sendEmail('booking_cancelled', booking.provider.email, { seekerName: booking.seeker?.full_name || 'Someone', activityTitle })
     }
-
     if (status === 'completed' && booking?.seeker?.email) {
-      await sendEmail('booking_completed', booking.seeker.email, {
-        providerName: booking.provider?.full_name || 'Your Bestie',
-        activityTitle,
-        reviewUrl: `https://bestiehere.com/review/${id}`,
-      })
+      await sendEmail('booking_completed', booking.seeker.email, { providerName: booking.provider?.full_name || 'Your Bestie', activityTitle, reviewUrl: `https://bestiehere.com/review/${id}` })
     }
   }
 
   const incoming = bookings.filter(b => b.provider_id === userId)
   const outgoing = bookings.filter(b => b.seeker_id === userId)
   const current = tab === 'incoming' ? incoming : outgoing
-
   const formatDate = (ts) => ts ? new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : null
 
   if (loading) return (
