@@ -23,39 +23,57 @@ export default function BookingsPage() {
   const userIdRef = useRef(null)
 
   const loadBookings = async (uid) => {
-    const { data, error } = await supabase
+    // Step 1: load bookings
+    const { data: bookingRows, error } = await supabase
       .from('bookings')
-      .select(`*, package:activity_packages(*), seeker:users!bookings_seeker_id_fkey(id,full_name,username,avatar_url,bestie_score,email), provider:users!bookings_provider_id_fkey(id,full_name,username,avatar_url,bestie_score,email)`)
+      .select('*, package:activity_packages(*)')
       .or(`seeker_id.eq.${uid},provider_id.eq.${uid}`)
       .order('created_at', { ascending: false })
-    if (!error) setBookings(data || [])
+
+    if (error || !bookingRows) return
+
+    // Step 2: collect all user ids
+    const userIds = [...new Set([
+      ...bookingRows.map(b => b.seeker_id),
+      ...bookingRows.map(b => b.provider_id),
+    ].filter(Boolean))]
+
+    // Step 3: load users
+    const { data: users } = await supabase
+      .from('users')
+      .select('id, full_name, username, avatar_url, bestie_score, email')
+      .in('id', userIds)
+
+    const userMap = {}
+    users?.forEach(u => { userMap[u.id] = u })
+
+    // Step 4: merge
+    const merged = bookingRows.map(b => ({
+      ...b,
+      seeker: userMap[b.seeker_id] || null,
+      provider: userMap[b.provider_id] || null,
+    }))
+
+    setBookings(merged)
   }
 
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
-      
       userIdRef.current = user.id
       setUserId(user.id)
       await loadBookings(user.id)
       setLoading(false)
 
-      // FIX: subscribe first, then add listeners
       const channel = supabase.channel('bookings-realtime')
-      
-      channel.on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'bookings',
-      }, (payload) => {
+      channel.on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, (payload) => {
         const uid = userIdRef.current
         if (!uid) return
         const { new: n, old: o } = payload
         const relevant = n?.seeker_id === uid || n?.provider_id === uid || o?.seeker_id === uid || o?.provider_id === uid
         if (relevant) loadBookings(uid)
       })
-      
       channel.subscribe()
 
       return () => supabase.removeChannel(channel)
@@ -65,14 +83,8 @@ export default function BookingsPage() {
 
   const sendEmail = async (type, to, data) => {
     try {
-      await fetch('/api/email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type, to, data })
-      })
-    } catch (e) {
-      console.error('Email send failed:', e)
-    }
+      await fetch('/api/email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type, to, data }) })
+    } catch (e) { console.error('Email send failed:', e) }
   }
 
   const updateStatus = async (id, status) => {
@@ -80,18 +92,10 @@ export default function BookingsPage() {
     await supabase.from('bookings').update({ status }).eq('id', id)
     setBookings(b => b.map(b2 => b2.id === id ? { ...b2, status } : b2))
     const activityTitle = booking.package?.title || 'Session'
-    if (status === 'accepted' && booking?.seeker?.email) {
-      await sendEmail('booking_accepted', booking.seeker.email, { providerName: booking.provider?.full_name || 'Your Bestie', activityTitle })
-    }
-    if (status === 'declined' && booking?.seeker?.email) {
-      await sendEmail('booking_declined', booking.seeker.email, { providerName: booking.provider?.full_name || 'Your Bestie', activityTitle })
-    }
-    if (status === 'cancelled' && booking?.provider?.email) {
-      await sendEmail('booking_cancelled', booking.provider.email, { seekerName: booking.seeker?.full_name || 'Someone', activityTitle })
-    }
-    if (status === 'completed' && booking?.seeker?.email) {
-      await sendEmail('booking_completed', booking.seeker.email, { providerName: booking.provider?.full_name || 'Your Bestie', activityTitle, reviewUrl: `https://bestiehere.com/review/${id}` })
-    }
+    if (status === 'accepted' && booking?.seeker?.email) await sendEmail('booking_accepted', booking.seeker.email, { providerName: booking.provider?.full_name || 'Your Bestie', activityTitle })
+    if (status === 'declined' && booking?.seeker?.email) await sendEmail('booking_declined', booking.seeker.email, { providerName: booking.provider?.full_name || 'Your Bestie', activityTitle })
+    if (status === 'cancelled' && booking?.provider?.email) await sendEmail('booking_cancelled', booking.provider.email, { seekerName: booking.seeker?.full_name || 'Someone', activityTitle })
+    if (status === 'completed' && booking?.seeker?.email) await sendEmail('booking_completed', booking.seeker.email, { providerName: booking.provider?.full_name || 'Your Bestie', activityTitle, reviewUrl: `https://bestiehere.com/review/${id}` })
   }
 
   const incoming = bookings.filter(b => b.provider_id === userId)
@@ -176,27 +180,17 @@ export default function BookingsPage() {
               <div style={{ display: 'flex', gap: '8px' }}>
                 {tab === 'incoming' && booking.status === 'pending' && (
                   <>
-                    <button onClick={() => updateStatus(booking.id, 'accepted')} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(57,255,20,0.12)', border: '1px solid rgba(57,255,20,0.3)', color: '#39FF14', cursor: 'pointer' }}>
-                      ✓ Accept
-                    </button>
-                    <button onClick={() => updateStatus(booking.id, 'declined')} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.2)', color: '#ff6b6b', cursor: 'pointer' }}>
-                      ✕ Decline
-                    </button>
+                    <button onClick={() => updateStatus(booking.id, 'accepted')} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(57,255,20,0.12)', border: '1px solid rgba(57,255,20,0.3)', color: '#39FF14', cursor: 'pointer' }}>✓ Accept</button>
+                    <button onClick={() => updateStatus(booking.id, 'declined')} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.2)', color: '#ff6b6b', cursor: 'pointer' }}>✕ Decline</button>
                   </>
                 )}
                 {tab === 'incoming' && booking.status === 'accepted' && (
-                  <button onClick={() => updateStatus(booking.id, 'completed')} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: 'pointer' }}>
-                    ✓ Mark as completed
-                  </button>
+                  <button onClick={() => updateStatus(booking.id, 'completed')} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: 'pointer' }}>✓ Mark as completed</button>
                 )}
                 {tab === 'outgoing' && booking.status === 'pending' && (
-                  <button onClick={() => updateStatus(booking.id, 'cancelled')} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', cursor: 'pointer' }}>
-                    Cancel request
-                  </button>
+                  <button onClick={() => updateStatus(booking.id, 'cancelled')} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', cursor: 'pointer' }}>Cancel request</button>
                 )}
-                <Link href={`/messages?to=${other?.username}`} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', textDecoration: 'none', textAlign: 'center' }}>
-                  💬 Message
-                </Link>
+                <Link href={`/messages?to=${other?.username}`} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', textDecoration: 'none', textAlign: 'center' }}>💬 Message</Link>
               </div>
             </div>
           )
