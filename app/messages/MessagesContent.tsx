@@ -27,33 +27,7 @@ export default function MessagesPage() {
         if (!user) { router.push('/login'); return }
         setUserId(user.id)
         userIdRef.current = user.id
-
-        const convs = await loadConversations(user.id)
-
-        const toUsername = searchParams.get('to')
-        if (toUsername) {
-          if (convs && convs.length > 0) {
-            const found = convs.find(c => c.user.username === toUsername)
-            if (found) {
-              setActiveConv(found)
-              activeConvRef.current = found
-            } else {
-              const { data: toUser } = await supabase.from('users').select('id, full_name, username, avatar_url, bestie_score').eq('username', toUsername).single()
-              if (toUser) {
-                const conv = { user: toUser, lastMessage: null, unread: 0 }
-                setActiveConv(conv)
-                activeConvRef.current = conv
-              }
-            }
-          } else {
-            const { data: toUser } = await supabase.from('users').select('id, full_name, username, avatar_url, bestie_score').eq('username', toUsername).single()
-            if (toUser) {
-              const conv = { user: toUser, lastMessage: null, unread: 0 }
-              setActiveConv(conv)
-              activeConvRef.current = conv
-            }
-          }
-        }
+        await loadConversations(user.id)
       } catch (e) {
         console.error(e)
       } finally {
@@ -63,10 +37,38 @@ export default function MessagesPage() {
     init()
   }, [])
 
+  // Отдельный useEffect для ?to= — срабатывает когда userId готов
+  useEffect(() => {
+    if (!userId) return
+    const toUsername = searchParams.get('to')
+    if (!toUsername) return
+
+    const openConv = async () => {
+      // Сначала ищем в существующих
+      const found = conversations.find(c => c.user.username === toUsername)
+      if (found) {
+        setActiveConv(found)
+        activeConvRef.current = found
+        return
+      }
+      // Если нет — загружаем пользователя напрямую
+      const { data: toUser } = await supabase
+        .from('users')
+        .select('id, full_name, username, avatar_url, bestie_score')
+        .eq('username', toUsername)
+        .single()
+      if (toUser) {
+        const conv = { user: toUser, lastMessage: null, unread: 0 }
+        setActiveConv(conv)
+        activeConvRef.current = conv
+      }
+    }
+    openConv()
+  }, [userId, searchParams])
+
   // Real-time subscription
   useEffect(() => {
     if (!userId) return
-
     const sub = supabase
       .channel(`messages-realtime-${userId}`)
       .on('postgres_changes', {
@@ -76,18 +78,14 @@ export default function MessagesPage() {
         filter: `receiver_id=eq.${userId}`,
       }, (payload) => {
         const newMsg = payload.new
-        // Добавляем сообщение если это активный чат
         if (activeConvRef.current?.user.id === newMsg.sender_id) {
           setMessages(m => [...m, newMsg])
           scrollToBottom()
-          // Помечаем как прочитанное
           supabase.from('messages').update({ read: true }).eq('id', newMsg.id)
         }
-        // Обновляем список разговоров
         loadConversations(userId)
       })
       .subscribe()
-
     return () => supabase.removeChannel(sub)
   }, [userId])
 
@@ -114,7 +112,10 @@ export default function MessagesPage() {
 
     if (partnerIds.length === 0) { setConversations([]); return [] }
 
-    const { data: users } = await supabase.from('users').select('id, full_name, username, avatar_url, bestie_score').in('id', partnerIds)
+    const { data: users } = await supabase
+      .from('users')
+      .select('id, full_name, username, avatar_url, bestie_score')
+      .in('id', partnerIds)
 
     const convs = await Promise.all((users || []).map(async (user) => {
       const { data: last } = await supabase
@@ -149,7 +150,6 @@ export default function MessagesPage() {
 
     setMessages(data || [])
     scrollToBottom()
-
     await supabase.from('messages').update({ read: true }).eq('sender_id', partnerId).eq('receiver_id', userId).eq('read', false)
   }
 
