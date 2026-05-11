@@ -23,36 +23,38 @@ export default function BookingsPage() {
   const userIdRef = useRef(null)
 
   const loadBookings = async (uid) => {
-    // Step 1: load bookings
     const { data: bookingRows, error } = await supabase
       .from('bookings')
       .select('*, package:activity_packages(*)')
       .or(`seeker_id.eq.${uid},provider_id.eq.${uid}`)
       .order('created_at', { ascending: false })
 
-    if (error || !bookingRows) return
+    if (error || !bookingRows || bookingRows.length === 0) return
 
-    // Step 2: collect all user ids
     const userIds = [...new Set([
       ...bookingRows.map(b => b.seeker_id),
       ...bookingRows.map(b => b.provider_id),
     ].filter(Boolean))]
 
-    // Step 3: load users
-    const { data: users } = await supabase
+    const { data: users, error: usersError } = await supabase
       .from('users')
       .select('id, full_name, username, avatar_url, bestie_score, email')
       .in('id', userIds)
 
+    console.log('userIds:', userIds)
+    console.log('users:', users)
+    console.log('usersError:', usersError)
+
     const userMap = {}
     users?.forEach(u => { userMap[u.id] = u })
 
-    // Step 4: merge
     const merged = bookingRows.map(b => ({
       ...b,
       seeker: userMap[b.seeker_id] || null,
       provider: userMap[b.provider_id] || null,
     }))
+
+    console.log('merged[0]:', merged[0])
 
     setBookings(merged)
   }
@@ -157,8 +159,8 @@ export default function BookingsPage() {
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
                     <div>
-                      <p style={{ fontSize: '15px', fontWeight: 600, color: '#E8E0FF' }}>{other?.full_name}</p>
-                      <p style={{ fontSize: '13px', color: '#9B93C0' }}>@{other?.username}</p>
+                      <p style={{ fontSize: '15px', fontWeight: 600, color: '#E8E0FF' }}>{other?.full_name || 'Unknown'}</p>
+                      <p style={{ fontSize: '13px', color: '#9B93C0' }}>@{other?.username || '...'}</p>
                     </div>
                     <span style={{ fontSize: '12px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', background: st.bg, border: `1px solid ${st.border}`, color: st.color }}>
                       {st.label}
@@ -190,7 +192,7 @@ export default function BookingsPage() {
                 {tab === 'outgoing' && booking.status === 'pending' && (
                   <button onClick={() => updateStatus(booking.id, 'cancelled')} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', cursor: 'pointer' }}>Cancel request</button>
                 )}
-                <Link href={other?.username ? `/messages?to=${other.username}` : `/messages?to=${other?.id}`} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', textDecoration: 'none', textAlign: 'center' }}>💬 Message</Link>
+                <Link href={other?.username ? `/messages?to=${other.username}` : '#'} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', textDecoration: 'none', textAlign: 'center' }}>💬 Message</Link>
               </div>
             </div>
           )
