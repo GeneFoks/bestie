@@ -38,7 +38,7 @@ export default function BookingsPage() {
 
     const { data: users, error: usersError } = await supabase
       .from('users')
-      .select('id, full_name, username, avatar_url, bestie_score, email')
+      .select('id, full_name, username, avatar_url, bestie_score')
       .in('id', userIds)
 
     console.log('userIds:', userIds)
