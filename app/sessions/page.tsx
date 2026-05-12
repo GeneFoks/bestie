@@ -10,6 +10,21 @@ const ACTIVITY_EMOJI = {
   meet_irl: '🤝', dance_crew: '💃', trail_crew: '🥾', travel_buddy: '✈️',
   game_night: '🎮', watch_together: '🎬', vibe_call: '📱', deep_chat: '🫂',
   real_talk: '💬', festival_crew: '🎪', epic_journey: '🌍', fishing_crew: '🎣',
+  hiking: '🥾', running: '🏃', gym_partner: '💪', cycling: '🚴', swimming: '🏊',
+  cold_plunge: '🧊', yoga: '🧘', martial_arts: '🥋', climbing: '🧗',
+  movie_night: '🎬', night_out: '🍸', bar_hopping: '🍺', karaoke: '🎤',
+  festival_crew2: '🎪', wing_person: '😎', comedy_show: '😂',
+  debate_club: '🗣️', book_club: '📚', language_exchange: '🌐', career_talk: '💼',
+  money_talk: '💰', journaling: '📓', accountability_partner: '🎯',
+  storytelling_night: '📖', music_lesson: '🎸', art_together: '🎨',
+  photography_walk: '📸', cooking_together: '🍳', dance: '💃', improv_acting: '🎭',
+  writing_club: '✍️', vent_session: '💬', '3am_talk': '🌙', hype_person: '🔥',
+  sobriety_buddy: '🌿', silence_buddy: '🤫', grief_support: '🤍',
+  ugly_cry_buddy: '😭', meditation_circle: '🧘', breathwork: '🌬️',
+  sound_healing: '🔔', cacao_ceremony: '🍫', tarot: '🔮', retreat_buddy: '🏕️',
+  psychedelic_integration: '🌀', nature_ritual: '🌿', lucid_dream_club: '💫',
+  coffee_chat: '☕', digital_detox_walk: '📵', skincare_night: '✨',
+  smoke_buddy: '💨', astrology_session: '⭐', coworking: '💻', errand_buddy: '🛒',
 }
 
 export default function SessionsPage() {
@@ -35,13 +50,38 @@ export default function SessionsPage() {
   }, [])
 
   const loadSessions = async (uid) => {
-    const { data } = await supabase
+    // Step 1: load bookings (accepted + completed)
+    const { data: rows, error } = await supabase
       .from('bookings')
-      .select(`*, package:activity_packages(*), seeker:users!bookings_seeker_id_fkey(id, full_name, username, avatar_url), provider:users!bookings_provider_id_fkey(id, full_name, username, avatar_url)`)
+      .select('*, package:activity_packages(*)')
       .or(`seeker_id.eq.${uid},provider_id.eq.${uid}`)
-      .eq('status', 'accepted')
+      .in('status', ['accepted', 'completed'])
       .order('scheduled_at', { ascending: true })
-    setSessions(data || [])
+
+    if (error || !rows || rows.length === 0) { setSessions([]); return }
+
+    // Step 2: load users
+    const userIds = [...new Set([
+      ...rows.map(b => b.seeker_id),
+      ...rows.map(b => b.provider_id),
+    ].filter(Boolean))]
+
+    const { data: users } = await supabase
+      .from('users')
+      .select('id, full_name, username, avatar_url')
+      .in('id', userIds)
+
+    const userMap = {}
+    users?.forEach(u => { userMap[u.id] = u })
+
+    // Step 3: merge
+    const merged = rows.map(b => ({
+      ...b,
+      seeker: userMap[b.seeker_id] || null,
+      provider: userMap[b.provider_id] || null,
+    }))
+
+    setSessions(merged)
   }
 
   const confirmSession = async (booking) => {
@@ -69,7 +109,7 @@ export default function SessionsPage() {
     </div>
   )
 
-  const upcoming = sessions.filter(s => !s.scheduled_at || new Date(s.scheduled_at) >= new Date())
+  const upcoming = sessions.filter(s => s.status === 'accepted' && (!s.scheduled_at || new Date(s.scheduled_at) >= new Date()))
   const needsConfirm = sessions.filter(s => {
     const isSeeker = s.seeker_id === userId
     const myConfirm = isSeeker ? s.confirmed_by_seeker : s.confirmed_by_provider
@@ -113,7 +153,7 @@ export default function SessionsPage() {
                         </div>
                         <div>
                           <p style={{ fontSize: '15px', fontWeight: 600, color: '#E8E0FF', marginBottom: '2px' }}>{other?.full_name}</p>
-                          <p style={{ fontSize: '13px', color: '#9B93C0' }}>{ACTIVITY_EMOJI[s.package?.activity_type] || '✨'} {s.package?.name || s.package?.title || 'Session'}</p>
+                          <p style={{ fontSize: '13px', color: '#9B93C0' }}>{ACTIVITY_EMOJI[s.package?.activity_type] || '✨'} {s.package?.title || 'Session'}</p>
                         </div>
                       </div>
                       <p style={{ fontSize: '13px', color: '#39FF14', marginBottom: '12px' }}>
@@ -143,7 +183,7 @@ export default function SessionsPage() {
                         </div>
                         <div>
                           <p style={{ fontSize: '15px', fontWeight: 600, color: '#E8E0FF', marginBottom: '2px' }}>{other?.full_name}</p>
-                          <p style={{ fontSize: '13px', color: '#9B93C0' }}>{ACTIVITY_EMOJI[s.package?.activity_type] || '✨'} {s.package?.name || s.package?.title || 'Session'}</p>
+                          <p style={{ fontSize: '13px', color: '#9B93C0' }}>{ACTIVITY_EMOJI[s.package?.activity_type] || '✨'} {s.package?.title || 'Session'}</p>
                         </div>
                       </div>
                       {myRating ? (
@@ -178,7 +218,7 @@ export default function SessionsPage() {
                         <div style={{ flex: 1 }}>
                           <p style={{ fontSize: '15px', fontWeight: 600, color: '#E8E0FF', marginBottom: '2px' }}>{other?.full_name}</p>
                           <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '10px' }}>
-                            {ACTIVITY_EMOJI[s.package?.activity_type] || '✨'} {s.package?.name || s.package?.title || 'Session'}
+                            {ACTIVITY_EMOJI[s.package?.activity_type] || '✨'} {s.package?.title || 'Session'}
                           </p>
                           {date && (
                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -217,17 +257,25 @@ export default function SessionsPage() {
                   const isSeeker = s.seeker_id === userId
                   const other = isSeeker ? s.provider : s.seeker
                   const date = formatDate(s.scheduled_at)
+                  const myRating = isSeeker ? s.rating_seeker : s.rating_provider
                   return (
-                    <div key={s.id} style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '20px', padding: '20px', marginBottom: '12px', opacity: 0.6 }}>
-                      <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                    <div key={s.id} style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '20px', padding: '20px', marginBottom: '12px' }}>
+                      <div style={{ display: 'flex', gap: '14px', alignItems: 'center', marginBottom: '12px' }}>
                         <div style={{ width: '48px', height: '48px', borderRadius: '14px', overflow: 'hidden', background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           {other?.avatar_url ? <img src={other.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{other?.full_name?.[0]}</span>}
                         </div>
                         <div style={{ flex: 1 }}>
                           <p style={{ fontSize: '15px', fontWeight: 600, color: '#E8E0FF', marginBottom: '2px' }}>{other?.full_name}</p>
-                          <p style={{ fontSize: '13px', color: '#9B93C0' }}>{ACTIVITY_EMOJI[s.package?.activity_type] || '✨'} {s.package?.name || s.package?.title || 'Session'} · {date?.dateStr}</p>
+                          <p style={{ fontSize: '13px', color: '#9B93C0' }}>{ACTIVITY_EMOJI[s.package?.activity_type] || '✨'} {s.package?.title || 'Session'} · {date?.dateStr}</p>
                         </div>
                       </div>
+                      {myRating ? (
+                        <p style={{ fontSize: '13px', color: '#9B93C0' }}>{'⭐'.repeat(myRating)} — reviewed</p>
+                      ) : (
+                        <Link href={`/review/${s.id}`} style={{ display: 'block', padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', textDecoration: 'none', textAlign: 'center' }}>
+                          ⭐ Rate this session →
+                        </Link>
+                      )}
                     </div>
                   )
                 })}
