@@ -42,18 +42,25 @@ export default function ReviewPage({ params }) {
         setUserId(user.id)
 
         const { data: b } = await supabase
-          .from('bookings')
-          .select(`*, package:activity_packages(*), seeker:users!bookings_seeker_id_fkey(id, full_name, username, avatar_url), provider:users!bookings_provider_id_fkey(id, full_name, username, avatar_url)`)
-          .eq('id', params.bookingId)
-          .single()
+  .from('bookings')
+  .select('*, package:activity_packages(*)')
+  .eq('id', params.bookingId)
+  .single()
 
-        if (!b) { router.push('/sessions'); return }
-        if (!b.confirmed_by_seeker || !b.confirmed_by_provider) { router.push('/sessions'); return }
+if (!b) { router.push('/sessions'); return }
+if (!b.confirmed_by_seeker || !b.confirmed_by_provider) { router.push('/sessions'); return }
 
-        const seeker = b.seeker_id === user.id
-        setIsSeeker(seeker)
-        setBooking(b)
-        setOther(seeker ? b.provider : b.seeker)
+const seeker = b.seeker_id === user.id
+setIsSeeker(seeker)
+setBooking(b)
+
+const otherUserId = seeker ? b.provider_id : b.seeker_id
+const { data: otherUser } = await supabase
+  .from('users')
+  .select('id, full_name, username, avatar_url')
+  .eq('id', otherUserId)
+  .single()
+setOther(otherUser)
 
         const { data: myProfile } = await supabase
           .from('users')
