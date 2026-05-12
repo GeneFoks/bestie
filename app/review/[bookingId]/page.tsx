@@ -112,14 +112,28 @@ export default function ReviewPage({ params }) {
       }
 
       
-<span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-  {[1,2,3,4,5].map(i => (
-    <span key={i} style={{ fontSize: '11px', color: i <= Math.round(provider.avg_rating || 0) ? '#D4AF37' : 'rgba(212,175,55,0.2)' }}>★</span>
-  ))}
-  {(provider.avg_rating || 0) > 0 && (
-    <span style={{ marginLeft: '4px' }}>{Number(provider.avg_rating).toFixed(1)}</span>
-  )}
-</span>
+// 3. Recalculate avg_rating and total_sessions for the other user
+if (other) {
+  // isSeeker сохранил рейтинг в rating_seeker — ищем все rating_seeker где provider = other
+  // isProvider сохранил рейтинг в rating_provider — ищем все rating_provider где seeker = other
+  const ratingColumn = isSeeker ? 'rating_seeker' : 'rating_provider'
+  const otherIdColumn = isSeeker ? 'provider_id' : 'seeker_id'
+
+  const { data: allRatings } = await supabase
+    .from('bookings')
+    .select(ratingColumn)
+    .eq(otherIdColumn, other.id)
+    .not(ratingColumn, 'is', null)
+
+  if (allRatings && allRatings.length > 0) {
+    const ratings = allRatings.map(r => r[ratingColumn]).filter(Boolean)
+    const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length
+    await supabase.from('users').update({
+      avg_rating: Math.round(avg * 10) / 10,
+      total_sessions: ratings.length,
+    }).eq('id', other.id)
+  }
+}
 
       setDone(true)
     } catch (e) {
