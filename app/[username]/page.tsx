@@ -1,4 +1,4 @@
- // @ts-nocheck
+// @ts-nocheck
 export const revalidate = 0
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
@@ -201,20 +201,20 @@ export default async function ProfilePage({ params }) {
             </div>
           )}
 
-         {/* Languages */}
-{profile.languages?.length > 0 && (
-  <div style={{ marginBottom: '16px' }}>
-    <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '10px' }}>LANGUAGES</p>
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-      {profile.languages.map(lang => (
-        <div key={lang} style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(155,143,192,0.1)', border: '1px solid rgba(155,143,192,0.2)', fontSize: '12px', color: '#9B93C0', fontWeight: 500 }}>
-          {lang}
-        </div>
-      ))}
-    </div>
-  </div>
-)}
-         
+          {/* Languages */}
+          {profile.languages?.length > 0 && (
+            <div style={{ marginBottom: '16px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '10px' }}>LANGUAGES</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {profile.languages.map(lang => (
+                  <div key={lang} style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(155,143,192,0.1)', border: '1px solid rgba(155,143,192,0.2)', fontSize: '12px', color: '#9B93C0', fontWeight: 500 }}>
+                    {lang}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Top Sparks */}
           {topSparks.length > 0 && (
             <div style={{ marginBottom: '16px' }}>
@@ -231,13 +231,22 @@ export default async function ProfilePage({ params }) {
             </div>
           )}
 
-          {profile.avg_rating > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '16px' }}>
-              <span>⭐</span>
-              <span style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF' }}>{Number(profile.avg_rating).toFixed(1)}</span>
-              <span style={{ fontSize: '13px', color: '#9B93C0' }}>average from {profile.total_sessions} sessions</span>
+          {/* Rating */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', gap: '2px' }}>
+              {[1,2,3,4,5].map(i => (
+                <span key={i} style={{ fontSize: '16px', lineHeight: 1, color: i <= Math.round(profile.avg_rating || 0) ? '#D4AF37' : 'rgba(212,175,55,0.2)' }}>★</span>
+              ))}
             </div>
-          )}
+            {profile.avg_rating > 0 ? (
+              <>
+                <span style={{ fontSize: '14px', fontWeight: 700, color: '#E8E0FF' }}>{Number(profile.avg_rating).toFixed(1)}</span>
+                <span style={{ fontSize: '13px', color: '#9B93C0' }}>from {profile.total_sessions || 0} session{(profile.total_sessions || 0) !== 1 ? 's' : ''}</span>
+              </>
+            ) : (
+              <span style={{ fontSize: '13px', color: '#9B93C0' }}>No reviews yet</span>
+            )}
+          </div>
 
           <div style={{ paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <p style={{ fontSize: '11px', color: '#9B93C0' }}>bestiehere.com/{profile.username}</p>
@@ -245,25 +254,25 @@ export default async function ProfilePage({ params }) {
           </div>
         </div>
 
-       {/* GIVE SPARKS */}
-<div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px', marginBottom: '20px' }}>
-  <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '4px' }}>Give a Spark ✨</h3>
-  <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '16px' }}>Rare tokens of respect. Max 3 per person, 1 per type.</p>
-  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '12px' }}>
-    {SPARK_TYPES.slice(0, 10).map(s => (
-      <Link key={s.id} href={`/sparks/give?to=${profile.username}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 6px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', textDecoration: 'none' }}>
-        <span style={{ fontSize: '20px' }}>{s.emoji}</span>
-        <span style={{ fontSize: '10px', fontWeight: 500, color: '#9B93C0', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
-      </Link>
-    ))}
-  </div>
-  <Link href={`/sparks/give?to=${profile.username}`} style={{ display: 'block', textAlign: 'center', fontSize: '13px', color: '#D4AF37', textDecoration: 'none', marginBottom: '8px' }}>
-    See all 22 Spark types →
-  </Link>
-  <p style={{ fontSize: '12px', color: '#9B93C0', textAlign: 'center' }}>
-    <Link href="/login" style={{ color: '#D4AF37', textDecoration: 'none' }}>Log in</Link> to give Sparks
-  </p>
-</div>
+        {/* GIVE SPARKS */}
+        <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px', marginBottom: '20px' }}>
+          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '4px' }}>Give a Spark ✨</h3>
+          <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '16px' }}>Rare tokens of respect. Max 3 per person, 1 per type.</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '12px' }}>
+            {SPARK_TYPES.slice(0, 10).map(s => (
+              <Link key={s.id} href={`/sparks/give?to=${profile.username}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 6px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', textDecoration: 'none' }}>
+                <span style={{ fontSize: '20px' }}>{s.emoji}</span>
+                <span style={{ fontSize: '10px', fontWeight: 500, color: '#9B93C0', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
+              </Link>
+            ))}
+          </div>
+          <Link href={`/sparks/give?to=${profile.username}`} style={{ display: 'block', textAlign: 'center', fontSize: '13px', color: '#D4AF37', textDecoration: 'none', marginBottom: '8px' }}>
+            See all 22 Spark types →
+          </Link>
+          <p style={{ fontSize: '12px', color: '#9B93C0', textAlign: 'center' }}>
+            <Link href="/login" style={{ color: '#D4AF37', textDecoration: 'none' }}>Log in</Link> to give Sparks
+          </p>
+        </div>
 
         {/* ACTIVITIES */}
         {profile.activity_packages?.length > 0 && (
