@@ -42,25 +42,25 @@ export default function ReviewPage({ params }) {
         setUserId(user.id)
 
         const { data: b } = await supabase
-  .from('bookings')
-  .select('*, package:activity_packages(*)')
-  .eq('id', params.bookingId)
-  .single()
+          .from('bookings')
+          .select('*, package:activity_packages(*)')
+          .eq('id', params.bookingId)
+          .single()
 
-if (!b) { router.push('/sessions'); return }
-if (!b.confirmed_by_seeker || !b.confirmed_by_provider) { router.push('/sessions'); return }
+        if (!b) { router.push('/sessions'); return }
+        if (!b.confirmed_by_seeker || !b.confirmed_by_provider) { router.push('/sessions'); return }
 
-const seeker = b.seeker_id === user.id
-setIsSeeker(seeker)
-setBooking(b)
+        const seeker = b.seeker_id === user.id
+        setIsSeeker(seeker)
+        setBooking(b)
 
-const otherUserId = seeker ? b.provider_id : b.seeker_id
-const { data: otherUser } = await supabase
-  .from('users')
-  .select('id, full_name, username, avatar_url')
-  .eq('id', otherUserId)
-  .single()
-setOther(otherUser)
+        const otherUserId = seeker ? b.provider_id : b.seeker_id
+        const { data: otherUser } = await supabase
+          .from('users')
+          .select('id, full_name, username, avatar_url')
+          .eq('id', otherUserId)
+          .single()
+        setOther(otherUser)
 
         const { data: myProfile } = await supabase
           .from('users')
@@ -69,12 +69,11 @@ setOther(otherUser)
           .single()
         setSparksBalance(myProfile?.sparks_balance ?? 30)
 
-        const otherUser = seeker ? b.provider : b.seeker
         const { data: given } = await supabase
           .from('sparks')
           .select('spark_type')
           .eq('giver_id', user.id)
-          .eq('receiver_id', otherUser.id)
+          .eq('receiver_id', otherUserId)
         setAlreadyGiven(given?.map(s => s.spark_type) || [])
 
         const myRating = seeker ? b.rating_seeker : b.rating_provider
@@ -93,19 +92,51 @@ setOther(otherUser)
     if (!rating) return
     setSubmitting(true)
 
-    const ratingField = isSeeker ? 'rating_seeker' : 'rating_provider'
-    await supabase.from('bookings').update({ [ratingField]: rating }).eq('id', booking.id)
+    try {
+      // 1. Save rating to booking
+      const ratingField = isSeeker ? 'rating_seeker' : 'rating_provider'
+      await supabase.from('bookings').update({ [ratingField]: rating }).eq('id', booking.id)
 
-    if (selectedSpark) {
-      await supabase.from('sparks').insert({
-        giver_id: userId,
-        receiver_id: other.id,
-        spark_type: selectedSpark,
-      })
+      // 2. Give spark if selected
+      if (selectedSpark && other) {
+        await supabase.from('sparks').insert({
+          giver_id: userId,
+          receiver_id: other.id,
+          spark_type: selectedSpark,
+        })
+        // Decrease giver balance
+        await supabase.from('users').update({ sparks_balance: sparksBalance - 1 }).eq('id', userId)
+        // Increase receiver sparks_received
+        const { data: receiverData } = await supabase.from('users').select('sparks_received').eq('id', other.id).single()
+        await supabase.from('users').update({ sparks_received: (receiverData?.sparks_received || 0) + 1 }).eq('id', other.id)
+      }
+
+      // 3. Recalculate avg_rating and total_sessions for the other user
+      if (other) {
+        const ratingColumn = isSeeker ? 'rating_provider' : 'rating_seeker'
+        const otherIdColumn = isSeeker ? 'provider_id' : 'seeker_id'
+        const { data: allRatings } = await supabase
+          .from('bookings')
+          .select(ratingColumn)
+          .eq(otherIdColumn, other.id)
+          .not(ratingColumn, 'is', null)
+
+        if (allRatings && allRatings.length > 0) {
+          const ratings = allRatings.map(r => r[ratingColumn]).filter(Boolean)
+          const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length
+          await supabase.from('users').update({
+            avg_rating: Math.round(avg * 10) / 10,
+            total_sessions: ratings.length,
+          }).eq('id', other.id)
+        }
+      }
+
+      setDone(true)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setSubmitting(false)
     }
-
-    setDone(true)
-    setSubmitting(false)
   }
 
   if (loading) return (
@@ -142,7 +173,6 @@ setOther(otherUser)
 
       <div style={{ maxWidth: '480px', margin: '0 auto', padding: '48px 24px' }}>
 
-        {/* Profile */}
         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
           <div style={{ width: '80px', height: '80px', borderRadius: '20px', overflow: 'hidden', background: '#1a1a35', border: '2px solid rgba(212,175,55,0.3)', margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {other?.avatar_url
@@ -154,7 +184,6 @@ setOther(otherUser)
           <p style={{ fontSize: '14px', color: '#9B93C0' }}>with <span style={{ color: '#E8E0FF', fontWeight: 500 }}>{other?.full_name}</span></p>
         </div>
 
-        {/* Rating */}
         <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px', marginBottom: '16px' }}>
           <p style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '16px' }}>RATE YOUR EXPERIENCE</p>
           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
@@ -175,7 +204,6 @@ setOther(otherUser)
           )}
         </div>
 
-        {/* Spark */}
         <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px', marginBottom: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <p style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0' }}>GIVE A SPARK ✨</p>
