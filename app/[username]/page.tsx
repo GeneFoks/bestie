@@ -3,6 +3,7 @@ export const revalidate = 0
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import ProfileNav from '@/components/ProfileNav'
+import SocialPassportCTA from '@/components/SocialPassportCTA'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -335,13 +336,7 @@ export default async function ProfilePage({ params }) {
           </div>
         )}
 
-        <div style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(57,255,20,0.04) 100%)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '16px', padding: '24px', textAlign: 'center' }}>
-          <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '4px' }}>Want your own Social Passport?</p>
-          <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '16px' }}>Build your Bestie Score, collect Sparks, get verified.</p>
-          <Link href="/signup" style={{ display: 'inline-block', padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
-            Create my Social Passport →
-          </Link>
-        </div>
+        <SocialPassportCTA />
       </div>
     </div>
   )
