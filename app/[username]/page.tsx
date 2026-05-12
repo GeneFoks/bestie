@@ -51,6 +51,17 @@ function getMemberBadge(createdAt) {
   return { emoji: '✨', label: 'Just joined', color: '#9B93C0', desc: 'New here' }
 }
 
+function StarRating({ rating }) {
+  const r = parseFloat(rating) || 0
+  return (
+    <div style={{ display: 'flex', gap: '2px' }}>
+      {[1, 2, 3, 4, 5].map(i => (
+        <span key={i} style={{ fontSize: '14px', lineHeight: 1, color: i <= Math.floor(r + 0.5) ? '#D4AF37' : 'rgba(212,175,55,0.25)' }}>★</span>
+      ))}
+    </div>
+  )
+}
+
 export async function generateMetadata({ params }) {
   const { data: profile } = await supabase
     .from('users').select('*').eq('username', params.username).single()
@@ -106,6 +117,8 @@ export default async function ProfilePage({ params }) {
   const initials = profile.full_name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?'
   const memberBadge = getMemberBadge(profile.created_at)
   const memberSince = profile.created_at ? new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : null
+  const avgRating = parseFloat(profile.avg_rating) || 0
+  const totalSessions = profile.total_sessions || 0
 
   return (
     <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
@@ -120,6 +133,7 @@ export default async function ProfilePage({ params }) {
         <div style={{ background: 'linear-gradient(135deg, #0F0F1E 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: '28px', padding: '32px', marginBottom: '20px', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
+          {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '14px', fontWeight: 700, color: '#D4AF37' }}>BESTIE</span>
@@ -137,6 +151,7 @@ export default async function ProfilePage({ params }) {
             </div>
           </div>
 
+          {/* Avatar + Info */}
           <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', marginBottom: '24px' }}>
             <div style={{ width: '88px', height: '88px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(212,175,55,0.3)', background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {profile.avatar_url
@@ -158,22 +173,41 @@ export default async function ProfilePage({ params }) {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '12px', marginBottom: '20px' }}>
-            <div style={{ gridColumn: 'span 2', background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '16px', border: `1px solid ${scoreColor}20` }}>
-              <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '8px' }}>BESTIE SCORE</p>
-              <div style={{ fontSize: '48px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif', lineHeight: 1, marginBottom: '8px' }}>{score}</div>
-              <div style={{ height: '4px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden', marginBottom: '6px' }}>
-                <div style={{ height: '100%', width: `${score / 10}%`, borderRadius: '999px', background: `linear-gradient(90deg, ${scoreColor} 0%, #D4AF37 100%)` }} />
+          {/* STATS BLOCK: Bestie Score top, then Sessions / Sparks / Rating */}
+          <div style={{ marginBottom: '20px' }}>
+            {/* Bestie Score — full width */}
+            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '16px 20px', border: `1px solid ${scoreColor}20`, marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '6px' }}>BESTIE SCORE</p>
+                <div style={{ fontSize: '48px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{score}</div>
+                <p style={{ fontSize: '11px', fontWeight: 600, color: scoreColor, marginTop: '4px' }}>{scoreLabel}</p>
               </div>
-              <p style={{ fontSize: '11px', fontWeight: 600, color: scoreColor }}>{scoreLabel}</p>
+              <div style={{ width: '120px' }}>
+                <div style={{ height: '6px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${Math.min(score / 10, 100)}%`, borderRadius: '999px', background: `linear-gradient(90deg, ${scoreColor} 0%, #D4AF37 100%)` }} />
+                </div>
+                <p style={{ fontSize: '10px', color: '#9B93C0', marginTop: '4px', textAlign: 'right' }}>/ 1000</p>
+              </div>
             </div>
-            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>SESSIONS</p>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: '#E8E0FF', fontFamily: 'DM Serif Display, serif' }}>{profile.total_sessions || 0}</div>
-            </div>
-            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>SPARKS</p>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>✨ {totalSparks}</div>
+
+            {/* Sessions / Sparks / Rating — три колонки */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+              <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>SESSIONS</p>
+                <div style={{ fontSize: '28px', fontWeight: 700, color: '#E8E0FF', fontFamily: 'DM Serif Display, serif' }}>{totalSessions}</div>
+              </div>
+              <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>SPARKS</p>
+                <div style={{ fontSize: '28px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>✨ {totalSparks}</div>
+              </div>
+              <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>RATING</p>
+                <StarRating rating={avgRating} />
+                {avgRating > 0
+                  ? <p style={{ fontSize: '12px', fontWeight: 700, color: '#E8E0FF', marginTop: '4px' }}>{avgRating.toFixed(1)}</p>
+                  : <p style={{ fontSize: '11px', color: '#9B93C0', marginTop: '4px' }}>No reviews</p>
+                }
+              </div>
             </div>
           </div>
 
@@ -231,23 +265,7 @@ export default async function ProfilePage({ params }) {
             </div>
           )}
 
-          {/* Rating */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', gap: '2px' }}>
-              {[1,2,3,4,5].map(i => (
-                <span key={i} style={{ fontSize: '16px', lineHeight: 1, color: i <= Math.round(profile.avg_rating || 0) ? '#D4AF37' : 'rgba(212,175,55,0.2)' }}>★</span>
-              ))}
-            </div>
-            {profile.avg_rating > 0 ? (
-              <>
-                <span style={{ fontSize: '14px', fontWeight: 700, color: '#E8E0FF' }}>{Number(profile.avg_rating).toFixed(1)}</span>
-                <span style={{ fontSize: '13px', color: '#9B93C0' }}>from {profile.total_sessions || 0} session{(profile.total_sessions || 0) !== 1 ? 's' : ''}</span>
-              </>
-            ) : (
-              <span style={{ fontSize: '13px', color: '#9B93C0' }}>No reviews yet</span>
-            )}
-          </div>
-
+          {/* Footer */}
           <div style={{ paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <p style={{ fontSize: '11px', color: '#9B93C0' }}>bestiehere.com/{profile.username}</p>
             <p style={{ fontSize: '11px', color: '#9B93C0' }}>Social Passport · 2026</p>
