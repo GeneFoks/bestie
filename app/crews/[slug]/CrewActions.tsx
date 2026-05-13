@@ -18,7 +18,7 @@ export default function CrewActions({ crewId, captainId, isPublic, isFull, capta
   const [userId, setUserId] = useState<string | null>(null)
   const [userCrewId, setUserCrewId] = useState<string | null>(null)
   const [isMember, setIsMember] = useState(false)
-  const [requestStatus, setRequestStatus] = useState<'none' | 'pending' | 'declined'>(null)
+  const [requestStatus, setRequestStatus] = useState<'none' | 'pending' | 'declined' | null>(null)
   const [loading, setLoading] = useState(true)
   const [acting, setActing] = useState(false)
   const [error, setError] = useState<string | null>(null)
