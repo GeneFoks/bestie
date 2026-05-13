@@ -167,7 +167,7 @@ export default async function ProfilePage({ params }) {
               </p>
               {profile.crew && (
                 <Link href={`/crews/${profile.crew.slug}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', marginBottom: '6px', padding: '3px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', textDecoration: 'none' }}>
-                  {profile.crew.is_public ? '⚔️' : '🔒'} {profile.crew.name}
+                  {!profile.crew.is_public && '🔒 '}{profile.crew.name}
                 </Link>
               )}
               {memberSince && (

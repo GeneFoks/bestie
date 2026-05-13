@@ -6,7 +6,18 @@
       "Bash(git push *)",
       "Bash(gh pr create --title 'Hide '\\\\''Create my Social Passport'\\\\'' CTA for logged-in users' --body ' *)",
       "PowerShell(Get-Command gh -ErrorAction SilentlyContinue)",
-      "Bash(mkdir -p \"C:\\\\bestie\\\\.claude\\\\worktrees\\\\determined-jones-650d27\\\\app\\\\crews\\\\[slug]\" \"C:\\\\bestie\\\\.claude\\\\worktrees\\\\determined-jones-650d27\\\\app\\\\crews\\\\new\")"
+      "Bash(mkdir -p \"C:\\\\bestie\\\\.claude\\\\worktrees\\\\determined-jones-650d27\\\\app\\\\crews\\\\[slug]\" \"C:\\\\bestie\\\\.claude\\\\worktrees\\\\determined-jones-650d27\\\\app\\\\crews\\\\new\")",
+      "Bash(git commit -m 'Fix TypeScript errors in CrewActions — add prop types and state generics *)",
+      "Bash(git commit -m 'Fix TypeScript errors in crews/new — type toSlug param, handlers, state *)",
+      "Bash(git commit -m 'Fix useState null types in crews/new page *)",
+      "Bash(git commit -m 'Move ts-nocheck before '\\\\''use client'\\\\'' to suppress TS errors *)",
+      "Bash(git commit -m 'Add Crews link to homepage nav, mobile menu and footer *)",
+      "Bash(sed -i 's/⚔️ Crews/Crews/g' components/ProfileNav.tsx app/page.tsx)",
+      "Bash(sed -i 's/⚔️ Crew/Crew/g' app/crews/new/page.tsx app/crews/[slug]/CrewActions.tsx)",
+      "Bash(sed -i 's/⚔️ Open/Open/g' app/crews/[slug]/page.tsx)",
+      "Bash(sed -i 's/⚔️ You are the Captain/You are the Captain/g' app/crews/[slug]/CrewActions.tsx)",
+      "Bash(git commit -m 'Remove sword emoji from Crews — replace with neutral icons *)",
+      "Bash(git commit -m 'Add crew events — create, view, join/leave, events section on crew page *)"
     ]
   }
 }
