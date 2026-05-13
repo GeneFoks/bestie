@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 import ProfileNav from '@/components/ProfileNav'
 import SocialPassportCTA from '@/components/SocialPassportCTA'
 import SharePassportButton from '@/components/SharePassportButton'
+import InviteToSessionButton from '@/components/InviteToSessionButton'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -336,6 +337,9 @@ export default async function ProfilePage({ params }) {
                 <Link href={`/messages?to=${profile.username}`} style={{ display: 'block', marginTop: '8px', padding: '12px', borderRadius: '12px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', textDecoration: 'none' }}>
                   💬 Message {profile.full_name?.split(' ')[0]}
                 </Link>
+                <div style={{ marginTop: '8px' }}>
+                  <InviteToSessionButton username={profile.username} activityType={pkg.activity_type} />
+                </div>
               </div>
             ))}
           </div>
