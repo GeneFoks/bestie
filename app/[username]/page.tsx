@@ -65,7 +65,7 @@ function StarRating({ rating }) {
 
 export async function generateMetadata({ params }) {
   const { data: profile } = await supabase
-    .from('users').select('*').eq('username', params.username).single()
+    .from('users').select('*, crew:crews(name)').eq('username', params.username).single()
   if (!profile) return { title: 'Bestie' }
   return {
     title: `${profile.full_name} — BS ${profile.bestie_score || 0} · Bestie`,
@@ -87,7 +87,7 @@ export async function generateMetadata({ params }) {
 
 export default async function ProfilePage({ params }) {
   const { data: profile } = await supabase
-    .from('users').select('*, activity_packages(*)')
+    .from('users').select('*, activity_packages(*), crew:crews(id, name, slug, is_public)')
     .eq('username', params.username).single()
 
   if (!profile) {
@@ -165,6 +165,11 @@ export default async function ProfilePage({ params }) {
               <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '6px' }}>
                 {profile.city && `📍 ${profile.city}${profile.country ? `, ${profile.country}` : ''} · `}@{profile.username}
               </p>
+              {profile.crew && (
+                <Link href={`/crews/${profile.crew.slug}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', marginBottom: '6px', padding: '3px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', textDecoration: 'none' }}>
+                  {profile.crew.is_public ? '⚔️' : '🔒'} {profile.crew.name}
+                </Link>
+              )}
               {memberSince && (
                 <p style={{ fontSize: '12px', color: '#9B93C0', marginBottom: '8px' }}>
                   🗓 Member since {memberSince} · {memberBadge?.desc}
