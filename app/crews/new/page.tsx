@@ -1,12 +1,12 @@
 'use client'
 // @ts-nocheck
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 
-function toSlug(str) {
+function toSlug(str: string) {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
@@ -22,7 +22,7 @@ export default function NewCrewPage() {
   const [description, setDescription] = useState('')
   const [isPublic, setIsPublic] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -34,12 +34,12 @@ export default function NewCrewPage() {
     })
   }, [])
 
-  const handleNameChange = (val) => {
+  const handleNameChange = (val: string) => {
     setName(val)
     if (!slugEdited) setSlug(toSlug(val))
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim() || !slug.trim()) return
     setSubmitting(true)
