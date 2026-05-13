@@ -57,13 +57,9 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
         })
         if (result === 'joined' || result === 'already_member') {
           setIsMember(true)
-          setUserCrewId(crewId)
           router.replace(`/crews/${crewSlug}`)
           setLoading(false)
           return
-        }
-        if (result === 'in_other_crew') {
-          setError('You are already in another crew. Leave it first.')
         }
       } else {
         setIsMember(!!membership)
@@ -78,7 +74,20 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
     setError(null)
     const { error: err } = await supabase.from('crew_members').insert({ crew_id: crewId, user_id: userId })
     if (err) { setError(err.message); setActing(false); return }
+    // Set as featured only if user has no featured crew yet
+    if (!userCrewId) {
+      await supabase.from('users').update({ crew_id: crewId }).eq('id', userId)
+    }
+    setIsMember(true)
+    setActing(false)
+    router.refresh()
+  }
+
+  const setFeatured = async () => {
+    setActing(true)
     await supabase.from('users').update({ crew_id: crewId }).eq('id', userId)
+    setUserCrewId(crewId)
+    setActing(false)
     router.refresh()
   }
 
@@ -86,7 +95,9 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
     setActing(true)
     setError(null)
     await supabase.from('crew_members').delete().eq('crew_id', crewId).eq('user_id', userId)
-    await supabase.from('users').update({ crew_id: null }).eq('id', userId)
+    if (userCrewId === crewId) {
+      await supabase.from('users').update({ crew_id: null }).eq('id', userId)
+    }
     router.refresh()
   }
 
@@ -126,17 +137,22 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
   }
 
   if (isMember) {
+    const isFeatured = userCrewId === crewId
     return (
-      <button onClick={leave} disabled={acting} style={{ display: 'block', width: '100%', padding: '14px', borderRadius: '14px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: 'rgba(255,107,53,0.1)', border: '1px solid rgba(255,107,53,0.25)', color: '#FF6B35', cursor: acting ? 'not-allowed' : 'pointer', opacity: acting ? 0.6 : 1 }}>
-        {acting ? 'Leaving…' : 'Leave Crew'}
-      </button>
-    )
-  }
-
-  if (userCrewId && userCrewId !== crewId) {
-    return (
-      <div style={{ padding: '12px', borderRadius: '14px', textAlign: 'center', fontSize: '13px', color: '#9B93C0', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-        You're already in another crew. Leave it first to join this one.
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {!isFeatured && (
+          <button onClick={setFeatured} disabled={acting} style={{ display: 'block', width: '100%', padding: '10px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', cursor: acting ? 'not-allowed' : 'pointer' }}>
+            {acting ? '…' : '⭐ Set as featured on passport'}
+          </button>
+        )}
+        {isFeatured && (
+          <div style={{ padding: '8px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '12px', color: '#D4AF37', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
+            ⭐ Featured on your passport
+          </div>
+        )}
+        <button onClick={leave} disabled={acting} style={{ display: 'block', width: '100%', padding: '10px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '13px', fontWeight: 600, background: 'rgba(255,107,53,0.08)', border: '1px solid rgba(255,107,53,0.2)', color: '#FF6B35', cursor: acting ? 'not-allowed' : 'pointer', opacity: acting ? 0.6 : 1 }}>
+          {acting ? 'Leaving…' : 'Leave Crew'}
+        </button>
       </div>
     )
   }

@@ -7,6 +7,8 @@ import CrewActions from './CrewActions'
 import CrewAvatarSection from './CrewAvatarSection'
 import JoinRequestActions from './JoinRequestActions'
 import CrewInviteButton from './CrewInviteButton'
+import CrewRating from './CrewRating'
+import CrewDeleteButton from './CrewDeleteButton'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -41,7 +43,7 @@ export default async function CrewPage({ params }) {
     )
   }
 
-  const [{ data: members }, { data: upcomingEvents }, { data: joinRequests }] = await Promise.all([
+  const [{ data: members }, { data: upcomingEvents }, { data: joinRequests }, { data: ratings }] = await Promise.all([
     supabase
       .from('crew_members')
       .select('joined_at, user:users(id, username, full_name, avatar_url, bestie_score, city)')
@@ -60,11 +62,16 @@ export default async function CrewPage({ params }) {
       .eq('crew_id', crew.id)
       .eq('status', 'pending')
       .order('created_at', { ascending: true }),
+    supabase.from('crew_ratings').select('rating').eq('crew_id', crew.id),
   ])
 
   const memberCount = members?.length || 0
   const avgScore = memberCount > 0
     ? Math.round(members.reduce((sum, m) => sum + (m.user?.bestie_score || 0), 0) / memberCount)
+    : 0
+  const ratingCount = ratings?.length || 0
+  const avgRating = ratingCount > 0
+    ? Math.round(ratings.reduce((s, r) => s + r.rating, 0) / ratingCount * 10) / 10
     : 0
   const scoreColor = avgScore >= 800 ? '#39FF14' : avgScore >= 600 ? '#D4AF37' : '#9B93C0'
   const spotsLeft = (crew.max_members || 108) - memberCount
@@ -92,7 +99,8 @@ export default async function CrewPage({ params }) {
                   {crew.is_public ? 'Open' : '🔒 Private'}
                 </span>
               </div>
-              {crew.description && <p style={{ fontSize: '14px', color: '#9B93C0', lineHeight: 1.6 }}>{crew.description}</p>}
+              {crew.description && <p style={{ fontSize: '14px', color: '#9B93C0', lineHeight: 1.6, marginBottom: '8px' }}>{crew.description}</p>}
+              <CrewRating crewId={crew.id} avgRating={avgRating} ratingCount={ratingCount} />
             </div>
           </div>
 
@@ -138,6 +146,7 @@ export default async function CrewPage({ params }) {
             </div>
           </div>
           <CrewInviteButton crewId={crew.id} captainId={crew.captain_id} crewSlug={params.slug} inviteCode={crew.invite_code || ''} />
+          <CrewDeleteButton crewId={crew.id} captainId={crew.captain_id} crewName={crew.name} />
         </div>
 
         {/* Events */}
