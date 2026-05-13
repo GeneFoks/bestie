@@ -30,6 +30,14 @@ export default function DeleteEventButton({ eventId, captainId, crewSlug, eventT
     router.push(`/crews/${crewSlug}`)
   }
 
+  if (step === 'deleting') {
+    return (
+      <div style={{ marginTop: '12px', padding: '14px', borderRadius: '14px', textAlign: 'center', fontSize: '13px', color: '#9B93C0', background: 'rgba(255,107,53,0.06)', border: '1px solid rgba(255,107,53,0.15)' }}>
+        Deleting…
+      </div>
+    )
+  }
+
   if (step === 'confirm') {
     return (
       <div style={{ marginTop: '12px', padding: '16px', borderRadius: '14px', background: 'rgba(255,107,53,0.08)', border: '1px solid rgba(255,107,53,0.25)' }}>
@@ -37,7 +45,7 @@ export default function DeleteEventButton({ eventId, captainId, crewSlug, eventT
         <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '14px' }}>All attendees will be removed. This cannot be undone.</p>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button onClick={deleteEvent} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, background: '#FF6B35', color: '#fff', border: 'none', cursor: 'pointer' }}>
-            {step === 'deleting' ? 'Deleting…' : 'Yes, delete event'}
+            Yes, delete event
           </button>
           <button onClick={() => setStep('idle')} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.06)', color: '#9B93C0', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}>
             Cancel
