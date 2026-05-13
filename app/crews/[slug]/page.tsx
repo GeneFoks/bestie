@@ -68,14 +68,14 @@ export default async function CrewPage({ params }) {
             <div style={{ width: '80px', height: '80px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, background: '#1a1a35', border: '2px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {crew.avatar_url
                 ? <img src={crew.avatar_url} alt={crew.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : <span style={{ fontSize: '36px' }}>⚔️</span>
+                : <span style={{ fontSize: '36px' }}>👥</span>
               }
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
                 <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#E8E0FF' }}>{crew.name}</h1>
                 <span style={{ fontSize: '12px', padding: '3px 10px', borderRadius: '999px', background: crew.is_public ? 'rgba(57,255,20,0.1)' : 'rgba(155,147,192,0.1)', border: crew.is_public ? '1px solid rgba(57,255,20,0.25)' : '1px solid rgba(155,147,192,0.25)', color: crew.is_public ? '#39FF14' : '#9B93C0', fontWeight: 600 }}>
-                  {crew.is_public ? '⚔️ Open' : '🔒 Private'}
+                  {crew.is_public ? 'Open' : '🔒 Private'}
                 </span>
               </div>
               {crew.description && <p style={{ fontSize: '14px', color: '#9B93C0', lineHeight: 1.6 }}>{crew.description}</p>}

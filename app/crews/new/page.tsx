@@ -129,7 +129,7 @@ export default function NewCrewPage() {
             <label style={labelStyle}>VISIBILITY</label>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               {[
-                { value: true, icon: '⚔️', label: 'Open', desc: 'Anyone can join' },
+                { value: true, icon: '🌐', label: 'Open', desc: 'Anyone can join' },
                 { value: false, icon: '🔒', label: 'Private', desc: 'Invite only' },
               ].map(opt => (
                 <button

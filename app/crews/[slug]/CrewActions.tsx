@@ -72,7 +72,7 @@ export default function CrewActions({ crewId, captainId, isPublic, isFull, capta
   if (userId === captainId) {
     return (
       <div style={{ padding: '12px', borderRadius: '14px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37' }}>
-        ⚔️ You are the Captain
+        You are the Captain
       </div>
     )
   }

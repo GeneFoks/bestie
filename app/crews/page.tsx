@@ -41,7 +41,7 @@ export default async function CrewsPage() {
 
         {!crews || crews.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 24px', background: '#0F0F1E', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <p style={{ fontSize: '48px', marginBottom: '16px' }}>⚔️</p>
+            <p style={{ fontSize: '48px', marginBottom: '16px' }}>👥</p>
             <p style={{ fontSize: '18px', color: '#E8E0FF', fontWeight: 600, marginBottom: '8px' }}>No crews yet</p>
             <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '24px' }}>Be the first to create one</p>
             <Link href="/crews/new" style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
@@ -65,7 +65,7 @@ export default async function CrewsPage() {
                   <div style={{ width: '48px', height: '48px', borderRadius: '14px', overflow: 'hidden', flexShrink: 0, background: '#1a1a35', border: '1px solid rgba(212,175,55,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {crew.avatar_url
                       ? <img src={crew.avatar_url} alt={crew.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      : <span style={{ fontSize: '22px' }}>⚔️</span>
+                      : <span style={{ fontSize: '22px' }}>👥</span>
                     }
                   </div>
 
