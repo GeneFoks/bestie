@@ -1,19 +1,26 @@
 'use client'
-// @ts-nocheck
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 
-export default function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername }) {
+type Props = {
+  crewId: string
+  captainId: string
+  isPublic: boolean
+  isFull: boolean
+  captainUsername: string
+}
+
+export default function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername }: Props) {
   const router = useRouter()
-  const [userId, setUserId] = useState(null)
-  const [userCrewId, setUserCrewId] = useState(null)
+  const [userId, setUserId] = useState<string | null>(null)
+  const [userCrewId, setUserCrewId] = useState<string | null>(null)
   const [isMember, setIsMember] = useState(false)
   const [loading, setLoading] = useState(true)
   const [acting, setActing] = useState(false)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
