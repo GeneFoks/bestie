@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 import ProfileNav from '@/components/ProfileNav'
 import EventActions from './EventActions'
 import DeleteEventButton from './DeleteEventButton'
+import ShareEventButton from '@/components/ShareEventButton'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -68,7 +69,8 @@ export default async function EventPage({ params }) {
             <Link href={`/crews/${event.crew?.slug}`} style={{ fontSize: '13px', fontWeight: 600, color: '#D4AF37', textDecoration: 'none', padding: '4px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
               {event.crew?.name}
             </Link>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <ShareEventButton eventId={event.id} eventTitle={event.title} />
               {isPast && <span style={{ fontSize: '12px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(155,147,192,0.1)', border: '1px solid rgba(155,147,192,0.2)', color: '#9B93C0', fontWeight: 600 }}>Ended</span>}
               {event.is_members_only
                 ? <span style={{ fontSize: '12px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(155,147,192,0.1)', border: '1px solid rgba(155,147,192,0.2)', color: '#9B93C0', fontWeight: 600 }}>🔒 Members only</span>
