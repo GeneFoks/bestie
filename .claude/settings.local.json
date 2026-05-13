@@ -17,7 +17,8 @@
       "Bash(sed -i 's/⚔️ Open/Open/g' app/crews/[slug]/page.tsx)",
       "Bash(sed -i 's/⚔️ You are the Captain/You are the Captain/g' app/crews/[slug]/CrewActions.tsx)",
       "Bash(git commit -m 'Remove sword emoji from Crews — replace with neutral icons *)",
-      "Bash(git commit -m 'Add crew events — create, view, join/leave, events section on crew page *)"
+      "Bash(git commit -m 'Add crew events — create, view, join/leave, events section on crew page *)",
+      "Bash(git commit -m 'Add crew avatar upload and group chat *)"
     ]
   }
 }
