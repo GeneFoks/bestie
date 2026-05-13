@@ -32,6 +32,23 @@ export default function DashboardPage() {
         if (ok) localStorage.removeItem('bestie_ref')
       }
 
+      // Apply crew invite if present in localStorage
+      const crewInviteRaw = typeof window !== 'undefined' ? localStorage.getItem('bestie_crew_invite') : null
+      if (crewInviteRaw && !data?.crew_id) {
+        try {
+          const { crewId: invCrew, crewSlug, inviteCode } = JSON.parse(crewInviteRaw)
+          const { data: result } = await supabase.rpc('join_crew_via_invite', {
+            p_crew_id: invCrew,
+            p_invite_code: inviteCode,
+          })
+          localStorage.removeItem('bestie_crew_invite')
+          if (result === 'joined') {
+            router.push(`/crews/${crewSlug}`)
+            return
+          }
+        } catch {}
+      }
+
       const [{ count: msgCount }, { count: bookCount }, { count: refCount }] = await Promise.all([
         supabase.from('direct_messages').select('*', { count: 'exact', head: true }).eq('receiver_id', session.user.id).eq('read', false),
         supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('provider_id', session.user.id).eq('status', 'pending'),
