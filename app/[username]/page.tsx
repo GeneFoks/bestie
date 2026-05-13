@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import ProfileNav from '@/components/ProfileNav'
 import SocialPassportCTA from '@/components/SocialPassportCTA'
+import SharePassportButton from '@/components/SharePassportButton'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -144,7 +145,8 @@ export default async function ProfilePage({ params }) {
               <span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '14px', fontWeight: 700, color: '#D4AF37' }}>BESTIE</span>
               <span style={{ fontSize: '11px', color: '#9B93C0', letterSpacing: '1px' }}>SOCIAL PASSPORT</span>
             </div>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <SharePassportButton username={profile.username} />
               {profile.is_verified && (
                 <span style={{ fontSize: '12px', padding: '4px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', fontWeight: 600 }}>✓ Verified</span>
               )}
