@@ -149,6 +149,7 @@ export default function HomePage() {
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <div className="nav-links">
           <Link href="/browse" style={{ color: '#9B93C0', textDecoration: 'none' }}>Browse</Link>
+          <Link href="/crews" style={{ color: '#9B93C0', textDecoration: 'none' }}>⚔️ Crews</Link>
           <Link href="#how-it-works" style={{ color: '#9B93C0', textDecoration: 'none' }}>How It Works</Link>
           <Link href="#score" style={{ color: '#9B93C0', textDecoration: 'none' }}>Bestie Score</Link>
         </div>
@@ -167,6 +168,7 @@ export default function HomePage() {
 
       <div className={`mobile-menu ${menuOpen ? 'open' : ''}`}>
         <Link href="/browse" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>🔍 Browse</Link>
+        <Link href="/crews" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>⚔️ Crews</Link>
         <Link href="#how-it-works" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>💡 How It Works</Link>
         <Link href="#score" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>⭐ Bestie Score</Link>
         {!loggedIn && <Link href="/login" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>👤 Log in</Link>}
@@ -436,6 +438,7 @@ export default function HomePage() {
           <span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37' }}>BESTIE</span>
           <div style={{ display: 'flex', gap: '20px', fontSize: '14px', flexWrap: 'wrap' }}>
             <Link href="/browse" style={{ color: '#9B93C0', textDecoration: 'none' }}>Browse</Link>
+            <Link href="/crews" style={{ color: '#9B93C0', textDecoration: 'none' }}>⚔️ Crews</Link>
             <Link href="#how-it-works" style={{ color: '#9B93C0', textDecoration: 'none' }}>How It Works</Link>
             <Link href="/score-guide" style={{ color: '#9B93C0', textDecoration: 'none' }}>Bestie Score</Link>
             <Link href="/signup" style={{ color: '#9B93C0', textDecoration: 'none' }}>Join</Link>
