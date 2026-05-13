@@ -6,6 +6,7 @@ import ProfileNav from '@/components/ProfileNav'
 import SocialPassportCTA from '@/components/SocialPassportCTA'
 import SharePassportButton from '@/components/SharePassportButton'
 import InviteToSessionButton from '@/components/InviteToSessionButton'
+import EditActivitiesLink from '@/components/EditActivitiesLink'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -308,7 +309,10 @@ export default async function ProfilePage({ params }) {
         {/* ACTIVITIES */}
         {profile.activity_packages?.length > 0 && (
           <div style={{ marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '12px' }}>ACTIVITIES</h3>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <h3 style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0' }}>ACTIVITIES</h3>
+              <EditActivitiesLink profileUserId={profile.id} />
+            </div>
             {profile.activity_packages.map((pkg) => (
               <div key={pkg.id} style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '20px', marginBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
@@ -347,7 +351,8 @@ export default async function ProfilePage({ params }) {
 
         {(!profile.activity_packages || profile.activity_packages.length === 0) && (
           <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px', marginBottom: '16px', textAlign: 'center' }}>
-            <p style={{ fontSize: '14px', color: '#9B93C0' }}>No activities listed yet</p>
+            <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '12px' }}>No activities listed yet</p>
+            <EditActivitiesLink profileUserId={profile.id} />
           </div>
         )}
 
