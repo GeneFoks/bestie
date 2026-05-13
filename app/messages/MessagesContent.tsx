@@ -70,18 +70,18 @@ export default function MessagesPage() {
   useEffect(() => {
     if (!userId) return
     const sub = supabase
-      .channel(`messages-realtime-${userId}`)
+      .channel(`dm-realtime-${userId}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
-        table: 'messages',
+        table: 'direct_messages',
         filter: `receiver_id=eq.${userId}`,
       }, (payload) => {
         const newMsg = payload.new
         if (activeConvRef.current?.user.id === newMsg.sender_id) {
-          setMessages(m => [...m, newMsg])
+          setMessages(m => m.some(x => x.id === newMsg.id) ? m : [...m, newMsg])
           scrollToBottom()
-          supabase.from('messages').update({ read: true }).eq('id', newMsg.id)
+          supabase.from('direct_messages').update({ read: true }).eq('id', newMsg.id)
         }
         loadConversations(userId)
       })
@@ -102,8 +102,8 @@ export default function MessagesPage() {
   }
 
   const loadConversations = async (uid) => {
-    const { data: sent } = await supabase.from('messages').select('receiver_id').eq('sender_id', uid)
-    const { data: received } = await supabase.from('messages').select('sender_id').eq('receiver_id', uid)
+    const { data: sent } = await supabase.from('direct_messages').select('receiver_id').eq('sender_id', uid)
+    const { data: received } = await supabase.from('direct_messages').select('sender_id').eq('receiver_id', uid)
 
     const partnerIds = [...new Set([
       ...(sent || []).map(m => m.receiver_id),
@@ -119,7 +119,7 @@ export default function MessagesPage() {
 
     const convs = await Promise.all((users || []).map(async (user) => {
       const { data: last } = await supabase
-        .from('messages')
+        .from('direct_messages')
         .select('content, created_at, sender_id, read')
         .or(`and(sender_id.eq.${uid},receiver_id.eq.${user.id}),and(sender_id.eq.${user.id},receiver_id.eq.${uid})`)
         .order('created_at', { ascending: false })
@@ -127,7 +127,7 @@ export default function MessagesPage() {
         .single()
 
       const { count: unread } = await supabase
-        .from('messages')
+        .from('direct_messages')
         .select('*', { count: 'exact', head: true })
         .eq('sender_id', user.id)
         .eq('receiver_id', uid)
@@ -143,21 +143,21 @@ export default function MessagesPage() {
 
   const loadMessages = async (partnerId) => {
     const { data } = await supabase
-      .from('messages')
+      .from('direct_messages')
       .select('*')
       .or(`and(sender_id.eq.${userId},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${userId})`)
       .order('created_at', { ascending: true })
 
     setMessages(data || [])
     scrollToBottom()
-    await supabase.from('messages').update({ read: true }).eq('sender_id', partnerId).eq('receiver_id', userId).eq('read', false)
+    await supabase.from('direct_messages').update({ read: true }).eq('sender_id', partnerId).eq('receiver_id', userId).eq('read', false)
   }
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !activeConv) return
     setSending(true)
     const msg = { sender_id: userId, receiver_id: activeConv.user.id, content: newMessage.trim(), read: false }
-    const { data } = await supabase.from('messages').insert(msg).select().single()
+    const { data } = await supabase.from('direct_messages').insert(msg).select().single()
     if (data) {
       setMessages(m => [...m, data])
       setNewMessage('')
