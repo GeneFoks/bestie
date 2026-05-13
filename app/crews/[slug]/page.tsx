@@ -38,11 +38,20 @@ export default async function CrewPage({ params }) {
     )
   }
 
-  const { data: members } = await supabase
-    .from('crew_members')
-    .select('joined_at, user:users(id, username, full_name, avatar_url, bestie_score, city)')
-    .eq('crew_id', crew.id)
-    .order('joined_at', { ascending: true })
+  const [{ data: members }, { data: upcomingEvents }] = await Promise.all([
+    supabase
+      .from('crew_members')
+      .select('joined_at, user:users(id, username, full_name, avatar_url, bestie_score, city)')
+      .eq('crew_id', crew.id)
+      .order('joined_at', { ascending: true }),
+    supabase
+      .from('crew_events')
+      .select('id, title, datetime, location, is_members_only, max_attendees')
+      .eq('crew_id', crew.id)
+      .gte('datetime', new Date().toISOString())
+      .order('datetime', { ascending: true })
+      .limit(5),
+  ])
 
   const memberCount = members?.length || 0
   const avgScore = memberCount > 0
@@ -117,6 +126,43 @@ export default async function CrewPage({ params }) {
 
           <CrewActions crewId={crew.id} captainId={crew.captain_id} isPublic={crew.is_public} isFull={spotsLeft <= 0} captainUsername={crew.captain?.username} />
         </div>
+
+        {/* Events */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#E8E0FF' }}>Upcoming Events</h2>
+          <Link href={`/crews/${params.slug}/events/new`} style={{ fontSize: '13px', fontWeight: 600, padding: '7px 14px', borderRadius: '10px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', textDecoration: 'none' }}>
+            + New Event
+          </Link>
+        </div>
+
+        {!upcomingEvents || upcomingEvents.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '32px', background: '#0F0F1E', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '24px' }}>
+            <p style={{ fontSize: '14px', color: '#9B93C0' }}>No upcoming events</p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+            {upcomingEvents.map(event => {
+              const d = new Date(event.datetime)
+              const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+              const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+              return (
+                <Link key={event.id} href={`/events/${event.id}`} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', textDecoration: 'none' }}>
+                  <div style={{ textAlign: 'center', flexShrink: 0, width: '44px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#D4AF37', letterSpacing: '1px' }}>{d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}</div>
+                    <div style={{ fontSize: '22px', fontWeight: 700, color: '#E8E0FF', fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{d.getDate()}</div>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
+                      <span style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF' }}>{event.title}</span>
+                      {event.is_members_only && <span style={{ fontSize: '10px', color: '#9B93C0' }}>🔒</span>}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#9B93C0' }}>{timeStr}{event.location ? ` · ${event.location}` : ''}</div>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        )}
 
         {/* Members */}
         <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#E8E0FF', marginBottom: '16px' }}>Members</h2>
