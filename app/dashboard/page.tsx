@@ -16,6 +16,8 @@ export default function DashboardPage() {
   const [unreadMessages, setUnreadMessages] = useState(0)
   const [pendingBookings, setPendingBookings] = useState(0)
   const [referredCount, setReferredCount] = useState(0)
+  const [myCrews, setMyCrews] = useState<any[]>([])
+  const [crewNewEvents, setCrewNewEvents] = useState<Record<string, number>>({})
 
   useEffect(() => {
     const getUser = async () => {
@@ -49,14 +51,35 @@ export default function DashboardPage() {
         } catch {}
       }
 
-      const [{ count: msgCount }, { count: bookCount }, { count: refCount }] = await Promise.all([
+      const [{ count: msgCount }, { count: bookCount }, { count: refCount }, { data: crewMemberships }] = await Promise.all([
         supabase.from('direct_messages').select('*', { count: 'exact', head: true }).eq('receiver_id', session.user.id).eq('read', false),
         supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('provider_id', session.user.id).eq('status', 'pending'),
         supabase.from('users').select('*', { count: 'exact', head: true }).eq('referred_by', session.user.id),
+        supabase.from('crew_members').select('crew:crews(id, name, slug, avatar_url, is_public)').eq('user_id', session.user.id),
       ])
       setUnreadMessages(msgCount || 0)
       setPendingBookings(bookCount || 0)
       setReferredCount(refCount || 0)
+
+      if (crewMemberships?.length) {
+        const crews = crewMemberships.map((m: any) => m.crew).filter(Boolean)
+        setMyCrews(crews)
+
+        // Fetch upcoming events for each crew (created in last 7 days = "new")
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+        const crewIds = crews.map((c: any) => c.id)
+        const { data: newEvents } = await supabase
+          .from('crew_events')
+          .select('crew_id')
+          .in('crew_id', crewIds)
+          .gte('created_at', sevenDaysAgo)
+          .gte('datetime', new Date().toISOString())
+
+        const counts: Record<string, number> = {}
+        newEvents?.forEach((e: any) => { counts[e.crew_id] = (counts[e.crew_id] || 0) + 1 })
+        setCrewNewEvents(counts)
+      }
+
       setLoading(false)
     }
     getUser()
@@ -106,17 +129,16 @@ export default function DashboardPage() {
     { icon: '🎯', label: 'Create an activity', points: '+50 BS', done: profile?.activity_packages?.length > 0, href: '/profile/edit' },
   ]
   const remainingBoost = boostItems.filter(i => !i.done)
+  const totalNewCrewEvents = Object.values(crewNewEvents).reduce((s, n) => s + n, 0)
 
   const actions = [
     { emoji: '✉️', label: 'Messages', sub: 'Check your conversations', href: '/messages', badge: unreadMessages },
-    { emoji: '📋', label: 'Bookings', sub: 'View your booking requests', href: '/bookings', badge: pendingBookings },
+    { emoji: '📋', label: 'Bookings', sub: 'Incoming booking requests', href: '/bookings', badge: pendingBookings },
+    { emoji: '👥', label: 'My Crews', sub: myCrews.length ? `${myCrews.length} crew${myCrews.length > 1 ? 's' : ''}` : 'Find or create a crew', href: '/crews', badge: totalNewCrewEvents },
     { emoji: '📅', label: 'My Sessions', sub: 'Upcoming accepted sessions', href: '/sessions' },
-    { emoji: '✨', label: 'Bestie Type', sub: 'Your Energy · Mind · Vibe', href: '/bestie-type' },
     { emoji: '🔍', label: 'Browse Besties', sub: 'Find someone for your activity', href: '/browse' },
-    { emoji: '🎯', label: 'My Activities', sub: 'Manage what you offer', href: '/activities' },
-    { emoji: '✏️', label: 'Edit profile', sub: 'Update your bio, photo, city', href: '/profile/edit' },
-    { emoji: '👤', label: 'View my profile', sub: 'See how others see you', href: `/${profile?.username}` },
-    { emoji: '⚡', label: 'Going to', sub: 'Share what you\'re up to today', href: '/going-to' },
+    { emoji: '⚡', label: 'Going to', sub: "Share what you're up to today", href: '/going-to' },
+    { emoji: '✏️', label: 'Edit profile', sub: 'Bio, photo, city, activities', href: '/profile/edit' },
   ]
 
   return (
@@ -211,39 +233,65 @@ export default function DashboardPage() {
         )}
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+
+          {/* My Crews */}
           <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px' }}>
-            <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '16px' }}>Complete your profile</h3>
-            {[
-              { label: 'Add profile photo', done: !!profile?.avatar_url },
-              { label: 'Write your bio', done: !!profile?.bio },
-              { label: 'Add your city', done: !!profile?.city },
-              { label: 'Create an activity', done: profile?.activity_packages?.length > 0 },
-              { label: 'Get your Bestie Type', done: !!profile?.bestie_type_completed },
-            ].map((item) => (
-              <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                <div style={{ width: '20px', height: '20px', borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: item.done ? 'rgba(57,255,20,0.15)' : 'rgba(255,255,255,0.06)', border: item.done ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(255,255,255,0.1)', fontSize: '11px', color: '#39FF14' }}>
-                  {item.done ? '✓' : ''}
-                </div>
-                <span style={{ fontSize: '14px', color: item.done ? '#9B93C0' : '#E8E0FF', textDecoration: item.done ? 'line-through' : 'none' }}>{item.label}</span>
-                {!item.done && <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#D4AF37' }}>→</span>}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF' }}>My Crews</h3>
+              <Link href="/crews" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>Browse →</Link>
+            </div>
+            {myCrews.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <p style={{ fontSize: '32px', marginBottom: '8px' }}>👥</p>
+                <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '16px' }}>You're not in any crew yet</p>
+                <Link href="/crews" style={{ fontSize: '13px', fontWeight: 600, padding: '8px 20px', borderRadius: '10px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>Find a Crew</Link>
               </div>
-            ))}
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {myCrews.map((crew: any) => {
+                  const newEvents = crewNewEvents[crew.id] || 0
+                  const isFeatured = profile?.crew_id === crew.id
+                  return (
+                    <Link key={crew.id} href={`/crews/${crew.slug}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', background: isFeatured ? 'rgba(212,175,55,0.06)' : 'rgba(255,255,255,0.03)', border: isFeatured ? '1px solid rgba(212,175,55,0.2)' : '1px solid rgba(255,255,255,0.06)', textDecoration: 'none' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: '#1a1a35', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {crew.avatar_url
+                          ? <img src={crew.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : <span style={{ fontSize: '16px' }}>👥</span>}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{crew.name}</p>
+                        {isFeatured && <p style={{ fontSize: '11px', color: '#D4AF37' }}>⭐ On your passport</p>}
+                      </div>
+                      {newEvents > 0 && (
+                        <span style={{ background: '#D4AF37', color: '#080810', fontSize: '11px', fontWeight: 700, borderRadius: '999px', padding: '2px 7px', flexShrink: 0 }}>
+                          {newEvents} new
+                        </span>
+                      )}
+                    </Link>
+                  )
+                })}
+                <Link href="/crews/new" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, color: '#9B93C0', background: 'transparent', border: '1px dashed rgba(255,255,255,0.1)', textDecoration: 'none', marginTop: '4px' }}>
+                  + Create a crew
+                </Link>
+              </div>
+            )}
           </div>
 
+          {/* Quick actions */}
           <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px' }}>
             <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '16px' }}>Quick actions</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {actions.map((action) => (
-                <Link key={action.label} href={action.href} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', borderRadius: '14px', background: action.badge > 0 ? 'rgba(212,175,55,0.06)' : 'rgba(255,255,255,0.03)', border: action.badge > 0 ? '1px solid rgba(212,175,55,0.2)' : '1px solid rgba(255,255,255,0.06)', textDecoration: 'none' }}>
-                  <span style={{ fontSize: '24px' }}>{action.emoji}</span>
+                <Link key={action.label} href={action.href} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', background: action.badge > 0 ? 'rgba(212,175,55,0.06)' : 'rgba(255,255,255,0.03)', border: action.badge > 0 ? '1px solid rgba(212,175,55,0.2)' : '1px solid rgba(255,255,255,0.06)', textDecoration: 'none' }}>
+                  <span style={{ fontSize: '20px' }}>{action.emoji}</span>
                   <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF', marginBottom: '2px' }}>{action.label}</p>
+                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF', marginBottom: '1px' }}>{action.label}</p>
                     <p style={{ fontSize: '12px', color: '#9B93C0' }}>{action.sub}</p>
                   </div>
                   {action.badge > 0 && (
                     <span style={{ background: '#D4AF37', color: '#080810', fontSize: '12px', fontWeight: 700, borderRadius: '999px', padding: '2px 8px', flexShrink: 0 }}>{action.badge}</span>
                   )}
-                  <span style={{ color: '#9B93C0' }}>→</span>
+                  <span style={{ color: '#9B93C0', fontSize: '12px' }}>→</span>
                 </Link>
               ))}
             </div>
