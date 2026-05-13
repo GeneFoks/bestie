@@ -321,7 +321,15 @@ export default async function ProfilePage({ params }) {
                       <span style={{ fontSize: '18px' }}>{ACTIVITY_EMOJI[pkg.activity_type] || '✨'}</span>
                       <h4 style={{ fontSize: '16px', fontWeight: 600, color: '#E8E0FF' }}>{pkg.title}</h4>
                     </div>
-                    {pkg.description && <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.6 }}>{pkg.description}</p>}
+                    {pkg.description && <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.6, marginBottom: pkg.scheduled_at ? '8px' : '0' }}>{pkg.description}</p>}
+                    {pkg.scheduled_at && (
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '8px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', marginTop: pkg.description ? '0' : '4px' }}>
+                        <span style={{ fontSize: '13px' }}>📅</span>
+                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#D4AF37' }}>
+                          {new Date(pkg.scheduled_at).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div style={{ flexShrink: 0, textAlign: 'right' }}>
                     {pkg.is_free
