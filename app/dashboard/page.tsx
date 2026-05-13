@@ -12,8 +12,10 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
+  const [refCopied, setRefCopied] = useState(false)
   const [unreadMessages, setUnreadMessages] = useState(0)
   const [pendingBookings, setPendingBookings] = useState(0)
+  const [referredCount, setReferredCount] = useState(0)
 
   useEffect(() => {
     const getUser = async () => {
@@ -22,10 +24,22 @@ export default function DashboardPage() {
       setUser(session.user)
       const { data } = await supabase.from('users').select('*, activity_packages(*)').eq('id', session.user.id).single()
       setProfile(data)
-      const { count: msgCount } = await supabase.from('messages').select('*', { count: 'exact', head: true }).eq('receiver_id', session.user.id).eq('read', false)
+
+      // Apply referral if present in localStorage
+      const refCode = typeof window !== 'undefined' ? localStorage.getItem('bestie_ref') : null
+      if (refCode && !data?.referred_by) {
+        const { data: ok } = await supabase.rpc('apply_referral', { p_code: refCode })
+        if (ok) localStorage.removeItem('bestie_ref')
+      }
+
+      const [{ count: msgCount }, { count: bookCount }, { count: refCount }] = await Promise.all([
+        supabase.from('direct_messages').select('*', { count: 'exact', head: true }).eq('receiver_id', session.user.id).eq('read', false),
+        supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('provider_id', session.user.id).eq('status', 'pending'),
+        supabase.from('users').select('*', { count: 'exact', head: true }).eq('referred_by', session.user.id),
+      ])
       setUnreadMessages(msgCount || 0)
-      const { count: bookCount } = await supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('provider_id', session.user.id).eq('status', 'pending')
       setPendingBookings(bookCount || 0)
+      setReferredCount(refCount || 0)
       setLoading(false)
     }
     getUser()
@@ -45,6 +59,13 @@ export default function DashboardPage() {
     navigator.clipboard.writeText(url)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleCopyRef = () => {
+    const url = `https://bestiehere.com/signup?ref=${profile?.referral_code}`
+    navigator.clipboard.writeText(url)
+    setRefCopied(true)
+    setTimeout(() => setRefCopied(false), 2000)
   }
 
   if (loading) return (
@@ -228,6 +249,31 @@ export default function DashboardPage() {
                   </div>
                 </Link>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Referral block */}
+        {profile?.referral_code && (
+          <div style={{ marginTop: '20px', background: '#0F0F1E', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '20px', padding: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '4px' }}>Invite friends</h3>
+                <p style={{ fontSize: '13px', color: '#9B93C0' }}>+1 Bestie Score for every person who joins with your link</p>
+              </div>
+              {referredCount > 0 && (
+                <div style={{ padding: '6px 14px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', fontSize: '13px', fontWeight: 700, color: '#D4AF37' }}>
+                  {referredCount} invited · +{referredCount} BS earned
+                </div>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: '200px', padding: '10px 16px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', fontSize: '13px', color: '#9B93C0', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                bestiehere.com/signup?ref={profile.referral_code}
+              </div>
+              <button onClick={handleCopyRef} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: refCopied ? 'rgba(57,255,20,0.15)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', border: refCopied ? '1px solid rgba(57,255,20,0.3)' : 'none', color: refCopied ? '#39FF14' : '#080810', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                {refCopied ? '✓ Copied!' : 'Copy link'}
+              </button>
             </div>
           </div>
         )}
