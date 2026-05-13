@@ -9,8 +9,8 @@ export default function BottomNav() {
   const links = [
     { href: '/', icon: '🏠', label: 'Home' },
     { href: '/browse', icon: '🔍', label: 'Browse' },
+    { href: '/crews', icon: '⚔️', label: 'Crews' },
     { href: '/messages', icon: '💬', label: 'Messages' },
-    { href: '/bookings', icon: '📋', label: 'Bookings' },
     { href: '/dashboard', icon: '👤', label: 'Profile' },
   ]
 
