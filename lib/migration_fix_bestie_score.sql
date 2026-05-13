@@ -13,6 +13,7 @@ DECLARE
   v_session_count INTEGER;
   v_ref_count INTEGER;
   v_r RECORD;
+  v_i INTEGER;
 BEGIN
   SELECT * INTO v_user FROM public.users WHERE id = p_user_id;
   IF NOT FOUND THEN RETURN; END IF;
@@ -37,12 +38,21 @@ BEGIN
     v_score := v_score + 100;
   END IF;
 
-  -- Completed sessions (+100 each)
+  -- Completed sessions (diminishing returns: 100, 80, 60, 40, 20, then +1 each)
   SELECT COUNT(*) INTO v_session_count
   FROM public.bookings
   WHERE (seeker_id = p_user_id OR provider_id = p_user_id)
     AND status = 'completed';
-  v_score := v_score + (v_session_count * 100);
+  FOR v_i IN 1..v_session_count LOOP
+    CASE v_i
+      WHEN 1 THEN v_score := v_score + 100;
+      WHEN 2 THEN v_score := v_score + 80;
+      WHEN 3 THEN v_score := v_score + 60;
+      WHEN 4 THEN v_score := v_score + 40;
+      WHEN 5 THEN v_score := v_score + 20;
+      ELSE       v_score := v_score + 1;
+    END CASE;
+  END LOOP;
 
   -- Ratings received
   FOR v_r IN SELECT star_rating FROM public.reviews WHERE reviewee_id = p_user_id LOOP
