@@ -83,7 +83,7 @@ export default function HomePage() {
       .select('*, activity_packages(*)')
       .order('bestie_score', { ascending: false })
       .gt('bestie_score', 0)
-      .limit(3)
+      .limit(10)
       .then(({ data }) => setTopProviders(data || []))
 
     return () => subscription.unsubscribe()
@@ -126,7 +126,7 @@ export default function HomePage() {
         .mobile-menu-btn { display: none; }
         .mobile-menu { display: none; }
         .hero-title { font-size: clamp(36px, 8vw, 72px); }
-        .providers-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+        .providers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
         .how-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; }
         .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 64px; align-items: center; }
@@ -272,26 +272,23 @@ export default function HomePage() {
           </div>
           {topProviders.length > 0 ? (
             <div className="providers-grid">
-              {topProviders.map((provider, i) => (
-                <div key={provider.id} style={{ position: 'relative', paddingTop: '16px' }}>
-                  {i === 0 && (
-                    <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', zIndex: 10, background: 'linear-gradient(135deg, #D4AF37, #B8960C)', borderRadius: '999px', padding: '4px 14px', fontSize: '11px', fontWeight: 700, color: '#080810', whiteSpace: 'nowrap' }}>
-                      👑 #1 Top Bestie
+              {topProviders.map((provider, i) => {
+                const badge = i === 0
+                  ? { label: '👑 #1 Top Bestie', bg: 'linear-gradient(135deg, #D4AF37, #B8960C)', color: '#080810', border: 'none' }
+                  : i === 1
+                  ? { label: '🥈 #2', bg: 'rgba(155,147,192,0.2)', color: '#9B93C0', border: '1px solid rgba(155,147,192,0.3)' }
+                  : i === 2
+                  ? { label: '🥉 #3', bg: 'rgba(180,100,40,0.2)', color: '#CD7F32', border: '1px solid rgba(180,100,40,0.3)' }
+                  : { label: `#${i + 1}`, bg: 'rgba(255,255,255,0.04)', color: '#9B93C0', border: '1px solid rgba(255,255,255,0.08)' }
+                return (
+                  <div key={provider.id} style={{ position: 'relative', paddingTop: '16px' }}>
+                    <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', zIndex: 10, background: badge.bg, border: badge.border, borderRadius: '999px', padding: '4px 14px', fontSize: '11px', fontWeight: 700, color: badge.color, whiteSpace: 'nowrap' }}>
+                      {badge.label}
                     </div>
-                  )}
-                  {i === 1 && (
-                    <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', zIndex: 10, background: 'rgba(155,147,192,0.2)', border: '1px solid rgba(155,147,192,0.3)', borderRadius: '999px', padding: '4px 14px', fontSize: '11px', fontWeight: 700, color: '#9B93C0', whiteSpace: 'nowrap' }}>
-                      🥈 #2
-                    </div>
-                  )}
-                  {i === 2 && (
-                    <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', zIndex: 10, background: 'rgba(180,100,40,0.2)', border: '1px solid rgba(180,100,40,0.3)', borderRadius: '999px', padding: '4px 14px', fontSize: '11px', fontWeight: 700, color: '#CD7F32', whiteSpace: 'nowrap' }}>
-                      🥉 #3
-                    </div>
-                  )}
-                  <ProviderCard provider={provider} featured={i === 0} />
-                </div>
-              ))}
+                    <ProviderCard provider={provider} featured={i === 0} />
+                  </div>
+                )
+              })}
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: '60px', background: '#0F0F1E', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
