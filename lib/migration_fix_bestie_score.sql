@@ -87,7 +87,7 @@ BEGIN
   v_score := GREATEST(50, LEAST(1000, v_score));
 
   UPDATE public.users
-  SET bestie_score = v_score, updated_at = NOW()
+  SET bestie_score = v_score
   WHERE id = p_user_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
