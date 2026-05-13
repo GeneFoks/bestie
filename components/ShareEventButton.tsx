@@ -1,0 +1,43 @@
+'use client'
+
+import { useState } from 'react'
+
+type Props = {
+  eventId: string
+  eventTitle: string
+}
+
+export default function ShareEventButton({ eventId, eventTitle }: Props) {
+  const [copied, setCopied] = useState(false)
+
+  const share = async () => {
+    const url = `https://bestiehere.com/events/${eventId}`
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: eventTitle, url })
+        return
+      } catch {}
+    }
+    navigator.clipboard.writeText(url)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <button
+      onClick={share}
+      style={{
+        padding: '8px 16px',
+        borderRadius: '10px',
+        fontSize: '13px',
+        fontWeight: 600,
+        background: copied ? 'rgba(57,255,20,0.1)' : 'rgba(255,255,255,0.06)',
+        border: copied ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(255,255,255,0.1)',
+        color: copied ? '#39FF14' : '#9B93C0',
+        cursor: 'pointer',
+      }}
+    >
+      {copied ? '✓ Copied!' : '🔗 Share event'}
+    </button>
+  )
+}
