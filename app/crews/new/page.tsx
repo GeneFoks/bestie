@@ -12,8 +12,8 @@ function toSlug(str: string) {
 
 export default function NewCrewPage() {
   const router = useRouter()
-  const [userId, setUserId] = useState(null)
-  const [existingCrew, setExistingCrew] = useState(null)
+  const [userId, setUserId] = useState<string | null>(null)
+  const [existingCrew, setExistingCrew] = useState<string | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
 
   const [name, setName] = useState('')
