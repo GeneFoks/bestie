@@ -6,6 +6,7 @@ import ProfileNav from '@/components/ProfileNav'
 import CrewActions from './CrewActions'
 import CrewAvatarSection from './CrewAvatarSection'
 import JoinRequestActions from './JoinRequestActions'
+import CrewInviteButton from './CrewInviteButton'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -133,9 +134,10 @@ export default async function CrewPage({ params }) {
               💬 Crew Chat
             </Link>
             <div style={{ flex: 1 }}>
-              <CrewActions crewId={crew.id} captainId={crew.captain_id} isPublic={crew.is_public} isFull={spotsLeft <= 0} captainUsername={crew.captain?.username} />
+              <CrewActions crewId={crew.id} captainId={crew.captain_id} isPublic={crew.is_public} isFull={spotsLeft <= 0} captainUsername={crew.captain?.username} crewSlug={params.slug} />
             </div>
           </div>
+          <CrewInviteButton crewId={crew.id} captainId={crew.captain_id} crewSlug={params.slug} inviteCode={crew.invite_code || ''} />
         </div>
 
         {/* Events */}

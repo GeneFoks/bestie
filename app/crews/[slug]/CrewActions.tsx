@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 
@@ -11,10 +11,12 @@ type Props = {
   isPublic: boolean
   isFull: boolean
   captainUsername: string
+  crewSlug: string
 }
 
-export default function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername }: Props) {
+function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, crewSlug }: Props) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [userId, setUserId] = useState<string | null>(null)
   const [userCrewId, setUserCrewId] = useState<string | null>(null)
   const [isMember, setIsMember] = useState(false)
@@ -25,7 +27,16 @@ export default function CrewActions({ crewId, captainId, isPublic, isFull, capta
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) { setLoading(false); return }
+      const inviteCode = searchParams.get('invite')
+
+      if (!session) {
+        // Save invite to localStorage so dashboard can apply it after login
+        if (inviteCode) {
+          localStorage.setItem('bestie_crew_invite', JSON.stringify({ crewId, crewSlug, inviteCode }))
+        }
+        setLoading(false)
+        return
+      }
       const uid = session.user.id
       setUserId(uid)
 
@@ -36,8 +47,28 @@ export default function CrewActions({ crewId, captainId, isPublic, isFull, capta
       ])
 
       setUserCrewId(profile?.crew_id ?? null)
-      setIsMember(!!membership)
       setRequestStatus(request ? request.status : 'none')
+
+      // Auto-join via invite if not already a member
+      if (inviteCode && !membership && uid !== captainId) {
+        const { data: result } = await supabase.rpc('join_crew_via_invite', {
+          p_crew_id: crewId,
+          p_invite_code: inviteCode,
+        })
+        if (result === 'joined' || result === 'already_member') {
+          setIsMember(true)
+          setUserCrewId(crewId)
+          router.replace(`/crews/${crewSlug}`)
+          setLoading(false)
+          return
+        }
+        if (result === 'in_other_crew') {
+          setError('You are already in another crew. Leave it first.')
+        }
+      } else {
+        setIsMember(!!membership)
+      }
+
       setLoading(false)
     })
   }, [crewId])
@@ -159,5 +190,13 @@ export default function CrewActions({ crewId, captainId, isPublic, isFull, capta
       </button>
       {error && <p style={{ fontSize: '12px', color: '#FF6B35', marginTop: '8px', textAlign: 'center' }}>{error}</p>}
     </div>
+  )
+}
+
+export default function CrewActionsWrapper(props: Props) {
+  return (
+    <Suspense fallback={null}>
+      <CrewActions {...props} />
+    </Suspense>
   )
 }
