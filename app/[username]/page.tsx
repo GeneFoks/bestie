@@ -87,7 +87,7 @@ export async function generateMetadata({ params }) {
 
 export default async function ProfilePage({ params }) {
   const { data: profile } = await supabase
-    .from('users').select('*, activity_packages(*), crew:crews(id, name, slug, is_public)')
+    .from('users').select('*, activity_packages(*)')
     .eq('username', params.username).single()
 
   if (!profile) {
@@ -102,6 +102,10 @@ export default async function ProfilePage({ params }) {
       </div>
     )
   }
+
+  const { data: crew } = profile.crew_id
+    ? await supabase.from('crews').select('id, name, slug, is_public').eq('id', profile.crew_id).single()
+    : { data: null }
 
   const { data: sparks } = await supabase.from('sparks').select('spark_type').eq('receiver_id', profile.id)
   const sparkCounts = {}
@@ -165,9 +169,9 @@ export default async function ProfilePage({ params }) {
               <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '6px' }}>
                 {profile.city && `📍 ${profile.city}${profile.country ? `, ${profile.country}` : ''} · `}@{profile.username}
               </p>
-              {profile.crew && (
-                <Link href={`/crews/${profile.crew.slug}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', marginBottom: '6px', padding: '3px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', textDecoration: 'none' }}>
-                  {!profile.crew.is_public && '🔒 '}{profile.crew.name}
+              {crew && (
+                <Link href={`/crews/${crew.slug}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', marginBottom: '6px', padding: '3px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', textDecoration: 'none' }}>
+                  {!crew.is_public && '🔒 '}{crew.name}
                 </Link>
               )}
               {memberSince && (

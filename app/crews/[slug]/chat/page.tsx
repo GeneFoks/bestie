@@ -73,7 +73,7 @@ export default function CrewChatPage() {
             .select('id, content, created_at, sender:users!sender_id(id, username, full_name, avatar_url)')
             .eq('id', payload.new.id)
             .single()
-          if (msg) setMessages(prev => [...prev, msg])
+          if (msg) setMessages(prev => prev.some(m => m.id === msg.id) ? prev : [...prev, msg])
         })
         .subscribe()
 
@@ -87,10 +87,20 @@ export default function CrewChatPage() {
 
   const send = async () => {
     const text = input.trim()
-    if (!text || sending || !crew) return
+    if (!text || sending || !crew || !userId) return
     setSending(true)
     setInput('')
-    await supabase.from('crew_messages').insert({ crew_id: crew.id, sender_id: userId, content: text })
+
+    const { data: msg, error } = await supabase
+      .from('crew_messages')
+      .insert({ crew_id: crew.id, sender_id: userId, content: text })
+      .select('id, content, created_at, sender:users!sender_id(id, username, full_name, avatar_url)')
+      .single()
+
+    if (msg) {
+      // Optimistic: add immediately, realtime deduplicates by id
+      setMessages(prev => prev.some(m => m.id === msg.id) ? prev : [...prev, msg])
+    }
     setSending(false)
     inputRef.current?.focus()
   }
