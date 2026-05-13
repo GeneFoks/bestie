@@ -119,7 +119,9 @@ export default function EditProfilePage() {
   const [avatarPreview, setAvatarPreview] = useState(null)
   const [packages, setPackages] = useState([])
   const [showAddForm, setShowAddForm] = useState(false)
-  const [newPkg, setNewPkg] = useState({ title: '', activity_type: '', description: '', price_per_session: '', is_free: false })
+  const [newPkg, setNewPkg] = useState({ title: '', activity_type: '', description: '', price_per_session: '', is_free: false, scheduled_at: '' })
+  const [editingPkg, setEditingPkg] = useState<string | null>(null)
+  const [editPkg, setEditPkg] = useState({ title: '', activity_type: '', description: '', price_per_session: '', is_free: false, scheduled_at: '' })
   const [selectedLanguages, setSelectedLanguages] = useState([])
   const [form, setForm] = useState({ full_name: '', username: '', bio: '', city: '', country: '', avatar_url: '' })
 
@@ -203,11 +205,39 @@ export default function EditProfilePage() {
       description: newPkg.description,
       price_per_session: newPkg.is_free ? 0 : parseFloat(newPkg.price_per_session) || 0,
       is_free: newPkg.is_free,
+      scheduled_at: newPkg.scheduled_at || null,
     }).select().single()
     if (data) {
       setPackages(p => [...p, data])
-      setNewPkg({ title: '', activity_type: '', description: '', price_per_session: '', is_free: false })
+      setNewPkg({ title: '', activity_type: '', description: '', price_per_session: '', is_free: false, scheduled_at: '' })
       setShowAddForm(false)
+    }
+  }
+
+  const startEdit = (pkg) => {
+    setEditingPkg(pkg.id)
+    setEditPkg({
+      title: pkg.title || '',
+      activity_type: pkg.activity_type || '',
+      description: pkg.description || '',
+      price_per_session: pkg.price_per_session?.toString() || '',
+      is_free: pkg.is_free || false,
+      scheduled_at: pkg.scheduled_at ? new Date(pkg.scheduled_at).toISOString().slice(0, 16) : '',
+    })
+  }
+
+  const handleUpdatePackage = async (id) => {
+    const { data } = await supabase.from('activity_packages').update({
+      title: editPkg.title,
+      activity_type: editPkg.activity_type,
+      description: editPkg.description,
+      price_per_session: editPkg.is_free ? 0 : parseFloat(editPkg.price_per_session) || 0,
+      is_free: editPkg.is_free,
+      scheduled_at: editPkg.scheduled_at || null,
+    }).eq('id', id).select().single()
+    if (data) {
+      setPackages(p => p.map(pkg => pkg.id === id ? data : pkg))
+      setEditingPkg(null)
     }
   }
 
@@ -330,12 +360,68 @@ export default function EditProfilePage() {
           <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '16px' }}>My Activities</h3>
           {packages.length === 0 && <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '16px' }}>No activities yet.</p>}
           {packages.map(pkg => (
-            <div key={pkg.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '8px' }}>
-              <div>
-                <p style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF' }}>{pkg.title}</p>
-                <p style={{ fontSize: '12px', color: '#9B93C0', marginTop: '2px' }}>{getActivityLabel(pkg.activity_type)} · {pkg.is_free ? 'Free' : `$${pkg.price_per_session}/session`}</p>
-              </div>
-              <button onClick={() => handleDeletePackage(pkg.id)} style={{ background: 'none', border: 'none', color: '#9B93C0', cursor: 'pointer', fontSize: '20px', padding: '4px 8px' }}>×</button>
+            <div key={pkg.id} style={{ marginBottom: '8px' }}>
+              {editingPkg === pkg.id ? (
+                <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(155,143,255,0.05)', border: '1px solid rgba(155,143,255,0.2)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div>
+                      <label style={labelStyle}>Title</label>
+                      <input value={editPkg.title} onChange={e => setEditPkg(p => ({ ...p, title: e.target.value }))} style={inputStyle} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Type</label>
+                      <select value={editPkg.activity_type} onChange={e => setEditPkg(p => ({ ...p, activity_type: e.target.value }))} style={{ ...inputStyle, cursor: 'pointer' }}>
+                        <option value="">Select activity type...</option>
+                        {ACTIVITY_GROUPS.map(group => (
+                          <optgroup key={group.label} label={group.label}>
+                            {group.activities.map(a => (
+                              <option key={a.id} value={a.id}>{a.emoji} {a.label}</option>
+                            ))}
+                          </optgroup>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Description</label>
+                      <input value={editPkg.description} onChange={e => setEditPkg(p => ({ ...p, description: e.target.value }))} placeholder="What you'll do together..." style={inputStyle} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Next session date & time (optional)</label>
+                      <input type="datetime-local" value={editPkg.scheduled_at} onChange={e => setEditPkg(p => ({ ...p, scheduled_at: e.target.value }))} style={{ ...inputStyle, colorScheme: 'dark' }} />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input type="checkbox" checked={editPkg.is_free} onChange={e => setEditPkg(p => ({ ...p, is_free: e.target.checked }))} id={`edit_free_${pkg.id}`} />
+                      <label htmlFor={`edit_free_${pkg.id}`} style={{ fontSize: '14px', color: '#E8E0FF', cursor: 'pointer' }}>Free match</label>
+                    </div>
+                    {!editPkg.is_free && (
+                      <div>
+                        <label style={labelStyle}>Price ($)</label>
+                        <input type="number" value={editPkg.price_per_session} onChange={e => setEditPkg(p => ({ ...p, price_per_session: e.target.value }))} placeholder="20" style={inputStyle} />
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button onClick={() => setEditingPkg(null)} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', cursor: 'pointer' }}>Cancel</button>
+                      <button onClick={() => handleUpdatePackage(pkg.id)} style={{ flex: 2, padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: 'pointer' }}>Save changes</button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF' }}>{pkg.title}</p>
+                    <p style={{ fontSize: '12px', color: '#9B93C0', marginTop: '2px' }}>{getActivityLabel(pkg.activity_type)} · {pkg.is_free ? 'Free' : `$${pkg.price_per_session}/session`}</p>
+                    {pkg.scheduled_at && (
+                      <p style={{ fontSize: '12px', color: '#D4AF37', marginTop: '3px' }}>
+                        📅 {new Date(pkg.scheduled_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                    <button onClick={() => startEdit(pkg)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', cursor: 'pointer', fontSize: '13px', padding: '4px 10px', borderRadius: '8px' }}>Edit</button>
+                    <button onClick={() => handleDeletePackage(pkg.id)} style={{ background: 'none', border: 'none', color: '#9B93C0', cursor: 'pointer', fontSize: '20px', padding: '4px 8px' }}>×</button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
           {!showAddForm ? (
@@ -365,6 +451,10 @@ export default function EditProfilePage() {
                 <div>
                   <label style={labelStyle}>Description</label>
                   <input value={newPkg.description} onChange={e => setNewPkg(p => ({ ...p, description: e.target.value }))} placeholder="What you'll do together..." style={inputStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Next session date & time (optional)</label>
+                  <input type="datetime-local" value={newPkg.scheduled_at} onChange={e => setNewPkg(p => ({ ...p, scheduled_at: e.target.value }))} style={{ ...inputStyle, colorScheme: 'dark' }} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <input type="checkbox" checked={newPkg.is_free} onChange={e => setNewPkg(p => ({ ...p, is_free: e.target.checked }))} id="is_free" />
