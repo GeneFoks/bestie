@@ -54,12 +54,14 @@ const ACTIVITY_GROUPS = [
 ]
 
 const FEATURES = [
-  { emoji: '🪪', title: 'Social Passport', desc: 'Every user gets a verified profile with Bestie Score, sparks, sessions, and badge history.' },
-  { emoji: '⭐', title: 'Mutual Reviews', desc: 'Both sides confirm the session happened, then rate each other. No fake reviews.' },
+  { emoji: '🪪', title: 'Social Passport', desc: 'A verified profile with your Bestie Score, session history, sparks, and badges. Share yours with one link.' },
+  { emoji: '👥', title: 'Crews', desc: 'Join or create groups for shared activities. Members rate their crew 1–5 stars — top crews rise in the public rankings.' },
+  { emoji: '⭐', title: 'Mutual Reviews', desc: 'Both sides confirm the session happened, then rate each other. No fake reviews — ever.' },
   { emoji: '✨', title: 'Sparks', desc: '30 rare tokens you earn at signup. Give up to 3 per person to signal real trust.' },
-  { emoji: '📅', title: 'Session Calendar', desc: 'Book, accept, and track upcoming sessions. See what\'s next and who you\'re meeting.' },
-  { emoji: '⚡', title: 'Going To', desc: '24h status stories — share what you\'re up to today and find someone to join you.' },
+  { emoji: '📅', title: 'Session Calendar', desc: 'Book, accept, and track upcoming sessions. Invite friends to specific activities via a personal link.' },
+  { emoji: '⚡', title: 'Going To', desc: '24h status stories — share what you\'re doing today and find someone to join you.' },
   { emoji: '💬', title: 'Direct Messages', desc: 'Chat with any Bestie directly. Conversations tied to bookings stay in context.' },
+  { emoji: '🔗', title: 'Invite Links', desc: 'Share personal session invites or crew links. Recipients land on a signup page with full context — no confusion.' },
 ]
 
 export default function HomePage() {
@@ -310,10 +312,10 @@ export default function HomePage() {
           </div>
           <div className="how-grid">
             {[
-              { num: '01', icon: '🪪', title: 'Create your Social Passport', desc: 'Fill in your bio, add activities, get verified. Your Bestie Score starts building from day one.' },
-              { num: '02', icon: '🔍', title: 'Browse & book', desc: 'Filter by activity, city, and score. Send a booking request — no pressure, no awkwardness.' },
-              { num: '03', icon: '🤝', title: 'Meet your Bestie', desc: 'Show up, connect, enjoy. After the session both sides confirm it happened.' },
-              { num: '04', icon: '⭐', title: 'Rate & give Sparks', desc: 'Leave a star rating and give a Spark to signal real trust. Scores update automatically.' },
+              { num: '01', icon: '🪪', title: 'Create your Social Passport', desc: 'Fill in your bio, add activities, get verified. Your Bestie Score starts building from day one. Join or create a Crew.' },
+              { num: '02', icon: '🔍', title: 'Browse & book', desc: 'Filter by activity, city, and score. Send a booking request or use a personal invite link — no pressure, no awkwardness.' },
+              { num: '03', icon: '🤝', title: 'Meet your Bestie', desc: 'Show up, connect, enjoy. After the session both sides confirm it happened and rate each other.' },
+              { num: '04', icon: '⭐', title: 'Rate, Spark & grow', desc: 'Give a star rating and a Spark to signal real trust. Rate your Crew too — crew scores shape the public leaderboard.' },
             ].map((step) => (
               <div key={step.num}>
                 <div style={{ fontSize: '48px', fontWeight: 700, color: 'rgba(212,175,55,0.07)', fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{step.num}</div>
@@ -341,6 +343,36 @@ export default function HomePage() {
                 <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.6 }}>{f.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CREWS */}
+      <section style={{ padding: '0 20px 64px' }}>
+        <div style={{ maxWidth: '960px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '10px' }}>CREWS</p>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 36px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '12px' }}>Your people. Your group.</h2>
+            <p style={{ fontSize: '15px', color: '#9B93C0', maxWidth: '520px', margin: '0 auto', lineHeight: 1.7 }}>
+              A Crew is a group of Besties who regularly show up for each other. Create one, invite friends, run events — or join an existing one.
+            </p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', marginBottom: '32px' }}>
+            {[
+              { emoji: '🎯', title: 'Create or join', desc: 'Public crews are open to anyone. Private crews require a request or a captain\'s invite link — it bypasses the queue instantly.' },
+              { emoji: '📅', title: 'Run crew events', desc: 'Captains post events visible to all members. New events show up as notifications on your dashboard.' },
+              { emoji: '⭐', title: 'Crew Rating', desc: 'Members rate their crew 1–5 stars. The average is shown on the crew card. Highly-rated crews rank higher in the public listings — quality rises to the top.' },
+              { emoji: '🏆', title: 'Crew leaderboard', desc: 'Crews are ranked by rating and size. A great vibe, active events, and happy members push your crew up the charts.' },
+            ].map(f => (
+              <div key={f.title} style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '20px' }}>
+                <div style={{ fontSize: '28px', marginBottom: '10px' }}>{f.emoji}</div>
+                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '16px', fontWeight: 700, color: '#E8E0FF', marginBottom: '6px' }}>{f.title}</h3>
+                <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.6 }}>{f.desc}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <Link href="/crews" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>Explore Crews →</Link>
           </div>
         </div>
       </section>
