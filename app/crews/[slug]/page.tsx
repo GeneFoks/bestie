@@ -9,6 +9,7 @@ import JoinRequestActions from './JoinRequestActions'
 import CrewInviteButton from './CrewInviteButton'
 import CrewRating from './CrewRating'
 import CrewDeleteButton from './CrewDeleteButton'
+import CrewTelegramLink from './CrewTelegramLink'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -145,6 +146,7 @@ export default async function CrewPage({ params }) {
               <CrewActions crewId={crew.id} captainId={crew.captain_id} isPublic={crew.is_public} isFull={spotsLeft <= 0} captainUsername={crew.captain?.username} crewSlug={params.slug} />
             </div>
           </div>
+          <CrewTelegramLink crewId={crew.id} captainId={crew.captain_id} initialUrl={crew.telegram_url ?? null} />
           <CrewInviteButton crewId={crew.id} captainId={crew.captain_id} crewSlug={params.slug} inviteCode={crew.invite_code || ''} />
           <CrewDeleteButton crewId={crew.id} captainId={crew.captain_id} crewName={crew.name} />
         </div>
