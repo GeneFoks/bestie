@@ -73,7 +73,12 @@ export default function ScoreGuidePage() {
           <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#E8E0FF', marginBottom: '8px' }}>Activity</h2>
           <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '20px' }}>Per each event</p>
           {[
-            { emoji: '🤝', action: 'Completed session', sub: 'Both participants confirmed', points: '+100' },
+            { emoji: '🤝', action: '1st session completed', sub: 'Both participants confirmed', points: '+100' },
+            { emoji: '🤝', action: '2nd session', sub: 'Diminishing returns', points: '+80' },
+            { emoji: '🤝', action: '3rd session', sub: 'Diminishing returns', points: '+60' },
+            { emoji: '🤝', action: '4th session', sub: 'Diminishing returns', points: '+40' },
+            { emoji: '🤝', action: '5th session', sub: 'Diminishing returns', points: '+20' },
+            { emoji: '🤝', action: '6th session and beyond', sub: 'Keep it up', points: '+1' },
             { emoji: '⭐', action: '5-star rating received', sub: 'After a session', points: '+40' },
             { emoji: '⭐', action: '4-star rating received', sub: 'After a session', points: '+20' },
             { emoji: '💛', action: 'Received a Spark', sub: 'Per each', points: '+15' },
