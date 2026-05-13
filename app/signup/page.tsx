@@ -1,16 +1,22 @@
 // @ts-nocheck
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    const ref = searchParams.get('ref')
+    if (ref) localStorage.setItem('bestie_ref', ref)
+  }, [searchParams])
 
   const handleSignup = async (e) => {
     e.preventDefault()
@@ -29,6 +35,8 @@ export default function SignupPage() {
     }
   }
 
+  const refCode = searchParams.get('ref')
+
   return (
     <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ width: '100%', maxWidth: '400px' }}>
@@ -36,6 +44,11 @@ export default function SignupPage() {
           <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
           <p style={{ marginTop: '8px', fontSize: '14px', color: '#9B93C0' }}>Create your social passport</p>
         </div>
+        {refCode && (
+          <div style={{ marginBottom: '20px', padding: '12px 16px', borderRadius: '12px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', textAlign: 'center', fontSize: '13px', color: '#D4AF37' }}>
+            ✨ You were invited by a friend
+          </div>
+        )}
         <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '32px' }}>
           <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
@@ -62,5 +75,13 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
   )
 }
