@@ -115,8 +115,6 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Drop old triggers
-DROP TRIGGER IF EXISTS on_review_created          ON public.reviews;
-DROP TRIGGER IF EXISTS on_review_score_update     ON public.reviews;
 DROP TRIGGER IF EXISTS on_spark_score_update      ON public.sparks;
 DROP TRIGGER IF EXISTS on_booking_complete_score_update ON public.bookings;
 DROP TRIGGER IF EXISTS on_booking_score_update    ON public.bookings;
