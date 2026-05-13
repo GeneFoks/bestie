@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import ProfileNav from '@/components/ProfileNav'
 import EventActions from './EventActions'
+import DeleteEventButton from './DeleteEventButton'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -119,6 +120,12 @@ export default async function EventPage({ params }) {
               isFull={spotsLeft !== null && spotsLeft <= 0}
             />
           )}
+          <DeleteEventButton
+            eventId={event.id}
+            captainId={event.crew?.captain_id}
+            crewSlug={event.crew?.slug}
+            eventTitle={event.title}
+          />
         </div>
 
         {/* Attendees */}
