@@ -336,6 +336,30 @@ export default async function ProfilePage({ params }) {
             </div>
           )}
 
+          {/* Availability */}
+          {profile.availability && Object.values(profile.availability).some((s: any) => s.on) && (
+            <div style={{ marginBottom: '16px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '10px' }}>AVAILABILITY</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {['mon','tue','wed','thu','fri','sat','sun'].map(d => {
+                  const slot = (profile.availability as any)[d]
+                  if (!slot?.on) return null
+                  const fmt = (t: string) => {
+                    const [h, m] = t.split(':')
+                    const hr = parseInt(h)
+                    return `${hr > 12 ? hr - 12 : hr || 12}${m !== '00' ? `:${m}` : ''}${hr >= 12 ? 'pm' : 'am'}`
+                  }
+                  return (
+                    <div key={d} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#D4AF37', textTransform: 'capitalize' }}>{d.charAt(0).toUpperCase() + d.slice(1)}</span>
+                      <span style={{ fontSize: '11px', color: '#9B93C0' }}>{fmt(slot.from)}–{fmt(slot.to)}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Badges */}
           {BADGES.length > 0 && (
             <div style={{ marginBottom: '16px' }}>

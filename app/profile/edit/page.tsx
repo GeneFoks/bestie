@@ -125,6 +125,14 @@ export default function EditProfilePage() {
   const [selectedLanguages, setSelectedLanguages] = useState([])
   const [form, setForm] = useState({ full_name: '', username: '', bio: '', city: '', country: '', avatar_url: '' })
 
+  const DAYS = [
+    { id: 'mon', label: 'Mon' }, { id: 'tue', label: 'Tue' }, { id: 'wed', label: 'Wed' },
+    { id: 'thu', label: 'Thu' }, { id: 'fri', label: 'Fri' }, { id: 'sat', label: 'Sat' },
+    { id: 'sun', label: 'Sun' },
+  ]
+  const defaultAvail = () => Object.fromEntries(DAYS.map(d => [d.id, { on: false, from: '09:00', to: '20:00' }]))
+  const [availability, setAvailability] = useState(defaultAvail())
+
   useEffect(() => {
     const load = async () => {
       const { data: { session } } = await supabase.auth.getSession()
@@ -135,6 +143,7 @@ export default function EditProfilePage() {
         setForm({ full_name: data.full_name || '', username: data.username || '', bio: data.bio || '', city: data.city || '', country: data.country || '', avatar_url: data.avatar_url || '' })
         setPackages(data.activity_packages || [])
         setSelectedLanguages(data.languages || [])
+        if (data.availability) setAvailability({ ...defaultAvail(), ...data.availability })
         if (data.avatar_url) setAvatarPreview(data.avatar_url)
       }
       setLoading(false)
@@ -180,6 +189,7 @@ export default function EditProfilePage() {
       country: form.country,
       avatar_url,
       languages: selectedLanguages,
+      availability,
     }).eq('id', uid)
 
     setSaving(false)
@@ -473,6 +483,46 @@ export default function EditProfilePage() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Availability */}
+        <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
+          <p style={{ fontSize: '13px', fontWeight: 700, color: '#E8E0FF', marginBottom: '4px' }}>📅 Availability</p>
+          <p style={{ fontSize: '12px', color: '#9B93C0', marginBottom: '16px' }}>Let people know when you're free to meet up</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {DAYS.map(day => {
+              const slot = availability[day.id] || { on: false, from: '09:00', to: '20:00' }
+              return (
+                <div key={day.id} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <button
+                    onClick={() => setAvailability(a => ({ ...a, [day.id]: { ...slot, on: !slot.on } }))}
+                    style={{ minWidth: '52px', padding: '6px 10px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, background: slot.on ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', border: slot.on ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.08)', color: slot.on ? '#D4AF37' : '#555', cursor: 'pointer' }}
+                  >
+                    {day.label}
+                  </button>
+                  {slot.on ? (
+                    <>
+                      <input
+                        type="time"
+                        value={slot.from}
+                        onChange={e => setAvailability(a => ({ ...a, [day.id]: { ...slot, from: e.target.value } }))}
+                        style={{ background: '#1a1a35', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#E8E0FF', padding: '6px 10px', fontSize: '13px', colorScheme: 'dark', width: '100px' }}
+                      />
+                      <span style={{ fontSize: '12px', color: '#9B93C0' }}>to</span>
+                      <input
+                        type="time"
+                        value={slot.to}
+                        onChange={e => setAvailability(a => ({ ...a, [day.id]: { ...slot, to: e.target.value } }))}
+                        style={{ background: '#1a1a35', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#E8E0FF', padding: '6px 10px', fontSize: '13px', colorScheme: 'dark', width: '100px' }}
+                      />
+                    </>
+                  ) : (
+                    <span style={{ fontSize: '12px', color: '#444' }}>Not available</span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
 
         <button onClick={handleSave} disabled={saving} style={{ width: '100%', padding: '14px', borderRadius: '14px', fontSize: '15px', fontWeight: 600, background: saved ? 'rgba(57,255,20,0.15)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: saved ? '#39FF14' : '#080810', border: saved ? '1px solid rgba(57,255,20,0.3)' : 'none', cursor: 'pointer' }}>
