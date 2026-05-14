@@ -255,8 +255,8 @@ export default async function ProfilePage({ params }) {
               </div>
             </div>
 
-            {/* Sessions / Sparks / Rating / Streak */}
-            <div style={{ display: 'grid', gridTemplateColumns: streakWeeks > 0 ? '1fr 1fr 1fr 1fr' : '1fr 1fr 1fr', gap: '10px' }}>
+            {/* Sessions / Sparks / Rating */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
               <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>SESSIONS</p>
                 <div style={{ fontSize: '28px', fontWeight: 700, color: '#E8E0FF', fontFamily: 'DM Serif Display, serif' }}>{totalSessions}</div>
@@ -273,12 +273,6 @@ export default async function ProfilePage({ params }) {
                   : <p style={{ fontSize: '11px', color: '#9B93C0', marginTop: '4px' }}>No reviews</p>
                 }
               </div>
-              {streakWeeks > 0 && (
-                <div style={{ background: 'rgba(255,107,53,0.08)', borderRadius: '16px', padding: '14px', border: '1px solid rgba(255,107,53,0.2)' }}>
-                  <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>STREAK</p>
-                  <div style={{ fontSize: '24px', fontWeight: 700, color: '#FF6B35', fontFamily: 'DM Serif Display, serif' }}>🔥 {streakWeeks}w</div>
-                </div>
-              )}
             </div>
           </div>
 
