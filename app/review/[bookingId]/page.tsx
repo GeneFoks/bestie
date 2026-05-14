@@ -77,7 +77,7 @@ export default function ReviewPage({ params }) {
         setAlreadyGiven(given?.map(s => s.spark_type) || [])
 
         const myRating = seeker ? b.rating_seeker : b.rating_provider
-        if (myRating) setDone(true)
+        if (myRating) setRating(myRating)
 
       } catch (e) {
         console.error(e)
@@ -189,7 +189,12 @@ if (other) {
         </div>
 
         <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px', marginBottom: '16px' }}>
-          <p style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '16px' }}>RATE YOUR EXPERIENCE</p>
+          <p style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '16px' }}>
+          RATE YOUR EXPERIENCE
+          {booking && (isSeeker ? booking.rating_seeker : booking.rating_provider) && (
+            <span style={{ marginLeft: '8px', fontSize: '11px', color: '#D4AF37', fontWeight: 500, letterSpacing: 0 }}>· editing</span>
+          )}
+        </p>
           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
             {[1,2,3,4,5].map(star => (
               <button
