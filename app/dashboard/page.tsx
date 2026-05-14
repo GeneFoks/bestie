@@ -5,11 +5,14 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import NotificationBell from '@/components/NotificationBell'
+import { usePushNotifications } from '@/lib/usePushNotifications'
 
 export default function DashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
+  usePushNotifications()
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [refCopied, setRefCopied] = useState(false)
@@ -210,6 +213,7 @@ export default function DashboardPage() {
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <Link href="/browse" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none' }}>Browse</Link>
+          {user && <NotificationBell userId={user.id} />}
           <button onClick={handleLogout} style={{ fontSize: '14px', color: '#9B93C0', background: 'none', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 16px', borderRadius: '10px', cursor: 'pointer' }}>Log out</button>
         </div>
       </nav>

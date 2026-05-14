@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { createNotification } from '@/lib/notifications'
 
 export default function BookPage({ params }) {
   const router = useRouter()
@@ -66,6 +67,14 @@ export default function BookPage({ params }) {
         })
       })
     }
+
+    await createNotification({
+      userId: provider.id,
+      type: 'booking_request',
+      title: `${myProfile?.full_name || 'Someone'} wants to book you`,
+      body: selectedPackage.title,
+      link: '/bookings',
+    })
 
     setSent(true)
     setSending(false)
