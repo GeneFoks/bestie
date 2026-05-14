@@ -10,6 +10,7 @@ import CrewInviteButton from './CrewInviteButton'
 import CrewRating from './CrewRating'
 import CrewDeleteButton from './CrewDeleteButton'
 import CrewTelegramLink from './CrewTelegramLink'
+import CrewKickButton from './CrewKickButton'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -228,22 +229,25 @@ export default async function CrewPage({ params }) {
               const sc = user.bestie_score >= 800 ? '#39FF14' : user.bestie_score >= 600 ? '#D4AF37' : '#9B93C0'
               const isCaptain = user.id === crew.captain_id
               return (
-                <Link key={user.id} href={`/${user.username}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', textDecoration: 'none' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '12px', overflow: 'hidden', background: '#1a1a35', flexShrink: 0, border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {user.avatar_url
-                      ? <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      : <span style={{ fontSize: '16px', fontWeight: 700, color: '#D4AF37' }}>{user.full_name?.[0]}</span>
-                    }
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF' }}>{user.full_name}</span>
-                      {isCaptain && <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '999px', background: 'rgba(212,175,55,0.15)', color: '#D4AF37', fontWeight: 600 }}>Captain</span>}
+                <div key={user.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px' }}>
+                  <Link href={`/${user.username}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0, textDecoration: 'none' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', overflow: 'hidden', background: '#1a1a35', flexShrink: 0, border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {user.avatar_url
+                        ? <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : <span style={{ fontSize: '16px', fontWeight: 700, color: '#D4AF37' }}>{user.full_name?.[0]}</span>
+                      }
                     </div>
-                    <span style={{ fontSize: '12px', color: '#9B93C0' }}>@{user.username}{user.city ? ` · ${user.city}` : ''}</span>
-                  </div>
-                  <span style={{ fontSize: '15px', fontWeight: 700, color: sc, flexShrink: 0 }}>{user.bestie_score}</span>
-                </Link>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF' }}>{user.full_name}</span>
+                        {isCaptain && <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '999px', background: 'rgba(212,175,55,0.15)', color: '#D4AF37', fontWeight: 600 }}>Captain</span>}
+                      </div>
+                      <span style={{ fontSize: '12px', color: '#9B93C0' }}>@{user.username}{user.city ? ` · ${user.city}` : ''}</span>
+                    </div>
+                    <span style={{ fontSize: '15px', fontWeight: 700, color: sc, flexShrink: 0 }}>{user.bestie_score}</span>
+                  </Link>
+                  <CrewKickButton crewId={crew.id} captainId={crew.captain_id} memberId={user.id} />
+                </div>
               )
             })}
           </div>

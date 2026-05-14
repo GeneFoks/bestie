@@ -129,9 +129,21 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
   }
 
   if (userId === captainId) {
+    const isFeatured = userCrewId === crewId
     return (
-      <div style={{ padding: '12px', borderRadius: '14px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37' }}>
-        You are the Captain
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ padding: '12px', borderRadius: '14px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37' }}>
+          👑 You are the Captain
+        </div>
+        {!isFeatured ? (
+          <button onClick={setFeatured} disabled={acting} style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', cursor: acting ? 'not-allowed' : 'pointer' }}>
+            {acting ? '…' : '⭐ Set as featured on passport'}
+          </button>
+        ) : (
+          <div style={{ padding: '8px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '12px', color: '#D4AF37', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
+            ⭐ Featured on your passport
+          </div>
+        )}
       </div>
     )
   }
