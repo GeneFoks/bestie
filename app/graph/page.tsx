@@ -174,11 +174,11 @@ export default function GraphPage() {
       .join('line')
       .attr('stroke', (d: any) => {
         const w = d.weight
-        if (w >= 5)  return 'rgba(212,175,55,0.55)'
-        if (w >= 3)  return 'rgba(155,143,255,0.4)'
-        return 'rgba(155,147,192,0.18)'
+        if (w >= 5) return 'rgba(212,175,55,0.75)'
+        if (w >= 3) return 'rgba(155,143,255,0.65)'
+        return 'rgba(155,147,192,0.5)'
       })
-      .attr('stroke-width', (d: any) => Math.min(1 + d.weight * 0.8, 6))
+      .attr('stroke-width', (d: any) => Math.max(1.5, Math.min(1.5 + d.weight, 6)))
       .attr('stroke-linecap', 'round')
 
     // Node groups
