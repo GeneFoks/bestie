@@ -1,4 +1,4 @@
-import * as webpush from 'web-push'
+import webpush from 'web-push'
 
 export async function sendPushToUser(userId: string, payload: { title: string; body?: string; link?: string }) {
   if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) return
