@@ -197,6 +197,7 @@ export default function DashboardPage() {
     { emoji: '📅', label: 'My Sessions', sub: 'Upcoming accepted sessions', href: '/sessions' },
     { emoji: '🎉', label: 'Group Sessions', sub: 'Host or join group meetups', href: '/group-sessions/new', badge: upcomingGroupSessions.length || 0 },
     { emoji: '🌍', label: 'City Pulse', sub: "What's happening near you today", href: '/pulse', badge: pendingKnocks.length },
+    { emoji: '🕸️', label: 'Connection Graph', sub: 'See how everyone is connected', href: '/graph' },
     { emoji: '🗺️', label: 'Map', sub: 'See Besties near you', href: '/map' },
     { emoji: '🔍', label: 'Browse Besties', sub: 'Find someone for your activity', href: '/browse' },
     { emoji: '⚡', label: 'Going to', sub: "Share what you're up to today", href: '/going-to' },

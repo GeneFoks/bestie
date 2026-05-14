@@ -154,6 +154,7 @@ export default function HomePage() {
           <Link href="/crews" style={{ color: '#9B93C0', textDecoration: 'none' }}>Crews</Link>
           <Link href="/map" style={{ color: '#9B93C0', textDecoration: 'none' }}>Map</Link>
           <Link href="/pulse" style={{ color: '#9B93C0', textDecoration: 'none' }}>Pulse</Link>
+          <Link href="/graph" style={{ color: '#9B93C0', textDecoration: 'none' }}>Graph</Link>
           <Link href="#how-it-works" style={{ color: '#9B93C0', textDecoration: 'none' }}>How It Works</Link>
           <Link href="#score" style={{ color: '#9B93C0', textDecoration: 'none' }}>Bestie Score</Link>
         </div>
