@@ -1,0 +1,391 @@
+// @ts-nocheck
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
+import ProfileNav from '@/components/ProfileNav'
+
+export default function GraphPage() {
+  const svgRef = useRef<SVGSVGElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [loading, setLoading] = useState(true)
+  const [nodeCount, setNodeCount] = useState(0)
+  const [edgeCount, setEdgeCount] = useState(0)
+  const [empty, setEmpty] = useState(false)
+  const [hovered, setHovered] = useState<any>(null)
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 })
+
+  useEffect(() => {
+    const init = async () => {
+      const { data: bookings } = await supabase
+        .from('bookings')
+        .select('seeker_id, provider_id')
+        .eq('confirmed_by_seeker', true)
+        .eq('confirmed_by_provider', true)
+
+      if (!bookings || bookings.length === 0) { setEmpty(true); setLoading(false); return }
+
+      // Build edge map: normalised pair → weight
+      const edgeMap = new Map<string, number>()
+      const userIdSet = new Set<string>()
+
+      bookings.forEach(b => {
+        const [a, bb] = b.seeker_id < b.provider_id
+          ? [b.seeker_id, b.provider_id]
+          : [b.provider_id, b.seeker_id]
+        const key = `${a}::${bb}`
+        edgeMap.set(key, (edgeMap.get(key) || 0) + 1)
+        userIdSet.add(b.seeker_id)
+        userIdSet.add(b.provider_id)
+      })
+
+      const ids = Array.from(userIdSet)
+      const { data: users } = await supabase
+        .from('users')
+        .select('id, full_name, username, avatar_url, bestie_score, city')
+        .in('id', ids)
+        .limit(300)
+
+      if (!users || users.length === 0) { setEmpty(true); setLoading(false); return }
+
+      const usersById = Object.fromEntries(users.map(u => [u.id, u]))
+
+      // Compute per-user session count from edges
+      const sessionsByUser: Record<string, number> = {}
+      edgeMap.forEach((w, key) => {
+        const [a, b] = key.split('::')
+        sessionsByUser[a] = (sessionsByUser[a] || 0) + w
+        sessionsByUser[b] = (sessionsByUser[b] || 0) + w
+      })
+
+      const nodes = users.map(u => ({
+        id: u.id,
+        name: u.full_name || 'Bestie',
+        username: u.username,
+        avatar: u.avatar_url,
+        score: u.bestie_score || 0,
+        sessions: sessionsByUser[u.id] || 0,
+        city: u.city,
+      }))
+
+      const links: any[] = []
+      edgeMap.forEach((weight, key) => {
+        const [source, target] = key.split('::')
+        if (usersById[source] && usersById[target]) {
+          links.push({ source, target, weight })
+        }
+      })
+
+      setNodeCount(nodes.length)
+      setEdgeCount(links.length)
+      setLoading(false)
+
+      loadD3(nodes, links)
+    }
+    init()
+  }, [])
+
+  const loadD3 = (nodes: any[], links: any[]) => {
+    if ((window as any).d3) { renderGraph((window as any).d3, nodes, links); return }
+    const script = document.createElement('script')
+    script.src = 'https://d3js.org/d3.v7.min.js'
+    script.onload = () => renderGraph((window as any).d3, nodes, links)
+    document.head.appendChild(script)
+  }
+
+  const nodeRadius = (d: any) => {
+    if (d.score >= 800) return 30
+    if (d.score >= 600) return 24
+    if (d.score >= 400) return 19
+    if (d.score >= 200) return 15
+    return 12
+  }
+
+  const frameColor = (sessions: number) => {
+    if (sessions >= 25) return '#FFFFFF'
+    if (sessions >= 10) return '#D4AF37'
+    if (sessions >= 5)  return '#9B8FFF'
+    if (sessions >= 1)  return '#9B93C0'
+    return 'rgba(255,255,255,0.2)'
+  }
+
+  const initials = (name: string) =>
+    name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?'
+
+  const renderGraph = (d3: any, nodes: any[], links: any[]) => {
+    if (!svgRef.current || !containerRef.current) return
+
+    const width = containerRef.current.clientWidth
+    const height = containerRef.current.clientHeight
+
+    d3.select(svgRef.current).selectAll('*').remove()
+
+    const svg = d3.select(svgRef.current)
+      .attr('width', width)
+      .attr('height', height)
+      .style('background', '#080810')
+
+    // Defs
+    const defs = svg.append('defs')
+
+    // Glow filter for top nodes
+    const glow = defs.append('filter').attr('id', 'glow').attr('x', '-50%').attr('y', '-50%').attr('width', '200%').attr('height', '200%')
+    glow.append('feGaussianBlur').attr('stdDeviation', '4').attr('result', 'blur')
+    const merge = glow.append('feMerge')
+    merge.append('feMergeNode').attr('in', 'blur')
+    merge.append('feMergeNode').attr('in', 'SourceGraphic')
+
+    // Clip paths per node
+    nodes.forEach(n => {
+      const safeId = n.id.replace(/-/g, '')
+      defs.append('clipPath')
+        .attr('id', `clip-${safeId}`)
+        .append('circle')
+        .attr('r', nodeRadius(n))
+    })
+
+    // Zoom + pan
+    const g = svg.append('g')
+    svg.call(
+      d3.zoom().scaleExtent([0.08, 5]).on('zoom', (event: any) => {
+        g.attr('transform', event.transform)
+      })
+    )
+
+    // Background grid dots
+    svg.append('pattern').attr('id', 'dot').attr('x', 0).attr('y', 0)
+      .attr('width', 32).attr('height', 32).attr('patternUnits', 'userSpaceOnUse')
+    // skip for performance
+
+    // Force simulation
+    const simulation = d3.forceSimulation(nodes)
+      .force('link', d3.forceLink(links).id((d: any) => d.id)
+        .distance((d: any) => 60 + 40 / Math.sqrt(d.weight))
+        .strength(0.25))
+      .force('charge', d3.forceManyBody().strength((d: any) => -80 - d.score * 0.05))
+      .force('center', d3.forceCenter(width / 2, height / 2))
+      .force('collision', d3.forceCollide().radius((d: any) => nodeRadius(d) + 10))
+
+    // Edges
+    const link = g.append('g').attr('class', 'links')
+      .selectAll('line')
+      .data(links)
+      .join('line')
+      .attr('stroke', (d: any) => {
+        const w = d.weight
+        if (w >= 5)  return 'rgba(212,175,55,0.55)'
+        if (w >= 3)  return 'rgba(155,143,255,0.4)'
+        return 'rgba(155,147,192,0.18)'
+      })
+      .attr('stroke-width', (d: any) => Math.min(1 + d.weight * 0.8, 6))
+      .attr('stroke-linecap', 'round')
+
+    // Node groups
+    const node = g.append('g').attr('class', 'nodes')
+      .selectAll('g')
+      .data(nodes)
+      .join('g')
+      .attr('cursor', 'pointer')
+      .call(
+        d3.drag()
+          .on('start', (event: any, d: any) => {
+            if (!event.active) simulation.alphaTarget(0.3).restart()
+            d.fx = d.x; d.fy = d.y
+          })
+          .on('drag', (event: any, d: any) => { d.fx = event.x; d.fy = event.y })
+          .on('end', (event: any, d: any) => {
+            if (!event.active) simulation.alphaTarget(0)
+            d.fx = null; d.fy = null
+          })
+      )
+
+    // Outer glow ring for 25+ session nodes
+    node.filter((d: any) => d.sessions >= 25)
+      .append('circle')
+      .attr('r', (d: any) => nodeRadius(d) + 6)
+      .attr('fill', 'none')
+      .attr('stroke', 'rgba(255,255,255,0.15)')
+      .attr('stroke-width', 1.5)
+
+    // Border circle
+    node.append('circle')
+      .attr('r', (d: any) => nodeRadius(d) + 2)
+      .attr('fill', (d: any) => frameColor(d.sessions) + '18')
+      .attr('stroke', (d: any) => frameColor(d.sessions))
+      .attr('stroke-width', (d: any) => d.sessions >= 25 ? 2.5 : 1.5)
+      .attr('filter', (d: any) => d.sessions >= 25 ? 'url(#glow)' : null)
+
+    // Avatar or initials
+    node.each(function(d: any) {
+      const el = d3.select(this)
+      const r = nodeRadius(d)
+      const safeId = d.id.replace(/-/g, '')
+      el.append('circle').attr('r', r).attr('fill', '#0F0F1E')
+      if (d.avatar) {
+        el.append('image')
+          .attr('href', d.avatar)
+          .attr('x', -r).attr('y', -r)
+          .attr('width', r * 2).attr('height', r * 2)
+          .attr('clip-path', `url(#clip-${safeId})`)
+          .attr('preserveAspectRatio', 'xMidYMid slice')
+      } else {
+        const fc = frameColor(d.sessions)
+        el.append('text')
+          .text(initials(d.name))
+          .attr('text-anchor', 'middle').attr('dy', '0.35em')
+          .attr('font-size', r * 0.65).attr('font-weight', 700)
+          .attr('fill', fc).attr('font-family', 'DM Serif Display, serif')
+          .attr('pointer-events', 'none')
+      }
+    })
+
+    // Name label (visible for score >= 300)
+    node.append('text')
+      .text((d: any) => d.name.split(' ')[0])
+      .attr('text-anchor', 'middle')
+      .attr('dy', (d: any) => nodeRadius(d) + 13)
+      .attr('font-size', 9)
+      .attr('fill', '#9B93C0')
+      .attr('font-family', 'Plus Jakarta Sans, sans-serif')
+      .attr('pointer-events', 'none')
+      .attr('opacity', (d: any) => d.score >= 300 ? 0.85 : 0)
+
+    // Hover
+    node.on('mouseenter', function(event: any, d: any) {
+      d3.select(this).select('circle:nth-child(2)')
+        .transition().duration(120).attr('r', nodeRadius(d) + 5)
+      const rect = svgRef.current!.getBoundingClientRect()
+      setHovered(d)
+      setTooltipPos({ x: event.clientX - rect.left, y: event.clientY - rect.top })
+    })
+    .on('mousemove', function(event: any) {
+      const rect = svgRef.current!.getBoundingClientRect()
+      setTooltipPos({ x: event.clientX - rect.left, y: event.clientY - rect.top })
+    })
+    .on('mouseleave', function(event: any, d: any) {
+      d3.select(this).select('circle:nth-child(2)')
+        .transition().duration(120).attr('r', nodeRadius(d) + 2)
+      setHovered(null)
+    })
+
+    // Click → profile
+    node.on('click', (_: any, d: any) => {
+      window.open(`/${d.username}`, '_blank')
+    })
+
+    simulation.on('tick', () => {
+      link
+        .attr('x1', (d: any) => d.source.x).attr('y1', (d: any) => d.source.y)
+        .attr('x2', (d: any) => d.target.x).attr('y2', (d: any) => d.target.y)
+      node.attr('transform', (d: any) => `translate(${d.x},${d.y})`)
+    })
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', flexDirection: 'column' }}>
+      <nav style={{ position: 'relative', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px', background: 'rgba(8,8,16,0.95)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+        <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          {!loading && !empty && (
+            <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: '#9B93C0' }}>
+              <span><span style={{ color: '#D4AF37', fontWeight: 700 }}>{nodeCount}</span> people</span>
+              <span><span style={{ color: '#D4AF37', fontWeight: 700 }}>{edgeCount}</span> connections</span>
+            </div>
+          )}
+          <ProfileNav />
+        </div>
+      </nav>
+
+      {/* Legend */}
+      {!loading && !empty && (
+        <div style={{ position: 'absolute', bottom: '24px', left: '24px', zIndex: 10, padding: '14px 18px', borderRadius: '16px', background: 'rgba(8,8,16,0.85)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}>
+          <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1.5px', color: '#9B93C0', marginBottom: '10px' }}>LEGEND</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#1a1a35', border: '2.5px solid rgba(255,255,255,0.9)', boxShadow: '0 0 10px rgba(255,255,255,0.3)' }} />
+              <span style={{ fontSize: '11px', color: '#E8E0FF' }}>25+ sessions</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#1a1a35', border: '2px solid #D4AF37', margin: '2px' }} />
+              <span style={{ fontSize: '11px', color: '#E8E0FF' }}>10+ sessions</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#1a1a35', border: '1.5px solid #9B8FFF', margin: '4px' }} />
+              <span style={{ fontSize: '11px', color: '#E8E0FF' }}>5+ sessions</span>
+            </div>
+            <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '28px', height: '3px', borderRadius: '999px', background: 'rgba(212,175,55,0.55)' }} />
+              <span style={{ fontSize: '11px', color: '#E8E0FF' }}>Strong bond (5+ meets)</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '28px', height: '1px', borderRadius: '999px', background: 'rgba(155,147,192,0.3)' }} />
+              <span style={{ fontSize: '11px', color: '#E8E0FF' }}>1 session</span>
+            </div>
+          </div>
+          <p style={{ fontSize: '10px', color: '#9B93C0', marginTop: '10px' }}>Node size = Bestie Score · Drag to explore · Scroll to zoom</p>
+        </div>
+      )}
+
+      {/* Tooltip */}
+      {hovered && (
+        <div style={{
+          position: 'absolute',
+          left: tooltipPos.x + 14,
+          top: tooltipPos.y - 14,
+          zIndex: 100,
+          padding: '10px 14px',
+          borderRadius: '12px',
+          background: '#0F0F1E',
+          border: `1px solid ${frameColor(hovered.sessions)}40`,
+          pointerEvents: 'none',
+          minWidth: '140px',
+        }}>
+          <p style={{ fontSize: '13px', fontWeight: 700, color: '#E8E0FF', marginBottom: '2px' }}>{hovered.name}</p>
+          <p style={{ fontSize: '11px', color: '#9B93C0', marginBottom: '4px' }}>@{hovered.username}{hovered.city ? ` · ${hovered.city}` : ''}</p>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <span style={{ fontSize: '11px', color: scoreColor(hovered.score), fontWeight: 700 }}>BS {hovered.score}</span>
+            <span style={{ fontSize: '11px', color: '#9B93C0' }}>{hovered.sessions} sessions</span>
+          </div>
+        </div>
+      )}
+
+      {/* Graph area */}
+      <div ref={containerRef} style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+        {loading ? (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
+            <div style={{ width: '40px', height: '40px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+            <p style={{ fontSize: '14px', color: '#9B93C0' }}>Building the web of connections...</p>
+            <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+          </div>
+        ) : empty ? (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+            <p style={{ fontSize: '48px' }}>🕸️</p>
+            <p style={{ fontSize: '18px', color: '#E8E0FF' }}>No connections yet</p>
+            <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '8px' }}>Confirmed sessions will appear here as connections</p>
+            <Link href="/browse" style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
+              Meet someone →
+            </Link>
+          </div>
+        ) : (
+          <svg ref={svgRef} style={{ width: '100%', height: '100%', display: 'block' }} />
+        )}
+      </div>
+    </div>
+  )
+}
+
+function frameColor(sessions: number): string {
+  if (sessions >= 25) return '#FFFFFF'
+  if (sessions >= 10) return '#D4AF37'
+  if (sessions >= 5)  return '#9B8FFF'
+  if (sessions >= 1)  return '#9B93C0'
+  return 'rgba(255,255,255,0.2)'
+}
+
+function scoreColor(score: number): string {
+  if (score >= 800) return '#39FF14'
+  if (score >= 600) return '#D4AF37'
+  return '#9B93C0'
+}
