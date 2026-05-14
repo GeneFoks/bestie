@@ -111,7 +111,29 @@ export default async function ProfilePage({ params }) {
     ? await supabase.from('crews').select('id, name, slug, is_public').eq('id', profile.crew_id).single()
     : { data: null }
 
-  const { data: sparks } = await supabase.from('sparks').select('spark_type').eq('receiver_id', profile.id)
+  const [
+    { data: sparks },
+    { count: confirmedSessions },
+    { count: usersAbove },
+    { count: totalUsers },
+    { data: ratedBookings },
+  ] = await Promise.all([
+    supabase.from('sparks').select('spark_type').eq('receiver_id', profile.id),
+    supabase.from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .or(`seeker_id.eq.${profile.id},provider_id.eq.${profile.id}`)
+      .eq('confirmed_by_seeker', true)
+      .eq('confirmed_by_provider', true),
+    supabase.from('users')
+      .select('id', { count: 'exact', head: true })
+      .gt('bestie_score', profile.bestie_score || 0),
+    supabase.from('users')
+      .select('id', { count: 'exact', head: true }),
+    supabase.from('bookings')
+      .select('rating_seeker, rating_provider')
+      .or(`and(provider_id.eq.${profile.id},rating_seeker.not.is.null),and(seeker_id.eq.${profile.id},rating_provider.not.is.null)`),
+  ])
+
   const sparkCounts = {}
   sparks?.forEach(s => { sparkCounts[s.spark_type] = (sparkCounts[s.spark_type] || 0) + 1 })
   const totalSparks = sparks?.length || 0
@@ -126,8 +148,35 @@ export default async function ProfilePage({ params }) {
   const initials = profile.full_name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?'
   const memberBadge = getMemberBadge(profile.created_at)
   const memberSince = profile.created_at ? new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : null
-  const avgRating = parseFloat(profile.avg_rating) || 0
-  const totalSessions = profile.total_sessions || 0
+
+  const sessionCount = confirmedSessions || 0
+  const totalSessions = sessionCount
+  const rankPct = totalUsers ? (usersAbove || 0) / totalUsers : 1
+
+  const ratingValues = ratedBookings?.map(b => b.rating_seeker ?? b.rating_provider).filter(Boolean) || []
+  const avgRating = ratingValues.length > 0 ? ratingValues.reduce((a, b) => a + b, 0) / ratingValues.length : 0
+
+  const ageMs = profile.created_at ? Date.now() - new Date(profile.created_at).getTime() : Infinity
+  const ageDays = ageMs / (1000 * 60 * 60 * 24)
+  const streakWeeks = profile.streak_weeks || 0
+
+  const BADGES = [
+    rankPct <= 0.01 && { id: 'top1', emoji: '🏆', label: 'Top 1%', desc: 'Bestie Score in the top 1%', color: '#39FF14' },
+    rankPct <= 0.10 && rankPct > 0.01 && { id: 'top10', emoji: '🥇', label: 'Top 10%', desc: 'Bestie Score in the top 10%', color: '#D4AF37' },
+    profile.is_verified && { id: 'verified', emoji: '✅', label: 'Verified', desc: 'Identity verified by Bestie', color: '#39FF14' },
+    sessionCount >= 25 && { id: 'session_king', emoji: '👑', label: 'Session King', desc: '25+ confirmed sessions', color: '#D4AF37' },
+    sessionCount >= 10 && sessionCount < 25 && { id: 'pro', emoji: '💎', label: 'Pro', desc: '10+ confirmed sessions', color: '#9B8FFF' },
+    sessionCount >= 5 && sessionCount < 10 && { id: 'on_fire', emoji: '🔥', label: 'On Fire', desc: '5+ confirmed sessions', color: '#FF6B35' },
+    sessionCount >= 1 && sessionCount < 5 && { id: 'first_session', emoji: '🎯', label: 'First Steps', desc: 'Completed first session', color: '#9B93C0' },
+    totalSparks >= 50 && { id: 'spark_icon', emoji: '💫', label: 'Spark Icon', desc: '50+ sparks received', color: '#D4AF37' },
+    totalSparks >= 10 && totalSparks < 50 && { id: 'spark_magnet', emoji: '✨', label: 'Spark Magnet', desc: '10+ sparks received', color: '#9B93C0' },
+    ratingValues.length >= 3 && avgRating >= 4.8 && { id: 'five_star', emoji: '⭐', label: '5-Star', desc: 'Near-perfect average rating', color: '#D4AF37' },
+    ageDays < 30 && score > 200 && { id: 'rising_star', emoji: '🌱', label: 'Rising Star', desc: 'New member with high score', color: '#39FF14' },
+    streakWeeks >= 12 && { id: 'streak_12', emoji: '🌊', label: `${streakWeeks}w Streak`, desc: '12+ week streak', color: '#39FF14' },
+    streakWeeks >= 8 && streakWeeks < 12 && { id: 'streak_8', emoji: '⚡', label: `${streakWeeks}w Streak`, desc: '8+ week streak', color: '#D4AF37' },
+    streakWeeks >= 4 && streakWeeks < 8 && { id: 'streak_4', emoji: '💥', label: `${streakWeeks}w Streak`, desc: '4+ week streak', color: '#FF6B35' },
+    streakWeeks >= 2 && streakWeeks < 4 && { id: 'streak_2', emoji: '🔥', label: `${streakWeeks}w Streak`, desc: '2+ week streak', color: '#9B93C0' },
+  ].filter(Boolean)
 
   return (
     <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
@@ -206,8 +255,8 @@ export default async function ProfilePage({ params }) {
               </div>
             </div>
 
-            {/* Sessions / Sparks / Rating — три колонки */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+            {/* Sessions / Sparks / Rating / Streak */}
+            <div style={{ display: 'grid', gridTemplateColumns: streakWeeks > 0 ? '1fr 1fr 1fr 1fr' : '1fr 1fr 1fr', gap: '10px' }}>
               <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>SESSIONS</p>
                 <div style={{ fontSize: '28px', fontWeight: 700, color: '#E8E0FF', fontFamily: 'DM Serif Display, serif' }}>{totalSessions}</div>
@@ -224,6 +273,12 @@ export default async function ProfilePage({ params }) {
                   : <p style={{ fontSize: '11px', color: '#9B93C0', marginTop: '4px' }}>No reviews</p>
                 }
               </div>
+              {streakWeeks > 0 && (
+                <div style={{ background: 'rgba(255,107,53,0.08)', borderRadius: '16px', padding: '14px', border: '1px solid rgba(255,107,53,0.2)' }}>
+                  <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>STREAK</p>
+                  <div style={{ fontSize: '24px', fontWeight: 700, color: '#FF6B35', fontFamily: 'DM Serif Display, serif' }}>🔥 {streakWeeks}w</div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -275,6 +330,21 @@ export default async function ProfilePage({ params }) {
                     <span style={{ fontSize: '14px' }}>{s.emoji}</span>
                     <span style={{ fontSize: '13px', fontWeight: 500, color: '#E8E0FF' }}>{s.label}</span>
                     <span style={{ fontSize: '12px', fontWeight: 700, color: '#D4AF37' }}>×{s.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Badges */}
+          {BADGES.length > 0 && (
+            <div style={{ marginBottom: '16px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '10px' }}>BADGES</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {BADGES.map((b: any) => (
+                  <div key={b.id} title={b.desc} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '999px', background: `rgba(${b.color === '#39FF14' ? '57,255,20' : b.color === '#D4AF37' ? '212,175,55' : b.color === '#FF6B35' ? '255,107,53' : b.color === '#9B8FFF' ? '155,143,255' : '155,147,192'},0.1)`, border: `1px solid ${b.color}35` }}>
+                    <span style={{ fontSize: '14px' }}>{b.emoji}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: b.color }}>{b.label}</span>
                   </div>
                 ))}
               </div>
