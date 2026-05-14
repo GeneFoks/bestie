@@ -153,6 +153,7 @@ export default function HomePage() {
           <Link href="/browse" style={{ color: '#9B93C0', textDecoration: 'none' }}>Browse</Link>
           <Link href="/crews" style={{ color: '#9B93C0', textDecoration: 'none' }}>Crews</Link>
           <Link href="/map" style={{ color: '#9B93C0', textDecoration: 'none' }}>Map</Link>
+          <Link href="/pulse" style={{ color: '#9B93C0', textDecoration: 'none' }}>Pulse</Link>
           <Link href="#how-it-works" style={{ color: '#9B93C0', textDecoration: 'none' }}>How It Works</Link>
           <Link href="#score" style={{ color: '#9B93C0', textDecoration: 'none' }}>Bestie Score</Link>
         </div>
@@ -470,6 +471,7 @@ export default function HomePage() {
             <Link href="/browse" style={{ color: '#9B93C0', textDecoration: 'none' }}>Browse</Link>
             <Link href="/crews" style={{ color: '#9B93C0', textDecoration: 'none' }}>Crews</Link>
             <Link href="/map" style={{ color: '#9B93C0', textDecoration: 'none' }}>Map</Link>
+            <Link href="/pulse" style={{ color: '#9B93C0', textDecoration: 'none' }}>Pulse</Link>
             <Link href="#how-it-works" style={{ color: '#9B93C0', textDecoration: 'none' }}>How It Works</Link>
             <Link href="/score-guide" style={{ color: '#9B93C0', textDecoration: 'none' }}>Bestie Score</Link>
             <Link href="/signup" style={{ color: '#9B93C0', textDecoration: 'none' }}>Join</Link>

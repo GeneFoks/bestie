@@ -8,6 +8,9 @@ import SharePassportButton from '@/components/SharePassportButton'
 import InviteToSessionButton from '@/components/InviteToSessionButton'
 import EditActivitiesLink from '@/components/EditActivitiesLink'
 import BlockReportButton from '@/components/BlockReportButton'
+import KnockButton from '@/components/KnockButton'
+import MutualFriends from '@/components/MutualFriends'
+import { getAvatarFrame } from '@/lib/avatarFrame'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -199,6 +202,7 @@ export default async function ProfilePage({ params }) {
             </div>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
               <SharePassportButton username={profile.username} />
+              <KnockButton profileId={profile.id} />
               <BlockReportButton profileUserId={profile.id} />
               {profile.is_verified && (
                 <span style={{ fontSize: '12px', padding: '4px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', fontWeight: 600 }}>✓ Verified</span>
@@ -213,7 +217,7 @@ export default async function ProfilePage({ params }) {
 
           {/* Avatar + Info */}
           <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', marginBottom: '24px' }}>
-            <div style={{ width: '88px', height: '88px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(212,175,55,0.3)', background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '88px', height: '88px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center', ...getAvatarFrame(sessionCount) }}>
               {profile.avatar_url
                 ? <img src={profile.avatar_url} alt={profile.full_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : <span style={{ fontSize: '32px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>{initials}</span>
@@ -353,6 +357,9 @@ export default async function ProfilePage({ params }) {
               </div>
             </div>
           )}
+
+          {/* Mutual Friends */}
+          <MutualFriends profileId={profile.id} />
 
           {/* Badges */}
           {BADGES.length > 0 && (

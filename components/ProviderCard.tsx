@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { getFrameColor } from '@/lib/avatarFrame'
 
 interface ActivityPackage {
   title: string
@@ -54,6 +55,14 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
   const initials = provider.full_name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || '??'
   const totalSessions = provider.total_sessions ?? 0
   const sparksReceived = provider.sparks_received ?? 0
+  const frameColor = getFrameColor(totalSessions)
+  const frameGlow = totalSessions >= 25
+    ? `0 0 0 1.5px rgba(255,255,255,0.3), 0 8px 32px rgba(255,255,255,0.08)`
+    : totalSessions >= 10
+    ? `0 0 0 1px rgba(212,175,55,0.35)`
+    : totalSessions >= 5
+    ? `0 0 0 1px rgba(155,143,255,0.25)`
+    : '0 4px 24px rgba(0,0,0,0.4)'
 
   return (
     <div
@@ -62,9 +71,12 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
         background: '#0F0F1E',
         boxShadow: featured
           ? '0 0 0 1px rgba(212,175,55,0.25), 0 20px 60px rgba(0,0,0,0.5)'
-          : '0 4px 24px rgba(0,0,0,0.4)',
+          : frameGlow,
       }}
     >
+      {totalSessions >= 1 && (
+        <div style={{ height: '3px', background: frameColor, opacity: totalSessions >= 25 ? 1 : 0.7 }} />
+      )}
       <div className="relative w-full overflow-hidden" style={{ height: '280px' }}>
         {provider.avatar_url && !imgError ? (
           <img

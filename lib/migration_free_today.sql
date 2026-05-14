@@ -1,0 +1,1 @@
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS free_today_at TIMESTAMPTZ;
