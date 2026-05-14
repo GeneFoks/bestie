@@ -54,14 +54,18 @@ const ACTIVITY_GROUPS = [
 ]
 
 const FEATURES = [
-  { emoji: '🪪', title: 'Social Passport', desc: 'A verified profile with your Bestie Score, session history, sparks, and badges. Share yours with one link.' },
-  { emoji: '👥', title: 'Crews', desc: 'Join or create groups for shared activities. Members rate their crew 1–5 stars — top crews rise in the public rankings.' },
-  { emoji: '⭐', title: 'Mutual Reviews', desc: 'Both sides confirm the session happened, then rate each other. No fake reviews — ever.' },
-  { emoji: '✨', title: 'Sparks', desc: '30 rare tokens you earn at signup. Give up to 3 per person to signal real trust.' },
-  { emoji: '📅', title: 'Session Calendar', desc: 'Book, accept, and track upcoming sessions. Invite friends to specific activities via a personal link.' },
-  { emoji: '⚡', title: 'Going To', desc: '24h status stories — share what you\'re doing today and find someone to join you.' },
-  { emoji: '💬', title: 'Direct Messages', desc: 'Chat with any Bestie directly. Conversations tied to bookings stay in context.' },
-  { emoji: '🔗', title: 'Invite Links', desc: 'Share personal session invites or crew links. Recipients land on a signup page with full context — no confusion.' },
+  { emoji: '🪪', title: 'Social Passport', desc: 'Your verified profile: Bestie Score, session count, sparks, badges, streak, availability. One link to share it all.' },
+  { emoji: '🏆', title: 'Bestie Score & Badges', desc: 'Score grows with every confirmed session, spark, and week of consistency. Earn badges — Top 1%, Session King, streak milestones, Rising Star.' },
+  { emoji: '🔥', title: 'Weekly Streak', desc: 'Meet someone every week and your streak grows. 12-week streaks unlock the rarest badges and a bonus on your score.' },
+  { emoji: '📅', title: 'Availability Calendar', desc: 'Set your available days and time slots. Visible on your passport so people know the best time to reach out — no guessing.' },
+  { emoji: '👋', title: 'Knock', desc: 'Send an anonymous signal of interest. If they knock back — you match and can connect. No awkward cold messages.' },
+  { emoji: '🎉', title: 'Group Sessions', desc: 'Host open meetups for 3–20 people. Set a date, location, and max size. Anyone can join, share, or leave.' },
+  { emoji: '🗺️', title: 'Nearby Map', desc: 'See Besties near you on a live map. Pins show their session tier — gold for veterans, white glow for the most active.' },
+  { emoji: '🌍', title: 'City Pulse', desc: 'Live feed of who\'s free today, upcoming group sessions, and what\'s happening in your city right now.' },
+  { emoji: '🕸️', title: 'Connection Graph', desc: 'A live web of every real connection made on Bestie. Clusters form naturally — your crew, your city, your world.' },
+  { emoji: '💾', title: 'Session Memories', desc: 'After every session, record your mood, what you did, and add a photo. Your passport becomes a living story of real moments.' },
+  { emoji: '✨', title: 'Sparks', desc: '30 rare tokens you earn at signup. Give up to 3 per person, 1 per type. The rarest signal of real trust.' },
+  { emoji: '🔒', title: 'Block & Report', desc: 'Session-gated safety tools — only people who\'ve actually met can block or report. Keeps the community honest.' },
 ]
 
 export default function HomePage() {
@@ -307,15 +311,15 @@ export default function HomePage() {
         <div style={{ maxWidth: '960px', margin: '0 auto', borderRadius: '24px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', padding: '48px 40px' }}>
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '10px' }}>HOW IT WORKS</p>
-            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '12px' }}>Simple. Safe. Human.</h2>
-            <p style={{ fontSize: '15px', color: '#9B93C0' }}>Four steps from landing here to real company.</p>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '12px' }}>From stranger to Bestie in four steps.</h2>
+            <p style={{ fontSize: '15px', color: '#9B93C0' }}>Built for real human connection — not followers, not likes.</p>
           </div>
           <div className="how-grid">
             {[
-              { num: '01', icon: '🪪', title: 'Create your Social Passport', desc: 'Fill in your bio, add activities, get verified. Your Bestie Score starts building from day one. Join or create a Crew.' },
-              { num: '02', icon: '🔍', title: 'Browse & book', desc: 'Filter by activity, city, and score. Send a booking request or use a personal invite link — no pressure, no awkwardness.' },
-              { num: '03', icon: '🤝', title: 'Meet your Bestie', desc: 'Show up, connect, enjoy. After the session both sides confirm it happened and rate each other.' },
-              { num: '04', icon: '⭐', title: 'Rate, Spark & grow', desc: 'Give a star rating and a Spark to signal real trust. Rate your Crew too — crew scores shape the public leaderboard.' },
+              { num: '01', icon: '🪪', title: 'Build your Social Passport', desc: 'Add your bio, photo, city, activities, and set your weekly availability. Take the Bestie Type quiz — your energy, mind, and vibe type appear on your passport and power the compatibility engine.' },
+              { num: '02', icon: '🔍', title: 'Discover your people', desc: 'Browse with type compatibility, explore the Nearby Map, check City Pulse for who\'s free today, or send a Knock to someone interesting — an anonymous signal that only reveals your identity on a mutual match.' },
+              { num: '03', icon: '🤝', title: 'Meet IRL', desc: 'Book a 1-on-1 session, join a Group Session hosted by someone in your city, or flip "I\'m free today" on Pulse for spontaneous meetups. Show up — that\'s all it takes.' },
+              { num: '04', icon: '📖', title: 'Build your story', desc: 'Both sides confirm the session and rate each other. Record a memory — mood, note, photo. Give Sparks. Your streak grows, badges unlock, your passport becomes proof of a life well lived.' },
             ].map((step) => (
               <div key={step.num}>
                 <div style={{ fontSize: '48px', fontWeight: 700, color: 'rgba(212,175,55,0.07)', fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{step.num}</div>
@@ -333,7 +337,7 @@ export default function HomePage() {
         <div style={{ maxWidth: '960px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '10px' }}>WHAT'S INSIDE</p>
-            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 36px)', fontWeight: 700, color: '#E8E0FF' }}>Everything you need to connect safely</h2>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 36px)', fontWeight: 700, color: '#E8E0FF' }}>A full world for real-life connection</h2>
           </div>
           <div className="features-grid">
             {FEATURES.map((f) => (
