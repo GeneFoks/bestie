@@ -159,7 +159,7 @@ export default function MapPage() {
       {/* Map */}
       <div style={{ padding: '0 24px 40px', maxWidth: '960px', margin: '0 auto' }}>
         {loading ? (
-          <div style={{ height: '540px', borderRadius: '20px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ height: 'clamp(300px, 60vh, 540px)', borderRadius: '20px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ width: '36px', height: '36px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 12px' }} />
               <p style={{ fontSize: '14px', color: '#9B93C0' }}>Loading map...</p>
@@ -176,7 +176,7 @@ export default function MapPage() {
             </Link>
           </div>
         ) : (
-          <div ref={mapRef} style={{ height: '540px', borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }} />
+          <div ref={mapRef} style={{ height: 'clamp(300px, 60vh, 540px)', borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }} />
         )}
       </div>
     </div>

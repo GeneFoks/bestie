@@ -84,7 +84,7 @@ export default function PulsePage() {
 
         {/* Header */}
         <div style={{ marginBottom: '32px' }}>
-          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '34px', color: '#E8E0FF', marginBottom: '6px' }}>
+          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 7vw, 34px)', color: '#E8E0FF', marginBottom: '6px' }}>
             🌍 City Pulse
           </h1>
           <p style={{ fontSize: '14px', color: '#9B93C0' }}>
