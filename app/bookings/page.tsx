@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { googleCalendarUrl, downloadICS } from '@/lib/calendar'
 
 const STATUS_STYLES = {
   pending:   { bg: 'rgba(212,175,55,0.1)',  border: 'rgba(212,175,55,0.3)',  color: '#D4AF37',  label: 'Pending' },
@@ -20,6 +21,7 @@ export default function BookingsPage() {
   const [bookings, setBookings] = useState([])
   const [tab, setTab] = useState('incoming')
   const [loading, setLoading] = useState(true)
+  const [calOpen, setCalOpen] = useState<string | null>(null)
   const userIdRef = useRef(null)
 
   const loadBookings = async (uid) => {
@@ -108,6 +110,13 @@ export default function BookingsPage() {
   const current = tab === 'incoming' ? incoming : outgoing
   const formatDate = (ts) => ts ? new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : null
 
+  useEffect(() => {
+    if (!calOpen) return
+    const handler = () => setCalOpen(null)
+    document.addEventListener('click', handler, true)
+    return () => document.removeEventListener('click', handler, true)
+  }, [calOpen])
+
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ width: '40px', height: '40px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
@@ -181,6 +190,42 @@ export default function BookingsPage() {
                   )}
                 </div>
               </div>
+
+              {booking.scheduled_at && (booking.status === 'accepted' || booking.status === 'completed') && (() => {
+                const start = new Date(booking.scheduled_at)
+                const title = `Session with ${other?.full_name || 'Bestie'} — ${booking.package?.title || 'Activity'}`
+                const description = `Your Bestie session on Bestiehere.com${booking.message ? `\n\n"${booking.message}"` : ''}`
+                return (
+                  <div style={{ position: 'relative', marginBottom: '10px' }}>
+                    <button
+                      onClick={() => setCalOpen(calOpen === booking.id ? null : booking.id)}
+                      style={{ width: '100%', padding: '9px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                    >
+                      📅 Add to Calendar
+                    </button>
+                    {calOpen === booking.id && (
+                      <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '6px', background: '#13132a', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '12px', overflow: 'hidden', zIndex: 10 }}>
+                        <a
+                          href={googleCalendarUrl({ title, start, description })}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setCalOpen(null)}
+                          style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', fontSize: '13px', color: '#E8E0FF', textDecoration: 'none', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+                        >
+                          <img src="https://ssl.gstatic.com/calendar/images/dynamiclogo_2020q4/calendar_31_2x.png" alt="" style={{ width: '18px', height: '18px', borderRadius: '4px' }} />
+                          Google Calendar
+                        </a>
+                        <button
+                          onClick={() => { downloadICS({ title, start, description, filename: 'bestie-session.ics' }); setCalOpen(null) }}
+                          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', fontSize: '13px', color: '#E8E0FF', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+                        >
+                          🗓 Apple / Outlook (.ics)
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
 
               <div style={{ display: 'flex', gap: '8px' }}>
                 {tab === 'incoming' && booking.status === 'pending' && (
