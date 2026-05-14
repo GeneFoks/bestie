@@ -124,6 +124,8 @@ export default function EditProfilePage() {
   const [editPkg, setEditPkg] = useState({ title: '', activity_type: '', description: '', price_per_session: '', is_free: false, scheduled_at: '' })
   const [selectedLanguages, setSelectedLanguages] = useState([])
   const [form, setForm] = useState({ full_name: '', username: '', bio: '', city: '', country: '', avatar_url: '' })
+  const [locationShared, setLocationShared] = useState(false)
+  const [locating, setLocating] = useState(false)
 
   const DAYS = [
     { id: 'mon', label: 'Mon' }, { id: 'tue', label: 'Tue' }, { id: 'wed', label: 'Wed' },
@@ -144,6 +146,7 @@ export default function EditProfilePage() {
         setPackages(data.activity_packages || [])
         setSelectedLanguages(data.languages || [])
         if (data.availability) setAvailability({ ...defaultAvail(), ...data.availability })
+        if (data.lat && data.lng) setLocationShared(true)
         if (data.avatar_url) setAvatarPreview(data.avatar_url)
       }
       setLoading(false)
@@ -162,6 +165,30 @@ export default function EditProfilePage() {
     setSelectedLanguages(prev =>
       prev.includes(lang) ? prev.filter(l => l !== lang) : [...prev, lang]
     )
+  }
+
+  const shareLocation = async () => {
+    const city = form.city.trim()
+    if (!city) return
+    setLocating(true)
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`)
+      const data = await res.json()
+      if (data && data[0]) {
+        const lat = parseFloat(parseFloat(data[0].lat).toFixed(2))
+        const lng = parseFloat(parseFloat(data[0].lon).toFixed(2))
+        const { data: { session } } = await supabase.auth.getSession()
+        await supabase.from('users').update({ lat, lng }).eq('id', session.user.id)
+        setLocationShared(true)
+      }
+    } catch {}
+    setLocating(false)
+  }
+
+  const removeLocation = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    await supabase.from('users').update({ lat: null, lng: null }).eq('id', session.user.id)
+    setLocationShared(false)
   }
 
   const handleSave = async () => {
@@ -482,6 +509,26 @@ export default function EditProfilePage() {
                 </div>
               </div>
             </div>
+          )}
+        </div>
+
+        {/* Map visibility */}
+        <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
+          <p style={{ fontSize: '13px', fontWeight: 700, color: '#E8E0FF', marginBottom: '4px' }}>🗺️ Appear on the map</p>
+          <p style={{ fontSize: '12px', color: '#9B93C0', marginBottom: '16px' }}>Shows your approximate location (city-level, ~1km) so others nearby can find you. Requires your city to be set.</p>
+          {locationShared ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ flex: 1, padding: '10px 14px', borderRadius: '10px', background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '13px', color: '#39FF14', fontWeight: 600 }}>
+                ✓ Visible on map
+              </div>
+              <button onClick={removeLocation} style={{ padding: '10px 14px', borderRadius: '10px', fontSize: '13px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', cursor: 'pointer' }}>
+                Remove
+              </button>
+            </div>
+          ) : (
+            <button onClick={shareLocation} disabled={locating || !form.city} style={{ width: '100%', padding: '11px', borderRadius: '10px', fontSize: '14px', fontWeight: 600, background: form.city ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.03)', border: form.city ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255,255,255,0.08)', color: form.city ? '#D4AF37' : '#444', cursor: form.city ? 'pointer' : 'not-allowed' }}>
+              {locating ? 'Locating...' : form.city ? `📍 Put me on the map (${form.city})` : 'Add your city first'}
+            </button>
           )}
         </div>
 

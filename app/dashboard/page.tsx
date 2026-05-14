@@ -152,6 +152,7 @@ export default function DashboardPage() {
     { emoji: '👥', label: 'My Crews', sub: myCrews.length ? `${myCrews.length} crew${myCrews.length > 1 ? 's' : ''}` : 'Find or create a crew', href: '/crews', badge: totalNewCrewEvents },
     { emoji: '📅', label: 'My Sessions', sub: 'Upcoming accepted sessions', href: '/sessions' },
     { emoji: '🎉', label: 'Group Sessions', sub: 'Host or join group meetups', href: '/group-sessions/new', badge: upcomingGroupSessions.length || 0 },
+    { emoji: '🗺️', label: 'Map', sub: 'See Besties near you', href: '/map' },
     { emoji: '🔍', label: 'Browse Besties', sub: 'Find someone for your activity', href: '/browse' },
     { emoji: '⚡', label: 'Going to', sub: "Share what you're up to today", href: '/going-to' },
     { emoji: '✏️', label: 'Edit profile', sub: 'Bio, photo, city, activities', href: '/profile/edit' },
