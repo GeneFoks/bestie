@@ -143,13 +143,13 @@ export default function SessionsPage() {
     <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
       <button
         onClick={() => archiveSession(session)}
-        style={{ flex: 1, padding: '8px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#9B93C0', cursor: 'pointer' }}
+        style={{ flex: 1, padding: '11px 8px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#9B93C0', cursor: 'pointer' }}
       >
         📦 Archive
       </button>
       <button
         onClick={() => setConfirmDelete(session.id)}
-        style={{ flex: 1, padding: '8px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, background: 'rgba(255,80,80,0.06)', border: '1px solid rgba(255,80,80,0.15)', color: '#FF6B6B', cursor: 'pointer' }}
+        style={{ flex: 1, padding: '11px 8px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, background: 'rgba(255,80,80,0.06)', border: '1px solid rgba(255,80,80,0.15)', color: '#FF6B6B', cursor: 'pointer' }}
       >
         🗑️ Delete{isCompleted ? ' (−score)' : ''}
       </button>
@@ -162,7 +162,7 @@ export default function SessionsPage() {
       {/* Delete confirmation modal */}
       {confirmDelete && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,80,80,0.3)', borderRadius: '20px', padding: '28px', maxWidth: '380px', width: '100%' }}>
+          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,80,80,0.3)', borderRadius: '20px', padding: '24px', maxWidth: '380px', width: '100%', boxSizing: 'border-box' }}>
             <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#E8E0FF', marginBottom: '12px' }}>Delete session?</h3>
             {sessions.find(s => s.id === confirmDelete && s.confirmed_by_seeker && s.confirmed_by_provider) && (
               <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.2)', marginBottom: '16px' }}>

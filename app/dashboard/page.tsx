@@ -234,7 +234,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', marginBottom: '24px' }}>
           <div style={{ background: '#0F0F1E', border: `1px solid ${scoreColor}25`, borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '8px' }}>BESTIE SCORE</p>
             <div style={{ fontSize: '56px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{score}</div>
@@ -347,7 +347,7 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '20px' }}>
 
           {/* My Crews */}
           <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px' }}>
@@ -443,7 +443,7 @@ export default function DashboardPage() {
               <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF' }}>🚀 Boost your Bestie Score</h3>
               <Link href="/score-guide" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>How it works →</Link>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
               {remainingBoost.map(tip => (
                 <Link key={tip.label} href={tip.href} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', textDecoration: 'none' }}>
                   <span style={{ fontSize: '20px' }}>{tip.icon}</span>

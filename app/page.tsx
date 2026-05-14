@@ -146,14 +146,17 @@ export default function HomePage() {
         @media (max-width: 768px) {
           .nav-links { display: none; }
           .mobile-menu-btn { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; color: #E8E0FF; font-size: 18px; }
-          .mobile-menu.open { display: flex; flex-direction: column; gap: 4px; position: fixed; top: 60px; left: 0; right: 0; z-index: 49; background: rgba(8,8,16,0.98); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 16px; }
+          .mobile-menu.open { display: flex; flex-direction: column; gap: 4px; position: fixed; top: 60px; left: 0; right: 0; z-index: 49; background: rgba(8,8,16,0.98); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 16px; max-height: calc(100vh - 70px); overflow-y: auto; }
           .mobile-menu a { padding: 12px 16px; border-radius: 12px; font-size: 15px; color: #9B93C0; }
           .providers-grid { grid-template-columns: 1fr; }
-          .groups-grid { grid-template-columns: repeat(2, 1fr); }
+          .features-grid { grid-template-columns: 1fr; }
+          .how-grid { grid-template-columns: 1fr; gap: 24px; }
+          .groups-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
           .score-grid { grid-template-columns: 1fr; gap: 32px; }
         }
         @media (max-width: 480px) {
           .providers-grid { grid-template-columns: 1fr; }
+          .groups-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
         }
       `}</style>
 

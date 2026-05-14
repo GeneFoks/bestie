@@ -102,7 +102,7 @@ export default async function CrewPage({ params }) {
           </div>
 
           {/* Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', marginBottom: '24px' }}>
             <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '14px', padding: '14px', border: `1px solid ${scoreColor}20` }}>
               <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '6px' }}>AVG SCORE</p>
               <div style={{ fontSize: '28px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif' }}>{avgScore || '—'}</div>

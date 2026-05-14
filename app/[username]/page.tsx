@@ -260,10 +260,10 @@ export default async function ProfilePage({ params }) {
             </div>
 
             {/* Sessions / Sparks / Rating */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-              <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>SESSIONS</p>
-                <div style={{ fontSize: '28px', fontWeight: 700, color: '#E8E0FF', fontFamily: 'DM Serif Display, serif' }}>{totalSessions}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px' }}>
+              <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '6px' }}>SESSIONS</p>
+                <div style={{ fontSize: '24px', fontWeight: 700, color: '#E8E0FF', fontFamily: 'DM Serif Display, serif' }}>{totalSessions}</div>
               </div>
               <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>SPARKS</p>
@@ -387,7 +387,7 @@ export default async function ProfilePage({ params }) {
         <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px', marginBottom: '20px' }}>
           <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '4px' }}>Give a Spark ✨</h3>
           <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '16px' }}>Rare tokens of respect. Max 3 per person, 1 per type.</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(64px, 1fr))', gap: '8px', marginBottom: '12px' }}>
             {SPARK_TYPES.slice(0, 10).map(s => (
               <Link key={s.id} href={`/sparks/give?to=${profile.username}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 6px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', textDecoration: 'none' }}>
                 <span style={{ fontSize: '20px' }}>{s.emoji}</span>
