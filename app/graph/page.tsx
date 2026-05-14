@@ -284,11 +284,19 @@ export default function GraphPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', flexDirection: 'column' }}>
-      <nav style={{ position: 'relative', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px', background: 'rgba(8,8,16,0.95)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
-        <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <style>{`
+        @media (max-width: 600px) {
+          .graph-stats { display: none !important; }
+          .graph-legend { bottom: 12px !important; left: 12px !important; padding: 10px 12px !important; }
+          .graph-legend-hint { display: none !important; }
+        }
+      `}</style>
+
+      <nav style={{ position: 'relative', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', background: 'rgba(8,8,16,0.95)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, minHeight: '56px' }}>
+        <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none', flexShrink: 0 }}>BESTIE</Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
           {!loading && !empty && (
-            <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: '#9B93C0' }}>
+            <div className="graph-stats" style={{ display: 'flex', gap: '12px', fontSize: '12px', color: '#9B93C0' }}>
               <span><span style={{ color: '#D4AF37', fontWeight: 700 }}>{nodeCount}</span> people</span>
               <span><span style={{ color: '#D4AF37', fontWeight: 700 }}>{edgeCount}</span> connections</span>
             </div>
@@ -299,32 +307,32 @@ export default function GraphPage() {
 
       {/* Legend */}
       {!loading && !empty && (
-        <div style={{ position: 'absolute', bottom: '24px', left: '24px', zIndex: 10, padding: '14px 18px', borderRadius: '16px', background: 'rgba(8,8,16,0.85)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}>
-          <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1.5px', color: '#9B93C0', marginBottom: '10px' }}>LEGEND</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div className="graph-legend" style={{ position: 'absolute', bottom: '24px', left: '24px', zIndex: 10, padding: '14px 18px', borderRadius: '16px', background: 'rgba(8,8,16,0.88)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}>
+          <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1.5px', color: '#9B93C0', marginBottom: '8px' }}>LEGEND</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#1a1a35', border: '2.5px solid rgba(255,255,255,0.9)', boxShadow: '0 0 10px rgba(255,255,255,0.3)' }} />
+              <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#1a1a35', border: '2px solid rgba(255,255,255,0.9)', boxShadow: '0 0 8px rgba(255,255,255,0.25)', flexShrink: 0 }} />
               <span style={{ fontSize: '11px', color: '#E8E0FF' }}>25+ sessions</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#1a1a35', border: '2px solid #D4AF37', margin: '2px' }} />
+              <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#1a1a35', border: '2px solid #D4AF37', flexShrink: 0 }} />
               <span style={{ fontSize: '11px', color: '#E8E0FF' }}>10+ sessions</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#1a1a35', border: '1.5px solid #9B8FFF', margin: '4px' }} />
+              <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#1a1a35', border: '1.5px solid #9B8FFF', flexShrink: 0 }} />
               <span style={{ fontSize: '11px', color: '#E8E0FF' }}>5+ sessions</span>
             </div>
-            <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
+            <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '3px 0' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '28px', height: '3px', borderRadius: '999px', background: 'rgba(212,175,55,0.55)' }} />
-              <span style={{ fontSize: '11px', color: '#E8E0FF' }}>Strong bond (5+ meets)</span>
+              <div style={{ width: '22px', height: '3px', borderRadius: '999px', background: 'rgba(212,175,55,0.6)', flexShrink: 0 }} />
+              <span style={{ fontSize: '11px', color: '#E8E0FF' }}>5+ meets</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '28px', height: '1px', borderRadius: '999px', background: 'rgba(155,147,192,0.3)' }} />
+              <div style={{ width: '22px', height: '1px', borderRadius: '999px', background: 'rgba(155,147,192,0.3)', flexShrink: 0 }} />
               <span style={{ fontSize: '11px', color: '#E8E0FF' }}>1 session</span>
             </div>
           </div>
-          <p style={{ fontSize: '10px', color: '#9B93C0', marginTop: '10px' }}>Node size = Bestie Score · Drag to explore · Scroll to zoom</p>
+          <p className="graph-legend-hint" style={{ fontSize: '10px', color: '#9B93C0', marginTop: '8px' }}>Size = Score · Drag · Pinch to zoom</p>
         </div>
       )}
 
