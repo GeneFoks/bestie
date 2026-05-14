@@ -18,6 +18,7 @@ export default function DashboardPage() {
   const [referredCount, setReferredCount] = useState(0)
   const [myCrews, setMyCrews] = useState<any[]>([])
   const [crewNewEvents, setCrewNewEvents] = useState<Record<string, number>>({})
+  const [upcomingGroupSessions, setUpcomingGroupSessions] = useState<any[]>([])
 
   useEffect(() => {
     const getUser = async () => {
@@ -51,15 +52,29 @@ export default function DashboardPage() {
         } catch {}
       }
 
-      const [{ count: msgCount }, { count: bookCount }, { count: refCount }, { data: crewMemberships }] = await Promise.all([
+      const [{ count: msgCount }, { count: bookCount }, { count: refCount }, { data: crewMemberships }, { data: myGroupSessions }, { data: joinedGroupSessions }] = await Promise.all([
         supabase.from('direct_messages').select('*', { count: 'exact', head: true }).eq('receiver_id', session.user.id).eq('read', false),
         supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('provider_id', session.user.id).eq('status', 'pending'),
         supabase.from('users').select('*', { count: 'exact', head: true }).eq('referred_by', session.user.id),
         supabase.from('crew_members').select('crew:crews(id, name, slug, avatar_url, is_public)').eq('user_id', session.user.id),
+        supabase.from('group_sessions').select('id, title, scheduled_at, status, max_participants').eq('host_id', session.user.id).in('status', ['open', 'full']).gte('scheduled_at', new Date().toISOString()).order('scheduled_at').limit(3),
+        supabase.from('group_session_participants').select('session:group_sessions(id, title, scheduled_at, status)').eq('user_id', session.user.id),
       ])
       setUnreadMessages(msgCount || 0)
       setPendingBookings(bookCount || 0)
       setReferredCount(refCount || 0)
+
+      // Merge hosted + joined upcoming group sessions
+      const hosted = (myGroupSessions || []).map(s => ({ ...s, role: 'host' }))
+      const joined = (joinedGroupSessions || [])
+        .map((p: any) => p.session)
+        .filter((s: any) => s && new Date(s.scheduled_at) >= new Date() && ['open', 'full'].includes(s.status))
+        .map((s: any) => ({ ...s, role: 'participant' }))
+      const merged = [...hosted, ...joined]
+        .filter((s, i, arr) => arr.findIndex(x => x.id === s.id) === i)
+        .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
+        .slice(0, 5)
+      setUpcomingGroupSessions(merged)
 
       if (crewMemberships?.length) {
         const crews = crewMemberships.map((m: any) => m.crew).filter(Boolean)
@@ -136,6 +151,8 @@ export default function DashboardPage() {
     { emoji: '📋', label: 'Bookings', sub: 'Incoming booking requests', href: '/bookings', badge: pendingBookings },
     { emoji: '👥', label: 'My Crews', sub: myCrews.length ? `${myCrews.length} crew${myCrews.length > 1 ? 's' : ''}` : 'Find or create a crew', href: '/crews', badge: totalNewCrewEvents },
     { emoji: '📅', label: 'My Sessions', sub: 'Upcoming accepted sessions', href: '/sessions' },
+    { emoji: '🎉', label: 'Group Sessions', sub: 'Host or join group meetups', href: '/group-sessions/new', badge: upcomingGroupSessions.length || 0 },
+    { emoji: '🗺️', label: 'Map', sub: 'See Besties near you', href: '/map' },
     { emoji: '🔍', label: 'Browse Besties', sub: 'Find someone for your activity', href: '/browse' },
     { emoji: '⚡', label: 'Going to', sub: "Share what you're up to today", href: '/going-to' },
     { emoji: '✏️', label: 'Edit profile', sub: 'Bio, photo, city, activities', href: '/profile/edit' },
@@ -276,6 +293,30 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
+
+          {/* Group Sessions */}
+          {upcomingGroupSessions.length > 0 && (
+            <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF' }}>Group Sessions</h3>
+                <Link href="/group-sessions/new" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>+ New →</Link>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {upcomingGroupSessions.map((gs: any) => {
+                  const d = new Date(gs.scheduled_at)
+                  return (
+                    <Link key={gs.id} href={`/group-sessions/${gs.id}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', textDecoration: 'none' }}>
+                      <span style={{ fontSize: '22px' }}>🎉</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{gs.title}</p>
+                        <p style={{ fontSize: '12px', color: '#9B93C0' }}>{d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · {d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} · {gs.role === 'host' ? '👑 Host' : '✓ Joined'}</p>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Quick actions */}
           <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px' }}>
