@@ -1,16 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!
-const CREW_SLUG = process.env.TELEGRAM_CREW_SLUG!
+export const dynamic = 'force-dynamic'
+
 const BASE_URL = 'https://api.telegram.org/bot'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 async function tg(method: string, body: object) {
+  const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!
   const res = await fetch(`${BASE_URL}${BOT_TOKEN}/${method}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -32,6 +35,7 @@ async function declineJoinRequest(chatId: number, userId: number) {
 }
 
 async function handleJoinRequest(update: any) {
+  const supabase = getSupabase()
   const { chat, from } = update.chat_join_request
   const userId = from.id
   const chatId = chat.id
@@ -56,6 +60,7 @@ async function handleJoinRequest(update: any) {
 }
 
 async function handleVerify(message: any) {
+  const supabase = getSupabase()
   const userId = message.from.id
   const text: string = message.text || ''
   const parts = text.trim().split(/\s+/)
@@ -98,7 +103,7 @@ async function handleVerify(message: any) {
   const { data: crew } = await supabase
     .from('crews')
     .select('id')
-    .eq('slug', CREW_SLUG)
+    .eq('slug', process.env.TELEGRAM_CREW_SLUG!)
     .single()
 
   if (!crew) {
