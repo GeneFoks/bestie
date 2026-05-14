@@ -7,6 +7,7 @@ import SocialPassportCTA from '@/components/SocialPassportCTA'
 import SharePassportButton from '@/components/SharePassportButton'
 import InviteToSessionButton from '@/components/InviteToSessionButton'
 import EditActivitiesLink from '@/components/EditActivitiesLink'
+import BlockReportButton from '@/components/BlockReportButton'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -149,6 +150,7 @@ export default async function ProfilePage({ params }) {
             </div>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
               <SharePassportButton username={profile.username} />
+              <BlockReportButton profileUserId={profile.id} />
               {profile.is_verified && (
                 <span style={{ fontSize: '12px', padding: '4px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', fontWeight: 600 }}>✓ Verified</span>
               )}

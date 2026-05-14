@@ -168,12 +168,18 @@ export default function BrowsePage() {
   const [myProfile, setMyProfile] = useState(null)
   const [compatMode, setCompatMode] = useState(false)
 
+  const [blockedIds, setBlockedIds] = useState<string[]>([])
+
   useEffect(() => {
     const loadMe = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        const { data } = await supabase.from('users').select('id, energy_type, mind_type, vibe_type, bestie_type_completed').eq('id', user.id).single()
-        if (data?.bestie_type_completed) setMyProfile(data)
+        const [{ data: profile }, { data: blocks }] = await Promise.all([
+          supabase.from('users').select('id, energy_type, mind_type, vibe_type, bestie_type_completed').eq('id', user.id).single(),
+          supabase.from('user_blocks').select('blocked_id').eq('blocker_id', user.id),
+        ])
+        if (profile?.bestie_type_completed) setMyProfile(profile)
+        if (blocks) setBlockedIds(blocks.map(b => b.blocked_id))
       }
     }
     loadMe()
@@ -207,7 +213,7 @@ export default function BrowsePage() {
       }
 
       const { data } = await query.limit(48)
-      let result = data || []
+      let result = (data || []).filter(p => !blockedIds.includes(p.id))
 
       if (result.length > 0) {
         const userIds = result.map(p => p.id)
