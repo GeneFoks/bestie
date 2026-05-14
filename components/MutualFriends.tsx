@@ -29,7 +29,7 @@ export default function MutualFriends({ profileId }: { profileId: string }) {
         (myBookings || []).map(b => b.seeker_id === myId ? b.provider_id : b.seeker_id)
       )
 
-      const mutualIds = [...profilePartners].filter(id => myPartners.has(id))
+      const mutualIds = Array.from(profilePartners).filter(id => myPartners.has(id))
       if (mutualIds.length === 0) { setLoaded(true); return }
 
       const { data: users } = await supabase
