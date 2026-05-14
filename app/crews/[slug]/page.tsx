@@ -51,7 +51,7 @@ export default async function CrewPage({ params }) {
       .from('crew_members')
       .select('joined_at, user:users(id, username, full_name, avatar_url, bestie_score, city)')
       .eq('crew_id', crew.id)
-      .order('joined_at', { ascending: true }),
+      .order('bestie_score', { ascending: false, foreignTable: 'users' }),
     supabase
       .from('crew_events')
       .select('id, title, datetime, location, is_members_only, max_attendees')
