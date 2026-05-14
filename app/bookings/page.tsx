@@ -91,8 +91,11 @@ export default function BookingsPage() {
 
   const updateStatus = async (id, status) => {
     const booking = bookings.find(b => b.id === id)
-    await supabase.from('bookings').update({ status }).eq('id', id)
-    setBookings(b => b.map(b2 => b2.id === id ? { ...b2, status } : b2))
+    const update: any = { status }
+    // When provider marks completed, also confirm their side so graph + rating unlock
+    if (status === 'completed') update.confirmed_by_provider = true
+    await supabase.from('bookings').update(update).eq('id', id)
+    setBookings(b => b.map(b2 => b2.id === id ? { ...b2, ...update } : b2))
     const activityTitle = booking.package?.title || 'Session'
     if (status === 'accepted' && booking?.seeker?.email) await sendEmail('booking_accepted', booking.seeker.email, { providerName: booking.provider?.full_name || 'Your Bestie', activityTitle })
     if (status === 'declined' && booking?.seeker?.email) await sendEmail('booking_declined', booking.seeker.email, { providerName: booking.provider?.full_name || 'Your Bestie', activityTitle })
@@ -188,6 +191,12 @@ export default function BookingsPage() {
                 )}
                 {tab === 'incoming' && booking.status === 'accepted' && (
                   <button onClick={() => updateStatus(booking.id, 'completed')} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: 'pointer' }}>✓ Mark as completed</button>
+                )}
+                {tab === 'incoming' && booking.status === 'completed' && !booking.confirmed_by_provider && (
+                  <button onClick={async () => {
+                    await supabase.from('bookings').update({ confirmed_by_provider: true }).eq('id', booking.id)
+                    setBookings(b => b.map(b2 => b2.id === booking.id ? { ...b2, confirmed_by_provider: true } : b2))
+                  }} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(57,255,20,0.12)', border: '1px solid rgba(57,255,20,0.3)', color: '#39FF14', cursor: 'pointer' }}>✓ Confirm session happened</button>
                 )}
                 {tab === 'outgoing' && booking.status === 'pending' && (
                   <button onClick={() => updateStatus(booking.id, 'cancelled')} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', cursor: 'pointer' }}>Cancel request</button>
