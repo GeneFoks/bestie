@@ -19,6 +19,10 @@ export default function DashboardPage() {
   const [myCrews, setMyCrews] = useState<any[]>([])
   const [crewNewEvents, setCrewNewEvents] = useState<Record<string, number>>({})
   const [upcomingGroupSessions, setUpcomingGroupSessions] = useState<any[]>([])
+  const [pendingKnocks, setPendingKnocks] = useState<any[]>([])
+  const [pendingMemories, setPendingMemories] = useState<any[]>([])
+  const [iAmFree, setIAmFree] = useState(false)
+  const [togglingFree, setTogglingFree] = useState(false)
 
   useEffect(() => {
     const getUser = async () => {
@@ -52,17 +56,44 @@ export default function DashboardPage() {
         } catch {}
       }
 
-      const [{ count: msgCount }, { count: bookCount }, { count: refCount }, { data: crewMemberships }, { data: myGroupSessions }, { data: joinedGroupSessions }] = await Promise.all([
+      const isToday = (ts: string | null) => ts && new Date(ts).toDateString() === new Date().toDateString()
+      if (isToday(data?.free_today_at)) setIAmFree(true)
+
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+
+      const [{ count: msgCount }, { count: bookCount }, { count: refCount }, { data: crewMemberships }, { data: myGroupSessions }, { data: joinedGroupSessions }, { data: knocksData }, { data: confirmedBookings }] = await Promise.all([
         supabase.from('direct_messages').select('*', { count: 'exact', head: true }).eq('receiver_id', session.user.id).eq('read', false),
         supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('provider_id', session.user.id).eq('status', 'pending'),
         supabase.from('users').select('*', { count: 'exact', head: true }).eq('referred_by', session.user.id),
         supabase.from('crew_members').select('crew:crews(id, name, slug, avatar_url, is_public)').eq('user_id', session.user.id),
         supabase.from('group_sessions').select('id, title, scheduled_at, status, max_participants').eq('host_id', session.user.id).in('status', ['open', 'full']).gte('scheduled_at', new Date().toISOString()).order('scheduled_at').limit(3),
         supabase.from('group_session_participants').select('session:group_sessions(id, title, scheduled_at, status)').eq('user_id', session.user.id),
+        supabase.from('knocks').select('id, sender:users!sender_id(id, full_name, username, avatar_url), is_mutual, created_at').eq('receiver_id', session.user.id).eq('seen', false).order('created_at', { ascending: false }).limit(5),
+        supabase.from('bookings').select('id, seeker_id, provider_id, created_at').or(`seeker_id.eq.${session.user.id},provider_id.eq.${session.user.id}`).eq('confirmed_by_seeker', true).eq('confirmed_by_provider', true).gte('created_at', thirtyDaysAgo).order('created_at', { ascending: false }).limit(10),
       ])
       setUnreadMessages(msgCount || 0)
       setPendingBookings(bookCount || 0)
       setReferredCount(refCount || 0)
+      setPendingKnocks((knocksData || []).filter((k: any) => !k.is_mutual))
+
+      // Find confirmed bookings without a memory yet
+      if (confirmedBookings?.length) {
+        const bookingIds = confirmedBookings.map((b: any) => b.id)
+        const { data: existingMemories } = await supabase
+          .from('session_memories').select('booking_id').eq('user_id', session.user.id).in('booking_id', bookingIds)
+        const savedIds = new Set((existingMemories || []).map((m: any) => m.booking_id))
+        const unsaved = confirmedBookings.filter((b: any) => !savedIds.has(b.id))
+        // Get partner info for the 2 most recent
+        if (unsaved.length) {
+          const partnerIds = unsaved.slice(0, 2).map((b: any) => b.seeker_id === session.user.id ? b.provider_id : b.seeker_id)
+          const { data: partners } = await supabase.from('users').select('id, full_name, username').in('id', partnerIds)
+          const partnersById = Object.fromEntries((partners || []).map((p: any) => [p.id, p]))
+          setPendingMemories(unsaved.slice(0, 2).map((b: any) => ({
+            ...b,
+            partner: partnersById[b.seeker_id === session.user.id ? b.provider_id : b.seeker_id]
+          })))
+        }
+      }
 
       // Merge hosted + joined upcoming group sessions
       const hosted = (myGroupSessions || []).map(s => ({ ...s, role: 'host' }))
@@ -123,6 +154,19 @@ export default function DashboardPage() {
     setTimeout(() => setRefCopied(false), 2000)
   }
 
+  const toggleFree = async () => {
+    if (!user) return
+    setTogglingFree(true)
+    if (iAmFree) {
+      await supabase.from('users').update({ free_today_at: null }).eq('id', user.id)
+      setIAmFree(false)
+    } else {
+      await supabase.from('users').update({ free_today_at: new Date().toISOString() }).eq('id', user.id)
+      setIAmFree(true)
+    }
+    setTogglingFree(false)
+  }
+
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center' }}>
@@ -152,6 +196,7 @@ export default function DashboardPage() {
     { emoji: '👥', label: 'My Crews', sub: myCrews.length ? `${myCrews.length} crew${myCrews.length > 1 ? 's' : ''}` : 'Find or create a crew', href: '/crews', badge: totalNewCrewEvents },
     { emoji: '📅', label: 'My Sessions', sub: 'Upcoming accepted sessions', href: '/sessions' },
     { emoji: '🎉', label: 'Group Sessions', sub: 'Host or join group meetups', href: '/group-sessions/new', badge: upcomingGroupSessions.length || 0 },
+    { emoji: '🌍', label: 'City Pulse', sub: "What's happening near you today", href: '/pulse', badge: pendingKnocks.length },
     { emoji: '🗺️', label: 'Map', sub: 'See Besties near you', href: '/map' },
     { emoji: '🔍', label: 'Browse Besties', sub: 'Find someone for your activity', href: '/browse' },
     { emoji: '⚡', label: 'Going to', sub: "Share what you're up to today", href: '/going-to' },
@@ -246,6 +291,58 @@ export default function DashboardPage() {
             <Link href="/bestie-type" style={{ padding: '8px 18px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', textDecoration: 'none' }}>
               Retake quiz
             </Link>
+          </div>
+        )}
+
+        {/* Free Today toggle */}
+        <div style={{ marginBottom: '20px', padding: '16px 20px', borderRadius: '16px', background: iAmFree ? 'rgba(57,255,20,0.06)' : 'rgba(255,255,255,0.03)', border: iAmFree ? '1px solid rgba(57,255,20,0.25)' : '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '20px' }}>{iAmFree ? '🟢' : '⚪'}</span>
+            <div>
+              <p style={{ fontSize: '14px', fontWeight: 700, color: iAmFree ? '#39FF14' : '#E8E0FF' }}>{iAmFree ? 'You\'re free today' : 'Free today?'}</p>
+              <p style={{ fontSize: '12px', color: '#9B93C0' }}>{iAmFree ? 'Visible on Pulse & Map' : 'Let others know you\'re up for a meetup'}</p>
+            </div>
+          </div>
+          <button onClick={toggleFree} disabled={togglingFree} style={{ padding: '8px 18px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.1)' : 'rgba(57,255,20,0.12)', border: iAmFree ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(57,255,20,0.35)', color: iAmFree ? '#FF6B35' : '#39FF14', whiteSpace: 'nowrap' }}>
+            {togglingFree ? '…' : iAmFree ? 'Turn off' : '🟢 I\'m free!'}
+          </button>
+        </div>
+
+        {/* Knocks */}
+        {pendingKnocks.length > 0 && (
+          <div style={{ marginBottom: '20px', padding: '16px 20px', borderRadius: '16px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '12px' }}>👋 NEW KNOCKS</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+              {pendingKnocks.map((k: any) => (
+                <Link key={k.id} href={`/${k.sender?.username}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', borderRadius: '12px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', textDecoration: 'none' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '8px', overflow: 'hidden', background: '#1a1a35', flexShrink: 0 }}>
+                    {k.sender?.avatar_url
+                      ? <img src={k.sender.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: '#D4AF37' }}>{k.sender?.full_name?.[0]}</div>
+                    }
+                  </div>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#D4AF37' }}>{k.sender?.full_name?.split(' ')[0]}</span>
+                  <span style={{ fontSize: '11px', color: '#9B93C0' }}>knocked 👋</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Pending session memories */}
+        {pendingMemories.length > 0 && (
+          <div style={{ marginBottom: '20px', padding: '16px 20px', borderRadius: '16px', background: 'rgba(155,143,255,0.05)', border: '1px solid rgba(155,143,255,0.2)' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '12px' }}>✨ HOW DID IT GO?</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {pendingMemories.map((b: any) => (
+                <Link key={b.id} href={`/sessions/${b.id}/memory`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '12px', background: 'rgba(155,143,255,0.07)', border: '1px solid rgba(155,143,255,0.15)', textDecoration: 'none' }}>
+                  <p style={{ fontSize: '13px', color: '#E8E0FF' }}>
+                    Session with <span style={{ fontWeight: 700, color: '#9B8FFF' }}>{b.partner?.full_name?.split(' ')[0] || 'someone'}</span>
+                  </p>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#9B8FFF' }}>Record →</span>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
 

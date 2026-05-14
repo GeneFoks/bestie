@@ -18,7 +18,24 @@
       "Bash(sed -i 's/⚔️ You are the Captain/You are the Captain/g' app/crews/[slug]/CrewActions.tsx)",
       "Bash(git commit -m 'Remove sword emoji from Crews — replace with neutral icons *)",
       "Bash(git commit -m 'Add crew events — create, view, join/leave, events section on crew page *)",
-      "Bash(git commit -m 'Add crew avatar upload and group chat *)"
+      "Bash(git commit -m 'Add crew avatar upload and group chat *)",
+      "Bash(git commit -m 'Fix chat: optimistic message update + realtime deduplication *)",
+      "Bash(git commit -m 'Fix profile page: separate crew query to prevent null profile on join failure *)",
+      "Bash(gh pr create --title 'Add join request system for private crews' --body ' *)",
+      "Bash(git commit -m 'Fix TypeScript: allow null initial state for requestStatus *)",
+      "Bash(git commit -m 'Remove redundant Crews link from ProfileNav *)",
+      "Bash(git commit -m 'Fix DMs: use direct_messages table with proper sender/receiver structure *)",
+      "Bash(git commit -m 'Add referral system — invite link gives +1 Bestie Score per signup *)",
+      "Bash(git commit -m 'Replace sword emoji with 👥 in BottomNav Crews link *)",
+      "Bash(git commit -m 'Add crew invite links — captain shares link, anyone who opens it auto-joins *)",
+      "Bash(git reset *)",
+      "Bash(git commit -m 'Add crew ratings, dissolve crew, share passport button, multi-crew membership *)",
+      "Bash(git commit -m 'Dashboard: replace profile checklist with My Crews, add event notifications, trim Quick Actions *)",
+      "Bash(git commit -m 'Add delete event button for captain with confirmation step *)",
+      "Bash(git commit -m 'Fix TypeScript: separate deleting state branch in DeleteEventButton *)",
+      "Bash(git commit -m 'Add Telegram community link to crew — captain sets URL, members see join button *)",
+      "Bash(gh pr *)",
+      "Bash(git commit *)"
     ]
   }
 }

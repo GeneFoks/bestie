@@ -26,7 +26,7 @@ export default function MapPage() {
 
       const { data } = await supabase
         .from('users')
-        .select('id, full_name, username, avatar_url, bestie_score, city, lat, lng, energy_type')
+        .select('id, full_name, username, avatar_url, bestie_score, city, lat, lng, energy_type, confirmed_sessions_count, free_today_at')
         .not('lat', 'is', null)
         .not('lng', 'is', null)
         .limit(200)
@@ -82,32 +82,39 @@ export default function MapPage() {
       maxZoom: 18,
     }).addTo(map)
 
+    const isToday = (ts: string | null) => ts && new Date(ts).toDateString() === new Date().toDateString()
+
     users.forEach(user => {
-      const scoreColor = (user.bestie_score || 0) >= 800 ? '#39FF14' : (user.bestie_score || 0) >= 600 ? '#D4AF37' : '#9B93C0'
+      const sessions = user.confirmed_sessions_count || 0
+      const frameColor = sessions >= 25 ? '#FFFFFF' : sessions >= 10 ? '#D4AF37' : sessions >= 5 ? '#9B8FFF' : sessions >= 1 ? 'rgba(155,147,192,0.6)' : 'rgba(155,147,192,0.35)'
+      const frameGlow = sessions >= 25 ? 'box-shadow:0 0 0 2px rgba(255,255,255,0.9),0 0 16px rgba(255,255,255,0.3);' : sessions >= 10 ? 'box-shadow:0 0 0 2px rgba(212,175,55,0.9);' : ''
       const initials = user.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
+      const freeNow = isToday(user.free_today_at)
+      const dotColor = freeNow ? '#39FF14' : frameColor
 
       const iconHtml = `
         <div style="position:relative;width:44px;height:44px;">
-          <div style="width:40px;height:40px;border-radius:12px;overflow:hidden;background:#1a1a35;border:2px solid ${scoreColor};display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(0,0,0,0.5);">
+          <div style="width:40px;height:40px;border-radius:12px;overflow:hidden;background:#1a1a35;border:2px solid ${frameColor};display:flex;align-items:center;justify-content:center;${frameGlow}">
             ${user.avatar_url
               ? `<img src="${user.avatar_url}" style="width:100%;height:100%;object-fit:cover;" />`
-              : `<span style="font-size:14px;font-weight:700;color:${scoreColor};font-family:sans-serif;">${initials}</span>`
+              : `<span style="font-size:14px;font-weight:700;color:${frameColor};font-family:sans-serif;">${initials}</span>`
             }
           </div>
-          <div style="position:absolute;bottom:-4px;right:-4px;width:14px;height:14px;border-radius:50%;background:${scoreColor};border:2px solid #080810;"></div>
+          <div style="position:absolute;bottom:-4px;right:-4px;width:14px;height:14px;border-radius:50%;background:${dotColor};border:2px solid #080810;"></div>
         </div>
       `
 
       const icon = L.divIcon({ html: iconHtml, className: '', iconSize: [44, 44], iconAnchor: [22, 22], popupAnchor: [0, -26] })
 
+      const scoreColor = (user.bestie_score || 0) >= 800 ? '#39FF14' : (user.bestie_score || 0) >= 600 ? '#D4AF37' : '#9B93C0'
       const popup = `
         <div style="background:#0F0F1E;border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:14px;min-width:170px;font-family:Plus Jakarta Sans,sans-serif;">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-            <div style="width:36px;height:36px;border-radius:10px;overflow:hidden;background:#1a1a35;flex-shrink:0;border:1px solid ${scoreColor}40;">
-              ${user.avatar_url ? `<img src="${user.avatar_url}" style="width:100%;height:100%;object-fit:cover;" />` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:700;color:${scoreColor};">${initials}</div>`}
+            <div style="width:36px;height:36px;border-radius:10px;overflow:hidden;background:#1a1a35;flex-shrink:0;border:1.5px solid ${frameColor};">
+              ${user.avatar_url ? `<img src="${user.avatar_url}" style="width:100%;height:100%;object-fit:cover;" />` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:700;color:${frameColor};">${initials}</div>`}
             </div>
             <div>
-              <p style="font-size:13px;font-weight:700;color:#E8E0FF;margin:0 0 2px;">${user.full_name}</p>
+              <p style="font-size:13px;font-weight:700;color:#E8E0FF;margin:0 0 2px;">${user.full_name}${freeNow ? ' <span style="font-size:10px;color:#39FF14;">🟢 free today</span>' : ''}</p>
               <p style="font-size:11px;color:#9B93C0;margin:0;">@${user.username}</p>
             </div>
           </div>

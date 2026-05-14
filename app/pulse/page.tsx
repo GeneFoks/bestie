@@ -1,0 +1,234 @@
+// @ts-nocheck
+'use client'
+
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
+import ProfileNav from '@/components/ProfileNav'
+
+function isToday(ts: string | null): boolean {
+  if (!ts) return false
+  return new Date(ts).toDateString() === new Date().toDateString()
+}
+
+export default function PulsePage() {
+  const [myCity, setMyCity] = useState<string | null>(null)
+  const [myId, setMyId] = useState<string | null>(null)
+  const [freeToday, setFreeToday] = useState<any[]>([])
+  const [groupSessions, setGroupSessions] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [iAmFree, setIAmFree] = useState(false)
+  const [toggling, setToggling] = useState(false)
+
+  useEffect(() => {
+    const init = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        setMyId(session.user.id)
+        const { data: me } = await supabase.from('users').select('city, free_today_at').eq('id', session.user.id).single()
+        if (me?.city) setMyCity(me.city)
+        if (isToday(me?.free_today_at)) setIAmFree(true)
+      }
+
+      const now = new Date().toISOString()
+      const todayStart = new Date()
+      todayStart.setHours(0, 0, 0, 0)
+
+      const [{ data: freePeople }, { data: sessions }] = await Promise.all([
+        supabase.from('users')
+          .select('id, full_name, username, avatar_url, bestie_score, city, free_today_at')
+          .gte('free_today_at', todayStart.toISOString())
+          .order('bestie_score', { ascending: false })
+          .limit(20),
+        supabase.from('group_sessions')
+          .select('id, title, activity_type, scheduled_at, location, max_participants, status, host:users!host_id(full_name, username, avatar_url), participants:group_session_participants(count)')
+          .in('status', ['open', 'full'])
+          .gte('scheduled_at', now)
+          .order('scheduled_at')
+          .limit(12),
+      ])
+
+      setFreeToday(freePeople || [])
+      setGroupSessions(sessions || [])
+      setLoading(false)
+    }
+    init()
+  }, [])
+
+  const toggleFree = async () => {
+    if (!myId) return
+    setToggling(true)
+    if (iAmFree) {
+      await supabase.from('users').update({ free_today_at: null }).eq('id', myId)
+      setIAmFree(false)
+      setFreeToday(prev => prev.filter(u => u.id !== myId))
+    } else {
+      await supabase.from('users').update({ free_today_at: new Date().toISOString() }).eq('id', myId)
+      setIAmFree(true)
+    }
+    setToggling(false)
+  }
+
+  const todayFree = freeToday.filter(u => u.id !== myId)
+  const cityFree = myCity ? todayFree.filter(u => u.city?.toLowerCase().includes(myCity.toLowerCase())) : []
+  const otherFree = myCity ? todayFree.filter(u => !u.city?.toLowerCase().includes(myCity.toLowerCase())) : todayFree
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
+        <ProfileNav />
+      </nav>
+
+      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '40px 24px' }}>
+
+        {/* Header */}
+        <div style={{ marginBottom: '32px' }}>
+          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '34px', color: '#E8E0FF', marginBottom: '6px' }}>
+            🌍 City Pulse
+          </h1>
+          <p style={{ fontSize: '14px', color: '#9B93C0' }}>
+            {myCity ? `What's happening in ${myCity} and around the world` : 'What\'s happening right now'}
+          </p>
+        </div>
+
+        {/* Free today toggle */}
+        {myId && (
+          <div style={{ marginBottom: '32px', padding: '20px 24px', borderRadius: '20px', background: iAmFree ? 'rgba(57,255,20,0.06)' : 'rgba(255,255,255,0.03)', border: iAmFree ? '1px solid rgba(57,255,20,0.25)' : '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+            <div>
+              <p style={{ fontSize: '15px', fontWeight: 700, color: iAmFree ? '#39FF14' : '#E8E0FF', marginBottom: '3px' }}>
+                {iAmFree ? '🟢 You\'re free today' : '⚪ Are you free today?'}
+              </p>
+              <p style={{ fontSize: '13px', color: '#9B93C0' }}>
+                {iAmFree ? 'Others can see you\'re available for a meetup' : 'Let others know you\'re up for a spontaneous meetup'}
+              </p>
+            </div>
+            <button onClick={toggleFree} disabled={toggling} style={{ padding: '10px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.1)' : 'rgba(57,255,20,0.12)', border: iAmFree ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(57,255,20,0.35)', color: iAmFree ? '#FF6B35' : '#39FF14', whiteSpace: 'nowrap' }}>
+              {toggling ? '…' : iAmFree ? 'Turn off' : '🟢 I\'m free today!'}
+            </button>
+          </div>
+        )}
+
+        {loading ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 0' }}>
+            <div style={{ width: '36px', height: '36px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+            <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+          </div>
+        ) : (
+          <>
+            {/* Free in your city */}
+            {(cityFree.length > 0 || iAmFree) && (
+              <section style={{ marginBottom: '36px' }}>
+                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '14px' }}>
+                  🟢 FREE TODAY {myCity ? `· ${myCity.toUpperCase()}` : ''}
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                  {cityFree.map(u => <FreePill key={u.id} user={u} />)}
+                  {cityFree.length === 0 && (
+                    <p style={{ fontSize: '13px', color: '#9B93C0' }}>No one in your city yet — be the first! 👆</p>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {/* Free elsewhere */}
+            {otherFree.length > 0 && (
+              <section style={{ marginBottom: '36px' }}>
+                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '14px' }}>
+                  🟢 FREE TODAY · WORLDWIDE
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                  {otherFree.slice(0, 12).map(u => <FreePill key={u.id} user={u} />)}
+                </div>
+              </section>
+            )}
+
+            {freeToday.length === 0 && (
+              <section style={{ marginBottom: '36px', padding: '32px', textAlign: 'center', borderRadius: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <p style={{ fontSize: '32px', marginBottom: '8px' }}>🌙</p>
+                <p style={{ fontSize: '14px', color: '#9B93C0' }}>No one is free today yet. Be the first!</p>
+              </section>
+            )}
+
+            {/* Upcoming Group Sessions */}
+            {groupSessions.length > 0 && (
+              <section style={{ marginBottom: '36px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                  <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0' }}>🎉 UPCOMING GROUP SESSIONS</p>
+                  <Link href="/group-sessions/new" style={{ fontSize: '12px', color: '#D4AF37', textDecoration: 'none' }}>+ Host one →</Link>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {groupSessions.map(gs => <GroupSessionCard key={gs.id} session={gs} />)}
+                </div>
+              </section>
+            )}
+
+            {/* Map CTA */}
+            <section>
+              <div style={{ padding: '24px', borderRadius: '20px', background: 'linear-gradient(135deg, rgba(212,175,55,0.06) 0%, rgba(155,143,255,0.04) 100%)', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+                <div>
+                  <p style={{ fontSize: '15px', fontWeight: 700, color: '#E8E0FF', marginBottom: '4px' }}>🗺️ See who's nearby</p>
+                  <p style={{ fontSize: '13px', color: '#9B93C0' }}>Live map of Besties with their location</p>
+                </div>
+                <Link href="/map" style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                  Open Map →
+                </Link>
+              </div>
+            </section>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function FreePill({ user }: { user: any }) {
+  const initials = user.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
+  const scoreColor = (user.bestie_score || 0) >= 800 ? '#39FF14' : (user.bestie_score || 0) >= 600 ? '#D4AF37' : '#9B93C0'
+  return (
+    <Link href={`/${user.username}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '14px', background: 'rgba(57,255,20,0.05)', border: '1px solid rgba(57,255,20,0.18)', textDecoration: 'none', transition: 'all 0.15s' }}>
+      <div style={{ position: 'relative' }}>
+        <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: '#1a1a35', border: `1.5px solid ${scoreColor}50`, flexShrink: 0 }}>
+          {user.avatar_url
+            ? <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: scoreColor }}>{initials}</div>
+          }
+        </div>
+        <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '10px', height: '10px', borderRadius: '50%', background: '#39FF14', border: '1.5px solid #080810' }} />
+      </div>
+      <div>
+        <p style={{ fontSize: '13px', fontWeight: 600, color: '#E8E0FF' }}>{user.full_name?.split(' ')[0]}</p>
+        {user.city && <p style={{ fontSize: '11px', color: '#9B93C0' }}>{user.city}</p>}
+      </div>
+    </Link>
+  )
+}
+
+function GroupSessionCard({ session }: { session: any }) {
+  const d = new Date(session.scheduled_at)
+  const participantCount = session.participants?.[0]?.count || 0
+  const isFull = session.status === 'full'
+  const host = session.host
+  return (
+    <Link href={`/group-sessions/${session.id}`} style={{ display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', textDecoration: 'none', transition: 'all 0.15s' }}>
+      <div style={{ flexShrink: 0, width: '48px', textAlign: 'center' }}>
+        <p style={{ fontSize: '11px', fontWeight: 700, color: '#D4AF37', letterSpacing: '1px' }}>{d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}</p>
+        <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', fontWeight: 700, color: '#E8E0FF', lineHeight: 1.1 }}>{d.getDate()}</p>
+        <p style={{ fontSize: '10px', color: '#9B93C0' }}>{d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: '15px', fontWeight: 600, color: '#E8E0FF', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{session.title}</p>
+        <p style={{ fontSize: '12px', color: '#9B93C0', marginBottom: '6px' }}>
+          {session.location && `📍 ${session.location} · `}
+          by {host?.full_name?.split(' ')[0]}
+        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 8px', borderRadius: '999px', background: isFull ? 'rgba(255,107,53,0.1)' : 'rgba(57,255,20,0.08)', border: isFull ? '1px solid rgba(255,107,53,0.25)' : '1px solid rgba(57,255,20,0.2)', color: isFull ? '#FF6B35' : '#39FF14' }}>
+            {isFull ? 'Full' : 'Open'}
+          </span>
+          <span style={{ fontSize: '11px', color: '#9B93C0' }}>{participantCount}/{session.max_participants} joined</span>
+        </div>
+      </div>
+    </Link>
+  )
+}
