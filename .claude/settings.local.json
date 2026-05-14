@@ -35,7 +35,16 @@
       "Bash(git commit -m 'Fix TypeScript: separate deleting state branch in DeleteEventButton *)",
       "Bash(git commit -m 'Add Telegram community link to crew — captain sets URL, members see join button *)",
       "Bash(gh pr *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(npx tsc *)",
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(curl -s -H \"Authorization: token $\\(git config --get github.token || echo ''\\)\" \"https://api.github.com/repos/GeneFoks/bestie/pulls?head=GeneFoks:claude/determined-jones-650d27&state=open\")",
+      "Bash(python3 -c \"import sys,json; prs=json.load\\(sys.stdin\\); print\\(prs[0]['html_url'] if prs else 'none'\\)\")",
+      "Bash(ls -la \"C:\\\\Users\\\\17549\\\\Downloads\\\\everything-claude-code-main\\\\everything-claude-code-main\\\\.claude\" | head -20)",
+      "Bash(ls -la \"C:\\\\Users\\\\17549\\\\Downloads\\\\everything-claude-code-main\\\\everything-claude-code-main\\\\.cursor\")",
+      "Bash(ls -la \"C:\\\\Users\\\\17549\\\\Downloads\\\\everything-claude-code-main\\\\everything-claude-code-main\\\\.codex\")",
+      "Bash(npm install *)",
+      "Bash(node -e \"const crypto=require\\('crypto'\\); const {privateKey,publicKey}=crypto.generateKeyPairSync\\('ec',{namedCurve:'P-256'}\\); console.log\\(publicKey.export\\({type:'spki',format:'der'}\\).toString\\('base64url'\\)\\); console.log\\(privateKey.export\\({type:'pkcs8',format:'der'}\\).toString\\('base64url'\\)\\);\")"
     ]
   }
 }

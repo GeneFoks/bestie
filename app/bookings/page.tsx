@@ -6,6 +6,9 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { googleCalendarUrl, downloadICS } from '@/lib/calendar'
+import { createNotification } from '@/lib/notifications'
+import NotificationBell from '@/components/NotificationBell'
+import { usePushNotifications } from '@/lib/usePushNotifications'
 
 const STATUS_STYLES = {
   pending:   { bg: 'rgba(212,175,55,0.1)',  border: 'rgba(212,175,55,0.3)',  color: '#D4AF37',  label: 'Pending' },
@@ -23,6 +26,7 @@ export default function BookingsPage() {
   const [loading, setLoading] = useState(true)
   const [calOpen, setCalOpen] = useState<string | null>(null)
   const userIdRef = useRef(null)
+  usePushNotifications()
 
   const loadBookings = async (uid) => {
     const { data: bookingRows, error } = await supabase
@@ -99,10 +103,25 @@ export default function BookingsPage() {
     await supabase.from('bookings').update(update).eq('id', id)
     setBookings(b => b.map(b2 => b2.id === id ? { ...b2, ...update } : b2))
     const activityTitle = booking.package?.title || 'Session'
-    if (status === 'accepted' && booking?.seeker?.email) await sendEmail('booking_accepted', booking.seeker.email, { providerName: booking.provider?.full_name || 'Your Bestie', activityTitle })
-    if (status === 'declined' && booking?.seeker?.email) await sendEmail('booking_declined', booking.seeker.email, { providerName: booking.provider?.full_name || 'Your Bestie', activityTitle })
-    if (status === 'cancelled' && booking?.provider?.email) await sendEmail('booking_cancelled', booking.provider.email, { seekerName: booking.seeker?.full_name || 'Someone', activityTitle })
-    if (status === 'completed' && booking?.seeker?.email) await sendEmail('booking_completed', booking.seeker.email, { providerName: booking.provider?.full_name || 'Your Bestie', activityTitle, reviewUrl: `https://bestiehere.com/review/${id}` })
+    const providerName = booking.provider?.full_name || 'Your Bestie'
+    const seekerName = booking.seeker?.full_name || 'Someone'
+
+    if (status === 'accepted') {
+      await sendEmail('booking_accepted', booking.seeker?.email, { providerName, activityTitle })
+      await createNotification({ userId: booking.seeker_id, type: 'booking_accepted', title: `${providerName} accepted your request`, body: activityTitle, link: '/bookings' })
+    }
+    if (status === 'declined') {
+      await sendEmail('booking_declined', booking.seeker?.email, { providerName, activityTitle })
+      await createNotification({ userId: booking.seeker_id, type: 'booking_declined', title: `${providerName} declined your request`, body: activityTitle, link: '/bookings' })
+    }
+    if (status === 'cancelled') {
+      await sendEmail('booking_cancelled', booking.provider?.email, { seekerName, activityTitle })
+      await createNotification({ userId: booking.provider_id, type: 'booking_declined', title: `${seekerName} cancelled their request`, body: activityTitle, link: '/bookings' })
+    }
+    if (status === 'completed') {
+      await sendEmail('booking_completed', booking.seeker?.email, { providerName, activityTitle, reviewUrl: `https://bestiehere.com/review/${id}` })
+      await createNotification({ userId: booking.seeker_id, type: 'booking_completed', title: `Session with ${providerName} completed!`, body: 'Rate your experience', link: `/review/${id}` })
+    }
   }
 
   const incoming = bookings.filter(b => b.provider_id === userId)
@@ -128,7 +147,10 @@ export default function BookingsPage() {
     <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <Link href="/dashboard" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>← Dashboard</Link>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {userId && <NotificationBell userId={userId} />}
+          <Link href="/dashboard" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>← Dashboard</Link>
+        </div>
       </nav>
 
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: '40px 24px' }}>
