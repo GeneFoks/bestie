@@ -13,19 +13,19 @@ const ACTIVITY_GROUPS = [
     id: 'active_outdoors',
     emoji: '🏃',
     label: 'Active & Outdoors',
-    types: ['hiking', 'running', 'gym_partner', 'cycling', 'swimming', 'cold_plunge', 'yoga', 'martial_arts', 'climbing'],
+    types: ['hiking', 'running', 'gym_partner', 'cycling', 'swimming', 'cold_plunge', 'yoga', 'martial_arts', 'climbing', 'trail_crew', 'fishing_crew', 'meet_irl'],
   },
   {
     id: 'fun_social',
     emoji: '🎮',
     label: 'Fun & Social',
-    types: ['game_night', 'movie_night', 'night_out', 'bar_hopping', 'karaoke', 'festival_crew', 'travel_buddy', 'wing_person', 'comedy_show'],
+    types: ['game_night', 'movie_night', 'night_out', 'bar_hopping', 'karaoke', 'festival_crew', 'travel_buddy', 'wing_person', 'comedy_show', 'dance_crew', 'epic_journey', 'watch_together', 'meet_irl'],
   },
   {
     id: 'mind_growth',
     emoji: '🧠',
     label: 'Mind & Growth',
-    types: ['deep_chat', 'debate_club', 'book_club', 'language_exchange', 'career_talk', 'money_talk', 'journaling', 'accountability_partner', 'storytelling_night'],
+    types: ['deep_chat', 'debate_club', 'book_club', 'language_exchange', 'career_talk', 'money_talk', 'journaling', 'accountability_partner', 'storytelling_night', 'real_talk', 'vibe_call'],
   },
   {
     id: 'creative_skills',
@@ -37,19 +37,19 @@ const ACTIVITY_GROUPS = [
     id: 'emotional_support',
     emoji: '🫂',
     label: 'Emotional & Support',
-    types: ['vent_session', '3am_talk', 'hype_person', 'sobriety_buddy', 'silence_buddy', 'grief_support', 'ugly_cry_buddy'],
+    types: ['vent_session', '3am_talk', 'hype_person', 'sobriety_buddy', 'silence_buddy', 'grief_support', 'ugly_cry_buddy', 'deep_chat', 'real_talk'],
   },
   {
     id: 'spiritual_sacred',
     emoji: '🔮',
     label: 'Spiritual & Sacred',
-    types: ['meditation_circle', 'breathwork', 'sound_healing', 'cacao_ceremony', 'tarot', 'retreat_buddy', 'psychedelic_integration', 'nature_ritual', 'lucid_dream_club'],
+    types: ['meditation_circle', 'breathwork', 'sound_healing', 'cacao_ceremony', 'tarot', 'retreat_buddy', 'psychedelic_integration', 'nature_ritual', 'lucid_dream_club', 'yoga'],
   },
   {
     id: 'chill_everyday',
     emoji: '☕',
     label: 'Chill & Everyday',
-    types: ['coffee_chat', 'digital_detox_walk', 'skincare_night', 'smoke_buddy', 'astrology_session', 'coworking', 'errand_buddy'],
+    types: ['coffee_chat', 'digital_detox_walk', 'skincare_night', 'smoke_buddy', 'astrology_session', 'coworking', 'errand_buddy', 'meet_irl', 'walk_meet', 'vibe_call'],
   },
 ]
 
@@ -118,7 +118,14 @@ export default function HomePage() {
         .limit(6)
       setGroupProviders(data || [])
     } else {
-      setGroupProviders([])
+      // Fallback: show top providers by score when no typed packages found
+      const { data } = await supabase
+        .from('users')
+        .select('*, activity_packages(*)')
+        .not('activity_packages', 'is', null)
+        .order('bestie_score', { ascending: false })
+        .limit(6)
+      setGroupProviders((data || []).filter(p => p.activity_packages?.length > 0))
     }
     setGroupLoading(false)
   }
