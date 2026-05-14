@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS public.user_blocks (
 
 ALTER TABLE public.user_blocks ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "users manage own blocks" ON public.user_blocks;
 CREATE POLICY "users manage own blocks" ON public.user_blocks
   FOR ALL USING (auth.uid() = blocker_id);
 
@@ -24,9 +25,11 @@ CREATE TABLE IF NOT EXISTS public.user_reports (
 
 ALTER TABLE public.user_reports ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "users insert own reports" ON public.user_reports;
 CREATE POLICY "users insert own reports" ON public.user_reports
   FOR INSERT WITH CHECK (auth.uid() = reporter_id);
 
+DROP POLICY IF EXISTS "users view own reports" ON public.user_reports;
 CREATE POLICY "users view own reports" ON public.user_reports
   FOR SELECT USING (auth.uid() = reporter_id);
 

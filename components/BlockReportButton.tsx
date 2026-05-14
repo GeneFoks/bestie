@@ -14,6 +14,7 @@ const REPORT_REASONS = [
 
 export default function BlockReportButton({ profileUserId }: { profileUserId: string }) {
   const [myId, setMyId] = useState<string | null>(null)
+  const [hasSession, setHasSession] = useState(false)
   const [isBlocked, setIsBlocked] = useState(false)
   const [hasReported, setHasReported] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -28,17 +29,25 @@ export default function BlockReportButton({ profileUserId }: { profileUserId: st
       if (!user || user.id === profileUserId) return
       setMyId(user.id)
 
-      const [{ data: block }, { data: report }] = await Promise.all([
+      const [{ data: block }, { data: report }, { data: session }] = await Promise.all([
         supabase.from('user_blocks').select('id').eq('blocker_id', user.id).eq('blocked_id', profileUserId).maybeSingle(),
         supabase.from('user_reports').select('id').eq('reporter_id', user.id).eq('reported_id', profileUserId).maybeSingle(),
+        supabase.from('bookings')
+          .select('id')
+          .or(`and(seeker_id.eq.${user.id},provider_id.eq.${profileUserId}),and(seeker_id.eq.${profileUserId},provider_id.eq.${user.id})`)
+          .eq('confirmed_by_seeker', true)
+          .eq('confirmed_by_provider', true)
+          .limit(1)
+          .maybeSingle(),
       ])
       if (block) setIsBlocked(true)
       if (report) setHasReported(true)
+      if (session) setHasSession(true)
     }
     init()
   }, [profileUserId])
 
-  if (!myId) return null
+  if (!myId || !hasSession) return null
 
   const handleBlock = async () => {
     setLoading(true)
