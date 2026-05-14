@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   const authClient = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (n) => cookieStore.get(n)?.value } }
+    { cookies: { get: (n: string) => cookieStore.get(n)?.value } }
   )
   const { data: { user } } = await authClient.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -34,7 +34,7 @@ export async function DELETE(req: NextRequest) {
   const authClient = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (n) => cookieStore.get(n)?.value } }
+    { cookies: { get: (n: string) => cookieStore.get(n)?.value } }
   )
   const { data: { user } } = await authClient.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
