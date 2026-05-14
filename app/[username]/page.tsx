@@ -158,6 +158,7 @@ export default async function ProfilePage({ params }) {
 
   const ageMs = profile.created_at ? Date.now() - new Date(profile.created_at).getTime() : Infinity
   const ageDays = ageMs / (1000 * 60 * 60 * 24)
+  const streakWeeks = profile.streak_weeks || 0
 
   const BADGES = [
     rankPct <= 0.01 && { id: 'top1', emoji: '🏆', label: 'Top 1%', desc: 'Bestie Score in the top 1%', color: '#39FF14' },
@@ -171,6 +172,10 @@ export default async function ProfilePage({ params }) {
     totalSparks >= 10 && totalSparks < 50 && { id: 'spark_magnet', emoji: '✨', label: 'Spark Magnet', desc: '10+ sparks received', color: '#9B93C0' },
     ratingValues.length >= 3 && avgRating >= 4.8 && { id: 'five_star', emoji: '⭐', label: '5-Star', desc: 'Near-perfect average rating', color: '#D4AF37' },
     ageDays < 30 && score > 200 && { id: 'rising_star', emoji: '🌱', label: 'Rising Star', desc: 'New member with high score', color: '#39FF14' },
+    streakWeeks >= 12 && { id: 'streak_12', emoji: '🌊', label: `${streakWeeks}w Streak`, desc: '12+ week streak', color: '#39FF14' },
+    streakWeeks >= 8 && streakWeeks < 12 && { id: 'streak_8', emoji: '⚡', label: `${streakWeeks}w Streak`, desc: '8+ week streak', color: '#D4AF37' },
+    streakWeeks >= 4 && streakWeeks < 8 && { id: 'streak_4', emoji: '💥', label: `${streakWeeks}w Streak`, desc: '4+ week streak', color: '#FF6B35' },
+    streakWeeks >= 2 && streakWeeks < 4 && { id: 'streak_2', emoji: '🔥', label: `${streakWeeks}w Streak`, desc: '2+ week streak', color: '#9B93C0' },
   ].filter(Boolean)
 
   return (
@@ -250,8 +255,8 @@ export default async function ProfilePage({ params }) {
               </div>
             </div>
 
-            {/* Sessions / Sparks / Rating — три колонки */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+            {/* Sessions / Sparks / Rating / Streak */}
+            <div style={{ display: 'grid', gridTemplateColumns: streakWeeks > 0 ? '1fr 1fr 1fr 1fr' : '1fr 1fr 1fr', gap: '10px' }}>
               <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>SESSIONS</p>
                 <div style={{ fontSize: '28px', fontWeight: 700, color: '#E8E0FF', fontFamily: 'DM Serif Display, serif' }}>{totalSessions}</div>
@@ -268,6 +273,12 @@ export default async function ProfilePage({ params }) {
                   : <p style={{ fontSize: '11px', color: '#9B93C0', marginTop: '4px' }}>No reviews</p>
                 }
               </div>
+              {streakWeeks > 0 && (
+                <div style={{ background: 'rgba(255,107,53,0.08)', borderRadius: '16px', padding: '14px', border: '1px solid rgba(255,107,53,0.2)' }}>
+                  <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>STREAK</p>
+                  <div style={{ fontSize: '24px', fontWeight: 700, color: '#FF6B35', fontFamily: 'DM Serif Display, serif' }}>🔥 {streakWeeks}w</div>
+                </div>
+              )}
             </div>
           </div>
 
