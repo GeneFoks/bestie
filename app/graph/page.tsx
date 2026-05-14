@@ -9,6 +9,7 @@ import ProfileNav from '@/components/ProfileNav'
 export default function GraphPage() {
   const svgRef = useRef<SVGSVGElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const graphDataRef = useRef<{ nodes: any[]; links: any[] } | null>(null)
   const [loading, setLoading] = useState(true)
   const [nodeCount, setNodeCount] = useState(0)
   const [edgeCount, setEdgeCount] = useState(0)
@@ -79,12 +80,19 @@ export default function GraphPage() {
 
       setNodeCount(nodes.length)
       setEdgeCount(links.length)
+      // Store data in ref so the post-render effect can access it
+      graphDataRef.current = { nodes, links }
       setLoading(false)
-
-      loadD3(nodes, links)
     }
     init()
   }, [])
+
+  // Render D3 only after React has painted the SVG element (loading → false)
+  useEffect(() => {
+    if (loading || !graphDataRef.current) return
+    const { nodes, links } = graphDataRef.current
+    loadD3(nodes, links)
+  }, [loading])
 
   const loadD3 = (nodes: any[], links: any[]) => {
     if ((window as any).d3) { renderGraph((window as any).d3, nodes, links); return }
@@ -167,19 +175,26 @@ export default function GraphPage() {
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force('collision', d3.forceCollide().radius((d: any) => nodeRadius(d) + 10))
 
-    // Edges
+    // Edges — use separate stroke + stroke-opacity for max browser compat
     const link = g.append('g').attr('class', 'links')
       .selectAll('line')
       .data(links)
       .join('line')
       .attr('stroke', (d: any) => {
         const w = d.weight
-        if (w >= 5) return 'rgba(212,175,55,0.75)'
-        if (w >= 3) return 'rgba(155,143,255,0.65)'
-        return 'rgba(155,147,192,0.5)'
+        if (w >= 5) return '#D4AF37'
+        if (w >= 3) return '#9B8FFF'
+        return '#9B93C0'
+      })
+      .attr('stroke-opacity', (d: any) => {
+        const w = d.weight
+        if (w >= 5) return 0.8
+        if (w >= 3) return 0.65
+        return 0.55
       })
       .attr('stroke-width', (d: any) => Math.max(1.5, Math.min(1.5 + d.weight, 6)))
       .attr('stroke-linecap', 'round')
+      .attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 0)
 
     // Node groups
     const node = g.append('g').attr('class', 'nodes')

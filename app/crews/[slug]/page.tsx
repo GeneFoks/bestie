@@ -11,6 +11,7 @@ import CrewRating from './CrewRating'
 import CrewDeleteButton from './CrewDeleteButton'
 import CrewTelegramLink from './CrewTelegramLink'
 import CrewKickButton from './CrewKickButton'
+import JoinRequestsPanel from './JoinRequestsPanel'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -45,7 +46,7 @@ export default async function CrewPage({ params }) {
     )
   }
 
-  const [{ data: members }, { data: upcomingEvents }, { data: joinRequests }, { data: ratings }] = await Promise.all([
+  const [{ data: members }, { data: upcomingEvents }, { data: ratings }] = await Promise.all([
     supabase
       .from('crew_members')
       .select('joined_at, user:users(id, username, full_name, avatar_url, bestie_score, city)')
@@ -58,12 +59,6 @@ export default async function CrewPage({ params }) {
       .gte('datetime', new Date().toISOString())
       .order('datetime', { ascending: true })
       .limit(5),
-    supabase
-      .from('crew_join_requests')
-      .select('id, status, created_at, user:users(id, username, full_name, avatar_url, bestie_score)')
-      .eq('crew_id', crew.id)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: true }),
     supabase.from('crew_ratings').select('rating').eq('crew_id', crew.id),
   ])
 
@@ -189,30 +184,9 @@ export default async function CrewPage({ params }) {
           </div>
         )}
 
-        {/* Join Requests — captain only, only if private crew */}
-        {!crew.is_public && joinRequests && joinRequests.length > 0 && (
-          <>
-            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#E8E0FF', marginBottom: '16px' }}>
-              Join Requests <span style={{ fontSize: '16px', color: '#D4AF37' }}>· {joinRequests.length}</span>
-            </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
-              {joinRequests.map((req: any) => (
-                <div key={req.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '14px' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '12px', overflow: 'hidden', background: '#1a1a35', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {req.user?.avatar_url
-                      ? <img src={req.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      : <span style={{ fontSize: '16px', fontWeight: 700, color: '#D4AF37' }}>{req.user?.full_name?.[0]}</span>
-                    }
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <Link href={`/${req.user?.username}`} style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF', textDecoration: 'none' }}>{req.user?.full_name}</Link>
-                    <div style={{ fontSize: '12px', color: '#9B93C0' }}>@{req.user?.username} · BS {req.user?.bestie_score}</div>
-                  </div>
-                  <JoinRequestActions requestId={req.id} userId={req.user?.id} crewId={crew.id} captainId={crew.captain_id} />
-                </div>
-              ))}
-            </div>
-          </>
+        {/* Join Requests — client component fetches with captain's session */}
+        {!crew.is_public && (
+          <JoinRequestsPanel crewId={crew.id} captainId={crew.captain_id} />
         )}
 
         {/* Members */}

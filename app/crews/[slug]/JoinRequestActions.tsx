@@ -9,9 +9,10 @@ type Props = {
   userId: string
   crewId: string
   captainId: string
+  onDone?: () => void
 }
 
-export default function JoinRequestActions({ requestId, userId, crewId, captainId }: Props) {
+export default function JoinRequestActions({ requestId, userId, crewId, captainId, onDone }: Props) {
   const router = useRouter()
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [acting, setActing] = useState(false)
@@ -31,6 +32,7 @@ export default function JoinRequestActions({ requestId, userId, crewId, captainI
     await supabase.from('crew_members').insert({ crew_id: crewId, user_id: userId })
     await supabase.from('users').update({ crew_id: crewId }).eq('id', userId)
     setDone(true)
+    onDone?.()
     router.refresh()
   }
 
@@ -38,6 +40,7 @@ export default function JoinRequestActions({ requestId, userId, crewId, captainI
     setActing(true)
     await supabase.from('crew_join_requests').update({ status: 'declined' }).eq('id', requestId)
     setDone(true)
+    onDone?.()
     router.refresh()
   }
 
