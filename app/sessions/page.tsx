@@ -323,6 +323,9 @@ export default function SessionsPage() {
                   const other = isSeeker ? s.provider : s.seeker
                   const date = formatDate(s.scheduled_at)
                   const myRating = isSeeker ? s.rating_seeker : s.rating_provider
+                  const bothConfirmed = s.confirmed_by_seeker && s.confirmed_by_provider
+                  const myConfirm = isSeeker ? s.confirmed_by_seeker : s.confirmed_by_provider
+                  const theirConfirm = isSeeker ? s.confirmed_by_provider : s.confirmed_by_seeker
                   return (
                     <div key={s.id} style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '20px', padding: '20px', marginBottom: '12px' }}>
                       <div style={{ display: 'flex', gap: '14px', alignItems: 'center', marginBottom: '12px' }}>
@@ -336,12 +339,20 @@ export default function SessionsPage() {
                       </div>
                       {myRating ? (
                         <p style={{ fontSize: '13px', color: '#9B93C0' }}>{'⭐'.repeat(myRating)} — reviewed</p>
-                      ) : (
+                      ) : bothConfirmed ? (
                         <Link href={`/review/${s.id}`} style={{ display: 'block', padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', textDecoration: 'none', textAlign: 'center' }}>
                           ⭐ Rate this session →
                         </Link>
+                      ) : !myConfirm ? (
+                        <button onClick={() => confirmSession(s)} style={{ width: '100%', padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', color: '#39FF14', cursor: 'pointer' }}>
+                          ✓ Confirm session happened
+                        </button>
+                      ) : (
+                        <p style={{ fontSize: '13px', color: '#9B93C0', textAlign: 'center', padding: '10px' }}>
+                          ⏳ Waiting for {other?.full_name?.split(' ')[0]} to confirm
+                        </p>
                       )}
-                      <SessionActions session={s} isCompleted={!!(s.confirmed_by_seeker && s.confirmed_by_provider)} />
+                      <SessionActions session={s} isCompleted={bothConfirmed} />
                     </div>
                   )
                 })}
