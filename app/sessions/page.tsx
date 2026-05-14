@@ -32,6 +32,8 @@ export default function SessionsPage() {
   const [userId, setUserId] = useState(null)
   const [sessions, setSessions] = useState([])
   const [loading, setLoading] = useState(true)
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     const init = async () => {
@@ -49,8 +51,24 @@ export default function SessionsPage() {
     init()
   }, [])
 
+  const archiveSession = async (booking) => {
+    const isSeeker = booking.seeker_id === userId
+    const field = isSeeker ? 'archived_by_seeker' : 'archived_by_provider'
+    await supabase.from('bookings').update({ [field]: true }).eq('id', booking.id)
+    setSessions(prev => prev.filter(s => s.id !== booking.id))
+  }
+
+  const deleteSession = async (booking) => {
+    setDeleting(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    await supabase.rpc('delete_session', { p_booking_id: booking.id, p_user_id: user.id })
+    setSessions(prev => prev.filter(s => s.id !== booking.id))
+    setConfirmDelete(null)
+    setDeleting(false)
+  }
+
   const loadSessions = async (uid) => {
-    // Step 1: load bookings (accepted + completed)
+    // Step 1: load bookings (accepted + completed), excluding archived by this user
     const { data: rows, error } = await supabase
       .from('bookings')
       .select('*, package:activity_packages(*)')
@@ -74,12 +92,14 @@ export default function SessionsPage() {
     const userMap = {}
     users?.forEach(u => { userMap[u.id] = u })
 
-    // Step 3: merge
-    const merged = rows.map(b => ({
-      ...b,
-      seeker: userMap[b.seeker_id] || null,
-      provider: userMap[b.provider_id] || null,
-    }))
+    // Step 3: merge + filter archived
+    const merged = rows
+      .filter(b => !(b.seeker_id === uid ? b.archived_by_seeker : b.archived_by_provider))
+      .map(b => ({
+        ...b,
+        seeker: userMap[b.seeker_id] || null,
+        provider: userMap[b.provider_id] || null,
+      }))
 
     setSessions(merged)
   }
@@ -119,8 +139,52 @@ export default function SessionsPage() {
   const bothConfirmed = sessions.filter(s => s.confirmed_by_seeker && s.confirmed_by_provider)
   const past = sessions.filter(s => s.scheduled_at && new Date(s.scheduled_at) < new Date())
 
+  const SessionActions = ({ session, isCompleted }: { session: any, isCompleted: boolean }) => (
+    <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
+      <button
+        onClick={() => archiveSession(session)}
+        style={{ flex: 1, padding: '8px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#9B93C0', cursor: 'pointer' }}
+      >
+        📦 Archive
+      </button>
+      <button
+        onClick={() => setConfirmDelete(session.id)}
+        style={{ flex: 1, padding: '8px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, background: 'rgba(255,80,80,0.06)', border: '1px solid rgba(255,80,80,0.15)', color: '#FF6B6B', cursor: 'pointer' }}
+      >
+        🗑️ Delete{isCompleted ? ' (−score)' : ''}
+      </button>
+    </div>
+  )
+
   return (
     <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+
+      {/* Delete confirmation modal */}
+      {confirmDelete && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,80,80,0.3)', borderRadius: '20px', padding: '28px', maxWidth: '380px', width: '100%' }}>
+            <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#E8E0FF', marginBottom: '12px' }}>Delete session?</h3>
+            {sessions.find(s => s.id === confirmDelete && s.confirmed_by_seeker && s.confirmed_by_provider) && (
+              <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.2)', marginBottom: '16px' }}>
+                <p style={{ fontSize: '13px', color: '#FF6B6B', fontWeight: 600 }}>⚠️ This was a completed session</p>
+                <p style={{ fontSize: '13px', color: '#9B93C0', marginTop: '4px' }}>Deleting it will remove the Bestie Score earned from this session for both participants.</p>
+              </div>
+            )}
+            <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '20px' }}>This action cannot be undone. The session will be permanently removed.</p>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={() => setConfirmDelete(null)} style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', cursor: 'pointer' }}>Cancel</button>
+              <button
+                onClick={() => deleteSession(sessions.find(s => s.id === confirmDelete))}
+                disabled={deleting}
+                style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'rgba(255,80,80,0.15)', border: '1px solid rgba(255,80,80,0.3)', color: '#FF6B6B', cursor: 'pointer' }}
+              >
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <Link href="/dashboard" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>← Dashboard</Link>
@@ -193,6 +257,7 @@ export default function SessionsPage() {
                           ⭐ Rate + Give Spark →
                         </Link>
                       )}
+                      <SessionActions session={s} isCompleted={true} />
                     </div>
                   )
                 })}
@@ -276,6 +341,7 @@ export default function SessionsPage() {
                           ⭐ Rate this session →
                         </Link>
                       )}
+                      <SessionActions session={s} isCompleted={!!(s.confirmed_by_seeker && s.confirmed_by_provider)} />
                     </div>
                   )
                 })}
