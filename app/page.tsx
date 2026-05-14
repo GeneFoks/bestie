@@ -177,7 +177,10 @@ export default function HomePage() {
 
       <div className={`mobile-menu ${menuOpen ? 'open' : ''}`}>
         <Link href="/browse" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>🔍 Browse</Link>
-        <Link href="/crews" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>Crews</Link>
+        <Link href="/crews" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>👥 Crews</Link>
+        <Link href="/map" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>🗺️ Map</Link>
+        <Link href="/pulse" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>🌍 Pulse</Link>
+        <Link href="/graph" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>🕸️ Graph</Link>
         <Link href="#how-it-works" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>💡 How It Works</Link>
         <Link href="#score" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>⭐ Bestie Score</Link>
         {!loggedIn && <Link href="/login" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>👤 Log in</Link>}
