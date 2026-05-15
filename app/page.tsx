@@ -1,7 +1,7 @@
 // @ts-nocheck
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -68,6 +68,22 @@ const FEATURES = [
   { emoji: '🔒', title: 'Block & Report', desc: 'Session-gated safety tools — only people who\'ve actually met can block or report. Keeps the community honest.' },
 ]
 
+// Scroll reveal hook
+function useReveal() {
+  const ref = useRef(null)
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    if (!ref.current) return
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect() } },
+      { threshold: 0.12 }
+    )
+    obs.observe(ref.current)
+    return () => obs.disconnect()
+  }, [])
+  return [ref, visible]
+}
+
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showMatchModal, setShowMatchModal] = useState(false)
@@ -77,6 +93,14 @@ export default function HomePage() {
   const [groupProviders, setGroupProviders] = useState([])
   const [groupLoading, setGroupLoading] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+
+  const [groupsRef, groupsVisible] = useReveal()
+  const [leaderRef, leaderVisible] = useReveal()
+  const [howRef, howVisible] = useReveal()
+  const [featRef, featVisible] = useReveal()
+  const [crewsRef, crewsVisible] = useReveal()
+  const [scoreRef, scoreVisible] = useReveal()
+  const [sparksRef, sparksVisible] = useReveal()
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setLoggedIn(!!session))
@@ -133,15 +157,134 @@ export default function HomePage() {
   return (
     <div style={{ background: '#080810', minHeight: '100vh', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <style>{`
-        .nav-links { display: flex; gap: 32px; font-size: 14px; }
+        /* ── Reset ── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ── Nav ── */
+        .nav-links { display: flex; gap: 28px; font-size: 14px; }
+        .nav-link { color: #9B93C0; text-decoration: none; transition: color 0.2s; }
+        .nav-link:hover { color: #E8E0FF; }
         .mobile-menu-btn { display: none; }
         .mobile-menu { display: none; }
-        .hero-title { font-size: clamp(36px, 8vw, 72px); }
+
+        /* ── Layout grids ── */
         .providers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
         .how-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; }
         .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 64px; align-items: center; }
         .groups-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+
+        /* ── Skeleton pulse ── */
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
+
+        /* ── Scroll reveal ── */
+        .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.65s cubic-bezier(.22,1,.36,1), transform 0.65s cubic-bezier(.22,1,.36,1); }
+        .reveal.visible { opacity: 1; transform: none; }
+        .reveal-delay-1 { transition-delay: 0.08s; }
+        .reveal-delay-2 { transition-delay: 0.16s; }
+        .reveal-delay-3 { transition-delay: 0.24s; }
+        .reveal-delay-4 { transition-delay: 0.32s; }
+
+        /* ── Hero glow pulse ── */
+        @keyframes glow-breathe { 0%,100%{opacity:0.07} 50%{opacity:0.13} }
+        @keyframes glow-breathe-2 { 0%,100%{opacity:0.04} 50%{opacity:0.08} }
+        @keyframes badge-pop { 0%{opacity:0; transform:translateY(-6px) scale(.95)} 100%{opacity:1; transform:none} }
+        @keyframes hero-in { 0%{opacity:0;transform:translateY(20px)} 100%{opacity:1;transform:none} }
+        .hero-badge { animation: badge-pop 0.6s cubic-bezier(.22,1,.36,1) 0.1s both; }
+        .hero-h1 { animation: hero-in 0.7s cubic-bezier(.22,1,.36,1) 0.25s both; }
+        .hero-sub { animation: hero-in 0.7s cubic-bezier(.22,1,.36,1) 0.38s both; }
+        .hero-search { animation: hero-in 0.7s cubic-bezier(.22,1,.36,1) 0.5s both; }
+        .hero-match { animation: hero-in 0.7s cubic-bezier(.22,1,.36,1) 0.6s both; }
+
+        /* ── Floating orb ── */
+        @keyframes float-orb { 0%,100%{transform:translateY(0) translateX(-50%)} 50%{transform:translateY(-18px) translateX(-50%)} }
+
+        /* ── Card interactions ── */
+        .glass-card {
+          background: rgba(15,15,30,0.7);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 20px;
+          transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+        }
+        .glass-card:hover {
+          border-color: rgba(212,175,55,0.2);
+          box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(212,175,55,0.06);
+          transform: translateY(-2px);
+        }
+        .how-card {
+          position: relative;
+          transition: transform 0.25s;
+        }
+        .how-card:hover { transform: translateY(-4px); }
+
+        /* ── Group button ── */
+        .group-btn {
+          display: flex; flex-direction: column; align-items: center; gap: 8px;
+          padding: 18px 8px; border-radius: 18px; cursor: pointer;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.07);
+          transition: all 0.22s cubic-bezier(.22,1,.36,1);
+          position: relative; overflow: hidden;
+        }
+        .group-btn::after {
+          content: ''; position: absolute; inset: 0; border-radius: 18px;
+          opacity: 0; transition: opacity 0.22s;
+          background: radial-gradient(circle at center, rgba(212,175,55,0.12) 0%, transparent 70%);
+        }
+        .group-btn:hover { border-color: rgba(212,175,55,0.25); transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .group-btn:hover::after { opacity: 1; }
+        .group-btn.active { background: rgba(212,175,55,0.1); border-color: rgba(212,175,55,0.4); box-shadow: 0 0 24px rgba(212,175,55,0.08); }
+        .group-btn.active::after { opacity: 1; }
+        .group-btn .emoji { font-size: 28px; transition: transform 0.22s; }
+        .group-btn:hover .emoji { transform: scale(1.15); }
+
+        /* ── CTA Button ── */
+        .btn-gold {
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 13px 28px; border-radius: 14px; font-size: 14px; font-weight: 700;
+          background: linear-gradient(135deg, #D4AF37 0%, #B8960C 100%);
+          color: #080810; text-decoration: none;
+          transition: filter 0.2s, transform 0.2s, box-shadow 0.2s;
+          box-shadow: 0 4px 20px rgba(212,175,55,0.25);
+        }
+        .btn-gold:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 8px 28px rgba(212,175,55,0.35); }
+        .btn-ghost {
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 13px 28px; border-radius: 14px; font-size: 14px; font-weight: 600;
+          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+          color: #E8E0FF; text-decoration: none;
+          transition: background 0.2s, border-color 0.2s, transform 0.2s;
+        }
+        .btn-ghost:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.2); transform: translateY(-1px); }
+        .btn-sm-gold {
+          display: inline-flex; align-items: center;
+          padding: 9px 20px; border-radius: 12px; font-size: 13px; font-weight: 700;
+          background: linear-gradient(135deg, #D4AF37 0%, #B8960C 100%);
+          color: #080810; text-decoration: none;
+          transition: filter 0.2s, transform 0.2s;
+        }
+        .btn-sm-gold:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+        /* ── Score card glow ── */
+        @keyframes score-glow { 0%,100%{box-shadow:0 0 40px rgba(57,255,20,0.08)} 50%{box-shadow:0 0 80px rgba(57,255,20,0.16)} }
+        .score-card { animation: score-glow 3s ease-in-out infinite; }
+
+        /* ── Spark badge ── */
+        .spark-badge {
+          padding: 7px 14px; border-radius: 999px;
+          background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.18);
+          font-size: 12px; color: #E8E0FF; display: inline-flex; gap: 5px; align-items: center;
+          transition: background 0.2s, border-color 0.2s, transform 0.2s;
+        }
+        .spark-badge:hover { background: rgba(212,175,55,0.16); border-color: rgba(212,175,55,0.35); transform: scale(1.04); }
+
+        /* ── Section label ── */
+        .section-label { font-size: 11px; font-weight: 700; letter-spacing: 2.5px; color: #D4AF37; text-transform: uppercase; margin-bottom: 10px; }
+
+        /* ── Responsive ── */
         @media (max-width: 900px) { .groups-grid { grid-template-columns: repeat(4, 1fr); } }
         @media (max-width: 768px) {
           .nav-links { display: none; }
@@ -160,31 +303,32 @@ export default function HomePage() {
         }
       `}</style>
 
-      {/* NAV */}
-      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
+      {/* ── NAV ── */}
+      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px', background: 'rgba(8,8,16,0.85)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none', letterSpacing: '-0.3px' }}>BESTIE</Link>
         <div className="nav-links">
-          <Link href="/browse" style={{ color: '#9B93C0', textDecoration: 'none' }}>Browse</Link>
-          <Link href="/crews" style={{ color: '#9B93C0', textDecoration: 'none' }}>Crews</Link>
-          <Link href="/map" style={{ color: '#9B93C0', textDecoration: 'none' }}>Map</Link>
-          <Link href="/pulse" style={{ color: '#9B93C0', textDecoration: 'none' }}>Pulse</Link>
-          <Link href="/graph" style={{ color: '#9B93C0', textDecoration: 'none' }}>Graph</Link>
-          <Link href="#how-it-works" style={{ color: '#9B93C0', textDecoration: 'none' }}>How It Works</Link>
-          <Link href="#score" style={{ color: '#9B93C0', textDecoration: 'none' }}>Bestie Score</Link>
+          <Link href="/browse" className="nav-link">Browse</Link>
+          <Link href="/crews" className="nav-link">Crews</Link>
+          <Link href="/map" className="nav-link">Map</Link>
+          <Link href="/pulse" className="nav-link">Pulse</Link>
+          <Link href="/graph" className="nav-link">Graph</Link>
+          <Link href="#how-it-works" className="nav-link">How It Works</Link>
+          <Link href="#score" className="nav-link">Bestie Score</Link>
         </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           {loggedIn ? (
-            <Link href="/dashboard" style={{ fontSize: '14px', fontWeight: 600, padding: '8px 16px', borderRadius: '12px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>Dashboard →</Link>
+            <Link href="/dashboard" className="btn-gold" style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '10px' }}>Dashboard →</Link>
           ) : (
             <>
-              <Link href="/login" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none' }}>Log in</Link>
-              <Link href="/signup" style={{ fontSize: '14px', fontWeight: 600, padding: '8px 16px', borderRadius: '12px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>Join Free</Link>
+              <Link href="/login" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color='#E8E0FF'} onMouseLeave={e => e.target.style.color='#9B93C0'}>Log in</Link>
+              <Link href="/signup" className="btn-gold" style={{ padding: '8px 18px', borderRadius: '10px', fontSize: '13px' }}>Join Free</Link>
             </>
           )}
           <button className="mobile-menu-btn" onClick={() => setMenuOpen(!menuOpen)}>☰</button>
         </div>
       </nav>
 
+      {/* ── MOBILE MENU ── */}
       <div className={`mobile-menu ${menuOpen ? 'open' : ''}`}>
         <Link href="/browse" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>🔍 Browse</Link>
         <Link href="/crews" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>👥 Crews</Link>
@@ -198,51 +342,70 @@ export default function HomePage() {
         {loggedIn && <Link href="/dashboard" onClick={() => setMenuOpen(false)} style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>→ Dashboard</Link>}
       </div>
 
-      {/* HERO */}
-      <section style={{ position: 'relative', paddingTop: '100px', paddingBottom: '48px', paddingLeft: '20px', paddingRight: '20px', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '600px', height: '500px', borderRadius: '50%', opacity: 0.07, pointerEvents: 'none', background: 'radial-gradient(circle, #D4AF37 0%, transparent 70%)' }} />
-        <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '7px 14px', borderRadius: '999px', marginBottom: '24px', fontSize: '13px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37' }}>
-            <span style={{ color: '#39FF14' }}>●</span>
+      {/* ── HERO ── */}
+      <section style={{ position: 'relative', paddingTop: '130px', paddingBottom: '60px', paddingLeft: '20px', paddingRight: '20px', overflow: 'hidden' }}>
+        {/* Background orbs */}
+        <div style={{ position: 'absolute', top: '-60px', left: '50%', width: '700px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, #D4AF37 0%, transparent 65%)', opacity: 0.07, pointerEvents: 'none', animation: 'glow-breathe 5s ease-in-out infinite', transform: 'translateX(-50%)' }} />
+        <div style={{ position: 'absolute', top: '100px', left: '20%', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, #9B93C0 0%, transparent 70%)', opacity: 0.04, pointerEvents: 'none', animation: 'glow-breathe-2 7s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', top: '80px', right: '15%', width: '260px', height: '260px', borderRadius: '50%', background: 'radial-gradient(circle, #39FF14 0%, transparent 70%)', opacity: 0.03, pointerEvents: 'none', animation: 'glow-breathe-2 6s ease-in-out 1s infinite' }} />
+
+        <div style={{ maxWidth: '820px', margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
+          {/* Live badge */}
+          <div className="hero-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '7px 16px', borderRadius: '999px', marginBottom: '28px', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.22)', color: '#D4AF37' }}>
+            <span style={{ color: '#39FF14', fontSize: '8px', animation: 'glow-breathe 2s ease-in-out infinite' }}>●</span>
             Your social passport — live worldwide
           </div>
-          <h1 className="hero-title" style={{ fontFamily: 'DM Serif Display, serif', fontWeight: 700, color: '#E8E0FF', lineHeight: 1.1, marginBottom: '20px' }}>
+
+          {/* Headline */}
+          <h1 className="hero-h1" style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(38px, 8.5vw, 78px)', fontWeight: 700, color: '#E8E0FF', lineHeight: 1.05, marginBottom: '22px', letterSpacing: '-1px' }}>
             Real people.<br /><em style={{ color: '#D4AF37', fontStyle: 'italic' }}>Real moments.</em>
           </h1>
-          <p style={{ fontSize: '16px', color: '#9B93C0', marginBottom: '32px', maxWidth: '480px', margin: '0 auto 32px', lineHeight: 1.6 }}>
+
+          {/* Subtitle */}
+          <p className="hero-sub" style={{ fontSize: 'clamp(15px, 2vw, 17px)', color: '#9B93C0', marginBottom: '36px', maxWidth: '460px', margin: '0 auto 36px', lineHeight: 1.65 }}>
             Find a Bestie for any activity. Verified profiles. Bestie Score. No awkwardness.
           </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', maxWidth: '520px', margin: '0 auto 16px', padding: '6px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px' }}>
-            <span style={{ paddingLeft: '10px', fontSize: '18px' }}>🔍</span>
-            <input type="text" placeholder="Search by name, activity, or city..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px', color: '#E8E0FF', padding: '8px 0' }} />
-            <Link href={`/browse${searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ''}`} style={{ padding: '10px 18px', borderRadius: '10px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none', whiteSpace: 'nowrap' }}>Find</Link>
+
+          {/* Search bar */}
+          <div className="hero-search" style={{ display: 'flex', alignItems: 'center', gap: '8px', maxWidth: '540px', margin: '0 auto 14px', padding: '7px', background: 'rgba(15,15,30,0.8)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', backdropFilter: 'blur(12px)', boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }}>
+            <span style={{ paddingLeft: '10px', fontSize: '18px', flexShrink: 0 }}>🔍</span>
+            <input
+              type="text"
+              placeholder="Search by name, activity, or city..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px', color: '#E8E0FF', padding: '8px 0' }}
+            />
+            <Link href={`/browse${searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ''}`} className="btn-sm-gold">Find</Link>
           </div>
-          <button onClick={() => setShowMatchModal(true)} style={{ fontSize: '13px', color: '#9B93C0', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '4px' }}>
+
+          {/* Smart match */}
+          <button
+            className="hero-match"
+            onClick={() => setShowMatchModal(true)}
+            style={{ fontSize: '13px', color: '#9B93C0', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textDecorationColor: 'rgba(155,147,192,0.4)', textUnderlineOffset: '4px', transition: 'color 0.2s' }}
+            onMouseEnter={e => e.target.style.color = '#D4AF37'}
+            onMouseLeave={e => e.target.style.color = '#9B93C0'}
+          >
             ✨ Try Smart Match — let us find your Bestie
           </button>
         </div>
       </section>
 
-      {/* ACTIVITY GROUPS */}
-      <section style={{ padding: '0 20px 48px' }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '16px', textAlign: 'center' }}>FIND BY VIBE</p>
+      {/* ── ACTIVITY GROUPS ── */}
+      <section style={{ padding: '0 20px 56px' }}>
+        <div ref={groupsRef} className={`reveal ${groupsVisible ? 'visible' : ''}`} style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <p className="section-label" style={{ textAlign: 'center' }}>FIND BY VIBE</p>
           <div className="groups-grid">
             {ACTIVITY_GROUPS.map(group => {
               const active = activeGroup?.id === group.id
               return (
                 <button
                   key={group.id}
+                  className={`group-btn ${active ? 'active' : ''}`}
                   onClick={() => handleGroupClick(group)}
-                  style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
-                    padding: '16px 8px', borderRadius: '16px', cursor: 'pointer',
-                    background: active ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)',
-                    border: active ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.06)',
-                    transition: 'all 0.2s',
-                  }}
                 >
-                  <span style={{ fontSize: '28px' }}>{group.emoji}</span>
+                  <span className="emoji">{group.emoji}</span>
                   <span style={{ fontSize: '11px', fontWeight: 600, color: active ? '#D4AF37' : '#9B93C0', textAlign: 'center', lineHeight: 1.3 }}>{group.label}</span>
                 </button>
               )
@@ -250,29 +413,28 @@ export default function HomePage() {
           </div>
 
           {activeGroup && (
-            <div style={{ marginTop: '32px' }}>
+            <div style={{ marginTop: '36px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
                 <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#E8E0FF' }}>
                   {activeGroup.emoji} {activeGroup.label}
                 </h2>
-                <Link href="/browse" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>See all →</Link>
+                <Link href="/browse" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none', transition: 'opacity 0.2s' }} onMouseEnter={e=>e.target.style.opacity='.7'} onMouseLeave={e=>e.target.style.opacity='1'}>See all →</Link>
               </div>
               {groupLoading ? (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-                  {[1,2,3].map(i => (
-                    <div key={i} style={{ height: '380px', borderRadius: '20px', background: '#0F0F1E', animation: 'pulse 1.5s ease-in-out infinite' }} />
+                  {[1, 2, 3].map(i => (
+                    <div key={i} style={{ height: '380px', borderRadius: '20px', background: 'linear-gradient(90deg, #0F0F1E 25%, #141424 50%, #0F0F1E 75%)', backgroundSize: '400px 100%', animation: 'shimmer 1.5s infinite' }} />
                   ))}
-                  <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }`}</style>
                 </div>
               ) : groupProviders.length > 0 ? (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
                   {groupProviders.map(p => <ProviderCard key={p.id} provider={p} />)}
                 </div>
               ) : (
-                <div style={{ textAlign: 'center', padding: '40px', background: '#0F0F1E', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ textAlign: 'center', padding: '48px', background: 'rgba(15,15,30,0.7)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)' }}>
                   <p style={{ fontSize: '32px', marginBottom: '12px' }}>🔍</p>
-                  <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '16px' }}>No Besties for this vibe yet</p>
-                  <Link href="/signup" style={{ display: 'inline-block', padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>Be the first →</Link>
+                  <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '18px' }}>No Besties for this vibe yet</p>
+                  <Link href="/signup" className="btn-sm-gold">Be the first →</Link>
                 </div>
               )}
             </div>
@@ -280,15 +442,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* TOP BESTIES */}
-      <section style={{ padding: '0 20px 64px' }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+      {/* ── TOP BESTIES ── */}
+      <section style={{ padding: '0 20px 72px' }}>
+        <div ref={leaderRef} className={`reveal ${leaderVisible ? 'visible' : ''}`} style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '28px' }}>
             <div>
-              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '4px' }}>LEADERBOARD</p>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(20px, 4vw, 28px)', fontWeight: 700, color: '#E8E0FF' }}>Top Besties</h2>
+              <p className="section-label">LEADERBOARD</p>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 700, color: '#E8E0FF' }}>Top Besties</h2>
             </div>
-            <Link href="/browse" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none' }}>See all →</Link>
+            <Link href="/browse" style={{ fontSize: '13px', color: '#9B93C0', textDecoration: 'none', marginBottom: '2px', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#D4AF37'} onMouseLeave={e=>e.target.style.color='#9B93C0'}>See all →</Link>
           </div>
           {topProviders.length > 0 ? (
             <div className="providers-grid">
@@ -311,100 +473,110 @@ export default function HomePage() {
               })}
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '60px', background: '#0F0F1E', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <p style={{ fontSize: '14px', color: '#9B93C0' }}>Be the first to build your Bestie Score</p>
-              <Link href="/signup" style={{ display: 'inline-block', marginTop: '16px', padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>Join Free →</Link>
+            <div style={{ textAlign: 'center', padding: '60px', background: 'rgba(15,15,30,0.7)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)' }}>
+              <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '18px' }}>Be the first to build your Bestie Score</p>
+              <Link href="/signup" className="btn-sm-gold">Join Free →</Link>
             </div>
           )}
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section id="how-it-works" style={{ padding: '64px 20px' }}>
-        <div style={{ maxWidth: '960px', margin: '0 auto', borderRadius: '24px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', padding: '48px 40px' }}>
-          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '10px' }}>HOW IT WORKS</p>
-            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '12px' }}>From stranger to Bestie in four steps.</h2>
-            <p style={{ fontSize: '15px', color: '#9B93C0' }}>Built for real human connection — not followers, not likes.</p>
-          </div>
-          <div className="how-grid">
-            {[
-              { num: '01', icon: '🪪', title: 'Build your Social Passport', desc: 'Add your bio, photo, city, activities, and set your weekly availability. Take the Bestie Type quiz — your energy, mind, and vibe type appear on your passport and power the compatibility engine.' },
-              { num: '02', icon: '🔍', title: 'Discover your people', desc: 'Browse with type compatibility, explore the Nearby Map, check City Pulse for who\'s free today, or send a Knock to someone interesting — an anonymous signal that only reveals your identity on a mutual match.' },
-              { num: '03', icon: '🤝', title: 'Meet IRL', desc: 'Book a 1-on-1 session, join a Group Session hosted by someone in your city, or flip "I\'m free today" on Pulse for spontaneous meetups. Show up — that\'s all it takes.' },
-              { num: '04', icon: '📖', title: 'Build your story', desc: 'Both sides confirm the session and rate each other. Record a memory — mood, note, photo. Give Sparks. Your streak grows, badges unlock, your passport becomes proof of a life well lived.' },
-            ].map((step) => (
-              <div key={step.num}>
-                <div style={{ fontSize: '48px', fontWeight: 700, color: 'rgba(212,175,55,0.07)', fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{step.num}</div>
-                <div style={{ fontSize: '28px', margin: '8px 0' }}>{step.icon}</div>
-                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '17px', fontWeight: 700, color: '#E8E0FF', marginBottom: '8px' }}>{step.title}</h3>
-                <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.7 }}>{step.desc}</p>
-              </div>
-            ))}
+      {/* ── HOW IT WORKS ── */}
+      <section id="how-it-works" style={{ padding: '72px 20px' }}>
+        <div ref={howRef} className={`reveal ${howVisible ? 'visible' : ''}`} style={{ maxWidth: '980px', margin: '0 auto' }}>
+          {/* Glassmorphism container */}
+          <div style={{ borderRadius: '28px', background: 'rgba(15,15,30,0.6)', border: '1px solid rgba(255,255,255,0.07)', padding: '52px 44px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 24px 80px rgba(0,0,0,0.35)' }}>
+            <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+              <p className="section-label">HOW IT WORKS</p>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 42px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '12px', lineHeight: 1.15 }}>
+                From stranger to Bestie<br />in four steps.
+              </h2>
+              <p style={{ fontSize: '15px', color: '#9B93C0' }}>Built for real human connection — not followers, not likes.</p>
+            </div>
+            <div className="how-grid">
+              {[
+                { num: '01', icon: '🪪', title: 'Build your Social Passport', desc: 'Add your bio, photo, city, activities, and set your weekly availability. Take the Bestie Type quiz — your energy, mind, and vibe type appear on your passport and power the compatibility engine.' },
+                { num: '02', icon: '🔍', title: 'Discover your people', desc: 'Browse with type compatibility, explore the Nearby Map, check City Pulse for who\'s free today, or send a Knock to someone interesting — an anonymous signal that only reveals your identity on a mutual match.' },
+                { num: '03', icon: '🤝', title: 'Meet IRL', desc: 'Book a 1-on-1 session, join a Group Session hosted by someone in your city, or flip "I\'m free today" on Pulse for spontaneous meetups. Show up — that\'s all it takes.' },
+                { num: '04', icon: '📖', title: 'Build your story', desc: 'Both sides confirm the session and rate each other. Record a memory — mood, note, photo. Give Sparks. Your streak grows, badges unlock, your passport becomes proof of a life well lived.' },
+              ].map((step, idx) => (
+                <div key={step.num} className={`how-card reveal-delay-${idx + 1}`}>
+                  {/* Big step number */}
+                  <div style={{ fontSize: '52px', fontWeight: 800, color: 'rgba(212,175,55,0.08)', fontFamily: 'DM Serif Display, serif', lineHeight: 1, marginBottom: '-8px' }}>{step.num}</div>
+                  {/* Icon with pill background */}
+                  <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)', fontSize: '24px', margin: '10px 0 14px' }}>{step.icon}</div>
+                  <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '17px', fontWeight: 700, color: '#E8E0FF', marginBottom: '10px' }}>{step.title}</h3>
+                  <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.75 }}>{step.desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* FEATURES */}
-      <section style={{ padding: '0 20px 64px' }}>
-        <div style={{ maxWidth: '960px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '10px' }}>WHAT'S INSIDE</p>
-            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 36px)', fontWeight: 700, color: '#E8E0FF' }}>A full world for real-life connection</h2>
+      {/* ── FEATURES ── */}
+      <section style={{ padding: '0 20px 72px' }}>
+        <div ref={featRef} className={`reveal ${featVisible ? 'visible' : ''}`} style={{ maxWidth: '980px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '44px' }}>
+            <p className="section-label">WHAT'S INSIDE</p>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 38px)', fontWeight: 700, color: '#E8E0FF' }}>A full world for real-life connection</h2>
           </div>
           <div className="features-grid">
             {FEATURES.map((f) => (
-              <div key={f.title} style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '20px' }}>
-                <div style={{ fontSize: '28px', marginBottom: '10px' }}>{f.emoji}</div>
-                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '16px', fontWeight: 700, color: '#E8E0FF', marginBottom: '6px' }}>{f.title}</h3>
-                <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.6 }}>{f.desc}</p>
+              <div key={f.title} className="glass-card" style={{ padding: '22px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.12)', fontSize: '22px', marginBottom: '14px' }}>{f.emoji}</div>
+                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '16px', fontWeight: 700, color: '#E8E0FF', marginBottom: '7px' }}>{f.title}</h3>
+                <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.65 }}>{f.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CREWS */}
-      <section style={{ padding: '0 20px 64px' }}>
-        <div style={{ maxWidth: '960px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '10px' }}>CREWS</p>
-            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 36px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '12px' }}>Your people. Your group.</h2>
-            <p style={{ fontSize: '15px', color: '#9B93C0', maxWidth: '520px', margin: '0 auto', lineHeight: 1.7 }}>
+      {/* ── CREWS ── */}
+      <section style={{ padding: '0 20px 72px' }}>
+        <div ref={crewsRef} className={`reveal ${crewsVisible ? 'visible' : ''}`} style={{ maxWidth: '980px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '44px' }}>
+            <p className="section-label">CREWS</p>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 38px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '14px' }}>Your people. Your group.</h2>
+            <p style={{ fontSize: '15px', color: '#9B93C0', maxWidth: '500px', margin: '0 auto', lineHeight: 1.7 }}>
               A Crew is a group of Besties who regularly show up for each other. Create one, invite friends, run events — or join an existing one.
             </p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', marginBottom: '32px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '36px' }}>
             {[
               { emoji: '🎯', title: 'Create or join', desc: 'Public crews are open to anyone. Private crews require a request or a captain\'s invite link — it bypasses the queue instantly.' },
               { emoji: '📅', title: 'Run crew events', desc: 'Captains post events visible to all members. New events show up as notifications on your dashboard.' },
-              { emoji: '⭐', title: 'Crew Rating', desc: 'Members rate their crew 1–5 stars. The average is shown on the crew card. Highly-rated crews rank higher in the public listings — quality rises to the top.' },
+              { emoji: '⭐', title: 'Crew Rating', desc: 'Members rate their crew 1–5 stars. The average is shown on the crew card. Highly-rated crews rank higher in the public listings.' },
               { emoji: '🏆', title: 'Crew leaderboard', desc: 'Crews are ranked by rating and size. A great vibe, active events, and happy members push your crew up the charts.' },
             ].map(f => (
-              <div key={f.title} style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '20px' }}>
-                <div style={{ fontSize: '28px', marginBottom: '10px' }}>{f.emoji}</div>
-                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '16px', fontWeight: 700, color: '#E8E0FF', marginBottom: '6px' }}>{f.title}</h3>
-                <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.6 }}>{f.desc}</p>
+              <div key={f.title} className="glass-card" style={{ padding: '22px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.12)', fontSize: '22px', marginBottom: '14px' }}>{f.emoji}</div>
+                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '16px', fontWeight: 700, color: '#E8E0FF', marginBottom: '7px' }}>{f.title}</h3>
+                <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.65 }}>{f.desc}</p>
               </div>
             ))}
           </div>
           <div style={{ textAlign: 'center' }}>
-            <Link href="/crews" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>Explore Crews →</Link>
+            <Link href="/crews" className="btn-gold">Explore Crews →</Link>
           </div>
         </div>
       </section>
 
-      {/* BESTIE SCORE */}
-      <section id="score" style={{ padding: '64px 20px' }}>
-        <div style={{ maxWidth: '960px', margin: '0 auto' }}>
+      {/* ── BESTIE SCORE ── */}
+      <section id="score" style={{ padding: '72px 20px' }}>
+        <div ref={scoreRef} className={`reveal ${scoreVisible ? 'visible' : ''}`} style={{ maxWidth: '980px', margin: '0 auto' }}>
           <div className="score-grid">
+            {/* Left: explanation */}
             <div>
-              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#39FF14', marginBottom: '14px' }}>THE SOCIAL PASSPORT</p>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 700, color: '#E8E0FF', lineHeight: 1.2, marginBottom: '20px' }}>
-                Your <em style={{ color: '#D4AF37', fontStyle: 'italic' }}>Bestie Score</em> says it all.
+              <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2.5px', color: '#39FF14', textTransform: 'uppercase', marginBottom: '16px' }}>THE SOCIAL PASSPORT</p>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(28px, 5vw, 46px)', fontWeight: 700, color: '#E8E0FF', lineHeight: 1.15, marginBottom: '20px' }}>
+                Your <em style={{ color: '#D4AF37', fontStyle: 'italic' }}>Bestie Score</em><br />says it all.
               </h2>
-              <p style={{ fontSize: '15px', color: '#9B93C0', marginBottom: '16px', lineHeight: 1.7 }}>Like a credit score — but for who you are as a person. Built from real sessions, ratings, sparks, and verification.</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '28px' }}>
+              <p style={{ fontSize: '15px', color: '#9B93C0', marginBottom: '24px', lineHeight: 1.75 }}>
+                Like a credit score — but for who you are as a person. Built from real sessions, ratings, sparks, and verification.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '32px' }}>
                 {[
                   { label: '🌱 New Bestie', desc: 'Just joined — under 1 month' },
                   { label: '⭐ Regular', desc: '3+ months, consistent sessions' },
@@ -412,29 +584,35 @@ export default function HomePage() {
                   { label: '💎 Legend', desc: '1+ year, trusted by many' },
                   { label: '👑 OG Bestie', desc: '2+ years — the real ones' },
                 ].map(b => (
-                  <div key={b.label} style={{ display: 'flex', gap: '10px', alignItems: 'center', fontSize: '13px' }}>
-                    <span style={{ color: '#E8E0FF', fontWeight: 600, minWidth: '110px' }}>{b.label}</span>
+                  <div key={b.label} style={{ display: 'flex', gap: '10px', alignItems: 'center', fontSize: '13px', padding: '8px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                    <span style={{ color: '#E8E0FF', fontWeight: 600, minWidth: '120px' }}>{b.label}</span>
                     <span style={{ color: '#9B93C0' }}>{b.desc}</span>
                   </div>
                 ))}
               </div>
-              <Link href="/score-guide" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>Build your Bestie Score →</Link>
+              <Link href="/score-guide" className="btn-gold">Build your Bestie Score →</Link>
             </div>
+
+            {/* Right: score card */}
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <div style={{ width: '260px', padding: '28px', borderRadius: '24px', textAlign: 'center', background: '#0F0F1E', border: '1px solid rgba(57,255,20,0.2)', boxShadow: '0 0 60px rgba(57,255,20,0.08)' }}>
-                <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '6px' }}>BESTIE SCORE</p>
-                <div style={{ fontSize: '72px', fontWeight: 700, color: '#39FF14', fontFamily: 'DM Serif Display, serif', lineHeight: 1, margin: '6px 0 14px' }}>874</div>
-                <div style={{ height: '6px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', marginBottom: '6px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: '87.4%', borderRadius: '999px', background: 'linear-gradient(90deg, #39FF14 0%, #D4AF37 100%)' }} />
+              <div className="score-card" style={{ width: '280px', padding: '32px 28px', borderRadius: '28px', textAlign: 'center', background: 'rgba(15,15,30,0.8)', border: '1px solid rgba(57,255,20,0.2)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
+                <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '2px', color: '#9B93C0', marginBottom: '8px', textTransform: 'uppercase' }}>BESTIE SCORE</p>
+                <div style={{ fontSize: '80px', fontWeight: 700, color: '#39FF14', fontFamily: 'DM Serif Display, serif', lineHeight: 1, margin: '4px 0 16px', textShadow: '0 0 40px rgba(57,255,20,0.4)' }}>874</div>
+                {/* Progress bar */}
+                <div style={{ height: '7px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', marginBottom: '8px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: '87.4%', borderRadius: '999px', background: 'linear-gradient(90deg, #39FF14 0%, #D4AF37 100%)', boxShadow: '0 0 12px rgba(57,255,20,0.5)' }} />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#9B93C0', marginBottom: '20px' }}>
-                  <span>0</span><span style={{ color: '#39FF14', fontWeight: 600 }}>Excellent</span><span>1000</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#9B93C0', marginBottom: '24px' }}>
+                  <span>0</span>
+                  <span style={{ color: '#39FF14', fontWeight: 700 }}>Excellent</span>
+                  <span>1000</span>
                 </div>
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                {/* Stats */}
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                   {[{ label: 'Sessions', val: '43' }, { label: 'Rating', val: '4.9' }, { label: 'Sparks', val: '127' }].map((s) => (
-                    <div key={s.label}>
-                      <div style={{ fontSize: '18px', fontWeight: 700, color: '#E8E0FF' }}>{s.val}</div>
-                      <div style={{ fontSize: '10px', color: '#9B93C0' }}>{s.label}</div>
+                    <div key={s.label} style={{ padding: '10px 4px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)' }}>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#E8E0FF', marginBottom: '2px' }}>{s.val}</div>
+                      <div style={{ fontSize: '10px', color: '#9B93C0', fontWeight: 600, letterSpacing: '0.5px' }}>{s.label}</div>
                     </div>
                   ))}
                 </div>
@@ -444,57 +622,65 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SPARKS */}
-      <section style={{ padding: '0 20px 64px' }}>
-        <div style={{ maxWidth: '720px', margin: '0 auto', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(57,255,20,0.04) 100%)', border: '1px solid rgba(212,175,55,0.2)', textAlign: 'center', padding: '48px 32px' }}>
-          <div style={{ fontSize: '40px', marginBottom: '14px' }}>✨</div>
-          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 32px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '14px' }}>Sparks — rare tokens of real trust</h2>
-          <p style={{ fontSize: '15px', color: '#9B93C0', marginBottom: '28px', lineHeight: 1.7, maxWidth: '480px', margin: '0 auto 28px' }}>
-            Every new member gets 30 Sparks. You can give max 3 to any one person — they say "I genuinely trust this person."
-          </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginBottom: '28px' }}>
-            {[
-              { emoji: '💛', label: 'Kind' }, { emoji: '🎉', label: 'Fun' }, { emoji: '🔒', label: 'Reliable' },
-              { emoji: '💎', label: 'Genuine' }, { emoji: '🛡️', label: 'Safe' }, { emoji: '⚡', label: 'Energetic' },
-              { emoji: '👂', label: 'Good listener' }, { emoji: '🌟', label: 'Social' }, { emoji: '⏰', label: 'Punctual' }, { emoji: '🌊', label: 'Open' },
-            ].map(s => (
-              <div key={s.label} style={{ padding: '7px 13px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', fontSize: '12px', color: '#E8E0FF', display: 'flex', gap: '5px', alignItems: 'center' }}>
-                <span>{s.emoji}</span><span>{s.label}</span>
+      {/* ── SPARKS ── */}
+      <section style={{ padding: '0 20px 72px' }}>
+        <div ref={sparksRef} className={`reveal ${sparksVisible ? 'visible' : ''}`} style={{ maxWidth: '740px', margin: '0 auto' }}>
+          <div style={{ borderRadius: '28px', background: 'linear-gradient(135deg, rgba(212,175,55,0.07) 0%, rgba(57,255,20,0.03) 100%)', border: '1px solid rgba(212,175,55,0.18)', textAlign: 'center', padding: '52px 36px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', position: 'relative', overflow: 'hidden' }}>
+            {/* Subtle inner glow */}
+            <div style={{ position: 'absolute', top: '-40px', left: '50%', transform: 'translateX(-50%)', width: '300px', height: '200px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <div style={{ fontSize: '44px', marginBottom: '16px' }}>✨</div>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 34px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '14px' }}>Sparks — rare tokens of real trust</h2>
+              <p style={{ fontSize: '15px', color: '#9B93C0', marginBottom: '32px', lineHeight: 1.7, maxWidth: '460px', margin: '0 auto 32px' }}>
+                Every new member gets 30 Sparks. You can give max 3 to any one person — they say "I genuinely trust this person."
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginBottom: '32px' }}>
+                {[
+                  { emoji: '💛', label: 'Kind' }, { emoji: '🎉', label: 'Fun' }, { emoji: '🔒', label: 'Reliable' },
+                  { emoji: '💎', label: 'Genuine' }, { emoji: '🛡️', label: 'Safe' }, { emoji: '⚡', label: 'Energetic' },
+                  { emoji: '👂', label: 'Good listener' }, { emoji: '🌟', label: 'Social' }, { emoji: '⏰', label: 'Punctual' }, { emoji: '🌊', label: 'Open' },
+                ].map(s => (
+                  <div key={s.label} className="spark-badge">
+                    <span>{s.emoji}</span><span>{s.label}</span>
+                  </div>
+                ))}
               </div>
+              <Link href="/signup" className="btn-gold">Get your 30 Sparks →</Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA ── */}
+      <section style={{ padding: '0 20px 80px' }}>
+        <div style={{ maxWidth: '740px', margin: '0 auto' }}>
+          <div style={{ borderRadius: '28px', textAlign: 'center', background: 'linear-gradient(135deg, rgba(212,175,55,0.09) 0%, rgba(57,255,20,0.04) 100%)', border: '1px solid rgba(212,175,55,0.2)', padding: '56px 36px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', bottom: '-60px', right: '-60px', width: '260px', height: '260px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '14px', lineHeight: 1.15 }}>Ready to meet your Bestie?</h2>
+              <p style={{ fontSize: '16px', color: '#9B93C0', marginBottom: '32px' }}>Join people building real connections in their city.</p>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <Link href="/signup" className="btn-gold">Become a Bestie →</Link>
+                <Link href="/browse" className="btn-ghost">Browse Besties</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '32px 24px' }}>
+        <div style={{ maxWidth: '980px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
+          <span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37' }}>BESTIE</span>
+          <div style={{ display: 'flex', gap: '20px', fontSize: '13px', flexWrap: 'wrap' }}>
+            {[
+              { href: '/browse', label: 'Browse' }, { href: '/crews', label: 'Crews' }, { href: '/map', label: 'Map' },
+              { href: '/pulse', label: 'Pulse' }, { href: '#how-it-works', label: 'How It Works' }, { href: '/score-guide', label: 'Bestie Score' }, { href: '/signup', label: 'Join' },
+            ].map(l => (
+              <Link key={l.label} href={l.href} style={{ color: '#6B6490', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#9B93C0'} onMouseLeave={e=>e.target.style.color='#6B6490'}>{l.label}</Link>
             ))}
           </div>
-          <Link href="/signup" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
-            Get your 30 Sparks →
-          </Link>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section style={{ padding: '0 20px 64px' }}>
-        <div style={{ maxWidth: '720px', margin: '0 auto', borderRadius: '24px', textAlign: 'center', background: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(57,255,20,0.05) 100%)', border: '1px solid rgba(212,175,55,0.2)', padding: '48px 32px' }}>
-          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 36px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '14px' }}>Ready to meet your Bestie?</h2>
-          <p style={{ fontSize: '15px', color: '#9B93C0', marginBottom: '28px' }}>Join people building real connections in their city.</p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/signup" style={{ padding: '13px 28px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>Become a Bestie →</Link>
-            <Link href="/browse" style={{ padding: '13px 28px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: '#E8E0FF', textDecoration: 'none' }}>Browse Besties</Link>
-          </div>
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '28px 20px' }}>
-        <div style={{ maxWidth: '960px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-          <span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37' }}>BESTIE</span>
-          <div style={{ display: 'flex', gap: '20px', fontSize: '14px', flexWrap: 'wrap' }}>
-            <Link href="/browse" style={{ color: '#9B93C0', textDecoration: 'none' }}>Browse</Link>
-            <Link href="/crews" style={{ color: '#9B93C0', textDecoration: 'none' }}>Crews</Link>
-            <Link href="/map" style={{ color: '#9B93C0', textDecoration: 'none' }}>Map</Link>
-            <Link href="/pulse" style={{ color: '#9B93C0', textDecoration: 'none' }}>Pulse</Link>
-            <Link href="#how-it-works" style={{ color: '#9B93C0', textDecoration: 'none' }}>How It Works</Link>
-            <Link href="/score-guide" style={{ color: '#9B93C0', textDecoration: 'none' }}>Bestie Score</Link>
-            <Link href="/signup" style={{ color: '#9B93C0', textDecoration: 'none' }}>Join</Link>
-          </div>
-          <p style={{ fontSize: '12px', color: '#9B93C0' }}>© 2026 Bestie. Worldwide. 18+</p>
+          <p style={{ fontSize: '12px', color: '#4A4268' }}>© 2026 Bestie. Worldwide. 18+</p>
         </div>
       </footer>
 
