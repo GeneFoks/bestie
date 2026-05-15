@@ -44,7 +44,13 @@
       "Bash(ls -la \"C:\\\\Users\\\\17549\\\\Downloads\\\\everything-claude-code-main\\\\everything-claude-code-main\\\\.cursor\")",
       "Bash(ls -la \"C:\\\\Users\\\\17549\\\\Downloads\\\\everything-claude-code-main\\\\everything-claude-code-main\\\\.codex\")",
       "Bash(npm install *)",
-      "Bash(node -e \"const crypto=require\\('crypto'\\); const {privateKey,publicKey}=crypto.generateKeyPairSync\\('ec',{namedCurve:'P-256'}\\); console.log\\(publicKey.export\\({type:'spki',format:'der'}\\).toString\\('base64url'\\)\\); console.log\\(privateKey.export\\({type:'pkcs8',format:'der'}\\).toString\\('base64url'\\)\\);\")"
+      "Bash(node -e \"const crypto=require\\('crypto'\\); const {privateKey,publicKey}=crypto.generateKeyPairSync\\('ec',{namedCurve:'P-256'}\\); console.log\\(publicKey.export\\({type:'spki',format:'der'}\\).toString\\('base64url'\\)\\); console.log\\(privateKey.export\\({type:'pkcs8',format:'der'}\\).toString\\('base64url'\\)\\);\")",
+      "Bash(cd \"C:\\\\bestie\" && npm install 2>&1 | tail -5)",
+      "PowerShell(Get-ChildItem \"C:\\\\Program Files\\\\nodejs\", \"C:\\\\Program Files \\(x86\\)\\\\nodejs\", \"$env:APPDATA\\\\npm\", \"$env:LOCALAPPDATA\\\\Programs\\\\nodejs\" -ErrorAction SilentlyContinue | Select-Object FullName)",
+      "PowerShell([System.IO.File]::Exists\\(\"C:\\\\bestie\\\\package-lock.json\"\\))",
+      "Bash(git checkout *)",
+      "Bash(New-Item -Path \"C:\\\\bestie\\\\.claude\\\\worktrees\\\\determined-jones-650d27\\\\app\\\\reset-password\" -ItemType Directory -Force)",
+      "Bash(which gh *)"
     ]
   }
 }

@@ -310,8 +310,7 @@ export default function HomePage() {
         <div className="nav-links">
           <Link href="/browse" className="nav-link">Browse</Link>
           <Link href="/crews" className="nav-link">Crews</Link>
-          <Link href="/map" className="nav-link">Map</Link>
-          <Link href="/pulse" className="nav-link">Pulse</Link>
+<Link href="/pulse" className="nav-link">Pulse</Link>
           <Link href="/graph" className="nav-link">Graph</Link>
           <Link href="#how-it-works" className="nav-link">How It Works</Link>
           <Link href="#score" className="nav-link">Bestie Score</Link>
@@ -787,7 +786,7 @@ export default function HomePage() {
           <span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37' }}>BESTIE</span>
           <div style={{ display: 'flex', gap: '20px', fontSize: '13px', flexWrap: 'wrap' }}>
             {[
-              { href: '/browse', label: 'Browse' }, { href: '/crews', label: 'Crews' }, { href: '/map', label: 'Map' },
+              { href: '/browse', label: 'Browse' }, { href: '/crews', label: 'Crews' },
               { href: '/pulse', label: 'Pulse' }, { href: '#how-it-works', label: 'How It Works' }, { href: '/score-guide', label: 'Bestie Score' }, { href: '/signup', label: 'Join' },
             ].map(l => (
               <Link key={l.label} href={l.href} style={{ color: '#6B6490', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#9B93C0'} onMouseLeave={e=>e.target.style.color='#6B6490'}>{l.label}</Link>
