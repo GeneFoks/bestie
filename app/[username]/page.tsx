@@ -74,13 +74,18 @@ function getMemberBadge(createdAt: string | null) {
   return { emoji: '✨', label: 'Just joined', color: '#9B93C0', desc: 'New here' }
 }
 
-function StarRating({ rating }: { rating: number }) {
+function StarRating({ rating, count }: { rating: number; count?: number }) {
   const r = parseFloat(String(rating)) || 0
   return (
-    <div style={{ display: 'flex', gap: '2px' }}>
-      {[1, 2, 3, 4, 5].map(i => (
-        <span key={i} style={{ fontSize: '14px', lineHeight: 1, color: i <= Math.floor(r + 0.5) ? '#D4AF37' : 'rgba(212,175,55,0.25)' }}>★</span>
-      ))}
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+      <div style={{ display: 'flex', gap: '2px' }}>
+        {[1, 2, 3, 4, 5].map(i => (
+          <span key={i} style={{ fontSize: '14px', lineHeight: 1, color: i <= Math.floor(r + 0.5) ? '#D4AF37' : 'rgba(212,175,55,0.25)' }}>★</span>
+        ))}
+      </div>
+      <span style={{ fontSize: '10px', color: '#9B93C0' }}>
+        {r.toFixed(1)}{count != null && count > 0 ? ` · ${count} ${count === 1 ? 'review' : 'reviews'}` : ''}
+      </span>
     </div>
   )
 }
@@ -307,7 +312,7 @@ export default async function ProfilePage({ params }) {
             <div style={{ fontSize: '26px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>✨{totalSparks}</div>
             {avgRating > 0 && (
               <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4px' }}>
-                <StarRating rating={avgRating} />
+                <StarRating rating={avgRating} count={ratingValues.length} />
               </div>
             )}
           </div>

@@ -130,7 +130,8 @@ if (other) {
     const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length
     await supabase.from('users').update({
       avg_rating: Math.round(avg * 10) / 10,
-      total_sessions: ratings.length,
+      average_rating: Math.round(avg * 10) / 10,
+      rating_count: ratings.length,
     }).eq('id', other.id)
   }
 }
