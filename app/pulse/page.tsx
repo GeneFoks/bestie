@@ -163,18 +163,6 @@ export default function PulsePage() {
               </section>
             )}
 
-            {/* Map CTA */}
-            <section>
-              <div style={{ padding: '24px', borderRadius: '20px', background: 'linear-gradient(135deg, rgba(212,175,55,0.06) 0%, rgba(155,143,255,0.04) 100%)', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
-                <div>
-                  <p style={{ fontSize: '15px', fontWeight: 700, color: '#E8E0FF', marginBottom: '4px' }}>🗺️ See who's nearby</p>
-                  <p style={{ fontSize: '13px', color: '#9B93C0' }}>Live map of Besties with their location</p>
-                </div>
-                <Link href="/map" style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                  Open Map →
-                </Link>
-              </div>
-            </section>
           </>
         )}
       </div>
