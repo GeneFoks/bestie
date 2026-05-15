@@ -156,12 +156,18 @@ export default function MessagesPage() {
   const sendMessage = async () => {
     if (!newMessage.trim() || !activeConv) return
     setSending(true)
-    const msg = { sender_id: userId, receiver_id: activeConv.user.id, content: newMessage.trim(), read: false }
-    const { data } = await supabase.from('direct_messages').insert(msg).select().single()
+    const text = newMessage.trim()
+    setNewMessage('') // optimistic clear
+    const msg = { sender_id: userId, receiver_id: activeConv.user.id, content: text, read: false }
+    const { data, error } = await supabase.from('direct_messages').insert(msg).select().single()
     if (data) {
-      setMessages(m => [...m, data])
-      setNewMessage('')
+      setMessages(m => m.some(x => x.id === data.id) ? m : [...m, data])
       await loadConversations(userId)
+    } else {
+      // Restore message if failed
+      setNewMessage(text)
+      console.error('Message send failed:', error?.message)
+      alert('Could not send message. Please try again.')
     }
     setSending(false)
   }

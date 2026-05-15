@@ -3,6 +3,7 @@ export const revalidate = 0
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import ProfileNav from '@/components/ProfileNav'
+import InviteCTA from './InviteCTA'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -155,15 +156,12 @@ export default async function InvitePage({ params, searchParams }) {
           )}
         </div>
 
-        {/* CTAs */}
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <Link href={signupUrl} style={{ display: 'block', padding: '16px', borderRadius: '16px', textAlign: 'center', fontSize: '16px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
-            Accept & Create Account →
-          </Link>
-          <Link href={`/login?next=/${profile.username}`} style={{ display: 'block', padding: '14px', borderRadius: '16px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', textDecoration: 'none' }}>
-            Already have an account? Log in
-          </Link>
-        </div>
+        {/* CTAs — client component handles logged-in vs logged-out state */}
+        <InviteCTA
+          username={profile.username}
+          activityKey={activityKey}
+          signupUrl={signupUrl}
+        />
 
         <p style={{ fontSize: '13px', color: '#9B93C0', textAlign: 'center', maxWidth: '340px', lineHeight: 1.6 }}>
           Bestie is a social platform for real-life connections. Find people for activities, build your crew, and track your social life.
