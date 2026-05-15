@@ -11,6 +11,8 @@ import BlockReportButton from '@/components/BlockReportButton'
 import KnockButton from '@/components/KnockButton'
 import MutualFriends from '@/components/MutualFriends'
 import { getAvatarFrame } from '@/lib/avatarFrame'
+import CompatibilityScore from './CompatibilityScore'
+import StickyBookCTA from './StickyBookCTA'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -48,7 +50,20 @@ const ACTIVITY_EMOJI = {
   real_talk: '💬', festival_crew: '🎪', epic_journey: '🌍', fishing_crew: '🎣',
 }
 
-function getMemberBadge(createdAt) {
+const ACTIVITY_DURATION = {
+  meet_irl: '1–2h', dance_crew: '2h', trail_crew: '3–5h', travel_buddy: 'Multi-day',
+  game_night: '3h', watch_together: '2h', vibe_call: '30–60m', deep_chat: '1h',
+  real_talk: '1h', festival_crew: 'Full day', epic_journey: 'Multi-day', fishing_crew: '4–6h',
+}
+
+function getTier(score: number, sessions: number) {
+  if (score >= 800 || sessions >= 25) return { label: 'PLATINUM', color: '#C9B8FF', bg: 'rgba(155,143,255,0.15)', border: 'rgba(155,143,255,0.45)', glow: '155,143,255' }
+  if (score >= 600 || sessions >= 10) return { label: 'GOLD', color: '#D4AF37', bg: 'rgba(212,175,55,0.15)', border: 'rgba(212,175,55,0.45)', glow: '212,175,55' }
+  if (score >= 400 || sessions >= 5) return { label: 'SILVER', color: '#C0C8D8', bg: 'rgba(192,200,216,0.12)', border: 'rgba(192,200,216,0.35)', glow: '192,200,216' }
+  return { label: 'BRONZE', color: '#CD8F4A', bg: 'rgba(205,143,74,0.12)', border: 'rgba(205,143,74,0.35)', glow: '205,143,74' }
+}
+
+function getMemberBadge(createdAt: string | null) {
   if (!createdAt) return null
   const months = Math.floor((Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24 * 30))
   if (months >= 24) return { emoji: '👑', label: 'OG Bestie', color: '#D4AF37', desc: '2+ years' }
@@ -59,8 +74,8 @@ function getMemberBadge(createdAt) {
   return { emoji: '✨', label: 'Just joined', color: '#9B93C0', desc: 'New here' }
 }
 
-function StarRating({ rating }) {
-  const r = parseFloat(rating) || 0
+function StarRating({ rating }: { rating: number }) {
+  const r = parseFloat(String(rating)) || 0
   return (
     <div style={{ display: 'flex', gap: '2px' }}>
       {[1, 2, 3, 4, 5].map(i => (
@@ -72,7 +87,7 @@ function StarRating({ rating }) {
 
 export async function generateMetadata({ params }) {
   const { data: profile } = await supabase
-    .from('users').select('*, crew:crews(name)').eq('username', params.username).single()
+    .from('users').select('full_name, username, bio, bestie_score, avatar_url').eq('username', params.username).single()
   if (!profile) return { title: 'Bestie' }
   return {
     title: `${profile.full_name} — BS ${profile.bestie_score || 0} · Bestie`,
@@ -137,7 +152,7 @@ export default async function ProfilePage({ params }) {
       .or(`and(provider_id.eq.${profile.id},rating_seeker.not.is.null),and(seeker_id.eq.${profile.id},rating_provider.not.is.null)`),
   ])
 
-  const sparkCounts = {}
+  const sparkCounts: Record<string, number> = {}
   sparks?.forEach(s => { sparkCounts[s.spark_type] = (sparkCounts[s.spark_type] || 0) + 1 })
   const totalSparks = sparks?.length || 0
   const topSparks = SPARK_TYPES
@@ -148,20 +163,18 @@ export default async function ProfilePage({ params }) {
   const score = profile.bestie_score || 0
   const scoreColor = score >= 800 ? '#39FF14' : score >= 600 ? '#D4AF37' : '#9B93C0'
   const scoreLabel = score >= 800 ? 'Excellent' : score >= 600 ? 'Good' : score >= 400 ? 'Fair' : 'New'
-  const initials = profile.full_name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?'
+  const initials = profile.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
   const memberBadge = getMemberBadge(profile.created_at)
   const memberSince = profile.created_at ? new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : null
-
   const sessionCount = confirmedSessions || 0
-  const totalSessions = sessionCount
   const rankPct = totalUsers ? (usersAbove || 0) / totalUsers : 1
-
   const ratingValues = ratedBookings?.map(b => b.rating_seeker ?? b.rating_provider).filter(Boolean) || []
-  const avgRating = ratingValues.length > 0 ? ratingValues.reduce((a, b) => a + b, 0) / ratingValues.length : 0
-
+  const avgRating = ratingValues.length > 0 ? ratingValues.reduce((a: number, b: number) => a + b, 0) / ratingValues.length : 0
   const ageMs = profile.created_at ? Date.now() - new Date(profile.created_at).getTime() : Infinity
   const ageDays = ageMs / (1000 * 60 * 60 * 24)
   const streakWeeks = profile.streak_weeks || 0
+  const tier = getTier(score, sessionCount)
+  const firstName = profile.full_name?.split(' ')[0] || 'them'
 
   const BADGES = [
     rankPct <= 0.01 && { id: 'top1', emoji: '🏆', label: 'Top 1%', desc: 'Bestie Score in the top 1%', color: '#39FF14' },
@@ -182,287 +195,303 @@ export default async function ProfilePage({ params }) {
   ].filter(Boolean)
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif', paddingBottom: '88px' }}>
+
+      {/* NAV */}
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <ProfileNav />
       </nav>
 
-      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '40px 24px' }}>
+      {/* COVER HERO */}
+      <div style={{ position: 'relative', height: '180px', overflow: 'hidden' }}>
+        {/* Cover gradient */}
+        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 30% 50%, rgba(${tier.glow},0.35) 0%, rgba(8,8,16,0.0) 70%)` }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(8,8,16,0) 0%, rgba(8,8,16,0.85) 100%)' }} />
+        {/* Decorative orbs */}
+        <div style={{ position: 'absolute', top: '-30px', right: '15%', width: '220px', height: '220px', borderRadius: '50%', background: `radial-gradient(circle, rgba(${tier.glow},0.12) 0%, transparent 70%)` }} />
+        <div style={{ position: 'absolute', bottom: '-20px', left: '40%', width: '160px', height: '160px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(155,143,255,0.08) 0%, transparent 70%)' }} />
 
-        {/* SOCIAL PASSPORT CARD */}
-        <div style={{ background: 'linear-gradient(135deg, #0F0F1E 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: '28px', padding: '32px', marginBottom: '20px', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        {/* Tier badge — top right */}
+        <div style={{ position: 'absolute', top: '16px', right: '20px', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '999px', background: tier.bg, border: `1px solid ${tier.border}`, backdropFilter: 'blur(8px)' }}>
+          <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '1.5px', color: tier.color }}>{tier.label} TIER</span>
+        </div>
 
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '14px', fontWeight: 700, color: '#D4AF37' }}>BESTIE</span>
-              <span style={{ fontSize: '11px', color: '#9B93C0', letterSpacing: '1px' }}>SOCIAL PASSPORT</span>
-            </div>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <SharePassportButton username={profile.username} />
-              <KnockButton profileId={profile.id} />
-              <BlockReportButton profileUserId={profile.id} />
-              {profile.is_verified && (
-                <span style={{ fontSize: '12px', padding: '4px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', fontWeight: 600 }}>✓ Verified</span>
-              )}
-              {memberBadge && (
-                <span style={{ fontSize: '12px', padding: '4px 12px', borderRadius: '999px', background: `rgba(${memberBadge.color === '#D4AF37' ? '212,175,55' : memberBadge.color === '#39FF14' ? '57,255,20' : '155,147,192'},0.12)`, border: `1px solid ${memberBadge.color}30`, color: memberBadge.color, fontWeight: 600 }}>
-                  {memberBadge.emoji} {memberBadge.label}
-                </span>
-              )}
-            </div>
+        {/* Buttons row — top left */}
+        <div style={{ position: 'absolute', top: '16px', left: '20px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <SharePassportButton username={profile.username} />
+        </div>
+
+        {/* Avatar — overlapping */}
+        <div style={{ position: 'absolute', bottom: '-40px', left: '24px' }}>
+          <div style={{ width: '88px', height: '88px', borderRadius: '50%', overflow: 'hidden', border: `3px solid ${tier.color}`, background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 24px rgba(${tier.glow},0.4)`, ...getAvatarFrame(sessionCount) }}>
+            {profile.avatar_url
+              ? <img src={profile.avatar_url} alt={profile.full_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <span style={{ fontSize: '30px', fontWeight: 700, color: tier.color, fontFamily: 'DM Serif Display, serif' }}>{initials}</span>
+            }
           </div>
+        </div>
+      </div>
 
-          {/* Avatar + Info */}
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', marginBottom: '24px' }}>
-            <div style={{ width: '88px', height: '88px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center', ...getAvatarFrame(sessionCount) }}>
-              {profile.avatar_url
-                ? <img src={profile.avatar_url} alt={profile.full_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : <span style={{ fontSize: '32px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>{initials}</span>
-              }
-            </div>
-            <div style={{ flex: 1 }}>
-              <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '26px', fontWeight: 700, color: '#E8E0FF', marginBottom: '4px' }}>{profile.full_name}</h1>
-              <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '6px' }}>
+      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '0 20px' }}>
+
+        {/* IDENTITY — offset for avatar overlap */}
+        <div style={{ paddingTop: '52px', paddingBottom: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: '200px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '4px' }}>
+                <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '26px', fontWeight: 700, color: '#E8E0FF', margin: 0 }}>{profile.full_name}</h1>
+                {profile.is_verified && (
+                  <span title="Verified" style={{ fontSize: '16px' }}>✅</span>
+                )}
+                {memberBadge && (
+                  <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: memberBadge.color, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    {memberBadge.emoji} {memberBadge.label}
+                  </span>
+                )}
+              </div>
+              <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '8px' }}>
                 {profile.city && `📍 ${profile.city}${profile.country ? `, ${profile.country}` : ''} · `}@{profile.username}
+                {memberSince && ` · joined ${memberSince}`}
               </p>
               {crew && (
-                <Link href={`/crews/${crew.slug}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', marginBottom: '6px', padding: '3px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', textDecoration: 'none' }}>
+                <Link href={`/crews/${crew.slug}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', marginBottom: '8px', padding: '3px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', textDecoration: 'none' }}>
                   {!crew.is_public && '🔒 '}{crew.name}
                 </Link>
               )}
-              {memberSince && (
-                <p style={{ fontSize: '12px', color: '#9B93C0', marginBottom: '8px' }}>
-                  🗓 Member since {memberSince} · {memberBadge?.desc}
-                </p>
-              )}
-              {profile.bio && <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.6 }}>{profile.bio}</p>}
+              {profile.bio && <p style={{ fontSize: '14px', color: '#9B93C0', lineHeight: 1.65, maxWidth: '520px' }}>{profile.bio}</p>}
+            </div>
+            {/* Action buttons */}
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+              <KnockButton profileId={profile.id} />
+              <BlockReportButton profileUserId={profile.id} />
             </div>
           </div>
 
-          {/* STATS BLOCK: Bestie Score top, then Sessions / Sparks / Rating */}
-          <div style={{ marginBottom: '20px' }}>
-            {/* Bestie Score — full width */}
-            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '16px 20px', border: `1px solid ${scoreColor}20`, marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '6px' }}>BESTIE SCORE</p>
-                <div style={{ fontSize: '48px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{score}</div>
-                <p style={{ fontSize: '11px', fontWeight: 600, color: scoreColor, marginTop: '4px' }}>{scoreLabel}</p>
-              </div>
-              <div style={{ width: '120px' }}>
-                <div style={{ height: '6px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${Math.min(score / 10, 100)}%`, borderRadius: '999px', background: `linear-gradient(90deg, ${scoreColor} 0%, #D4AF37 100%)` }} />
-                </div>
-                <p style={{ fontSize: '10px', color: '#9B93C0', marginTop: '4px', textAlign: 'right' }}>/ 1000</p>
-              </div>
-            </div>
-
-            {/* Sessions / Sparks / Rating */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px' }}>
-              <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '6px' }}>SESSIONS</p>
-                <div style={{ fontSize: '24px', fontWeight: 700, color: '#E8E0FF', fontFamily: 'DM Serif Display, serif' }}>{totalSessions}</div>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>SPARKS</p>
-                <div style={{ fontSize: '28px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>✨ {totalSparks}</div>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>RATING</p>
-                <StarRating rating={avgRating} />
-                {avgRating > 0
-                  ? <p style={{ fontSize: '12px', fontWeight: 700, color: '#E8E0FF', marginTop: '4px' }}>{avgRating.toFixed(1)}</p>
-                  : <p style={{ fontSize: '11px', color: '#9B93C0', marginTop: '4px' }}>No reviews</p>
-                }
-              </div>
-            </div>
-          </div>
-
-          {/* Bestie Type */}
+          {/* Bestie type pills */}
           {(profile.energy_type || profile.mind_type || profile.vibe_type) && (
-            <div style={{ marginBottom: '16px' }}>
-              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '10px' }}>BESTIE TYPE</p>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {profile.energy_type && (
-                  <div style={{ padding: '6px 14px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', fontSize: '13px', color: '#D4AF37', fontWeight: 500 }}>
-                    ⚡ {profile.energy_type}
-                  </div>
-                )}
-                {profile.mind_type && (
-                  <div style={{ padding: '6px 14px', borderRadius: '999px', background: 'rgba(155,143,255,0.1)', border: '1px solid rgba(155,143,255,0.25)', fontSize: '13px', color: '#9B8FFF', fontWeight: 500 }}>
-                    💡 {profile.mind_type}
-                  </div>
-                )}
-                {profile.vibe_type && (
-                  <div style={{ padding: '6px 14px', borderRadius: '999px', background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '13px', color: '#39FF14', fontWeight: 500 }}>
-                    🌊 {profile.vibe_type}
-                  </div>
-                )}
-              </div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
+              {profile.energy_type && <span style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', fontSize: '12px', color: '#D4AF37', fontWeight: 500 }}>⚡ {profile.energy_type}</span>}
+              {profile.mind_type && <span style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(155,143,255,0.1)', border: '1px solid rgba(155,143,255,0.25)', fontSize: '12px', color: '#9B8FFF', fontWeight: 500 }}>💡 {profile.mind_type}</span>}
+              {profile.vibe_type && <span style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '12px', color: '#39FF14', fontWeight: 500 }}>🌊 {profile.vibe_type}</span>}
             </div>
           )}
+        </div>
 
-          {/* Languages */}
-          {profile.languages?.length > 0 && (
-            <div style={{ marginBottom: '16px' }}>
-              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '10px' }}>LANGUAGES</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {profile.languages.map(lang => (
-                  <div key={lang} style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(155,143,192,0.1)', border: '1px solid rgba(155,143,192,0.2)', fontSize: '12px', color: '#9B93C0', fontWeight: 500 }}>
-                    {lang}
-                  </div>
-                ))}
-              </div>
+        {/* STATS ROW */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '20px' }}>
+          {/* BS Score */}
+          <div style={{ gridColumn: 'span 2', background: 'linear-gradient(135deg, rgba(15,15,30,0.9) 0%, rgba(20,20,40,0.9) 100%)', border: `1px solid ${scoreColor}25`, borderRadius: '18px', padding: '16px 20px', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '80px', height: '80px', borderRadius: '50%', background: `radial-gradient(circle, ${scoreColor}15 0%, transparent 70%)` }} />
+            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '6px' }}>BESTIE SCORE</p>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+              <span style={{ fontSize: '36px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{score}</span>
+              <span style={{ fontSize: '11px', color: '#9B93C0' }}>/ 1000</span>
             </div>
-          )}
-
-          {/* Top Sparks */}
-          {topSparks.length > 0 && (
-            <div style={{ marginBottom: '16px' }}>
-              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '10px' }}>TOP SPARKS</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {topSparks.map(s => (
-                  <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)' }}>
-                    <span style={{ fontSize: '14px' }}>{s.emoji}</span>
-                    <span style={{ fontSize: '13px', fontWeight: 500, color: '#E8E0FF' }}>{s.label}</span>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#D4AF37' }}>×{s.count}</span>
-                  </div>
-                ))}
-              </div>
+            <div style={{ marginTop: '8px', height: '4px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${Math.min(score / 10, 100)}%`, borderRadius: '999px', background: `linear-gradient(90deg, ${scoreColor} 0%, #D4AF37 100%)`, transition: 'width 1s ease' }} />
             </div>
-          )}
+            <p style={{ fontSize: '10px', fontWeight: 600, color: scoreColor, marginTop: '4px' }}>{scoreLabel}</p>
+          </div>
 
-          {/* Availability */}
-          {profile.availability && Object.values(profile.availability).some((s: any) => s.on) && (
-            <div style={{ marginBottom: '16px' }}>
-              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '10px' }}>AVAILABILITY</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                {['mon','tue','wed','thu','fri','sat','sun'].map(d => {
-                  const slot = (profile.availability as any)[d]
-                  if (!slot?.on) return null
-                  const fmt = (t: string) => {
-                    const [h, m] = t.split(':')
-                    const hr = parseInt(h)
-                    return `${hr > 12 ? hr - 12 : hr || 12}${m !== '00' ? `:${m}` : ''}${hr >= 12 ? 'pm' : 'am'}`
-                  }
-                  return (
-                    <div key={d} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#D4AF37', textTransform: 'capitalize' }}>{d.charAt(0).toUpperCase() + d.slice(1)}</span>
-                      <span style={{ fontSize: '11px', color: '#9B93C0' }}>{fmt(slot.from)}–{fmt(slot.to)}</span>
-                    </div>
-                  )
-                })}
+          {/* Sessions */}
+          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '18px', padding: '16px', textAlign: 'center' }}>
+            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>SESSIONS</p>
+            <div style={{ fontSize: '28px', fontWeight: 700, color: '#E8E0FF', fontFamily: 'DM Serif Display, serif' }}>{sessionCount}</div>
+            <p style={{ fontSize: '10px', color: '#9B93C0', marginTop: '4px' }}>met IRL</p>
+          </div>
+
+          {/* Sparks */}
+          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '18px', padding: '16px', textAlign: 'center' }}>
+            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>SPARKS</p>
+            <div style={{ fontSize: '26px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>✨{totalSparks}</div>
+            {avgRating > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4px' }}>
+                <StarRating rating={avgRating} />
               </div>
-            </div>
-          )}
-
-          {/* Mutual Friends */}
-          <MutualFriends profileId={profile.id} />
-
-          {/* Badges */}
-          {BADGES.length > 0 && (
-            <div style={{ marginBottom: '16px' }}>
-              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '10px' }}>BADGES</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {BADGES.map((b: any) => (
-                  <div key={b.id} title={b.desc} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '999px', background: `rgba(${b.color === '#39FF14' ? '57,255,20' : b.color === '#D4AF37' ? '212,175,55' : b.color === '#FF6B35' ? '255,107,53' : b.color === '#9B8FFF' ? '155,143,255' : '155,147,192'},0.1)`, border: `1px solid ${b.color}35` }}>
-                    <span style={{ fontSize: '14px' }}>{b.emoji}</span>
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: b.color }}>{b.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Footer */}
-          <div style={{ paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <p style={{ fontSize: '11px', color: '#9B93C0' }}>bestiehere.com/{profile.username}</p>
-            <p style={{ fontSize: '11px', color: '#9B93C0' }}>Social Passport · 2026</p>
+            )}
           </div>
         </div>
 
-        {/* GIVE SPARKS */}
-        <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px', marginBottom: '20px' }}>
-          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#E8E0FF', marginBottom: '4px' }}>Give a Spark ✨</h3>
-          <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '16px' }}>Rare tokens of respect. Max 3 per person, 1 per type.</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(64px, 1fr))', gap: '8px', marginBottom: '12px' }}>
-            {SPARK_TYPES.slice(0, 10).map(s => (
-              <Link key={s.id} href={`/sparks/give?to=${profile.username}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 6px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', textDecoration: 'none' }}>
-                <span style={{ fontSize: '20px' }}>{s.emoji}</span>
-                <span style={{ fontSize: '10px', fontWeight: 500, color: '#9B93C0', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
-              </Link>
-            ))}
-          </div>
-          <Link href={`/sparks/give?to=${profile.username}`} style={{ display: 'block', textAlign: 'center', fontSize: '13px', color: '#D4AF37', textDecoration: 'none', marginBottom: '8px' }}>
-            See all 22 Spark types →
-          </Link>
-          <p style={{ fontSize: '12px', color: '#9B93C0', textAlign: 'center' }}>
-            <Link href="/login" style={{ color: '#D4AF37', textDecoration: 'none' }}>Log in</Link> to give Sparks
-          </p>
-        </div>
+        {/* COMPATIBILITY (client — only shows if viewer logged in + not own profile) */}
+        <CompatibilityScore profile={{
+          id: profile.id,
+          city: profile.city,
+          energy_type: profile.energy_type,
+          mind_type: profile.mind_type,
+          vibe_type: profile.vibe_type,
+          activity_packages: profile.activity_packages,
+        }} />
 
-        {/* ACTIVITIES */}
+        {/* MUTUAL FRIENDS */}
+        <MutualFriends profileId={profile.id} />
+
+        {/* SESSIONS YOU CAN BOOK */}
         {profile.activity_packages?.length > 0 && (
           <div style={{ marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <h3 style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0' }}>ACTIVITIES</h3>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#E8E0FF', margin: 0 }}>Sessions you can book</h2>
               <EditActivitiesLink profileUserId={profile.id} />
             </div>
-            {profile.activity_packages.map((pkg) => (
-              <div key={pkg.id} style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '20px', marginBottom: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '18px' }}>{ACTIVITY_EMOJI[pkg.activity_type] || '✨'}</span>
-                      <h4 style={{ fontSize: '16px', fontWeight: 600, color: '#E8E0FF' }}>{pkg.title}</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {profile.activity_packages.map((pkg) => (
+                <div key={pkg.id} style={{ background: 'linear-gradient(135deg, #0F0F1E 0%, #131324 100%)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '18px', padding: '18px 20px', transition: 'border-color 0.2s' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    {/* Emoji circle */}
+                    <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', flexShrink: 0 }}>
+                      {ACTIVITY_EMOJI[pkg.activity_type] || '✨'}
                     </div>
-                    {pkg.description && <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.6, marginBottom: pkg.scheduled_at ? '8px' : '0' }}>{pkg.description}</p>}
-                    {pkg.scheduled_at && (
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '8px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', marginTop: pkg.description ? '0' : '4px' }}>
-                        <span style={{ fontSize: '13px' }}>📅</span>
-                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#D4AF37' }}>
-                          {new Date(pkg.scheduled_at).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                        </span>
+                    {/* Details */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: '15px', fontWeight: 700, color: '#E8E0FF', marginBottom: '3px' }}>{pkg.title}</p>
+                      {pkg.description && <p style={{ fontSize: '12px', color: '#9B93C0', lineHeight: 1.5, marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pkg.description}</p>}
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        {ACTIVITY_DURATION[pkg.activity_type] && (
+                          <span style={{ fontSize: '11px', color: '#9B93C0' }}>⏱ {ACTIVITY_DURATION[pkg.activity_type]}</span>
+                        )}
+                        {pkg.scheduled_at && (
+                          <span style={{ fontSize: '11px', color: '#D4AF37', fontWeight: 600 }}>
+                            📅 {new Date(pkg.scheduled_at).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        )}
                       </div>
-                    )}
+                    </div>
+                    {/* Price */}
+                    <div style={{ flexShrink: 0, textAlign: 'right' }}>
+                      {pkg.is_free
+                        ? <div style={{ padding: '4px 10px', borderRadius: '8px', background: 'rgba(57,255,20,0.1)', border: '1px solid rgba(57,255,20,0.25)' }}><span style={{ fontSize: '13px', fontWeight: 700, color: '#39FF14' }}>Free</span></div>
+                        : pkg.price_per_session > 0 && (
+                          <div>
+                            <p style={{ fontSize: '20px', fontWeight: 700, color: '#E8E0FF', fontFamily: 'DM Serif Display, serif', margin: 0 }}>${pkg.price_per_session}</p>
+                            <p style={{ fontSize: '10px', color: '#9B93C0', textAlign: 'right' }}>/session</p>
+                          </div>
+                        )
+                      }
+                    </div>
                   </div>
-                  <div style={{ flexShrink: 0, textAlign: 'right' }}>
-                    {pkg.is_free
-                      ? <span style={{ fontSize: '16px', fontWeight: 700, color: '#39FF14' }}>Free</span>
-                      : pkg.price_per_session > 0 && (
-                        <div>
-                          <span style={{ fontSize: '20px', fontWeight: 700, color: '#E8E0FF' }}>${pkg.price_per_session}</span>
-                          <div style={{ fontSize: '12px', color: '#9B93C0' }}>/session</div>
-                        </div>
-                      )
-                    }
+                  {/* Actions */}
+                  <div style={{ marginTop: '14px', display: 'flex', gap: '8px' }}>
+                    <Link href={`/book/${profile.username}`} style={{ flex: 1, display: 'block', padding: '11px', borderRadius: '12px', textAlign: 'center', fontSize: '13px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
+                      Book →
+                    </Link>
+                    <div style={{ flex: 0 }}>
+                      <InviteToSessionButton username={profile.username} activityType={pkg.activity_type} />
+                    </div>
                   </div>
                 </div>
-                <Link href={`/book/${profile.username}`} style={{ display: 'block', marginTop: '16px', padding: '12px', borderRadius: '12px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
-                  Book a session →
-                </Link>
-                <Link href={`/messages?to=${profile.username}`} style={{ display: 'block', marginTop: '8px', padding: '12px', borderRadius: '12px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', textDecoration: 'none' }}>
-                  💬 Message {profile.full_name?.split(' ')[0]}
-                </Link>
-                <div style={{ marginTop: '8px' }}>
-                  <InviteToSessionButton username={profile.username} activityType={pkg.activity_type} />
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
 
         {(!profile.activity_packages || profile.activity_packages.length === 0) && (
-          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px', marginBottom: '16px', textAlign: 'center' }}>
+          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '18px', padding: '24px', marginBottom: '20px', textAlign: 'center' }}>
             <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '12px' }}>No activities listed yet</p>
             <EditActivitiesLink profileUserId={profile.id} />
           </div>
         )}
 
+        {/* TOP SPARKS */}
+        {topSparks.length > 0 && (
+          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '18px', padding: '20px', marginBottom: '16px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '14px' }}>TOP SPARKS FROM THE COMMUNITY</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {topSparks.map(s => (
+                <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                  <span style={{ fontSize: '14px' }}>{s.emoji}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 500, color: '#E8E0FF' }}>{s.label}</span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#D4AF37' }}>×{s.count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* GIVE SPARKS */}
+        <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '18px', padding: '20px', marginBottom: '16px' }}>
+          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '17px', color: '#E8E0FF', marginBottom: '4px' }}>Give a Spark ✨</h3>
+          <p style={{ fontSize: '12px', color: '#9B93C0', marginBottom: '14px' }}>Rare tokens of respect. Max 3 per person, 1 per type.</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: '8px', marginBottom: '12px' }}>
+            {SPARK_TYPES.slice(0, 10).map(s => (
+              <Link key={s.id} href={`/sparks/give?to=${profile.username}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 4px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', textDecoration: 'none' }}>
+                <span style={{ fontSize: '20px' }}>{s.emoji}</span>
+                <span style={{ fontSize: '9px', fontWeight: 500, color: '#9B93C0', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
+              </Link>
+            ))}
+          </div>
+          <Link href={`/sparks/give?to=${profile.username}`} style={{ display: 'block', textAlign: 'center', fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>
+            See all 22 Spark types →
+          </Link>
+        </div>
+
+        {/* BADGES */}
+        {BADGES.length > 0 && (
+          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '18px', padding: '20px', marginBottom: '16px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '14px' }}>ACHIEVEMENTS</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {BADGES.map((b: any) => (
+                <div key={b.id} title={b.desc} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '999px', background: `rgba(${b.color === '#39FF14' ? '57,255,20' : b.color === '#D4AF37' ? '212,175,55' : b.color === '#FF6B35' ? '255,107,53' : b.color === '#9B8FFF' ? '155,143,255' : '155,147,192'},0.1)`, border: `1px solid ${b.color}35` }}>
+                  <span style={{ fontSize: '14px' }}>{b.emoji}</span>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: b.color }}>{b.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* LANGUAGES */}
+        {profile.languages?.length > 0 && (
+          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '18px', padding: '20px', marginBottom: '16px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '12px' }}>LANGUAGES</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {profile.languages.map(lang => (
+                <span key={lang} style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(155,143,192,0.1)', border: '1px solid rgba(155,143,192,0.2)', fontSize: '12px', color: '#9B93C0', fontWeight: 500 }}>{lang}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* AVAILABILITY */}
+        {profile.availability && Object.values(profile.availability).some((s: any) => s.on) && (
+          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '18px', padding: '20px', marginBottom: '16px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '12px' }}>AVAILABILITY</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {['mon','tue','wed','thu','fri','sat','sun'].map(d => {
+                const slot = (profile.availability as any)[d]
+                if (!slot?.on) return null
+                const fmt = (t: string) => {
+                  const [h, m] = t.split(':')
+                  const hr = parseInt(h)
+                  return `${hr > 12 ? hr - 12 : hr || 12}${m !== '00' ? `:${m}` : ''}${hr >= 12 ? 'pm' : 'am'}`
+                }
+                return (
+                  <div key={d} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#D4AF37', textTransform: 'capitalize' }}>{d.charAt(0).toUpperCase() + d.slice(1)}</span>
+                    <span style={{ fontSize: '11px', color: '#9B93C0' }}>{fmt(slot.from)}–{fmt(slot.to)}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* SOCIAL PASSPORT FOOTER CARD */}
+        <div style={{ background: 'linear-gradient(135deg, #0F0F1E 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '18px', padding: '20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '4px' }}>BESTIE SOCIAL PASSPORT</p>
+            <p style={{ fontSize: '13px', color: '#E8E0FF' }}>bestiehere.com/{profile.username}</p>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', fontWeight: 700, color: '#D4AF37' }}>BESTIE</p>
+            <p style={{ fontSize: '10px', color: '#9B93C0' }}>Social Passport · 2026</p>
+          </div>
+        </div>
+
         <SocialPassportCTA />
       </div>
+
+      {/* STICKY BOOK CTA (client component — hides on own profile) */}
+      <StickyBookCTA profileId={profile.id} username={profile.username} firstName={firstName} />
     </div>
   )
 }
