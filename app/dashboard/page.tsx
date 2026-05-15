@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import NotificationBell from '@/components/NotificationBell'
 import { usePushNotifications } from '@/lib/usePushNotifications'
+import FindFriends from '@/components/FindFriends'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -350,6 +351,9 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+
+        {/* Find Friends */}
+        <FindFriends />
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '20px' }}>
 

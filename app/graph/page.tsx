@@ -19,19 +19,43 @@ export default function GraphPage() {
 
   useEffect(() => {
     const init = async () => {
+      const { data: { session: authSession } } = await supabase.auth.getSession()
+      const currentUserId = authSession?.user?.id || null
+
+      // Fetch confirmed IRL bookings
       const { data: bookings } = await supabase
         .from('bookings')
         .select('seeker_id, provider_id')
         .eq('confirmed_by_seeker', true)
         .eq('confirmed_by_provider', true)
 
-      if (!bookings || bookings.length === 0) { setEmpty(true); setLoading(false); return }
+      // Fetch contact edges (matched contacts for current user)
+      let contactLinks: any[] = []
+      if (currentUserId) {
+        const { data: contacts } = await supabase
+          .from('user_contacts')
+          .select('matched_user_id')
+          .eq('owner_id', currentUserId)
+          .not('matched_user_id', 'is', null)
+        if (contacts?.length) {
+          contactLinks = contacts.map((c: any) => ({
+            source: currentUserId,
+            target: c.matched_user_id,
+            weight: 0,
+            type: 'contact',
+          }))
+        }
+      }
+
+      if ((!bookings || bookings.length === 0) && contactLinks.length === 0) {
+        setEmpty(true); setLoading(false); return
+      }
 
       // Build edge map: normalised pair → weight
       const edgeMap = new Map<string, number>()
       const userIdSet = new Set<string>()
 
-      bookings.forEach(b => {
+      ;(bookings || []).forEach(b => {
         const [a, bb] = b.seeker_id < b.provider_id
           ? [b.seeker_id, b.provider_id]
           : [b.provider_id, b.seeker_id]
@@ -40,6 +64,12 @@ export default function GraphPage() {
         userIdSet.add(b.seeker_id)
         userIdSet.add(b.provider_id)
       })
+
+      // Add contact node ids
+      if (currentUserId) {
+        userIdSet.add(currentUserId)
+        contactLinks.forEach((c: any) => userIdSet.add(c.target))
+      }
 
       const ids = Array.from(userIdSet)
       const { data: users } = await supabase
@@ -68,13 +98,26 @@ export default function GraphPage() {
         score: u.bestie_score || 0,
         sessions: sessionsByUser[u.id] || 0,
         city: u.city,
+        isMe: u.id === currentUserId,
       }))
 
       const links: any[] = []
       edgeMap.forEach((weight, key) => {
         const [source, target] = key.split('::')
         if (usersById[source] && usersById[target]) {
-          links.push({ source, target, weight })
+          links.push({ source, target, weight, type: 'session' })
+        }
+      })
+
+      // Add contact links (only if target exists in fetched users)
+      contactLinks.forEach((c: any) => {
+        if (usersById[c.source] && usersById[c.target]) {
+          // Avoid duplicating an existing session edge
+          const key1 = `${c.source}::${c.target}`
+          const key2 = `${c.target}::${c.source}`
+          if (!edgeMap.has(key1) && !edgeMap.has(key2)) {
+            links.push({ source: c.source, target: c.target, weight: 0, type: 'contact' })
+          }
         }
       })
 
@@ -169,11 +212,14 @@ export default function GraphPage() {
     // Force simulation
     const simulation = d3.forceSimulation(nodes)
       .force('link', d3.forceLink(links).id((d: any) => d.id)
-        .distance((d: any) => 60 + 40 / Math.sqrt(d.weight))
-        .strength(0.25))
+        .distance((d: any) => d.type === 'contact' ? 120 : 60 + 40 / Math.sqrt(Math.max(d.weight, 0.1)))
+        .strength((d: any) => d.type === 'contact' ? 0.08 : 0.25))
       .force('charge', d3.forceManyBody().strength((d: any) => -80 - d.score * 0.05))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force('collision', d3.forceCollide().radius((d: any) => nodeRadius(d) + 10))
+
+    // Dashed pattern for contact edges
+    defs.append('marker')
 
     // Edges — use separate stroke + stroke-opacity for max browser compat
     const link = g.append('g').attr('class', 'links')
@@ -181,18 +227,24 @@ export default function GraphPage() {
       .data(links)
       .join('line')
       .attr('stroke', (d: any) => {
+        if (d.type === 'contact') return '#9B93C0'
         const w = d.weight
         if (w >= 5) return '#D4AF37'
         if (w >= 3) return '#9B8FFF'
         return '#9B93C0'
       })
       .attr('stroke-opacity', (d: any) => {
+        if (d.type === 'contact') return 0.35
         const w = d.weight
         if (w >= 5) return 0.8
         if (w >= 3) return 0.65
         return 0.55
       })
-      .attr('stroke-width', (d: any) => Math.max(1.5, Math.min(1.5 + d.weight, 6)))
+      .attr('stroke-width', (d: any) => {
+        if (d.type === 'contact') return 1
+        return Math.max(1.5, Math.min(1.5 + d.weight, 6))
+      })
+      .attr('stroke-dasharray', (d: any) => d.type === 'contact' ? '4,4' : null)
       .attr('stroke-linecap', 'round')
       .attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 0)
 
@@ -222,6 +274,16 @@ export default function GraphPage() {
       .attr('fill', 'none')
       .attr('stroke', 'rgba(255,255,255,0.15)')
       .attr('stroke-width', 1.5)
+
+    // Extra ring for "me"
+    node.filter((d: any) => d.isMe)
+      .append('circle')
+      .attr('r', (d: any) => nodeRadius(d) + 9)
+      .attr('fill', 'none')
+      .attr('stroke', '#D4AF37')
+      .attr('stroke-width', 1.5)
+      .attr('stroke-dasharray', '3,3')
+      .attr('opacity', 0.7)
 
     // Border circle
     node.append('circle')
@@ -345,6 +407,10 @@ export default function GraphPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: '22px', height: '1px', borderRadius: '999px', background: 'rgba(155,147,192,0.3)', flexShrink: 0 }} />
               <span style={{ fontSize: '11px', color: '#E8E0FF' }}>1 session</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '22px', height: '0px', borderBottom: '1px dashed rgba(155,147,192,0.45)', flexShrink: 0 }} />
+              <span style={{ fontSize: '11px', color: '#E8E0FF' }}>contact</span>
             </div>
           </div>
           <p className="graph-legend-hint" style={{ fontSize: '10px', color: '#9B93C0', marginTop: '8px' }}>Size = Score · Drag · Pinch to zoom</p>
