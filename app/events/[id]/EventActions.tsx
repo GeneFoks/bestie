@@ -44,12 +44,16 @@ export default function EventActions({ eventId, crewId, captainId, isMembersOnly
     const { error: err } = await supabase
       .from('crew_event_attendees').insert({ event_id: eventId, user_id: userId })
     if (err) { setError(err.message); setActing(false); return }
-    router.refresh()
+    setIsAttending(true)   // update local state immediately
+    setActing(false)
+    router.refresh()       // also refresh server component (updates attendee count)
   }
 
   const leave = async () => {
     setActing(true)
     await supabase.from('crew_event_attendees').delete().eq('event_id', eventId).eq('user_id', userId)
+    setIsAttending(false)  // update local state immediately
+    setActing(false)
     router.refresh()
   }
 
