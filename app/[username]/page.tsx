@@ -370,13 +370,11 @@ export default async function ProfilePage({ params }) {
                     </div>
                   </div>
                   {/* Actions */}
-                  <div style={{ marginTop: '14px', display: 'flex', gap: '8px' }}>
-                    <Link href={`/book/${profile.username}`} style={{ flex: 1, display: 'block', padding: '11px', borderRadius: '12px', textAlign: 'center', fontSize: '13px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
+                  <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <Link href={`/book/${profile.username}`} style={{ display: 'block', padding: '12px', borderRadius: '12px', textAlign: 'center', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
                       Book →
                     </Link>
-                    <div style={{ flex: 0 }}>
-                      <InviteToSessionButton username={profile.username} activityType={pkg.activity_type} />
-                    </div>
+                    <InviteToSessionButton username={profile.username} activityType={pkg.activity_type} />
                   </div>
                 </div>
               ))}
