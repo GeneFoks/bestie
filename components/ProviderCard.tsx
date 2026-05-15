@@ -132,17 +132,21 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
       </div>
 
       <div className="px-4 pb-4 pt-3 space-y-3">
-        <div className="flex items-center gap-3 text-xs" style={{ color: '#9B93C0' }}>
-         <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-  {[1,2,3,4,5].map(i => (
-    <span key={i} style={{ fontSize: '11px', color: i <= Math.round(provider.avg_rating || 0) ? '#D4AF37' : 'rgba(212,175,55,0.2)' }}>★</span>
-  ))}
-  {(provider.avg_rating || 0) > 0 && (
-    <span style={{ marginLeft: '4px' }}>{Number(provider.avg_rating).toFixed(1)}</span>
-  )}
-</span>
-          {totalSessions > 0 ? <span>· {totalSessions} sessions</span> : null}
-          {sparksReceived > 0 ? <span>· ✨ {sparksReceived}</span> : null}
+        {/* Stats row: BS · met · sparks · rating */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '11px', fontWeight: 700, color: scoreColor }}>BS {score}</span>
+          {totalSessions > 0 && (
+            <span style={{ fontSize: '11px', color: '#9B93C0' }}>· 🤝 {totalSessions} met</span>
+          )}
+          {sparksReceived > 0 && (
+            <span style={{ fontSize: '11px', color: '#9B93C0' }}>· ✨ {sparksReceived}</span>
+          )}
+          {(provider.avg_rating || 0) > 0 && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+              <span style={{ fontSize: '10px', color: '#D4AF37' }}>★</span>
+              <span style={{ fontSize: '11px', color: '#9B93C0' }}>{Number(provider.avg_rating).toFixed(1)}</span>
+            </span>
+          )}
         </div>
 
         {provider.bio && (
@@ -151,11 +155,12 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
           </p>
         )}
 
+        {/* Spark tags with counts */}
         {provider.top_sparks && provider.top_sparks.length > 0 && (
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
             {provider.top_sparks.map(s => (
-              <span key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '3px 8px', borderRadius: '999px', fontSize: '10px', fontWeight: 500, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.18)', color: '#D4AF37' }}>
-                {s.emoji} {s.label}
+              <span key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '3px 9px', borderRadius: '999px', fontSize: '10px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.18)', color: '#D4AF37', whiteSpace: 'nowrap' }}>
+                {s.emoji} {s.label} <span style={{ opacity: 0.7, fontWeight: 500 }}>{s.count}</span>
               </span>
             ))}
           </div>

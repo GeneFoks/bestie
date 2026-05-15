@@ -39,6 +39,18 @@ export default async function CrewsPage() {
           </Link>
         </div>
 
+        {/* Legend */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
+          {[
+            { label: '🔥 Hot', desc: '15+ members', color: '#FF6B35' },
+            { label: '🌟 Elite', desc: 'BS avg 700+', color: '#D4AF37' },
+            { label: '🔒 Invite only', desc: 'Private crew', color: '#9B93C0' },
+            { label: '🌱 Growing', desc: 'Under 8 members', color: '#39FF14' },
+          ].map(b => (
+            <span key={b.label} style={{ fontSize: '11px', padding: '4px 10px', borderRadius: '999px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: b.color, fontWeight: 500 }}>{b.label}</span>
+          ))}
+        </div>
+
         {!crews || crews.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 24px', background: '#0F0F1E', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
             <p style={{ fontSize: '48px', marginBottom: '16px' }}>👥</p>
@@ -70,9 +82,13 @@ export default async function CrewsPage() {
                   </div>
 
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
-                      <span style={{ fontSize: '16px', fontWeight: 700, color: '#E8E0FF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{crew.name}</span>
-                      {!crew.is_public && <span style={{ fontSize: '11px' }}>🔒</span>}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '16px', fontWeight: 700, color: '#E8E0FF' }}>{crew.name}</span>
+                      {/* Status badges */}
+                      {!crew.is_public && <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '999px', background: 'rgba(155,147,192,0.12)', border: '1px solid rgba(155,147,192,0.25)', color: '#9B93C0', fontWeight: 600 }}>🔒 Invite only</span>}
+                      {crew.avg_bestie_score >= 700 && <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', fontWeight: 600 }}>🌟 Elite</span>}
+                      {crew.member_count >= 15 && <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '999px', background: 'rgba(255,107,53,0.1)', border: '1px solid rgba(255,107,53,0.3)', color: '#FF6B35', fontWeight: 600 }}>🔥 Hot</span>}
+                      {crew.member_count < 8 && crew.member_count > 0 && <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '999px', background: 'rgba(57,255,20,0.07)', border: '1px solid rgba(57,255,20,0.2)', color: '#39FF14', fontWeight: 600 }}>🌱 Growing</span>}
                     </div>
                     <span style={{ fontSize: '12px', color: '#9B93C0' }}>{crew.member_count} member{crew.member_count !== 1 ? 's' : ''}</span>
                   </div>
