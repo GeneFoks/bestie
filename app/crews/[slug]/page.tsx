@@ -12,6 +12,7 @@ import CrewDeleteButton from './CrewDeleteButton'
 import CrewTelegramLink from './CrewTelegramLink'
 import CrewKickButton from './CrewKickButton'
 import JoinRequestsPanel from './JoinRequestsPanel'
+import EventGoingButton from './EventGoingButton'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -54,7 +55,7 @@ export default async function CrewPage({ params }) {
       .order('bestie_score', { ascending: false, foreignTable: 'users' }),
     supabase
       .from('crew_events')
-      .select('id, title, datetime, location, is_members_only, max_attendees')
+      .select('id, title, datetime, location, is_members_only, max_attendees, attendees:crew_event_attendees(count)')
       .eq('crew_id', crew.id)
       .gte('datetime', new Date().toISOString())
       .order('datetime', { ascending: true })
@@ -214,9 +215,10 @@ export default async function CrewPage({ params }) {
                         </p>
                       </div>
                     </div>
-                    <Link href={`/events/${event.id}`} style={{ display: 'block', marginTop: '16px', padding: '13px', borderRadius: '12px', textAlign: 'center', fontSize: '15px', fontWeight: 800, background: '#39FF14', color: '#080810', textDecoration: 'none', letterSpacing: '0.3px' }}>
-                      I'm going →
-                    </Link>
+                    <EventGoingButton
+                      eventId={event.id}
+                      isFull={!!(event.max_attendees && (event.attendees?.[0]?.count ?? 0) >= event.max_attendees)}
+                    />
                   </div>
                 )
               }
