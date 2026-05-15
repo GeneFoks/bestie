@@ -217,10 +217,10 @@ export default function BrowsePage() {
 
       if (result.length > 0) {
         const userIds = result.map(p => p.id)
+
+        // Fetch sparks
         const { data: sparksData } = await supabase
-          .from('sparks')
-          .select('receiver_id, spark_type')
-          .in('receiver_id', userIds)
+          .from('sparks').select('receiver_id, spark_type').in('receiver_id', userIds)
 
         const sparksByUser = {}
         sparksData?.forEach(s => {
@@ -235,6 +235,7 @@ export default function BrowsePage() {
             .filter(s => s.count > 0)
             .sort((a, b) => b.count - a.count)
             .slice(0, 3)
+          // rating_count is now a column on users (from migration_rating_count.sql)
           return { ...p, top_sparks: topSparks }
         })
       }

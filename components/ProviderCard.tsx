@@ -29,6 +29,8 @@ interface Provider {
   bestie_score?: number
   is_verified?: boolean
   avg_rating?: number
+  average_rating?: number
+  rating_count?: number
   total_sessions?: number
   sparks_received?: number
   top_sparks?: TopSpark[]
@@ -141,12 +143,19 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
           {sparksReceived > 0 && (
             <span style={{ fontSize: '11px', color: '#9B93C0' }}>· ✨ {sparksReceived}</span>
           )}
-          {(provider.avg_rating || 0) > 0 && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-              <span style={{ fontSize: '10px', color: '#D4AF37' }}>★</span>
-              <span style={{ fontSize: '11px', color: '#9B93C0' }}>{Number(provider.avg_rating).toFixed(1)}</span>
-            </span>
-          )}
+          {(() => {
+            const rating = provider.avg_rating ?? provider.average_rating ?? 0
+            const count = provider.rating_count ?? 0
+            return rating > 0 ? (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                <span style={{ fontSize: '10px', color: '#D4AF37' }}>★</span>
+                <span style={{ fontSize: '11px', color: '#9B93C0' }}>
+                  {Number(rating).toFixed(1)}
+                  {count > 0 && <span style={{ color: 'rgba(155,147,192,0.6)' }}> ({count})</span>}
+                </span>
+              </span>
+            ) : null
+          })()}
         </div>
 
         {provider.bio && (
