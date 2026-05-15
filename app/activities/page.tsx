@@ -103,6 +103,13 @@ const ACTIVITY_GROUPS = [
 
 const ACTIVITIES = ACTIVITY_GROUPS.flatMap(g => g.items)
 const EMPTY_FORM = { title: '', activity_type: '', description: '', price_per_session: '', is_free: false }
+
+// How many people are doing each activity
+const ACTIVITY_TRENDING_ORDER = [
+  'coffee_chat', 'deep_chat', 'hiking', 'gym_partner', 'game_night',
+  'travel_buddy', 'vent_session', 'book_club', 'coworking', 'yoga',
+  'running', 'night_out', 'cooking', 'meditation', 'breathwork',
+]
 const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
 const labelStyle = { fontSize: '13px', fontWeight: 500, color: '#9B93C0', display: 'block', marginBottom: '8px' }
 
@@ -115,18 +122,25 @@ export default function ActivitiesPage() {
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
+  const [trendingCounts, setTrendingCounts] = useState<Record<string, number>>({})
 
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.push('/login'); return }
       setUserId(session.user.id)
-      const { data } = await supabase
-        .from('activity_packages')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false })
-      setPackages(data || [])
+
+      const [{ data: myPkgs }, { data: allPkgs }] = await Promise.all([
+        supabase.from('activity_packages').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false }),
+        supabase.from('activity_packages').select('activity_type'),
+      ])
+
+      setPackages(myPkgs || [])
+
+      // Compute counts
+      const counts: Record<string, number> = {}
+      allPkgs?.forEach(p => { counts[p.activity_type] = (counts[p.activity_type] || 0) + 1 })
+      setTrendingCounts(counts)
       setLoading(false)
     }
     init()
@@ -212,7 +226,7 @@ export default function ActivitiesPage() {
 
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '40px 24px' }}>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
           <div>
             <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: '#E8E0FF', marginBottom: '4px' }}>My Activities</h1>
             <p style={{ fontSize: '14px', color: '#9B93C0' }}>{packages.length} activities · what people can book you for</p>
@@ -223,6 +237,44 @@ export default function ActivitiesPage() {
             </button>
           )}
         </div>
+
+        {/* TRENDING THIS WEEK */}
+        {Object.keys(trendingCounts).length > 0 && (
+          <div style={{ marginBottom: '28px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#FF6B35' }}>🔥 TRENDING THIS WEEK</span>
+              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.06)' }} />
+            </div>
+            <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px', scrollbarWidth: 'none' }}>
+              {ACTIVITIES
+                .map(a => ({ ...a, count: trendingCounts[a.id] || 0 }))
+                .filter(a => a.count > 0)
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 12)
+                .map((a, i) => {
+                  const alreadyHave = packages.some(p => p.activity_type === a.id)
+                  return (
+                    <button
+                      key={a.id}
+                      onClick={() => {
+                        if (!alreadyHave) {
+                          setForm(f => ({ ...f, activity_type: a.id }))
+                          setShowForm(true)
+                          window.scrollTo({ top: 400, behavior: 'smooth' })
+                        }
+                      }}
+                      style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '12px 14px', borderRadius: '16px', border: alreadyHave ? '1px solid rgba(57,255,20,0.35)' : i < 3 ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(255,255,255,0.07)', background: alreadyHave ? 'rgba(57,255,20,0.06)' : i < 3 ? 'rgba(255,107,53,0.06)' : 'rgba(255,255,255,0.03)', cursor: alreadyHave ? 'default' : 'pointer', minWidth: '72px' }}
+                    >
+                      <span style={{ fontSize: '24px' }}>{a.emoji}</span>
+                      <span style={{ fontSize: '10px', fontWeight: 600, color: alreadyHave ? '#39FF14' : '#E8E0FF', textAlign: 'center', lineHeight: 1.3, whiteSpace: 'nowrap' }}>{a.label}</span>
+                      <span style={{ fontSize: '10px', color: alreadyHave ? '#39FF14' : '#9B93C0' }}>{a.count} besties{alreadyHave ? ' ✓' : ''}</span>
+                    </button>
+                  )
+                })
+              }
+            </div>
+          </div>
+        )}
 
         {showForm && (
           <div style={{ background: '#0F0F1E', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '20px', padding: '28px', marginBottom: '24px' }}>
