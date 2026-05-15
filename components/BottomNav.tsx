@@ -2,10 +2,21 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase'
 
 const HomeIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 12L12 3l9 9v9a1 1 0 01-1 1h-5v-5H9v5H4a1 1 0 01-1-1v-9z"/>
+  </svg>
+)
+
+const DashboardIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="7" height="7" rx="1"/>
+    <rect x="14" y="3" width="7" height="7" rx="1"/>
+    <rect x="3" y="14" width="7" height="7" rx="1"/>
+    <rect x="14" y="14" width="7" height="7" rx="1"/>
   </svg>
 )
 
@@ -40,8 +51,16 @@ const BookingsIcon = () => (
   </svg>
 )
 
-const LINKS = [
+const GUEST_LINKS = [
   { href: '/', label: 'Home', Icon: HomeIcon, match: (p: string) => p === '/' },
+  { href: '/browse', label: 'Browse', Icon: BrowseIcon, match: (p: string) => p.startsWith('/browse') },
+  { href: '/activities', label: 'Activities', Icon: ActivitiesIcon, match: (p: string) => p.startsWith('/activities') },
+  { href: '/crews', label: 'Crews', Icon: CrewsIcon, match: (p: string) => p.startsWith('/crews') },
+  { href: '/bookings', label: 'Bookings', Icon: BookingsIcon, match: (p: string) => p.startsWith('/bookings') },
+]
+
+const AUTH_LINKS = [
+  { href: '/dashboard', label: 'Dashboard', Icon: DashboardIcon, match: (p: string) => p.startsWith('/dashboard') },
   { href: '/browse', label: 'Browse', Icon: BrowseIcon, match: (p: string) => p.startsWith('/browse') },
   { href: '/activities', label: 'Activities', Icon: ActivitiesIcon, match: (p: string) => p.startsWith('/activities') },
   { href: '/crews', label: 'Crews', Icon: CrewsIcon, match: (p: string) => p.startsWith('/crews') },
@@ -50,6 +69,19 @@ const LINKS = [
 
 export default function BottomNav() {
   const path = usePathname()
+  const [loggedIn, setLoggedIn] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setLoggedIn(!!session)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setLoggedIn(!!session)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const LINKS = loggedIn ? AUTH_LINKS : GUEST_LINKS
 
   return (
     <>

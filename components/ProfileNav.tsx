@@ -16,11 +16,10 @@ export default function ProfileNav() {
   return (
     <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
       {loggedIn ? (
-        // Logged in: Dashboard button — hidden on mobile (bottom nav handles it)
+        // Logged in: Dashboard button — visible on all screens
         <Link
           href="/dashboard"
-          className="desktop-nav-cta"
-          style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}
+          style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', whiteSpace: 'nowrap' }}
         >
           Dashboard
         </Link>
