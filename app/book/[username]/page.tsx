@@ -44,7 +44,8 @@ export default function BookPage({ params }) {
   const handleBook = async () => {
     if (!selectedPackage) return
     setSending(true)
-    await supabase.from('bookings').insert({
+
+    const { error: bookingError } = await supabase.from('bookings').insert({
       seeker_id: userId,
       provider_id: provider.id,
       package_id: selectedPackage.id,
@@ -52,6 +53,13 @@ export default function BookPage({ params }) {
       scheduled_at: date ? new Date(date).toISOString() : null,
       status: 'pending',
     })
+
+    if (bookingError) {
+      console.error('Booking insert failed:', bookingError.message)
+      alert(`Could not send booking request: ${bookingError.message}`)
+      setSending(false)
+      return
+    }
 
     if (provider.email) {
       await fetch('/api/email', {
