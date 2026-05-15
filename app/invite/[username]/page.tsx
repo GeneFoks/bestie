@@ -20,13 +20,43 @@ const ACTIVITY_LABELS = {
 }
 
 export async function generateMetadata({ params, searchParams }) {
-  const { data: profile } = await supabase.from('users').select('full_name').eq('username', params.username).single()
+  const { data: profile } = await supabase
+    .from('users')
+    .select('full_name, username, bio, avatar_url, city, country')
+    .eq('username', params.username)
+    .single()
   if (!profile) return { title: 'Invite · Bestie' }
   const activity = searchParams?.activity
   const label = ACTIVITY_LABELS[activity] || 'connect'
+  const title = `${profile.full_name} wants to ${label} with you`
+  const description = profile.bio
+    ? `${profile.bio.slice(0, 120)}${profile.bio.length > 120 ? '…' : ''}`
+    : `Join Bestie to accept ${profile.full_name}'s invitation`
+  const ogImageUrl = `https://bestiehere.com/invite/${params.username}/opengraph-image${activity ? `?activity=${activity}` : ''}`
+
   return {
-    title: `${profile.full_name} invited you to ${label} · Bestie`,
-    description: `Join Bestie to accept ${profile.full_name}'s invitation`,
+    title: `${title} · Bestie`,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `https://bestiehere.com/invite/${params.username}`,
+      type: 'profile',
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${profile.full_name} on Bestie`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImageUrl],
+    },
   }
 }
 

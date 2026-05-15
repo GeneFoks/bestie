@@ -25,7 +25,10 @@ function SignupForm() {
     const { error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
-      options: { data: { full_name: form.name } }
+      options: {
+        data: { full_name: form.name },
+        emailRedirectTo: 'https://bestiehere.com/auth/callback',
+      }
     })
     if (error) {
       setError(error.message)
