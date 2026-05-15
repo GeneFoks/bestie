@@ -203,7 +203,7 @@ export default async function ProfilePage({ params }) {
         <ProfileNav />
       </nav>
 
-      {/* COVER HERO */}
+      {/* COVER HERO — overflow:hidden только для градиентов, аватар снаружи */}
       <div style={{ position: 'relative', height: '180px', overflow: 'hidden' }}>
         {/* Cover gradient */}
         <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 30% 50%, rgba(${tier.glow},0.35) 0%, rgba(8,8,16,0.0) 70%)` }} />
@@ -217,13 +217,16 @@ export default async function ProfilePage({ params }) {
           <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '1.5px', color: tier.color }}>{tier.label} TIER</span>
         </div>
 
-        {/* Buttons row — top left */}
+        {/* Share button — top left */}
         <div style={{ position: 'absolute', top: '16px', left: '20px', display: 'flex', gap: '8px', alignItems: 'center' }}>
           <SharePassportButton username={profile.username} />
         </div>
+      </div>
 
-        {/* Avatar — overlapping */}
-        <div style={{ position: 'absolute', bottom: '-40px', left: '24px' }}>
+      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '0 20px' }}>
+
+        {/* AVATAR — вынесен из cover чтобы не обрезался overflow:hidden */}
+        <div style={{ marginTop: '-44px', marginBottom: '0', position: 'relative', zIndex: 10 }}>
           <div style={{ width: '88px', height: '88px', borderRadius: '50%', overflow: 'hidden', border: `3px solid ${tier.color}`, background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 24px rgba(${tier.glow},0.4)`, ...getAvatarFrame(sessionCount) }}>
             {profile.avatar_url
               ? <img src={profile.avatar_url} alt={profile.full_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -231,12 +234,9 @@ export default async function ProfilePage({ params }) {
             }
           </div>
         </div>
-      </div>
 
-      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '0 20px' }}>
-
-        {/* IDENTITY — offset for avatar overlap */}
-        <div style={{ paddingTop: '52px', paddingBottom: '20px' }}>
+        {/* IDENTITY */}
+        <div style={{ paddingTop: '12px', paddingBottom: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: '200px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '4px' }}>
