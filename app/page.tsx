@@ -317,31 +317,17 @@ export default function HomePage() {
           <Link href="#score" className="nav-link">Bestie Score</Link>
         </div>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          {/* Desktop: full buttons. Mobile: only Join Free for logged-out */}
           {loggedIn ? (
-            <Link href="/dashboard" className="btn-gold" style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '10px' }}>Dashboard →</Link>
+            <Link href="/dashboard" className="btn-gold desktop-nav-cta" style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '10px' }}>Dashboard →</Link>
           ) : (
             <>
-              <Link href="/login" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color='#E8E0FF'} onMouseLeave={e => e.target.style.color='#9B93C0'}>Log in</Link>
+              <Link href="/login" className="desktop-nav-cta" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none' }}>Log in</Link>
               <Link href="/signup" className="btn-gold" style={{ padding: '8px 18px', borderRadius: '10px', fontSize: '13px' }}>Join Free</Link>
             </>
           )}
-          <button className="mobile-menu-btn" onClick={() => setMenuOpen(!menuOpen)}>☰</button>
         </div>
       </nav>
-
-      {/* ── MOBILE MENU ── */}
-      <div className={`mobile-menu ${menuOpen ? 'open' : ''}`}>
-        <Link href="/browse" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>🔍 Browse</Link>
-        <Link href="/crews" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>👥 Crews</Link>
-        <Link href="/map" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>🗺️ Map</Link>
-        <Link href="/pulse" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>🌍 Pulse</Link>
-        <Link href="/graph" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>🕸️ Graph</Link>
-        <Link href="#how-it-works" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>💡 How It Works</Link>
-        <Link href="#score" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>⭐ Bestie Score</Link>
-        {!loggedIn && <Link href="/login" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>👤 Log in</Link>}
-        {!loggedIn && <Link href="/signup" onClick={() => setMenuOpen(false)} style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>✨ Join Free</Link>}
-        {loggedIn && <Link href="/dashboard" onClick={() => setMenuOpen(false)} style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>→ Dashboard</Link>}
-      </div>
 
       {/* ── HERO ── */}
       <section style={{ position: 'relative', paddingTop: '130px', paddingBottom: '60px', paddingLeft: '20px', paddingRight: '20px', overflow: 'hidden' }}>

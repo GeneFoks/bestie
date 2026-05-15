@@ -143,6 +143,21 @@ a { color: inherit; text-decoration: none; }
   }
 }
 
+/* ─── DESKTOP-ONLY NAV ELEMENTS ─── */
+/* Hide on mobile — bottom nav handles all navigation */
+@media (max-width: 768px) {
+  .desktop-nav-cta {
+    display: none !important;
+  }
+  /* Kill the old hamburger if it ever appears */
+  .mobile-menu-btn {
+    display: none !important;
+  }
+  .mobile-menu {
+    display: none !important;
+  }
+}
+
 /* ─── BOTTOM NAV (Mobile only) ─── */
 .bottom-nav {
   display: none;
