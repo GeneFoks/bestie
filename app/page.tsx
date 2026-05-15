@@ -319,7 +319,7 @@ export default function HomePage() {
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           {/* Desktop: full buttons. Mobile: only Join Free for logged-out */}
           {loggedIn ? (
-            <Link href="/dashboard" className="btn-gold desktop-nav-cta" style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '10px' }}>Dashboard →</Link>
+            <Link href="/dashboard" className="btn-gold" style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '10px' }}>Dashboard →</Link>
           ) : (
             <>
               <Link href="/login" className="desktop-nav-cta" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none' }}>Log in</Link>
