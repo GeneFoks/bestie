@@ -9,10 +9,8 @@ export default function CallPage({ params }: { params: { roomId: string } }) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callId = searchParams.get('call_id')
-  const preToken = searchParams.get('token')
 
-  const [token, setToken] = useState<string | null>(preToken)
-  const [loading, setLoading] = useState(!preToken)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [otherUser, setOtherUser] = useState<any>(null)
   const [ended, setEnded] = useState(false)
@@ -26,31 +24,24 @@ export default function CallPage({ params }: { params: { roomId: string } }) {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.push('/login'); return }
 
-      // Load other user info
       if (callId) {
         const { data: call } = await supabase
           .from('calls')
           .select('*, caller:users!caller_id(full_name, username, avatar_url), callee:users!callee_id(full_name, username, avatar_url)')
           .eq('id', callId)
           .single()
+
         if (call) {
           setOtherUser(call.caller_id === session.user.id ? call.callee : call.caller)
-        }
-      }
 
-      // If no token in URL (callee), fetch one
-      if (!preToken && callId) {
-        const res = await fetch('/api/call/token', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ call_id: callId }),
-        })
-        const data = await res.json()
-        if (!res.ok) { setError(data.error || 'Could not get token'); return }
-        setToken(data.token)
+          // If callee (no token in URL), mark call as active
+          if (call.callee_id === session.user.id && call.status === 'ringing') {
+            await supabase.from('calls').update({
+              status: 'active',
+              started_at: new Date().toISOString(),
+            }).eq('id', callId)
+          }
+        }
       }
 
       setLoading(false)
@@ -71,9 +62,8 @@ export default function CallPage({ params }: { params: { roomId: string } }) {
     router.back()
   }
 
-  const roomUrl = token
-    ? `https://bestieapp.daily.co/${params.roomId}?t=${token}`
-    : `https://bestieapp.daily.co/${params.roomId}`
+  // Jitsi Meet room URL — completely free, no API key needed
+  const jitsiUrl = `https://meet.jit.si/${params.roomId}`
 
   if (ended) {
     return (
@@ -122,18 +112,17 @@ export default function CallPage({ params }: { params: { roomId: string } }) {
           </div>
         </div>
 
-        {/* End call button */}
         <button
           onClick={leaveCall}
-          style={{ padding: '8px 16px', borderRadius: '20px', border: 'none', background: '#FF3B30', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+          style={{ padding: '8px 18px', borderRadius: '20px', border: 'none', background: '#FF3B30', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
         >
           📵 End call
         </button>
       </div>
 
-      {/* Daily.co iframe — full screen, no SDK needed */}
+      {/* Jitsi Meet iframe */}
       <iframe
-        src={roomUrl}
+        src={jitsiUrl}
         allow="camera; microphone; fullscreen; speaker; display-capture; autoplay"
         style={{ flex: 1, border: 'none', background: '#0a0a18' }}
         title="Bestie Call"
