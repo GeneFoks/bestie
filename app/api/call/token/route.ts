@@ -15,7 +15,6 @@ export async function POST(req: NextRequest) {
   const { call_id } = await req.json()
   if (!call_id) return NextResponse.json({ error: 'call_id required' }, { status: 400 })
 
-  // Load call and verify user is a participant
   const { data: call } = await supabaseAdmin
     .from('calls').select('*').eq('id', call_id).single()
 
@@ -24,34 +23,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const DAILY_API_KEY = process.env.DAILY_API_KEY
-  if (!DAILY_API_KEY) return NextResponse.json({ error: 'Not configured' }, { status: 503 })
-
-  // Mark call as active + set started_at
+  // Mark call as active
   await supabaseAdmin.from('calls').update({
     status: 'active',
     started_at: new Date().toISOString(),
   }).eq('id', call_id).eq('status', 'ringing')
 
-  // Generate token for the callee
-  const exp = Math.floor(Date.now() / 1000) + 60 * 60 * 2
-  const tokenRes = await fetch('https://api.daily.co/v1/meeting-tokens', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${DAILY_API_KEY}`,
-    },
-    body: JSON.stringify({
-      properties: {
-        room_name: call.room_name,
-        exp,
-        user_id: user.id,
-        is_owner: false,
-      },
-    }),
-  })
-
-  const { token: meetingToken } = await tokenRes.json()
-
-  return NextResponse.json({ token: meetingToken, room_url: call.room_url })
+  return NextResponse.json({ room_url: call.room_url, room_name: call.room_name })
 }
