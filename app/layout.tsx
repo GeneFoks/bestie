@@ -3,6 +3,7 @@ import './globals.css'
 import { AuthProvider } from './providers'
 import BottomNav from '@/components/BottomNav'
 import PWARegister from '@/components/PWARegister'
+import IncomingCall from '@/components/IncomingCall'
 
 export const metadata: Metadata = {
   title: 'Bestie — Your Social Passport',
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <BottomNav />
           <PWARegister />
+          <IncomingCall />
         </AuthProvider>
       </body>
     </html>

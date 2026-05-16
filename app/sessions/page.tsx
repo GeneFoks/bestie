@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import CallButton from '@/components/CallButton'
 
 const ACTIVITY_EMOJI = {
   meet_irl: '🤝', dance_crew: '💃', trail_crew: '🥾', travel_buddy: '✈️',
@@ -299,6 +300,7 @@ export default function SessionsPage() {
                         <Link href={`/messages?to=${other?.username}`} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', textDecoration: 'none', textAlign: 'center' }}>
                           💬 Message
                         </Link>
+                        <CallButton toUserId={other?.id} toUserName={other?.full_name} bookingId={s.id} variant="full" />
                         {!myConfirm ? (
                           <button onClick={() => confirmSession(s)} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', color: '#39FF14', cursor: 'pointer' }}>
                             ✓ Session happened
