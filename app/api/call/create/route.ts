@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { sendPushToUser } from '@/lib/push'
 
 export async function POST(req: NextRequest) {
   const supabaseAdmin = createClient(
@@ -32,6 +33,19 @@ export async function POST(req: NextRequest) {
   }).select().single()
 
   if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 })
+
+  // Send push notification to callee
+  const { data: callerUser } = await supabaseAdmin
+    .from('users')
+    .select('full_name')
+    .eq('id', user.id)
+    .single()
+
+  await sendPushToUser(to_user_id, {
+    title: `📞 Incoming call from ${callerUser?.full_name || 'Someone'}`,
+    body: 'Tap to answer',
+    link: `/call/${roomName}?call_id=${call.id}`,
+  })
 
   return NextResponse.json({
     call_id: call.id,
