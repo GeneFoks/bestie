@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import CallButton from '@/components/CallButton'
 
 export default function MessagesPage() {
   const router = useRouter()
@@ -256,7 +257,10 @@ export default function MessagesPage() {
                   <p style={{ fontSize: '15px', fontWeight: 600, color: '#E8E0FF' }}>{activeConv.user.full_name}</p>
                   <p style={{ fontSize: '12px', color: '#9B93C0' }}>@{activeConv.user.username}</p>
                 </div>
-                <Link href={`/${activeConv.user.username}`} style={{ marginLeft: 'auto', fontSize: '13px', color: '#9B93C0', textDecoration: 'none', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>View profile</Link>
+                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <CallButton toUserId={activeConv.user.id} toUserName={activeConv.user.full_name} variant="icon" />
+                  <Link href={`/${activeConv.user.username}`} style={{ fontSize: '13px', color: '#9B93C0', textDecoration: 'none', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>View profile</Link>
+                </div>
               </div>
 
               <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
