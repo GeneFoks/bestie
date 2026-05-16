@@ -14,53 +14,56 @@ function urlBase64ToUint8Array(base64String: string) {
   return outputArray
 }
 
-export default function PWARegister() {
-  useEffect(() => {
-    if (!('serviceWorker' in navigator)) return
+async function subscribePush(accessToken: string) {
+  if (!VAPID_PUBLIC_KEY || !('serviceWorker' in navigator) || !('PushManager' in window)) return
 
-    navigator.serviceWorker
-      .register('/sw.js')
-      .then(async (reg) => {
-        // Only subscribe if VAPID key is configured
-        if (!VAPID_PUBLIC_KEY) return
-
-        // Check if already subscribed
-        const existing = await reg.pushManager.getSubscription()
-        if (existing) {
-          await saveSubscription(existing)
-          return
-        }
-
-        // Request permission
-        const permission = await Notification.requestPermission()
-        if (permission !== 'granted') return
-
-        // Subscribe
-        const subscription = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-        })
-
-        await saveSubscription(subscription)
-      })
-      .catch(() => {/* silent */})
-  }, [])
-
-  return null
-}
-
-async function saveSubscription(subscription: PushSubscription) {
   try {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
+    const reg = await navigator.serviceWorker.ready
+
+    let subscription = await reg.pushManager.getSubscription()
+
+    if (!subscription) {
+      const permission = await Notification.requestPermission()
+      if (permission !== 'granted') return
+
+      subscription = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      })
+    }
 
     await fetch('/api/push/subscribe', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
+        'Authorization': `Bearer ${accessToken}`,
       },
       body: JSON.stringify({ subscription: subscription.toJSON() }),
     })
   } catch {/* silent */}
+}
+
+export default function PWARegister() {
+  useEffect(() => {
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {})
+    }
+
+    // Subscribe when user is already logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.access_token) subscribePush(session.access_token)
+    })
+
+    // Also subscribe on login (handles the case where user logs in later)
+    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.access_token) {
+        subscribePush(session.access_token)
+      }
+    })
+
+    return () => authSub.unsubscribe()
+  }, [])
+
+  return null
 }
