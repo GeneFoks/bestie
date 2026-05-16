@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { AuthProvider } from './providers'
 import BottomNav from '@/components/BottomNav'
+import PWARegister from '@/components/PWARegister'
 
 export const metadata: Metadata = {
   title: 'Bestie — Your Social Passport',
@@ -9,6 +10,12 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://bestiehere.com'),
   keywords: ['social app', 'find friends', 'activities', 'bestie score', 'meet people', 'social passport'],
   authors: [{ name: 'Bestie', url: 'https://bestiehere.com' }],
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Bestie',
+  },
   openGraph: {
     title: 'Bestie — Your Social Passport',
     description: 'Find real people for real activities. Bestie connects you with people who share your vibe.',
@@ -32,15 +39,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content="#080810" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Bestie" />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/icon-192.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png" />
+        <link rel="apple-touch-icon" sizes="167x167" href="/icon-192.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
       </head>
       <body>
         <AuthProvider>
           {children}
           <BottomNav />
+          <PWARegister />
         </AuthProvider>
       </body>
     </html>
