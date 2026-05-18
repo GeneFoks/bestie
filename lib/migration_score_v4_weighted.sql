@@ -140,14 +140,14 @@ BEGIN
     v_spark_base INTEGER;
   BEGIN
     FOR v_sp IN
-      SELECT s.sender_id FROM public.sparks s
+      SELECT s.giver_id FROM public.sparks s
       WHERE s.receiver_id = p_user_id
       ORDER BY s.created_at ASC
     LOOP
       v_spark_idx := v_spark_idx + 1;
 
       SELECT COALESCE(bestie_score, 50) INTO v_counterparty_bs
-      FROM public.users WHERE id = v_sp.sender_id;
+      FROM public.users WHERE id = v_sp.giver_id;
 
       v_weight := LEAST(1.5, GREATEST(0.05, v_counterparty_bs::float / 500.0));
 
