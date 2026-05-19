@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 'use client'
 
 import React, { useState, useEffect } from 'react'
@@ -71,19 +71,19 @@ export default function NewEventPage() {
 
   if (authLoading) return null
 
-  const inputStyle: React.CSSProperties = { width: '100%', padding: '13px 16px', borderRadius: '12px', fontSize: '15px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', outline: 'none', boxSizing: 'border-box' }
-  const labelStyle: React.CSSProperties = { fontSize: '12px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px', display: 'block' }
+  const inputStyle: React.CSSProperties = { width: '100%', padding: '13px 16px', borderRadius: '12px', fontSize: '15px', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', outline: 'none', boxSizing: 'border-box' }
+  const labelStyle: React.CSSProperties = { fontSize: '12px', fontWeight: 600, letterSpacing: '1px', color: '#A99ECC', marginBottom: '8px', display: 'block' }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <Link href={`/crews/${slug}`} style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none' }}>← Back to Crew</Link>
+        <Link href={`/crews/${slug}`} style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none' }}>← Back to Crew</Link>
       </nav>
 
       <div style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 24px' }}>
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', color: '#E8E0FF', marginBottom: '8px' }}>Create Event</h1>
-        <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '32px' }}>Anyone can join unless you make it members only.</p>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', color: '#F0EAFF', marginBottom: '8px' }}>Create Event</h1>
+        <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '32px' }}>Anyone can join unless you make it members only.</p>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
@@ -119,10 +119,10 @@ export default function NewEventPage() {
                 { value: true, icon: '🔒', label: 'Members only', desc: 'Crew members only' },
               ].map(opt => (
                 <button key={String(opt.value)} type="button" onClick={() => setIsMembersOnly(opt.value)}
-                  style={{ padding: '14px', borderRadius: '14px', border: isMembersOnly === opt.value ? '2px solid #D4AF37' : '1px solid rgba(255,255,255,0.08)', background: isMembersOnly === opt.value ? 'rgba(212,175,55,0.08)' : '#0F0F1E', cursor: 'pointer', textAlign: 'left' }}>
+                  style={{ padding: '14px', borderRadius: '14px', border: isMembersOnly === opt.value ? '2px solid #D4AF37' : '1px solid rgba(255,255,255,0.12)', background: isMembersOnly === opt.value ? 'rgba(212,175,55,0.08)' : '#111120', cursor: 'pointer', textAlign: 'left' }}>
                   <div style={{ fontSize: '20px', marginBottom: '4px' }}>{opt.icon}</div>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#E8E0FF' }}>{opt.label}</div>
-                  <div style={{ fontSize: '12px', color: '#9B93C0' }}>{opt.desc}</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF' }}>{opt.label}</div>
+                  <div style={{ fontSize: '12px', color: '#A99ECC' }}>{opt.desc}</div>
                 </button>
               ))}
             </div>
@@ -131,7 +131,7 @@ export default function NewEventPage() {
           {error && <p style={{ fontSize: '13px', color: '#FF6B35', padding: '12px', background: 'rgba(255,107,53,0.08)', borderRadius: '10px', border: '1px solid rgba(255,107,53,0.2)' }}>{error}</p>}
 
           <button type="submit" disabled={submitting}
-            style={{ padding: '16px', borderRadius: '14px', fontSize: '16px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.6 : 1 }}>
+            style={{ padding: '16px', borderRadius: '14px', fontSize: '16px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.6 : 1 }}>
             {submitting ? 'Creating…' : 'Create Event'}
           </button>
         </form>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -61,7 +61,7 @@ export default function EventActions({ eventId, crewId, captainId, isMembersOnly
 
   if (!userId) {
     return (
-      <a href="/login" style={{ display: 'block', padding: '14px', borderRadius: '14px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
+      <a href="/login" style={{ display: 'block', padding: '14px', borderRadius: '14px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
         Log in to join
       </a>
     )
@@ -77,7 +77,7 @@ export default function EventActions({ eventId, crewId, captainId, isMembersOnly
 
   if (isFull) {
     return (
-      <div style={{ padding: '12px', borderRadius: '14px', textAlign: 'center', fontSize: '13px', color: '#9B93C0', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ padding: '12px', borderRadius: '14px', textAlign: 'center', fontSize: '13px', color: '#A99ECC', background: '#131323', border: '1px solid rgba(255,255,255,0.10)' }}>
         Event is full
       </div>
     )
@@ -85,7 +85,7 @@ export default function EventActions({ eventId, crewId, captainId, isMembersOnly
 
   if (isMembersOnly && !isMember) {
     return (
-      <div style={{ padding: '12px', borderRadius: '14px', textAlign: 'center', fontSize: '13px', color: '#9B93C0', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ padding: '12px', borderRadius: '14px', textAlign: 'center', fontSize: '13px', color: '#A99ECC', background: '#131323', border: '1px solid rgba(255,255,255,0.10)' }}>
         This event is for crew members only
       </div>
     )
@@ -93,7 +93,7 @@ export default function EventActions({ eventId, crewId, captainId, isMembersOnly
 
   return (
     <div>
-      <button onClick={join} disabled={acting} style={{ display: 'block', width: '100%', padding: '14px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: acting ? 'not-allowed' : 'pointer', opacity: acting ? 0.7 : 1 }}>
+      <button onClick={join} disabled={acting} style={{ display: 'block', width: '100%', padding: '14px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: acting ? 'not-allowed' : 'pointer', opacity: acting ? 0.7 : 1 }}>
         {acting ? 'Joining…' : "I'm going"}
       </button>
       {error && <p style={{ fontSize: '12px', color: '#FF6B35', marginTop: '8px', textAlign: 'center' }}>{error}</p>}

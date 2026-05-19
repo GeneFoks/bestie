@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -50,7 +50,7 @@ export default function EventGoingButton({ eventId, isFull }: Props) {
     return (
       <Link
         href={`/events/${eventId}`}
-        style={{ display: 'block', marginTop: '16px', padding: '13px', borderRadius: '12px', textAlign: 'center', fontSize: '15px', fontWeight: 800, background: '#39FF14', color: '#080810', textDecoration: 'none' }}
+        style={{ display: 'block', marginTop: '16px', padding: '13px', borderRadius: '12px', textAlign: 'center', fontSize: '15px', fontWeight: 800, background: '#34D399', color: '#09090F', textDecoration: 'none' }}
       >
         I'm going →
       </Link>
@@ -59,7 +59,7 @@ export default function EventGoingButton({ eventId, isFull }: Props) {
 
   if (loading) {
     return (
-      <div style={{ marginTop: '16px', padding: '13px', borderRadius: '12px', textAlign: 'center', fontSize: '15px', fontWeight: 800, background: 'rgba(255,255,255,0.06)', color: '#9B93C0' }}>
+      <div style={{ marginTop: '16px', padding: '13px', borderRadius: '12px', textAlign: 'center', fontSize: '15px', fontWeight: 800, background: 'rgba(255,255,255,0.10)', color: '#A99ECC' }}>
         …
       </div>
     )
@@ -69,7 +69,7 @@ export default function EventGoingButton({ eventId, isFull }: Props) {
     return (
       <Link
         href={`/events/${eventId}`}
-        style={{ display: 'block', marginTop: '16px', padding: '13px', borderRadius: '12px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#9B93C0', textDecoration: 'none' }}
+        style={{ display: 'block', marginTop: '16px', padding: '13px', borderRadius: '12px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: '#131323', border: '1px solid rgba(255,255,255,0.12)', color: '#A99ECC', textDecoration: 'none' }}
       >
         Event full · View →
       </Link>
@@ -84,8 +84,8 @@ export default function EventGoingButton({ eventId, isFull }: Props) {
         style={{
           flex: 1, padding: '13px', borderRadius: '12px', textAlign: 'center', fontSize: '15px', fontWeight: 800,
           border: 'none', cursor: acting ? 'not-allowed' : 'pointer', opacity: acting ? 0.7 : 1,
-          background: isGoing ? 'rgba(57,255,20,0.12)' : '#39FF14',
-          color: isGoing ? '#39FF14' : '#080810',
+          background: isGoing ? 'rgba(57,255,20,0.12)' : '#34D399',
+          color: isGoing ? '#34D399' : '#09090F',
           outline: isGoing ? '1px solid rgba(57,255,20,0.35)' : 'none',
           fontFamily: 'Plus Jakarta Sans, sans-serif',
         }}
@@ -94,7 +94,7 @@ export default function EventGoingButton({ eventId, isFull }: Props) {
       </button>
       <Link
         href={`/events/${eventId}`}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', textDecoration: 'none', fontSize: '16px', flexShrink: 0 }}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', borderRadius: '12px', background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.1)', color: '#A99ECC', textDecoration: 'none', fontSize: '16px', flexShrink: 0 }}
         title="View event"
       >
         →

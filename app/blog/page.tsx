@@ -1,4 +1,4 @@
-import { Metadata } from 'next'
+﻿import { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 
@@ -29,23 +29,23 @@ export default async function BlogPage() {
   const posts = await getPosts()
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <Link href="/browse" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>Browse Besties</Link>
+        <Link href="/browse" style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>Browse Besties</Link>
       </nav>
 
       <div style={{ maxWidth: '860px', margin: '0 auto', padding: '60px 24px' }}>
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(28px, 6vw, 48px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '12px' }}>Bestie Blog</h1>
-        <p style={{ fontSize: '16px', color: '#9B93C0', marginBottom: '48px' }}>Stories, tips, and guides on real human connection.</p>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(28px, 6vw, 48px)', fontWeight: 700, color: '#F0EAFF', marginBottom: '12px' }}>Bestie Blog</h1>
+        <p style={{ fontSize: '16px', color: '#A99ECC', marginBottom: '48px' }}>Stories, tips, and guides on real human connection.</p>
 
         {posts.length === 0 ? (
-          <p style={{ color: '#9B93C0', fontSize: '15px' }}>Posts coming soon...</p>
+          <p style={{ color: '#A99ECC', fontSize: '15px' }}>Posts coming soon...</p>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 380px), 1fr))', gap: '24px' }}>
             {posts.map((post: any) => (
               <Link key={post.slug} href={`/blog/${post.slug}`} style={{ textDecoration: 'none' }}>
-                <article style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', overflow: 'hidden', transition: 'border-color 0.2s', cursor: 'pointer' }}>
+                <article style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', overflow: 'hidden', transition: 'border-color 0.2s', cursor: 'pointer' }}>
                   {post.cover_image && (
                     <img src={post.cover_image} alt={post.title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
                   )}
@@ -57,8 +57,8 @@ export default async function BlogPage() {
                         ))}
                       </div>
                     )}
-                    <h2 style={{ fontSize: '17px', fontWeight: 700, color: '#E8E0FF', marginBottom: '8px', lineHeight: 1.3 }}>{post.title}</h2>
-                    {post.description && <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.5, marginBottom: '12px' }}>{post.description}</p>}
+                    <h2 style={{ fontSize: '17px', fontWeight: 700, color: '#F0EAFF', marginBottom: '8px', lineHeight: 1.3 }}>{post.title}</h2>
+                    {post.description && <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.5, marginBottom: '12px' }}>{post.description}</p>}
                     <p style={{ fontSize: '12px', color: '#6B6490' }}>
                       {post.author} · {new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                     </p>

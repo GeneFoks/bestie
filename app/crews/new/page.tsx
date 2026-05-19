@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 'use client'
 
 import React, { useState, useEffect } from 'react'
@@ -76,19 +76,19 @@ export default function NewCrewPage() {
   const nextThreshold = myScore < 400 ? 400 : myScore < 600 ? 600 : myScore < 800 ? 800 : myScore < 1000 ? 1000 : null
   const nextMax = nextThreshold ? (nextThreshold >= 1000 ? 5 : nextThreshold >= 800 ? 4 : nextThreshold >= 600 ? 3 : 2) : null
 
-  const inputStyle = { width: '100%', padding: '13px 16px', borderRadius: '12px', fontSize: '15px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', outline: 'none', boxSizing: 'border-box' }
-  const labelStyle = { fontSize: '12px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px', display: 'block' }
+  const inputStyle = { width: '100%', padding: '13px 16px', borderRadius: '12px', fontSize: '15px', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', outline: 'none', boxSizing: 'border-box' }
+  const labelStyle = { fontSize: '12px', fontWeight: 600, letterSpacing: '1px', color: '#A99ECC', marginBottom: '8px', display: 'block' }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <Link href="/crews" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none' }}>← All Crews</Link>
+        <Link href="/crews" style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none' }}>← All Crews</Link>
       </nav>
 
       <div style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 24px' }}>
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', color: '#E8E0FF', marginBottom: '8px' }}>Create a Crew</h1>
-        <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '24px' }}>Up to 108 members · Sacred number, no coincidence.</p>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', color: '#F0EAFF', marginBottom: '8px' }}>Create a Crew</h1>
+        <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '24px' }}>Up to 108 members · Sacred number, no coincidence.</p>
 
         {/* Crew slots indicator */}
         <div style={{ marginBottom: '28px', padding: '16px 20px', borderRadius: '16px', background: atLimit ? 'rgba(255,107,53,0.06)' : 'rgba(212,175,55,0.06)', border: atLimit ? '1px solid rgba(255,107,53,0.2)' : '1px solid rgba(212,175,55,0.15)' }}>
@@ -96,20 +96,20 @@ export default function NewCrewPage() {
             <p style={{ fontSize: '13px', fontWeight: 600, color: atLimit ? '#FF6B35' : '#D4AF37' }}>
               {atLimit ? 'Crew limit reached' : `Crew slots: ${captainedCount} / ${maxCrews}`}
             </p>
-            <span style={{ fontSize: '12px', color: '#9B93C0' }}>BS {myScore}</span>
+            <span style={{ fontSize: '12px', color: '#A99ECC' }}>BS {myScore}</span>
           </div>
           <div style={{ display: 'flex', gap: '6px' }}>
             {[1,2,3,4,5].map(i => (
-              <div key={i} style={{ flex: 1, height: '4px', borderRadius: '999px', background: i <= captainedCount ? '#D4AF37' : i <= maxCrews ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.06)' }} />
+              <div key={i} style={{ flex: 1, height: '4px', borderRadius: '999px', background: i <= captainedCount ? '#D4AF37' : i <= maxCrews ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.10)' }} />
             ))}
           </div>
           {atLimit && nextThreshold && (
-            <p style={{ fontSize: '12px', color: '#9B93C0', marginTop: '10px' }}>
+            <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '10px' }}>
               Reach <span style={{ color: '#D4AF37', fontWeight: 700 }}>BS {nextThreshold}</span> to unlock {nextMax} crew slots
             </p>
           )}
           {!atLimit && nextThreshold && (
-            <p style={{ fontSize: '12px', color: '#9B93C0', marginTop: '10px' }}>
+            <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '10px' }}>
               Reach <span style={{ color: '#D4AF37', fontWeight: 700 }}>BS {nextThreshold}</span> to unlock {nextMax} crew slots
             </p>
           )}
@@ -130,8 +130,8 @@ export default function NewCrewPage() {
 
           <div>
             <label style={labelStyle}>SLUG (URL)</label>
-            <div style={{ display: 'flex', alignItems: 'center', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', overflow: 'hidden' }}>
-              <span style={{ padding: '13px 12px 13px 16px', fontSize: '15px', color: '#9B93C0', whiteSpace: 'nowrap' }}>bestiehere.com/crews/</span>
+            <div style={{ display: 'flex', alignItems: 'center', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', overflow: 'hidden' }}>
+              <span style={{ padding: '13px 12px 13px 16px', fontSize: '15px', color: '#A99ECC', whiteSpace: 'nowrap' }}>bestiehere.com/crews/</span>
               <input
                 value={slug}
                 onChange={e => { setSlug(toSlug(e.target.value)); setSlugEdited(true) }}
@@ -166,11 +166,11 @@ export default function NewCrewPage() {
                   key={String(opt.value)}
                   type="button"
                   onClick={() => setIsPublic(opt.value)}
-                  style={{ padding: '14px', borderRadius: '14px', border: isPublic === opt.value ? '2px solid #D4AF37' : '1px solid rgba(255,255,255,0.08)', background: isPublic === opt.value ? 'rgba(212,175,55,0.08)' : '#0F0F1E', cursor: 'pointer', textAlign: 'left' }}
+                  style={{ padding: '14px', borderRadius: '14px', border: isPublic === opt.value ? '2px solid #D4AF37' : '1px solid rgba(255,255,255,0.12)', background: isPublic === opt.value ? 'rgba(212,175,55,0.08)' : '#111120', cursor: 'pointer', textAlign: 'left' }}
                 >
                   <div style={{ fontSize: '20px', marginBottom: '4px' }}>{opt.icon}</div>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#E8E0FF' }}>{opt.label}</div>
-                  <div style={{ fontSize: '12px', color: '#9B93C0' }}>{opt.desc}</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF' }}>{opt.label}</div>
+                  <div style={{ fontSize: '12px', color: '#A99ECC' }}>{opt.desc}</div>
                 </button>
               ))}
             </div>
@@ -183,7 +183,7 @@ export default function NewCrewPage() {
           <button
             type="submit"
             disabled={submitting || atLimit}
-            style={{ padding: '16px', borderRadius: '14px', fontSize: '16px', fontWeight: 700, background: atLimit ? 'rgba(255,255,255,0.06)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: atLimit ? '#9B93C0' : '#080810', border: atLimit ? '1px solid rgba(255,255,255,0.1)' : 'none', cursor: submitting || atLimit ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1 }}
+            style={{ padding: '16px', borderRadius: '14px', fontSize: '16px', fontWeight: 700, background: atLimit ? 'rgba(255,255,255,0.10)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: atLimit ? '#A99ECC' : '#09090F', border: atLimit ? '1px solid rgba(255,255,255,0.1)' : 'none', cursor: submitting || atLimit ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1 }}
           >
             {submitting ? 'Creating…' : atLimit ? `Limit reached · BS ${nextThreshold} to unlock` : '⚔️ Create Crew'}
           </button>

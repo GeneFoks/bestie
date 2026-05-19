@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -37,7 +37,7 @@ export default function CrewKickButton({ crewId, captainId, memberId }: Props) {
   if (confirm) {
     return (
       <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
-        <button onClick={() => setConfirm(false)} style={{ padding: '5px 8px', borderRadius: '7px', fontSize: '11px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#9B93C0', cursor: 'pointer' }}>
+        <button onClick={() => setConfirm(false)} style={{ padding: '5px 8px', borderRadius: '7px', fontSize: '11px', background: '#131323', border: '1px solid rgba(255,255,255,0.12)', color: '#A99ECC', cursor: 'pointer' }}>
           Cancel
         </button>
         <button onClick={kick} disabled={kicking} style={{ padding: '5px 8px', borderRadius: '7px', fontSize: '11px', fontWeight: 700, background: 'rgba(255,80,80,0.15)', border: '1px solid rgba(255,80,80,0.3)', color: '#FF6B6B', cursor: 'pointer' }}>
@@ -50,7 +50,7 @@ export default function CrewKickButton({ crewId, captainId, memberId }: Props) {
   return (
     <button
       onClick={e => { e.preventDefault(); setConfirm(true) }}
-      style={{ flexShrink: 0, padding: '5px 10px', borderRadius: '8px', fontSize: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#555', cursor: 'pointer' }}
+      style={{ flexShrink: 0, padding: '5px 10px', borderRadius: '8px', fontSize: '12px', background: '#111120', border: '1px solid rgba(255,255,255,0.12)', color: '#555', cursor: 'pointer' }}
     >
       ✕
     </button>

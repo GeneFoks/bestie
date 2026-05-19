@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -163,30 +163,30 @@ export default function OnboardingPage() {
     router.push('/dashboard')
   }
 
-  const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
-  const labelStyle = { fontSize: '13px', fontWeight: 500, color: '#9B93C0', display: 'block', marginBottom: '8px' }
+  const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
+  const labelStyle = { fontSize: '13px', fontWeight: 500, color: '#A99ECC', display: 'block', marginBottom: '8px' }
   const currentGroup = ACTIVITY_GROUPS.find(g => g.label === activeGroup)
 
   if (checking) return (
-    <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <span style={{ color: '#9B93C0', fontSize: '14px' }}>Loading...</span>
+    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <span style={{ color: '#A99ECC', fontSize: '14px' }}>Loading...</span>
     </div>
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ width: '100%', maxWidth: '520px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: '#D4AF37' }}>BESTIE</span>
-          <p style={{ fontSize: '13px', color: '#9B93C0', marginTop: '4px' }}>Step {step} of 4</p>
+          <p style={{ fontSize: '13px', color: '#A99ECC', marginTop: '4px' }}>Step {step} of 4</p>
         </div>
         <div style={{ display: 'flex', gap: '6px', marginBottom: '32px' }}>
           {[1,2,3,4].map(s => (
-            <div key={s} style={{ flex: 1, height: '4px', borderRadius: '999px', background: s <= step ? '#D4AF37' : 'rgba(255,255,255,0.08)', transition: 'all 0.3s' }} />
+            <div key={s} style={{ flex: 1, height: '4px', borderRadius: '999px', background: s <= step ? '#D4AF37' : 'rgba(255,255,255,0.12)', transition: 'all 0.3s' }} />
           ))}
         </div>
-        <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', padding: '32px' }}>
-          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: '#E8E0FF', marginBottom: '24px' }}>
+        <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '24px', padding: '32px' }}>
+          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: '#F0EAFF', marginBottom: '24px' }}>
             {STEP_TITLES[step - 1]}
           </h2>
 
@@ -214,17 +214,17 @@ export default function OnboardingPage() {
                 <input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} placeholder="TX" style={inputStyle} />
               </div>
               <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
-                <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.6 }}>📍 Your city helps people find you locally. Vibe calls work anywhere.</p>
+                <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.6 }}>📍 Your city helps people find you locally. Vibe calls work anywhere.</p>
               </div>
             </div>
           )}
 
           {step === 3 && (
             <div>
-              <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '12px' }}>Pick everything you're open to:</p>
+              <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '12px' }}>Pick everything you're open to:</p>
               <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '10px', marginBottom: '12px', scrollbarWidth: 'none' }}>
                 {ACTIVITY_GROUPS.map(g => (
-                  <button key={g.label} onClick={() => setActiveGroup(g.label)} style={{ padding: '6px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: activeGroup === g.label ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', border: activeGroup === g.label ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.06)', color: activeGroup === g.label ? '#D4AF37' : '#9B93C0' }}>
+                  <button key={g.label} onClick={() => setActiveGroup(g.label)} style={{ padding: '6px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: activeGroup === g.label ? 'rgba(212,175,55,0.15)' : '#131323', border: activeGroup === g.label ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', color: activeGroup === g.label ? '#D4AF37' : '#A99ECC' }}>
                     {g.label}
                   </button>
                 ))}
@@ -233,9 +233,9 @@ export default function OnboardingPage() {
                 {currentGroup?.activities.map(a => {
                   const selected = form.activities.includes(a.id)
                   return (
-                    <button key={a.id} onClick={() => toggleActivity(a.id)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '12px 8px', borderRadius: '14px', border: selected ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.06)', background: selected ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.03)', cursor: 'pointer' }}>
+                    <button key={a.id} onClick={() => toggleActivity(a.id)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '12px 8px', borderRadius: '14px', border: selected ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', background: selected ? 'rgba(212,175,55,0.1)' : '#111120', cursor: 'pointer' }}>
                       <span style={{ fontSize: '24px' }}>{a.emoji}</span>
-                      <span style={{ fontSize: '11px', fontWeight: 500, color: selected ? '#D4AF37' : '#9B93C0', textAlign: 'center' }}>{a.label}</span>
+                      <span style={{ fontSize: '11px', fontWeight: 500, color: selected ? '#D4AF37' : '#A99ECC', textAlign: 'center' }}>{a.label}</span>
                     </button>
                   )
                 })}
@@ -250,7 +250,7 @@ export default function OnboardingPage() {
 
           {step === 4 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <p style={{ fontSize: '14px', color: '#9B93C0' }}>Create your first offering — what people will book you for.</p>
+              <p style={{ fontSize: '14px', color: '#A99ECC' }}>Create your first offering — what people will book you for.</p>
               <div>
                 <label style={labelStyle}>Activity title</label>
                 <input value={form.activityTitle} onChange={e => setForm(f => ({ ...f, activityTitle: e.target.value }))} placeholder="Morning Trail Run in Barton Creek" style={inputStyle} />
@@ -273,10 +273,10 @@ export default function OnboardingPage() {
                 <textarea value={form.activityDesc} onChange={e => setForm(f => ({ ...f, activityDesc: e.target.value }))} placeholder="Describe what you'll do together..." rows={3} style={{ ...inputStyle, resize: 'none' }} />
               </div>
               <button onClick={() => setForm(f => ({ ...f, activityFree: !f.activityFree }))} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                <div style={{ width: '20px', height: '20px', borderRadius: '6px', border: form.activityFree ? '2px solid #D4AF37' : '2px solid rgba(255,255,255,0.2)', background: form.activityFree ? '#D4AF37' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#080810' }}>
+                <div style={{ width: '20px', height: '20px', borderRadius: '6px', border: form.activityFree ? '2px solid #D4AF37' : '2px solid rgba(255,255,255,0.2)', background: form.activityFree ? '#D4AF37' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#09090F' }}>
                   {form.activityFree ? '✓' : ''}
                 </div>
-                <span style={{ fontSize: '14px', color: '#E8E0FF' }}>This is a free match</span>
+                <span style={{ fontSize: '14px', color: '#F0EAFF' }}>This is a free match</span>
               </button>
               {!form.activityFree && (
                 <div>
@@ -284,25 +284,25 @@ export default function OnboardingPage() {
                   <input type="number" value={form.activityPrice} onChange={e => setForm(f => ({ ...f, activityPrice: e.target.value }))} placeholder="20" style={inputStyle} />
                 </div>
               )}
-              <p style={{ fontSize: '12px', color: '#9B93C0' }}>You can skip this and add activities later.</p>
+              <p style={{ fontSize: '12px', color: '#A99ECC' }}>You can skip this and add activities later.</p>
             </div>
           )}
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
           {step > 1 ? (
-            <button onClick={() => setStep(s => s - 1)} style={{ fontSize: '14px', color: '#9B93C0', background: 'none', border: 'none', cursor: 'pointer' }}>← Back</button>
+            <button onClick={() => setStep(s => s - 1)} style={{ fontSize: '14px', color: '#A99ECC', background: 'none', border: 'none', cursor: 'pointer' }}>← Back</button>
           ) : <div />}
           <div style={{ display: 'flex', gap: '10px' }}>
             {step === 4 && (
-              <button onClick={() => router.push('/dashboard')} style={{ fontSize: '14px', color: '#9B93C0', background: 'none', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer' }}>Skip</button>
+              <button onClick={() => router.push('/dashboard')} style={{ fontSize: '14px', color: '#A99ECC', background: 'none', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer' }}>Skip</button>
             )}
             {step < 4 ? (
-              <button onClick={() => setStep(s => s + 1)} disabled={step === 1 && !form.full_name} style={{ padding: '12px 28px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: 'pointer', opacity: (step === 1 && !form.full_name) ? 0.5 : 1 }}>
+              <button onClick={() => setStep(s => s + 1)} disabled={step === 1 && !form.full_name} style={{ padding: '12px 28px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer', opacity: (step === 1 && !form.full_name) ? 0.5 : 1 }}>
                 Continue →
               </button>
             ) : (
-              <button onClick={handleFinish} disabled={loading} style={{ padding: '12px 28px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
+              <button onClick={handleFinish} disabled={loading} style={{ padding: '12px 28px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
                 {loading ? 'Saving...' : 'Finish setup 🎉'}
               </button>
             )}

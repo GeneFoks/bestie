@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 export const revalidate = 0
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
@@ -70,11 +70,11 @@ export default async function InvitePage({ params, searchParams }) {
 
   if (!profile) {
     return (
-      <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
         <div style={{ textAlign: 'center' }}>
           <p style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</p>
-          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#E8E0FF', marginBottom: '16px' }}>Invite not found</h1>
-          <Link href="/" style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>Go to Bestie</Link>
+          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#F0EAFF', marginBottom: '16px' }}>Invite not found</h1>
+          <Link href="/" style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Go to Bestie</Link>
         </div>
       </div>
     )
@@ -88,13 +88,13 @@ export default async function InvitePage({ params, searchParams }) {
   const activityLabel = ACTIVITY_LABELS[activityKey] || 'connect'
   const initials = profile.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
   const score = profile.bestie_score || 0
-  const scoreColor = score >= 800 ? '#39FF14' : score >= 600 ? '#D4AF37' : '#9B93C0'
+  const scoreColor = score >= 800 ? '#34D399' : score >= 600 ? '#D4AF37' : '#A99ECC'
 
   const signupUrl = `/signup?next=/${profile.username}${activityKey ? `&activity=${activityKey}` : ''}`
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <ProfileNav />
       </nav>
@@ -103,41 +103,41 @@ export default async function InvitePage({ params, searchParams }) {
 
         {/* Invite header */}
         <div style={{ textAlign: 'center' }}>
-          <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '12px', letterSpacing: '0.5px' }}>You've been invited</p>
-          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#E8E0FF', lineHeight: 1.3 }}>
+          <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '12px', letterSpacing: '0.5px' }}>You've been invited</p>
+          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#F0EAFF', lineHeight: 1.3 }}>
             {profile.full_name} wants to{' '}
             <span style={{ color: '#D4AF37' }}>{activityLabel}</span>
             {' '}with you
           </h1>
           {msg && (
-            <p style={{ marginTop: '16px', fontSize: '15px', color: '#9B93C0', fontStyle: 'italic', padding: '12px 20px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <p style={{ marginTop: '16px', fontSize: '15px', color: '#A99ECC', fontStyle: 'italic', padding: '12px 20px', borderRadius: '14px', background: '#131323', border: '1px solid rgba(255,255,255,0.12)' }}>
               "{msg}"
             </p>
           )}
         </div>
 
         {/* Profile card */}
-        <div style={{ width: '100%', background: 'linear-gradient(135deg, #0F0F1E 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: '24px', padding: '28px', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ width: '100%', background: 'linear-gradient(135deg, #111120 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: '24px', padding: '28px', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '160px', height: '160px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-            <div style={{ width: '72px', height: '72px', borderRadius: '18px', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(212,175,55,0.3)', background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '72px', height: '72px', borderRadius: '18px', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(212,175,55,0.3)', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {profile.avatar_url
                 ? <img src={profile.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : <span style={{ fontSize: '24px', fontWeight: 700, color: '#D4AF37' }}>{initials}</span>}
             </div>
             <div>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#E8E0FF', marginBottom: '3px' }}>{profile.full_name}</h2>
-              <p style={{ fontSize: '13px', color: '#9B93C0' }}>@{profile.username}{profile.city ? ` · ${profile.city}` : ''}</p>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', marginBottom: '3px' }}>{profile.full_name}</h2>
+              <p style={{ fontSize: '13px', color: '#A99ECC' }}>@{profile.username}{profile.city ? ` · ${profile.city}` : ''}</p>
               {profile.energy_type && (
-                <p style={{ fontSize: '12px', color: '#9B8FFF', marginTop: '2px' }}>{profile.energy_type} · {profile.mind_type} · {profile.vibe_type}</p>
+                <p style={{ fontSize: '12px', color: '#9B7FFF', marginTop: '2px' }}>{profile.energy_type} · {profile.mind_type} · {profile.vibe_type}</p>
               )}
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: '10px', marginBottom: profile.bio ? '16px' : '0' }}>
             <div style={{ flex: 1, padding: '12px', borderRadius: '12px', background: 'rgba(0,0,0,0.3)', border: `1px solid ${scoreColor}20`, textAlign: 'center' }}>
-              <p style={{ fontSize: '10px', color: '#9B93C0', letterSpacing: '1px', marginBottom: '4px' }}>BESTIE SCORE</p>
+              <p style={{ fontSize: '10px', color: '#A99ECC', letterSpacing: '1px', marginBottom: '4px' }}>BESTIE SCORE</p>
               <p style={{ fontSize: '22px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif' }}>{score}</p>
             </div>
             {activityPkg && (
@@ -145,14 +145,14 @@ export default async function InvitePage({ params, searchParams }) {
                 <span style={{ fontSize: '24px' }}>🎯</span>
                 <div>
                   <p style={{ fontSize: '12px', color: '#D4AF37', fontWeight: 600 }}>{activityPkg.title}</p>
-                  {activityPkg.description && <p style={{ fontSize: '11px', color: '#9B93C0', marginTop: '2px' }}>{activityPkg.description.slice(0, 60)}{activityPkg.description.length > 60 ? '…' : ''}</p>}
+                  {activityPkg.description && <p style={{ fontSize: '11px', color: '#A99ECC', marginTop: '2px' }}>{activityPkg.description.slice(0, 60)}{activityPkg.description.length > 60 ? '…' : ''}</p>}
                 </div>
               </div>
             )}
           </div>
 
           {profile.bio && (
-            <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.6 }}>{profile.bio}</p>
+            <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.6 }}>{profile.bio}</p>
           )}
         </div>
 
@@ -163,7 +163,7 @@ export default async function InvitePage({ params, searchParams }) {
           signupUrl={signupUrl}
         />
 
-        <p style={{ fontSize: '13px', color: '#9B93C0', textAlign: 'center', maxWidth: '340px', lineHeight: 1.6 }}>
+        <p style={{ fontSize: '13px', color: '#A99ECC', textAlign: 'center', maxWidth: '340px', lineHeight: 1.6 }}>
           Bestie is a social platform for real-life connections. Find people for activities, build your crew, and track your social life.
         </p>
       </div>

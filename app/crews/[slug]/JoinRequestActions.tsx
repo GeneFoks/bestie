@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -46,7 +46,7 @@ export default function JoinRequestActions({ requestId, userId, crewId, captainI
 
   return (
     <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-      <button onClick={accept} disabled={acting} style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: acting ? 'not-allowed' : 'pointer', opacity: acting ? 0.6 : 1 }}>
+      <button onClick={accept} disabled={acting} style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: acting ? 'not-allowed' : 'pointer', opacity: acting ? 0.6 : 1 }}>
         Accept
       </button>
       <button onClick={decline} disabled={acting} style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,107,53,0.1)', border: '1px solid rgba(255,107,53,0.25)', color: '#FF6B35', cursor: acting ? 'not-allowed' : 'pointer', opacity: acting ? 0.6 : 1 }}>

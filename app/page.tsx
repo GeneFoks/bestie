@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
@@ -156,15 +156,15 @@ export default function HomePage() {
   }
 
   return (
-    <div style={{ background: '#080810', minHeight: '100vh', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ background: '#09090F', minHeight: '100vh', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <style>{`
         /* ── Reset ── */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         /* ── Nav ── */
         .nav-links { display: flex; gap: 28px; font-size: 14px; }
-        .nav-link { color: #9B93C0; text-decoration: none; transition: color 0.2s; }
-        .nav-link:hover { color: #E8E0FF; }
+        .nav-link { color: #A99ECC; text-decoration: none; transition: color 0.2s; }
+        .nav-link:hover { color: #F0EAFF; }
         .mobile-menu-btn { display: none; }
         .mobile-menu { display: none; }
 
@@ -206,7 +206,7 @@ export default function HomePage() {
           background: rgba(15,15,30,0.7);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255,255,255,0.07);
+          border: 1px solid rgba(255,255,255,0.11);
           border-radius: 20px;
           transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
         }
@@ -225,8 +225,8 @@ export default function HomePage() {
         .group-btn {
           display: flex; flex-direction: column; align-items: center; gap: 8px;
           padding: 18px 8px; border-radius: 18px; cursor: pointer;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.07);
+          background: #111120;
+          border: 1px solid rgba(255,255,255,0.11);
           transition: all 0.22s cubic-bezier(.22,1,.36,1);
           position: relative; overflow: hidden;
         }
@@ -247,7 +247,7 @@ export default function HomePage() {
           display: inline-flex; align-items: center; gap: 8px;
           padding: 13px 28px; border-radius: 14px; font-size: 14px; font-weight: 700;
           background: linear-gradient(135deg, #D4AF37 0%, #B8960C 100%);
-          color: #080810; text-decoration: none;
+          color: #09090F; text-decoration: none;
           transition: filter 0.2s, transform 0.2s, box-shadow 0.2s;
           box-shadow: 0 4px 20px rgba(212,175,55,0.25);
         }
@@ -255,8 +255,8 @@ export default function HomePage() {
         .btn-ghost {
           display: inline-flex; align-items: center; gap: 8px;
           padding: 13px 28px; border-radius: 14px; font-size: 14px; font-weight: 600;
-          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
-          color: #E8E0FF; text-decoration: none;
+          background: #161628; border: 1px solid rgba(255,255,255,0.12);
+          color: #F0EAFF; text-decoration: none;
           transition: background 0.2s, border-color 0.2s, transform 0.2s;
         }
         .btn-ghost:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.2); transform: translateY(-1px); }
@@ -264,7 +264,7 @@ export default function HomePage() {
           display: inline-flex; align-items: center;
           padding: 9px 20px; border-radius: 12px; font-size: 13px; font-weight: 700;
           background: linear-gradient(135deg, #D4AF37 0%, #B8960C 100%);
-          color: #080810; text-decoration: none;
+          color: #09090F; text-decoration: none;
           transition: filter 0.2s, transform 0.2s;
         }
         .btn-sm-gold:hover { filter: brightness(1.1); transform: translateY(-1px); }
@@ -277,7 +277,7 @@ export default function HomePage() {
         .spark-badge {
           padding: 7px 14px; border-radius: 999px;
           background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.18);
-          font-size: 12px; color: #E8E0FF; display: inline-flex; gap: 5px; align-items: center;
+          font-size: 12px; color: #F0EAFF; display: inline-flex; gap: 5px; align-items: center;
           transition: background 0.2s, border-color 0.2s, transform 0.2s;
         }
         .spark-badge:hover { background: rgba(212,175,55,0.16); border-color: rgba(212,175,55,0.35); transform: scale(1.04); }
@@ -289,9 +289,9 @@ export default function HomePage() {
         @media (max-width: 900px) { .groups-grid { grid-template-columns: repeat(4, 1fr); } }
         @media (max-width: 768px) {
           .nav-links { display: none; }
-          .mobile-menu-btn { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; color: #E8E0FF; font-size: 18px; }
-          .mobile-menu.open { display: flex; flex-direction: column; gap: 4px; position: fixed; top: 60px; left: 0; right: 0; z-index: 49; background: rgba(8,8,16,0.98); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 16px; max-height: calc(100vh - 70px); overflow-y: auto; }
-          .mobile-menu a { padding: 12px 16px; border-radius: 12px; font-size: 15px; color: #9B93C0; }
+          .mobile-menu-btn { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; color: #F0EAFF; font-size: 18px; }
+          .mobile-menu.open { display: flex; flex-direction: column; gap: 4px; position: fixed; top: 60px; left: 0; right: 0; z-index: 49; background: rgba(8,8,16,0.98); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.10); padding: 16px; max-height: calc(100vh - 70px); overflow-y: auto; }
+          .mobile-menu a { padding: 12px 16px; border-radius: 12px; font-size: 15px; color: #A99ECC; }
           .providers-grid { grid-template-columns: 1fr; }
           .features-grid { grid-template-columns: 1fr; }
           .how-grid { grid-template-columns: 1fr; gap: 24px; }
@@ -305,7 +305,7 @@ export default function HomePage() {
       `}</style>
 
       {/* ── NAV ── */}
-      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px', background: 'rgba(8,8,16,0.85)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px', background: 'rgba(8,8,16,0.85)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none', letterSpacing: '-0.3px' }}>BESTIE</Link>
         <div className="nav-links">
           <Link href="/browse" className="nav-link">Browse</Link>
@@ -321,7 +321,7 @@ export default function HomePage() {
             <Link href="/dashboard" className="btn-gold" style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '10px' }}>Dashboard →</Link>
           ) : (
             <>
-              <Link href="/login" className="desktop-nav-cta" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none' }}>Log in</Link>
+              <Link href="/login" className="desktop-nav-cta" style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none' }}>Log in</Link>
               <Link href="/signup" className="btn-gold" style={{ padding: '8px 18px', borderRadius: '10px', fontSize: '13px' }}>Join Free</Link>
             </>
           )}
@@ -332,23 +332,23 @@ export default function HomePage() {
       <section style={{ position: 'relative', paddingTop: '130px', paddingBottom: '60px', paddingLeft: '20px', paddingRight: '20px', overflow: 'hidden' }}>
         {/* Background orbs */}
         <div style={{ position: 'absolute', top: '-60px', left: '50%', width: '700px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, #D4AF37 0%, transparent 65%)', opacity: 0.07, pointerEvents: 'none', animation: 'glow-breathe 5s ease-in-out infinite', transform: 'translateX(-50%)' }} />
-        <div style={{ position: 'absolute', top: '100px', left: '20%', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, #9B93C0 0%, transparent 70%)', opacity: 0.04, pointerEvents: 'none', animation: 'glow-breathe-2 7s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', top: '80px', right: '15%', width: '260px', height: '260px', borderRadius: '50%', background: 'radial-gradient(circle, #39FF14 0%, transparent 70%)', opacity: 0.03, pointerEvents: 'none', animation: 'glow-breathe-2 6s ease-in-out 1s infinite' }} />
+        <div style={{ position: 'absolute', top: '100px', left: '20%', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, #A99ECC 0%, transparent 70%)', opacity: 0.04, pointerEvents: 'none', animation: 'glow-breathe-2 7s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', top: '80px', right: '15%', width: '260px', height: '260px', borderRadius: '50%', background: 'radial-gradient(circle, #34D399 0%, transparent 70%)', opacity: 0.03, pointerEvents: 'none', animation: 'glow-breathe-2 6s ease-in-out 1s infinite' }} />
 
         <div style={{ maxWidth: '820px', margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
           {/* Live badge */}
           <div className="hero-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '7px 16px', borderRadius: '999px', marginBottom: '28px', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.22)', color: '#D4AF37' }}>
-            <span style={{ color: '#39FF14', fontSize: '8px', animation: 'glow-breathe 2s ease-in-out infinite' }}>●</span>
+            <span style={{ color: '#34D399', fontSize: '8px', animation: 'glow-breathe 2s ease-in-out infinite' }}>●</span>
             Your social passport — live worldwide
           </div>
 
           {/* Headline */}
-          <h1 className="hero-h1" style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(38px, 8.5vw, 78px)', fontWeight: 700, color: '#E8E0FF', lineHeight: 1.05, marginBottom: '22px', letterSpacing: '-1px' }}>
+          <h1 className="hero-h1" style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(38px, 8.5vw, 78px)', fontWeight: 700, color: '#F0EAFF', lineHeight: 1.05, marginBottom: '22px', letterSpacing: '-1px' }}>
             Real people.<br /><em style={{ color: '#D4AF37', fontStyle: 'italic' }}>Real moments.</em>
           </h1>
 
           {/* Subtitle */}
-          <p className="hero-sub" style={{ fontSize: 'clamp(15px, 2vw, 17px)', color: '#9B93C0', marginBottom: '36px', maxWidth: '460px', margin: '0 auto 36px', lineHeight: 1.65 }}>
+          <p className="hero-sub" style={{ fontSize: 'clamp(15px, 2vw, 17px)', color: '#A99ECC', marginBottom: '36px', maxWidth: '460px', margin: '0 auto 36px', lineHeight: 1.65 }}>
             Find a Bestie for any activity. Verified profiles. Bestie Score. No awkwardness.
           </p>
 
@@ -360,7 +360,7 @@ export default function HomePage() {
               placeholder="Search by name, activity, or city..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px', color: '#E8E0FF', padding: '8px 0' }}
+              style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px', color: '#F0EAFF', padding: '8px 0' }}
             />
             <Link href={`/browse${searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ''}`} className="btn-sm-gold">Find</Link>
           </div>
@@ -369,9 +369,9 @@ export default function HomePage() {
           <button
             className="hero-match"
             onClick={() => setShowMatchModal(true)}
-            style={{ fontSize: '13px', color: '#9B93C0', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textDecorationColor: 'rgba(155,147,192,0.4)', textUnderlineOffset: '4px', transition: 'color 0.2s' }}
+            style={{ fontSize: '13px', color: '#A99ECC', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textDecorationColor: 'rgba(155,147,192,0.4)', textUnderlineOffset: '4px', transition: 'color 0.2s' }}
             onMouseEnter={e => e.target.style.color = '#D4AF37'}
-            onMouseLeave={e => e.target.style.color = '#9B93C0'}
+            onMouseLeave={e => e.target.style.color = '#A99ECC'}
           >
             ✨ Try Smart Match — let us find your Bestie
           </button>
@@ -392,7 +392,7 @@ export default function HomePage() {
                   onClick={() => handleGroupClick(group)}
                 >
                   <span className="emoji">{group.emoji}</span>
-                  <span style={{ fontSize: '11px', fontWeight: 600, color: active ? '#D4AF37' : '#9B93C0', textAlign: 'center', lineHeight: 1.3 }}>{group.label}</span>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: active ? '#D4AF37' : '#A99ECC', textAlign: 'center', lineHeight: 1.3 }}>{group.label}</span>
                 </button>
               )
             })}
@@ -401,7 +401,7 @@ export default function HomePage() {
           {activeGroup && (
             <div style={{ marginTop: '36px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#E8E0FF' }}>
+                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF' }}>
                   {activeGroup.emoji} {activeGroup.label}
                 </h2>
                 <Link href="/browse" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none', transition: 'opacity 0.2s' }} onMouseEnter={e=>e.target.style.opacity='.7'} onMouseLeave={e=>e.target.style.opacity='1'}>See all →</Link>
@@ -409,7 +409,7 @@ export default function HomePage() {
               {groupLoading ? (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
                   {[1, 2, 3].map(i => (
-                    <div key={i} style={{ height: '380px', borderRadius: '20px', background: 'linear-gradient(90deg, #0F0F1E 25%, #141424 50%, #0F0F1E 75%)', backgroundSize: '400px 100%', animation: 'shimmer 1.5s infinite' }} />
+                    <div key={i} style={{ height: '380px', borderRadius: '20px', background: 'linear-gradient(90deg, #111120 25%, #141424 50%, #111120 75%)', backgroundSize: '400px 100%', animation: 'shimmer 1.5s infinite' }} />
                   ))}
                 </div>
               ) : groupProviders.length > 0 ? (
@@ -417,9 +417,9 @@ export default function HomePage() {
                   {groupProviders.map(p => <ProviderCard key={p.id} provider={p} />)}
                 </div>
               ) : (
-                <div style={{ textAlign: 'center', padding: '48px', background: 'rgba(15,15,30,0.7)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)' }}>
+                <div style={{ textAlign: 'center', padding: '48px', background: 'rgba(15,15,30,0.7)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.10)', backdropFilter: 'blur(12px)' }}>
                   <p style={{ fontSize: '32px', marginBottom: '12px' }}>🔍</p>
-                  <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '18px' }}>No Besties for this vibe yet</p>
+                  <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '18px' }}>No Besties for this vibe yet</p>
                   <Link href="/signup" className="btn-sm-gold">Be the first →</Link>
                 </div>
               )}
@@ -434,20 +434,20 @@ export default function HomePage() {
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '28px' }}>
             <div>
               <p className="section-label">LEADERBOARD</p>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 700, color: '#E8E0FF' }}>Top Besties</h2>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 700, color: '#F0EAFF' }}>Top Besties</h2>
             </div>
-            <Link href="/browse" style={{ fontSize: '13px', color: '#9B93C0', textDecoration: 'none', marginBottom: '2px', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#D4AF37'} onMouseLeave={e=>e.target.style.color='#9B93C0'}>See all →</Link>
+            <Link href="/browse" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none', marginBottom: '2px', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#D4AF37'} onMouseLeave={e=>e.target.style.color='#A99ECC'}>See all →</Link>
           </div>
           {topProviders.length > 0 ? (
             <div className="providers-grid">
               {topProviders.map((provider, i) => {
                 const badge = i === 0
-                  ? { label: '👑 #1 Top Bestie', bg: 'linear-gradient(135deg, #D4AF37, #B8960C)', color: '#080810', border: 'none' }
+                  ? { label: '👑 #1 Top Bestie', bg: 'linear-gradient(135deg, #D4AF37, #B8960C)', color: '#09090F', border: 'none' }
                   : i === 1
-                  ? { label: '🥈 #2', bg: 'rgba(155,147,192,0.2)', color: '#9B93C0', border: '1px solid rgba(155,147,192,0.3)' }
+                  ? { label: '🥈 #2', bg: 'rgba(155,147,192,0.2)', color: '#A99ECC', border: '1px solid rgba(155,147,192,0.3)' }
                   : i === 2
                   ? { label: '🥉 #3', bg: 'rgba(180,100,40,0.2)', color: '#CD7F32', border: '1px solid rgba(180,100,40,0.3)' }
-                  : { label: `#${i + 1}`, bg: 'rgba(255,255,255,0.04)', color: '#9B93C0', border: '1px solid rgba(255,255,255,0.08)' }
+                  : { label: `#${i + 1}`, bg: '#131323', color: '#A99ECC', border: '1px solid rgba(255,255,255,0.12)' }
                 return (
                   <div key={provider.id} style={{ position: 'relative', paddingTop: '16px' }}>
                     <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', zIndex: 10, background: badge.bg, border: badge.border, borderRadius: '999px', padding: '4px 14px', fontSize: '11px', fontWeight: 700, color: badge.color, whiteSpace: 'nowrap' }}>
@@ -459,8 +459,8 @@ export default function HomePage() {
               })}
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '60px', background: 'rgba(15,15,30,0.7)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)' }}>
-              <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '18px' }}>Be the first to build your Bestie Score</p>
+            <div style={{ textAlign: 'center', padding: '60px', background: 'rgba(15,15,30,0.7)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.10)', backdropFilter: 'blur(12px)' }}>
+              <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '18px' }}>Be the first to build your Bestie Score</p>
               <Link href="/signup" className="btn-sm-gold">Join Free →</Link>
             </div>
           )}
@@ -471,13 +471,13 @@ export default function HomePage() {
       <section id="how-it-works" style={{ padding: '72px 20px' }}>
         <div ref={howRef} className={`reveal ${howVisible ? 'visible' : ''}`} style={{ maxWidth: '980px', margin: '0 auto' }}>
           {/* Glassmorphism container */}
-          <div style={{ borderRadius: '28px', background: 'rgba(15,15,30,0.6)', border: '1px solid rgba(255,255,255,0.07)', padding: '52px 44px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 24px 80px rgba(0,0,0,0.35)' }}>
+          <div style={{ borderRadius: '28px', background: 'rgba(15,15,30,0.6)', border: '1px solid rgba(255,255,255,0.11)', padding: '52px 44px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 24px 80px rgba(0,0,0,0.35)' }}>
             <div style={{ textAlign: 'center', marginBottom: '48px' }}>
               <p className="section-label">HOW IT WORKS</p>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 42px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '12px', lineHeight: 1.15 }}>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 42px)', fontWeight: 700, color: '#F0EAFF', marginBottom: '12px', lineHeight: 1.15 }}>
                 From stranger to Bestie<br />in four steps.
               </h2>
-              <p style={{ fontSize: '15px', color: '#9B93C0' }}>Built for real human connection — not followers, not likes.</p>
+              <p style={{ fontSize: '15px', color: '#A99ECC' }}>Built for real human connection — not followers, not likes.</p>
             </div>
             <div className="how-grid">
               {[
@@ -491,8 +491,8 @@ export default function HomePage() {
                   <div style={{ fontSize: '52px', fontWeight: 800, color: 'rgba(212,175,55,0.08)', fontFamily: 'DM Serif Display, serif', lineHeight: 1, marginBottom: '-8px' }}>{step.num}</div>
                   {/* Icon with pill background */}
                   <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)', fontSize: '24px', margin: '10px 0 14px' }}>{step.icon}</div>
-                  <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '17px', fontWeight: 700, color: '#E8E0FF', marginBottom: '10px' }}>{step.title}</h3>
-                  <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.75 }}>{step.desc}</p>
+                  <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '17px', fontWeight: 700, color: '#F0EAFF', marginBottom: '10px' }}>{step.title}</h3>
+                  <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.75 }}>{step.desc}</p>
                 </div>
               ))}
             </div>
@@ -505,14 +505,14 @@ export default function HomePage() {
         <div ref={featRef} className={`reveal ${featVisible ? 'visible' : ''}`} style={{ maxWidth: '980px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '44px' }}>
             <p className="section-label">WHAT'S INSIDE</p>
-            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 38px)', fontWeight: 700, color: '#E8E0FF' }}>A full world for real-life connection</h2>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 38px)', fontWeight: 700, color: '#F0EAFF' }}>A full world for real-life connection</h2>
           </div>
           <div className="features-grid">
             {FEATURES.map((f) => (
               <div key={f.title} className="glass-card" style={{ padding: '22px' }}>
                 <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.12)', fontSize: '22px', marginBottom: '14px' }}>{f.emoji}</div>
-                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '16px', fontWeight: 700, color: '#E8E0FF', marginBottom: '7px' }}>{f.title}</h3>
-                <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.65 }}>{f.desc}</p>
+                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '16px', fontWeight: 700, color: '#F0EAFF', marginBottom: '7px' }}>{f.title}</h3>
+                <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.65 }}>{f.desc}</p>
               </div>
             ))}
           </div>
@@ -536,12 +536,12 @@ export default function HomePage() {
                       <stop offset="100%" stopColor="#D4AF37" stopOpacity="0" />
                     </radialGradient>
                     <radialGradient id="nodePurple" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="#9B93C0" stopOpacity="0.25" />
-                      <stop offset="100%" stopColor="#9B93C0" stopOpacity="0" />
+                      <stop offset="0%" stopColor="#A99ECC" stopOpacity="0.25" />
+                      <stop offset="100%" stopColor="#A99ECC" stopOpacity="0" />
                     </radialGradient>
                     <radialGradient id="nodeGreen" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="#39FF14" stopOpacity="0.2" />
-                      <stop offset="100%" stopColor="#39FF14" stopOpacity="0" />
+                      <stop offset="0%" stopColor="#34D399" stopOpacity="0.2" />
+                      <stop offset="100%" stopColor="#34D399" stopOpacity="0" />
                     </radialGradient>
                     <filter id="glow">
                       <feGaussianBlur stdDeviation="3" result="blur" />
@@ -562,12 +562,12 @@ export default function HomePage() {
                   {/* Edges — drawn in animation order */}
                   <line className="edge e1" x1="170" y1="100" x2="90"  y2="60"  stroke="#D4AF37" strokeWidth="1.5" strokeOpacity="0.5" />
                   <line className="edge e2" x1="170" y1="100" x2="260" y2="70"  stroke="#D4AF37" strokeWidth="1.5" strokeOpacity="0.5" />
-                  <line className="edge e3" x1="170" y1="100" x2="110" y2="185" stroke="#9B93C0" strokeWidth="1.2" strokeOpacity="0.4" />
-                  <line className="edge e4" x1="170" y1="100" x2="240" y2="190" stroke="#9B93C0" strokeWidth="1.2" strokeOpacity="0.4" />
+                  <line className="edge e3" x1="170" y1="100" x2="110" y2="185" stroke="#A99ECC" strokeWidth="1.2" strokeOpacity="0.4" />
+                  <line className="edge e4" x1="170" y1="100" x2="240" y2="190" stroke="#A99ECC" strokeWidth="1.2" strokeOpacity="0.4" />
                   <line className="edge e5" x1="90"  y1="60"  x2="260" y2="70"  stroke="#D4AF37" strokeWidth="1"   strokeOpacity="0.25" />
-                  <line className="edge e6" x1="110" y1="185" x2="55"  y2="240" stroke="#9B93C0" strokeWidth="1"   strokeOpacity="0.3" />
-                  <line className="edge e7" x1="240" y1="190" x2="300" y2="245" stroke="#9B93C0" strokeWidth="1"   strokeOpacity="0.3" />
-                  <line className="edge e8" x1="110" y1="185" x2="240" y2="190" stroke="#9B93C0" strokeWidth="1"   strokeOpacity="0.2" />
+                  <line className="edge e6" x1="110" y1="185" x2="55"  y2="240" stroke="#A99ECC" strokeWidth="1"   strokeOpacity="0.3" />
+                  <line className="edge e7" x1="240" y1="190" x2="300" y2="245" stroke="#A99ECC" strokeWidth="1"   strokeOpacity="0.3" />
+                  <line className="edge e8" x1="110" y1="185" x2="240" y2="190" stroke="#A99ECC" strokeWidth="1"   strokeOpacity="0.2" />
 
                   {/* Center node — YOU (gold) */}
                   <circle cx="170" cy="100" r="26" fill="url(#nodeGold)" />
@@ -576,30 +576,30 @@ export default function HomePage() {
 
                   {/* Top-left node */}
                   <circle cx="90" cy="60" r="20" fill="url(#nodePurple)" />
-                  <circle cx="90" cy="60" r="14" fill="#1A1A35" stroke="#9B93C0" strokeWidth="1.5" />
-                  <text x="90" y="64" textAnchor="middle" fontSize="10" fontWeight="600" fill="#E8E0FF" fontFamily="Plus Jakarta Sans, sans-serif">Alex</text>
+                  <circle cx="90" cy="60" r="14" fill="#1A1A35" stroke="#A99ECC" strokeWidth="1.5" />
+                  <text x="90" y="64" textAnchor="middle" fontSize="10" fontWeight="600" fill="#F0EAFF" fontFamily="Plus Jakarta Sans, sans-serif">Alex</text>
 
                   {/* Top-right node */}
                   <circle cx="260" cy="70" r="20" fill="url(#nodePurple)" />
-                  <circle cx="260" cy="70" r="14" fill="#1A1A35" stroke="#9B93C0" strokeWidth="1.5" />
-                  <text x="260" y="74" textAnchor="middle" fontSize="10" fontWeight="600" fill="#E8E0FF" fontFamily="Plus Jakarta Sans, sans-serif">Mila</text>
+                  <circle cx="260" cy="70" r="14" fill="#1A1A35" stroke="#A99ECC" strokeWidth="1.5" />
+                  <text x="260" y="74" textAnchor="middle" fontSize="10" fontWeight="600" fill="#F0EAFF" fontFamily="Plus Jakarta Sans, sans-serif">Mila</text>
 
                   {/* Bottom-left node */}
                   <circle cx="110" cy="185" r="18" fill="url(#nodePurple)" />
-                  <circle cx="110" cy="185" r="12" fill="#1A1A35" stroke="#9B93C0" strokeWidth="1.5" />
-                  <text x="110" y="189" textAnchor="middle" fontSize="9" fontWeight="600" fill="#E8E0FF" fontFamily="Plus Jakarta Sans, sans-serif">Dan</text>
+                  <circle cx="110" cy="185" r="12" fill="#1A1A35" stroke="#A99ECC" strokeWidth="1.5" />
+                  <text x="110" y="189" textAnchor="middle" fontSize="9" fontWeight="600" fill="#F0EAFF" fontFamily="Plus Jakarta Sans, sans-serif">Dan</text>
 
                   {/* Bottom-right node */}
                   <circle cx="240" cy="190" r="18" fill="url(#nodePurple)" />
-                  <circle cx="240" cy="190" r="12" fill="#1A1A35" stroke="#9B93C0" strokeWidth="1.5" />
-                  <text x="240" y="194" textAnchor="middle" fontSize="9" fontWeight="600" fill="#E8E0FF" fontFamily="Plus Jakarta Sans, sans-serif">Kate</text>
+                  <circle cx="240" cy="190" r="12" fill="#1A1A35" stroke="#A99ECC" strokeWidth="1.5" />
+                  <text x="240" y="194" textAnchor="middle" fontSize="9" fontWeight="600" fill="#F0EAFF" fontFamily="Plus Jakarta Sans, sans-serif">Kate</text>
 
                   {/* 2nd-degree nodes (smaller, green tint) */}
                   <circle cx="55"  cy="240" r="10" fill="#1A1A35" stroke="rgba(57,255,20,0.4)" strokeWidth="1" />
-                  <text x="55"  y="244" textAnchor="middle" fontSize="8" fill="#9B93C0" fontFamily="Plus Jakarta Sans, sans-serif">Lev</text>
+                  <text x="55"  y="244" textAnchor="middle" fontSize="8" fill="#A99ECC" fontFamily="Plus Jakarta Sans, sans-serif">Lev</text>
 
                   <circle cx="300" cy="245" r="10" fill="#1A1A35" stroke="rgba(57,255,20,0.4)" strokeWidth="1" />
-                  <text x="300" y="249" textAnchor="middle" fontSize="8" fill="#9B93C0" fontFamily="Plus Jakarta Sans, sans-serif">Sam</text>
+                  <text x="300" y="249" textAnchor="middle" fontSize="8" fill="#A99ECC" fontFamily="Plus Jakarta Sans, sans-serif">Sam</text>
 
                   {/* Labels */}
                   <text x="130" y="130" fontSize="9" fill="#D4AF37" fontFamily="Plus Jakarta Sans, sans-serif" opacity="0.7">✓ 3 sessions</text>
@@ -614,10 +614,10 @@ export default function HomePage() {
               {/* Right: explanation */}
               <div style={{ padding: '44px 40px' }}>
                 <p className="section-label">CONNECTION GRAPH</p>
-                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 36px)', fontWeight: 700, color: '#E8E0FF', lineHeight: 1.2, marginBottom: '16px' }}>
-                  Your social web,<br /><em style={{ color: '#9B93C0', fontStyle: 'italic' }}>built automatically.</em>
+                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 36px)', fontWeight: 700, color: '#F0EAFF', lineHeight: 1.2, marginBottom: '16px' }}>
+                  Your social web,<br /><em style={{ color: '#A99ECC', fontStyle: 'italic' }}>built automatically.</em>
                 </h2>
-                <p style={{ fontSize: '14px', color: '#9B93C0', lineHeight: 1.8, marginBottom: '24px' }}>
+                <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.8, marginBottom: '24px' }}>
                   Every confirmed session creates a line between two people. No manual input, no tags, no followers — just real connections that happened IRL.
                 </p>
 
@@ -631,8 +631,8 @@ export default function HomePage() {
                     <div key={item.title} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                       <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(155,147,192,0.08)', border: '1px solid rgba(155,147,192,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0, marginTop: '1px' }}>{item.icon}</div>
                       <div>
-                        <p style={{ fontSize: '13px', fontWeight: 700, color: '#E8E0FF', marginBottom: '2px' }}>{item.title}</p>
-                        <p style={{ fontSize: '12px', color: '#9B93C0', lineHeight: 1.6 }}>{item.desc}</p>
+                        <p style={{ fontSize: '13px', fontWeight: 700, color: '#F0EAFF', marginBottom: '2px' }}>{item.title}</p>
+                        <p style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.6 }}>{item.desc}</p>
                       </div>
                     </div>
                   ))}
@@ -650,8 +650,8 @@ export default function HomePage() {
         <div ref={crewsRef} className={`reveal ${crewsVisible ? 'visible' : ''}`} style={{ maxWidth: '980px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '44px' }}>
             <p className="section-label">CREWS</p>
-            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 38px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '14px' }}>Your people. Your group.</h2>
-            <p style={{ fontSize: '15px', color: '#9B93C0', maxWidth: '500px', margin: '0 auto', lineHeight: 1.7 }}>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 38px)', fontWeight: 700, color: '#F0EAFF', marginBottom: '14px' }}>Your people. Your group.</h2>
+            <p style={{ fontSize: '15px', color: '#A99ECC', maxWidth: '500px', margin: '0 auto', lineHeight: 1.7 }}>
               A Crew is a group of Besties who regularly show up for each other. Create one, invite friends, run events — or join an existing one.
             </p>
           </div>
@@ -664,8 +664,8 @@ export default function HomePage() {
             ].map(f => (
               <div key={f.title} className="glass-card" style={{ padding: '22px' }}>
                 <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.12)', fontSize: '22px', marginBottom: '14px' }}>{f.emoji}</div>
-                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '16px', fontWeight: 700, color: '#E8E0FF', marginBottom: '7px' }}>{f.title}</h3>
-                <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.65 }}>{f.desc}</p>
+                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '16px', fontWeight: 700, color: '#F0EAFF', marginBottom: '7px' }}>{f.title}</h3>
+                <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.65 }}>{f.desc}</p>
               </div>
             ))}
           </div>
@@ -681,11 +681,11 @@ export default function HomePage() {
           <div className="score-grid">
             {/* Left: explanation */}
             <div>
-              <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2.5px', color: '#39FF14', textTransform: 'uppercase', marginBottom: '16px' }}>THE SOCIAL PASSPORT</p>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(28px, 5vw, 46px)', fontWeight: 700, color: '#E8E0FF', lineHeight: 1.15, marginBottom: '20px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2.5px', color: '#34D399', textTransform: 'uppercase', marginBottom: '16px' }}>THE SOCIAL PASSPORT</p>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(28px, 5vw, 46px)', fontWeight: 700, color: '#F0EAFF', lineHeight: 1.15, marginBottom: '20px' }}>
                 Your <em style={{ color: '#D4AF37', fontStyle: 'italic' }}>Bestie Score</em><br />says it all.
               </h2>
-              <p style={{ fontSize: '15px', color: '#9B93C0', marginBottom: '24px', lineHeight: 1.75 }}>
+              <p style={{ fontSize: '15px', color: '#A99ECC', marginBottom: '24px', lineHeight: 1.75 }}>
                 Like a credit score — but for who you are as a person. Built from real sessions, ratings, sparks, and verification.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '32px' }}>
@@ -696,9 +696,9 @@ export default function HomePage() {
                   { label: '💎 Legend', desc: '1+ year, trusted by many' },
                   { label: '👑 OG Bestie', desc: '2+ years — the real ones' },
                 ].map(b => (
-                  <div key={b.label} style={{ display: 'flex', gap: '10px', alignItems: 'center', fontSize: '13px', padding: '8px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
-                    <span style={{ color: '#E8E0FF', fontWeight: 600, minWidth: '120px' }}>{b.label}</span>
-                    <span style={{ color: '#9B93C0' }}>{b.desc}</span>
+                  <div key={b.label} style={{ display: 'flex', gap: '10px', alignItems: 'center', fontSize: '13px', padding: '8px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid #131323' }}>
+                    <span style={{ color: '#F0EAFF', fontWeight: 600, minWidth: '120px' }}>{b.label}</span>
+                    <span style={{ color: '#A99ECC' }}>{b.desc}</span>
                   </div>
                 ))}
               </div>
@@ -708,23 +708,23 @@ export default function HomePage() {
             {/* Right: score card */}
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <div className="score-card" style={{ width: '280px', padding: '32px 28px', borderRadius: '28px', textAlign: 'center', background: 'rgba(15,15,30,0.8)', border: '1px solid rgba(57,255,20,0.2)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
-                <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '2px', color: '#9B93C0', marginBottom: '8px', textTransform: 'uppercase' }}>BESTIE SCORE</p>
-                <div style={{ fontSize: '80px', fontWeight: 700, color: '#39FF14', fontFamily: 'DM Serif Display, serif', lineHeight: 1, margin: '4px 0 16px', textShadow: '0 0 40px rgba(57,255,20,0.4)' }}>874</div>
+                <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '2px', color: '#A99ECC', marginBottom: '8px', textTransform: 'uppercase' }}>BESTIE SCORE</p>
+                <div style={{ fontSize: '80px', fontWeight: 700, color: '#34D399', fontFamily: 'DM Serif Display, serif', lineHeight: 1, margin: '4px 0 16px', textShadow: '0 0 40px rgba(57,255,20,0.4)' }}>874</div>
                 {/* Progress bar */}
-                <div style={{ height: '7px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', marginBottom: '8px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: '87.4%', borderRadius: '999px', background: 'linear-gradient(90deg, #39FF14 0%, #D4AF37 100%)', boxShadow: '0 0 12px rgba(57,255,20,0.5)' }} />
+                <div style={{ height: '7px', borderRadius: '999px', background: 'rgba(255,255,255,0.10)', marginBottom: '8px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: '87.4%', borderRadius: '999px', background: 'linear-gradient(90deg, #34D399 0%, #D4AF37 100%)', boxShadow: '0 0 12px rgba(57,255,20,0.5)' }} />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#9B93C0', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#A99ECC', marginBottom: '24px' }}>
                   <span>0</span>
-                  <span style={{ color: '#39FF14', fontWeight: 700 }}>Excellent</span>
+                  <span style={{ color: '#34D399', fontWeight: 700 }}>Excellent</span>
                   <span>1000</span>
                 </div>
                 {/* Stats */}
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.10)', paddingTop: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                   {[{ label: 'Sessions', val: '43' }, { label: 'Rating', val: '4.9' }, { label: 'Sparks', val: '127' }].map((s) => (
-                    <div key={s.label} style={{ padding: '10px 4px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)' }}>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#E8E0FF', marginBottom: '2px' }}>{s.val}</div>
-                      <div style={{ fontSize: '10px', color: '#9B93C0', fontWeight: 600, letterSpacing: '0.5px' }}>{s.label}</div>
+                    <div key={s.label} style={{ padding: '10px 4px', borderRadius: '12px', background: '#111120' }}>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#F0EAFF', marginBottom: '2px' }}>{s.val}</div>
+                      <div style={{ fontSize: '10px', color: '#A99ECC', fontWeight: 600, letterSpacing: '0.5px' }}>{s.label}</div>
                     </div>
                   ))}
                 </div>
@@ -742,8 +742,8 @@ export default function HomePage() {
             <div style={{ position: 'absolute', top: '-40px', left: '50%', transform: 'translateX(-50%)', width: '300px', height: '200px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
             <div style={{ position: 'relative', zIndex: 1 }}>
               <div style={{ fontSize: '44px', marginBottom: '16px' }}>✨</div>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 34px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '14px' }}>Sparks — rare tokens of real trust</h2>
-              <p style={{ fontSize: '15px', color: '#9B93C0', marginBottom: '32px', lineHeight: 1.7, maxWidth: '460px', margin: '0 auto 32px' }}>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 34px)', fontWeight: 700, color: '#F0EAFF', marginBottom: '14px' }}>Sparks — rare tokens of real trust</h2>
+              <p style={{ fontSize: '15px', color: '#A99ECC', marginBottom: '32px', lineHeight: 1.7, maxWidth: '460px', margin: '0 auto 32px' }}>
                 Every new member gets 30 Sparks. You can give max 3 to any one person — they say "I genuinely trust this person."
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginBottom: '32px' }}>
@@ -769,8 +769,8 @@ export default function HomePage() {
           <div style={{ borderRadius: '28px', textAlign: 'center', background: 'linear-gradient(135deg, rgba(212,175,55,0.09) 0%, rgba(57,255,20,0.04) 100%)', border: '1px solid rgba(212,175,55,0.2)', padding: '56px 36px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', bottom: '-60px', right: '-60px', width: '260px', height: '260px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
             <div style={{ position: 'relative', zIndex: 1 }}>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '14px', lineHeight: 1.15 }}>Ready to meet your Bestie?</h2>
-              <p style={{ fontSize: '16px', color: '#9B93C0', marginBottom: '32px' }}>Join people building real connections in their city.</p>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 700, color: '#F0EAFF', marginBottom: '14px', lineHeight: 1.15 }}>Ready to meet your Bestie?</h2>
+              <p style={{ fontSize: '16px', color: '#A99ECC', marginBottom: '32px' }}>Join people building real connections in their city.</p>
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                 <Link href="/signup" className="btn-gold">Become a Bestie →</Link>
                 <Link href="/browse" className="btn-ghost">Browse Besties</Link>
@@ -781,7 +781,7 @@ export default function HomePage() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '32px 24px' }}>
+      <footer style={{ borderTop: '1px solid #161628', padding: '32px 24px' }}>
         <div style={{ maxWidth: '980px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
           <span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37' }}>BESTIE</span>
           <div style={{ display: 'flex', gap: '20px', fontSize: '13px', flexWrap: 'wrap' }}>
@@ -789,7 +789,7 @@ export default function HomePage() {
               { href: '/browse', label: 'Browse' }, { href: '/crews', label: 'Crews' },
               { href: '/pulse', label: 'Pulse' }, { href: '#how-it-works', label: 'How It Works' }, { href: '/score-guide', label: 'Bestie Score' }, { href: '/signup', label: 'Join' },
             ].map(l => (
-              <Link key={l.label} href={l.href} style={{ color: '#6B6490', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#9B93C0'} onMouseLeave={e=>e.target.style.color='#6B6490'}>{l.label}</Link>
+              <Link key={l.label} href={l.href} style={{ color: '#6B6490', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#A99ECC'} onMouseLeave={e=>e.target.style.color='#6B6490'}>{l.label}</Link>
             ))}
           </div>
           <p style={{ fontSize: '12px', color: '#4A4268' }}>© 2026 Bestie. Worldwide. 18+</p>
