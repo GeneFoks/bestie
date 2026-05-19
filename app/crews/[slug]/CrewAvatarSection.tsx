@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
@@ -61,7 +61,7 @@ export default function CrewAvatarSection({ crewId, captainId, initialUrl, crewN
       />
       <div
         onClick={() => isCaptain && inputRef.current?.click()}
-        style={{ width: '80px', height: '80px', borderRadius: '20px', overflow: 'hidden', background: '#1a1a35', border: '2px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isCaptain ? 'pointer' : 'default', position: 'relative' }}
+        style={{ width: '80px', height: '80px', borderRadius: '20px', overflow: 'hidden', background: '#1A1A2E', border: '2px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isCaptain ? 'pointer' : 'default', position: 'relative' }}
       >
         {uploading ? (
           <span style={{ fontSize: '20px', color: '#D4AF37' }}>⏳</span>

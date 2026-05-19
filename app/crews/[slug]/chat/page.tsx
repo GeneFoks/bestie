@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
@@ -110,8 +110,8 @@ export default function CrewChatPage() {
   }
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <p style={{ color: '#9B93C0', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Loading…</p>
+    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <p style={{ color: '#A99ECC', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Loading…</p>
     </div>
   )
 
@@ -128,30 +128,30 @@ export default function CrewChatPage() {
   }, [])
 
   return (
-    <div style={{ height: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <nav style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', background: 'rgba(8,8,16,0.95)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)', zIndex: 50 }}>
-        <Link href={`/crews/${slug}`} style={{ color: '#9B93C0', textDecoration: 'none', fontSize: '20px', lineHeight: 1 }}>←</Link>
+      <nav style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', background: 'rgba(8,8,16,0.95)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)', zIndex: 50 }}>
+        <Link href={`/crews/${slug}`} style={{ color: '#A99ECC', textDecoration: 'none', fontSize: '20px', lineHeight: 1 }}>←</Link>
         {crew?.avatar_url
           ? <img src={crew.avatar_url} alt="" style={{ width: '32px', height: '32px', borderRadius: '10px', objectFit: 'cover' }} />
-          : <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>👥</div>
+          : <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>👥</div>
         }
         <div>
-          <div style={{ fontSize: '15px', fontWeight: 700, color: '#E8E0FF' }}>{crew?.name}</div>
-          <div style={{ fontSize: '11px', color: '#9B93C0' }}>Members only</div>
+          <div style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF' }}>{crew?.name}</div>
+          <div style={{ fontSize: '11px', color: '#A99ECC' }}>Members only</div>
         </div>
       </nav>
 
       {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {messages.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '60px 0', color: '#9B93C0', fontSize: '14px' }}>
+          <div style={{ textAlign: 'center', padding: '60px 0', color: '#A99ECC', fontSize: '14px' }}>
             No messages yet. Say hello 👋
           </div>
         )}
         {groupedMessages.map((group, gi) => (
           <div key={gi} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0, background: '#1a1a35', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0, background: '#1A1A2E', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {group.sender?.avatar_url
                 ? <img src={group.sender.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : <span style={{ fontSize: '14px', fontWeight: 700, color: '#D4AF37' }}>{group.sender?.full_name?.[0]}</span>
@@ -159,10 +159,10 @@ export default function CrewChatPage() {
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px' }}>
-                <Link href={`/${group.sender?.username}`} style={{ fontSize: '13px', fontWeight: 700, color: group.sender?.id === userId ? '#D4AF37' : '#E8E0FF', textDecoration: 'none' }}>
+                <Link href={`/${group.sender?.username}`} style={{ fontSize: '13px', fontWeight: 700, color: group.sender?.id === userId ? '#D4AF37' : '#F0EAFF', textDecoration: 'none' }}>
                   {group.sender?.full_name}
                 </Link>
-                <span style={{ fontSize: '11px', color: '#9B93C0' }}>
+                <span style={{ fontSize: '11px', color: '#A99ECC' }}>
                   {new Date(group.items[0].created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
@@ -178,7 +178,7 @@ export default function CrewChatPage() {
       </div>
 
       {/* Input */}
-      <div style={{ flexShrink: 0, padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(8,8,16,0.95)', display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+      <div style={{ flexShrink: 0, padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.10)', background: 'rgba(8,8,16,0.95)', display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
         <textarea
           ref={inputRef}
           value={input}
@@ -187,12 +187,12 @@ export default function CrewChatPage() {
           placeholder="Message the crew…"
           rows={1}
           maxLength={1000}
-          style={{ flex: 1, padding: '12px 14px', borderRadius: '12px', fontSize: '14px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', outline: 'none', resize: 'none', lineHeight: 1.5, maxHeight: '120px', overflowY: 'auto', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+          style={{ flex: 1, padding: '12px 14px', borderRadius: '12px', fontSize: '14px', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', outline: 'none', resize: 'none', lineHeight: 1.5, maxHeight: '120px', overflowY: 'auto', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
         />
         <button
           onClick={send}
           disabled={!input.trim() || sending}
-          style={{ padding: '12px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: input.trim() ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.06)', color: input.trim() ? '#080810' : '#9B93C0', border: 'none', cursor: input.trim() ? 'pointer' : 'not-allowed', flexShrink: 0, transition: 'all 0.15s' }}
+          style={{ padding: '12px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: input.trim() ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.10)', color: input.trim() ? '#09090F' : '#A99ECC', border: 'none', cursor: input.trim() ? 'pointer' : 'not-allowed', flexShrink: 0, transition: 'all 0.15s' }}
         >
           Send
         </button>

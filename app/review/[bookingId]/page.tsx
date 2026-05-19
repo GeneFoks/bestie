@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -145,21 +145,21 @@ if (other) {
   }
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ width: '36px', height: '36px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
     </div>
   )
 
   if (done) return (
-    <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ textAlign: 'center', maxWidth: '360px', padding: '0 24px' }}>
         <div style={{ fontSize: '64px', marginBottom: '16px' }}>🎉</div>
-        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#E8E0FF', marginBottom: '8px' }}>Done!</h2>
-        <p style={{ fontSize: '15px', color: '#9B93C0', marginBottom: '28px' }}>
+        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#F0EAFF', marginBottom: '8px' }}>Done!</h2>
+        <p style={{ fontSize: '15px', color: '#A99ECC', marginBottom: '28px' }}>
           Thanks for reviewing your session with {other?.full_name?.split(' ')[0]}.
         </p>
-        <Link href="/sessions" style={{ display: 'inline-block', padding: '12px 28px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
+        <Link href="/sessions" style={{ display: 'inline-block', padding: '12px 28px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
           Back to Sessions →
         </Link>
       </div>
@@ -170,27 +170,27 @@ if (other) {
   const canGiveSpark = sparksBalance > 0 && givenCount < 3
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <Link href="/sessions" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none' }}>← Sessions</Link>
+        <Link href="/sessions" style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none' }}>← Sessions</Link>
       </nav>
 
       <div style={{ maxWidth: '480px', margin: '0 auto', padding: '48px 24px' }}>
 
         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-          <div style={{ width: '80px', height: '80px', borderRadius: '20px', overflow: 'hidden', background: '#1a1a35', border: '2px solid rgba(212,175,55,0.3)', margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '80px', height: '80px', borderRadius: '20px', overflow: 'hidden', background: '#1A1A2E', border: '2px solid rgba(212,175,55,0.3)', margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {other?.avatar_url
               ? <img src={other.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : <span style={{ fontSize: '32px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>{other?.full_name?.[0]}</span>
             }
           </div>
-          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#E8E0FF', marginBottom: '4px' }}>Review session</h1>
-          <p style={{ fontSize: '14px', color: '#9B93C0' }}>with <span style={{ color: '#E8E0FF', fontWeight: 500 }}>{other?.full_name}</span></p>
+          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#F0EAFF', marginBottom: '4px' }}>Review session</h1>
+          <p style={{ fontSize: '14px', color: '#A99ECC' }}>with <span style={{ color: '#F0EAFF', fontWeight: 500 }}>{other?.full_name}</span></p>
         </div>
 
-        <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px', marginBottom: '16px' }}>
-          <p style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '16px' }}>
+        <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px', marginBottom: '16px' }}>
+          <p style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '1px', color: '#A99ECC', marginBottom: '16px' }}>
           RATE YOUR EXPERIENCE
           {booking && (isSeeker ? booking.rating_seeker : booking.rating_provider) && (
             <span style={{ marginLeft: '8px', fontSize: '11px', color: '#D4AF37', fontWeight: 500, letterSpacing: 0 }}>· editing</span>
@@ -214,14 +214,14 @@ if (other) {
           )}
         </div>
 
-        <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '24px', marginBottom: '24px' }}>
+        <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px', marginBottom: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <p style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0' }}>GIVE A SPARK ✨</p>
-            <span style={{ fontSize: '12px', color: '#9B93C0' }}>{sparksBalance} left · max 3 per person</span>
+            <p style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '1px', color: '#A99ECC' }}>GIVE A SPARK ✨</p>
+            <span style={{ fontSize: '12px', color: '#A99ECC' }}>{sparksBalance} left · max 3 per person</span>
           </div>
 
           {!canGiveSpark ? (
-            <p style={{ fontSize: '13px', color: '#9B93C0', textAlign: 'center' }}>
+            <p style={{ fontSize: '13px', color: '#A99ECC', textAlign: 'center' }}>
               {sparksBalance <= 0 ? 'No Sparks left' : 'Already gave 3 Sparks to this person'}
             </p>
           ) : (
@@ -237,14 +237,14 @@ if (other) {
                     style={{
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
                       padding: '10px 6px', borderRadius: '12px', cursor: given ? 'not-allowed' : 'pointer',
-                      background: selected ? 'rgba(212,175,55,0.15)' : given ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)',
-                      border: selected ? '1px solid rgba(212,175,55,0.5)' : given ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(255,255,255,0.08)',
+                      background: selected ? 'rgba(212,175,55,0.15)' : given ? 'rgba(255,255,255,0.02)' : '#131323',
+                      border: selected ? '1px solid rgba(212,175,55,0.5)' : given ? '1px solid #131323' : '1px solid rgba(255,255,255,0.12)',
                       opacity: given ? 0.35 : 1,
                     }}
                   >
                     <span style={{ fontSize: '20px' }}>{s.emoji}</span>
-                    <span style={{ fontSize: '10px', fontWeight: 500, color: selected ? '#D4AF37' : '#9B93C0', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
-                    {given && <span style={{ fontSize: '9px', color: '#9B93C0' }}>✓</span>}
+                    <span style={{ fontSize: '10px', fontWeight: 500, color: selected ? '#D4AF37' : '#A99ECC', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
+                    {given && <span style={{ fontSize: '9px', color: '#A99ECC' }}>✓</span>}
                   </button>
                 )
               })}
@@ -257,15 +257,15 @@ if (other) {
           disabled={!rating || submitting}
           style={{
             width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 700,
-            background: rating ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.06)',
-            color: rating ? '#080810' : '#9B93C0',
+            background: rating ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.10)',
+            color: rating ? '#09090F' : '#A99ECC',
             border: 'none', cursor: rating ? 'pointer' : 'not-allowed',
           }}
         >
           {submitting ? 'Submitting...' : selectedSpark ? `Submit rating + ✨ ${SPARK_TYPES.find(s => s.id === selectedSpark)?.label}` : 'Submit rating'}
         </button>
 
-        <p style={{ fontSize: '12px', color: '#9B93C0', textAlign: 'center', marginTop: '12px' }}>
+        <p style={{ fontSize: '12px', color: '#A99ECC', textAlign: 'center', marginTop: '12px' }}>
           Spark is optional — rating is required
         </p>
       </div>

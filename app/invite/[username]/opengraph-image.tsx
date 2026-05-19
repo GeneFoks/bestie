@@ -1,4 +1,4 @@
-import { ImageResponse } from 'next/og'
+﻿import { ImageResponse } from 'next/og'
 import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'edge'
@@ -36,7 +36,7 @@ export default async function OGImage(
   const activity = searchParams?.activity
   const activityLabel = activity ? (ACTIVITY_LABELS[activity] || 'connect') : 'connect'
   const score = profile?.bestie_score || 0
-  const scoreColor = score >= 800 ? '#39FF14' : score >= 600 ? '#D4AF37' : '#9B93C0'
+  const scoreColor = score >= 800 ? '#34D399' : score >= 600 ? '#D4AF37' : '#A99ECC'
   const sessions = profile?.total_sessions || 0
   const initials = profile?.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '??'
 
@@ -47,7 +47,7 @@ export default async function OGImage(
           width: '1200px',
           height: '630px',
           display: 'flex',
-          background: '#080810',
+          background: '#09090F',
           position: 'relative',
           overflow: 'hidden',
           fontFamily: 'sans-serif',
@@ -67,12 +67,12 @@ export default async function OGImage(
               style={{ width: '420px', height: '630px', objectFit: 'cover', objectPosition: 'center top' }}
             />
           ) : (
-            <div style={{ width: '420px', height: '630px', background: 'linear-gradient(135deg, #1a1a35 0%, #0F0F1E 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '420px', height: '630px', background: 'linear-gradient(135deg, #1A1A2E 0%, #111120 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{ fontSize: '120px', fontWeight: 700, color: '#D4AF37', display: 'flex' }}>{initials}</div>
             </div>
           )}
           {/* Gradient overlay on photo */}
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 60%, #080810 100%)', display: 'flex' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 60%, #09090F 100%)', display: 'flex' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,8,16,0.5) 0%, transparent 40%)', display: 'flex' }} />
         </div>
 
@@ -85,18 +85,18 @@ export default async function OGImage(
           </div>
 
           {/* Invite text */}
-          <div style={{ fontSize: '16px', color: '#9B93C0', marginBottom: '12px', display: 'flex', letterSpacing: '0.5px' }}>
+          <div style={{ fontSize: '16px', color: '#A99ECC', marginBottom: '12px', display: 'flex', letterSpacing: '0.5px' }}>
             YOU'VE BEEN INVITED
           </div>
 
           {/* Name */}
-          <div style={{ fontSize: '52px', fontWeight: 700, color: '#E8E0FF', lineHeight: 1.1, marginBottom: '8px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontSize: '52px', fontWeight: 700, color: '#F0EAFF', lineHeight: 1.1, marginBottom: '8px', display: 'flex', flexDirection: 'column' }}>
             {profile?.full_name || params.username}
           </div>
 
           {/* City */}
           {profile?.city && (
-            <div style={{ fontSize: '16px', color: '#9B93C0', marginBottom: '24px', display: 'flex' }}>
+            <div style={{ fontSize: '16px', color: '#A99ECC', marginBottom: '24px', display: 'flex' }}>
               📍 {profile.city}{profile.country ? `, ${profile.country}` : ''}
             </div>
           )}
@@ -105,7 +105,7 @@ export default async function OGImage(
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '28px', padding: '16px 20px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: '16px' }}>
             <div style={{ fontSize: '28px', display: 'flex' }}>🎯</div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '2px', display: 'flex' }}>Wants to</div>
+              <div style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '2px', display: 'flex' }}>Wants to</div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: '#D4AF37', display: 'flex' }}>{activityLabel}</div>
             </div>
           </div>
@@ -113,20 +113,20 @@ export default async function OGImage(
           {/* Stats row */}
           <div style={{ display: 'flex', gap: '12px', marginBottom: '32px' }}>
             <div style={{ padding: '12px 20px', background: 'rgba(0,0,0,0.4)', border: `1px solid ${scoreColor}30`, borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ fontSize: '11px', color: '#9B93C0', marginBottom: '4px', letterSpacing: '1px', display: 'flex' }}>BS SCORE</div>
+              <div style={{ fontSize: '11px', color: '#A99ECC', marginBottom: '4px', letterSpacing: '1px', display: 'flex' }}>BS SCORE</div>
               <div style={{ fontSize: '28px', fontWeight: 700, color: scoreColor, display: 'flex' }}>{score}</div>
             </div>
             {sessions > 0 && (
-              <div style={{ padding: '12px 20px', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ fontSize: '11px', color: '#9B93C0', marginBottom: '4px', letterSpacing: '1px', display: 'flex' }}>SESSIONS</div>
-                <div style={{ fontSize: '28px', fontWeight: 700, color: '#E8E0FF', display: 'flex' }}>{sessions}</div>
+              <div style={{ padding: '12px 20px', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{ fontSize: '11px', color: '#A99ECC', marginBottom: '4px', letterSpacing: '1px', display: 'flex' }}>SESSIONS</div>
+                <div style={{ fontSize: '28px', fontWeight: 700, color: '#F0EAFF', display: 'flex' }}>{sessions}</div>
               </div>
             )}
           </div>
 
           {/* CTA pill */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ padding: '14px 28px', borderRadius: '14px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', fontSize: '17px', fontWeight: 700, color: '#080810', display: 'flex' }}>
+            <div style={{ padding: '14px 28px', borderRadius: '14px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', fontSize: '17px', fontWeight: 700, color: '#09090F', display: 'flex' }}>
               Accept on bestiehere.com →
             </div>
           </div>

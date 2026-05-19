@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
@@ -99,7 +99,7 @@ export default function SessionMemoryPage() {
   }
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ width: '36px', height: '36px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
     </div>
@@ -107,18 +107,18 @@ export default function SessionMemoryPage() {
 
   if (done) {
     return (
-      <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif', padding: '24px' }}>
+      <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif', padding: '24px' }}>
         <div style={{ textAlign: 'center', maxWidth: '360px' }}>
           <div style={{ fontSize: '64px', marginBottom: '16px' }}>{mood || '✨'}</div>
-          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#E8E0FF', marginBottom: '8px' }}>Memory saved</h2>
-          <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '28px' }}>This moment is now stamped on your Social Passport.</p>
+          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#F0EAFF', marginBottom: '8px' }}>Memory saved</h2>
+          <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '28px' }}>This moment is now stamped on your Social Passport.</p>
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
             {partner && (
-              <Link href={`/sparks/give?to=${partner.username}`} style={{ padding: '12px 20px', borderRadius: '14px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
+              <Link href={`/sparks/give?to=${partner.username}`} style={{ padding: '12px 20px', borderRadius: '14px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
                 ✨ Give a Spark
               </Link>
             )}
-            <Link href="/dashboard" style={{ padding: '12px 20px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', textDecoration: 'none' }}>
+            <Link href="/dashboard" style={{ padding: '12px 20px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', textDecoration: 'none' }}>
               Dashboard
             </Link>
           </div>
@@ -129,12 +129,12 @@ export default function SessionMemoryPage() {
 
   if (alreadySaved) {
     return (
-      <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif', padding: '24px' }}>
+      <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif', padding: '24px' }}>
         <div style={{ textAlign: 'center', maxWidth: '360px' }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>✅</div>
-          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#E8E0FF', marginBottom: '8px' }}>Already saved</h2>
-          <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '24px' }}>You already recorded this session.</p>
-          <Link href="/dashboard" style={{ padding: '12px 24px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', textDecoration: 'none' }}>
+          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#F0EAFF', marginBottom: '8px' }}>Already saved</h2>
+          <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '24px' }}>You already recorded this session.</p>
+          <Link href="/dashboard" style={{ padding: '12px 24px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', textDecoration: 'none' }}>
             Dashboard
           </Link>
         </div>
@@ -145,32 +145,32 @@ export default function SessionMemoryPage() {
   const initials = partner?.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ maxWidth: '480px', margin: '0 auto', padding: '48px 24px' }}>
 
         {/* Partner */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '32px' }}>
-          <div style={{ width: '56px', height: '56px', borderRadius: '16px', overflow: 'hidden', background: '#1a1a35', border: '2px solid rgba(212,175,55,0.3)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '56px', height: '56px', borderRadius: '16px', overflow: 'hidden', background: '#1A1A2E', border: '2px solid rgba(212,175,55,0.3)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {partner?.avatar_url
               ? <img src={partner.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : <span style={{ fontSize: '20px', fontWeight: 700, color: '#D4AF37' }}>{initials}</span>
             }
           </div>
           <div>
-            <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '2px' }}>Session with</p>
-            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#E8E0FF' }}>{partner?.full_name}</h2>
+            <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '2px' }}>Session with</p>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF' }}>{partner?.full_name}</h2>
           </div>
         </div>
 
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '30px', color: '#E8E0FF', marginBottom: '6px' }}>How did it go?</h1>
-        <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '32px' }}>This moment stays on your passport forever.</p>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '30px', color: '#F0EAFF', marginBottom: '6px' }}>How did it go?</h1>
+        <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '32px' }}>This moment stays on your passport forever.</p>
 
         {/* Mood */}
         <div style={{ marginBottom: '24px' }}>
-          <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '12px' }}>VIBE</p>
+          <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '12px' }}>VIBE</p>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             {MOODS.map(m => (
-              <button key={m} onClick={() => setMood(m === mood ? '' : m)} style={{ width: '52px', height: '52px', borderRadius: '14px', fontSize: '24px', cursor: 'pointer', background: mood === m ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', border: mood === m ? '2px solid rgba(212,175,55,0.5)' : '2px solid rgba(255,255,255,0.08)', transition: 'all 0.15s', transform: mood === m ? 'scale(1.1)' : 'scale(1)' }}>
+              <button key={m} onClick={() => setMood(m === mood ? '' : m)} style={{ width: '52px', height: '52px', borderRadius: '14px', fontSize: '24px', cursor: 'pointer', background: mood === m ? 'rgba(212,175,55,0.15)' : '#131323', border: mood === m ? '2px solid rgba(212,175,55,0.5)' : '2px solid rgba(255,255,255,0.12)', transition: 'all 0.15s', transform: mood === m ? 'scale(1.1)' : 'scale(1)' }}>
                 {m}
               </button>
             ))}
@@ -179,26 +179,26 @@ export default function SessionMemoryPage() {
 
         {/* Note */}
         <div style={{ marginBottom: '24px' }}>
-          <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '12px' }}>WHAT DID YOU DO? <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></p>
+          <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '12px' }}>WHAT DID YOU DO? <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></p>
           <textarea
             value={note}
             onChange={e => setNote(e.target.value)}
             placeholder="Coffee, hike, deep talk..."
             rows={3}
-            style={{ width: '100%', padding: '14px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', fontSize: '14px', fontFamily: 'Plus Jakarta Sans, sans-serif', outline: 'none', resize: 'none', boxSizing: 'border-box' }}
+            style={{ width: '100%', padding: '14px', borderRadius: '14px', background: '#131323', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', fontSize: '14px', fontFamily: 'Plus Jakarta Sans, sans-serif', outline: 'none', resize: 'none', boxSizing: 'border-box' }}
           />
         </div>
 
         {/* Photo */}
         <div style={{ marginBottom: '32px' }}>
-          <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '12px' }}>PHOTO <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></p>
+          <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '12px' }}>PHOTO <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></p>
           {photoPreview ? (
             <div style={{ position: 'relative', borderRadius: '14px', overflow: 'hidden', height: '180px' }}>
               <img src={photoPreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               <button onClick={() => { setPhoto(null); setPhotoPreview(null) }} style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.6)', border: 'none', color: '#fff', borderRadius: '8px', padding: '4px 8px', cursor: 'pointer', fontSize: '12px' }}>Remove</button>
             </div>
           ) : (
-            <button onClick={() => fileRef.current?.click()} style={{ width: '100%', padding: '20px', borderRadius: '14px', background: 'rgba(255,255,255,0.03)', border: '1px dashed rgba(255,255,255,0.12)', color: '#9B93C0', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <button onClick={() => fileRef.current?.click()} style={{ width: '100%', padding: '20px', borderRadius: '14px', background: '#111120', border: '1px dashed rgba(255,255,255,0.12)', color: '#A99ECC', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
               📷 Add a photo from the meetup
             </button>
           )}
@@ -206,11 +206,11 @@ export default function SessionMemoryPage() {
         </div>
 
         {/* Save */}
-        <button onClick={save} disabled={saving} style={{ width: '100%', padding: '16px', borderRadius: '16px', fontSize: '16px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}>
+        <button onClick={save} disabled={saving} style={{ width: '100%', padding: '16px', borderRadius: '16px', fontSize: '16px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}>
           {saving ? 'Saving...' : '💾 Save this memory'}
         </button>
 
-        <button onClick={() => router.push('/dashboard')} style={{ display: 'block', width: '100%', marginTop: '12px', padding: '12px', background: 'none', border: 'none', color: '#9B93C0', fontSize: '13px', cursor: 'pointer', textAlign: 'center' }}>
+        <button onClick={() => router.push('/dashboard')} style={{ display: 'block', width: '100%', marginTop: '12px', padding: '12px', background: 'none', border: 'none', color: '#A99ECC', fontSize: '13px', cursor: 'pointer', textAlign: 'center' }}>
           Skip for now
         </button>
       </div>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 // @ts-nocheck
 // Sticky bottom "Book a session" button — hidden on own profile
 
@@ -40,13 +40,13 @@ export default function StickyBookCTA({ profileId, username, firstName }: Props)
         <div style={{ maxWidth: '720px', margin: '0 auto', display: 'flex', gap: '10px' }}>
           <Link
             href={`/book/${username}`}
-            style={{ flex: 1, display: 'block', padding: '14px', borderRadius: '14px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+            style={{ flex: 1, display: 'block', padding: '14px', borderRadius: '14px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
           >
             Book a session →
           </Link>
           <Link
             href={`/messages?to=${username}`}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '52px', height: '52px', borderRadius: '14px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', textDecoration: 'none', fontSize: '20px', flexShrink: 0 }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '52px', height: '52px', borderRadius: '14px', background: 'rgba(255,255,255,0.11)', border: '1px solid rgba(255,255,255,0.12)', textDecoration: 'none', fontSize: '20px', flexShrink: 0 }}
           >
             💬
           </Link>

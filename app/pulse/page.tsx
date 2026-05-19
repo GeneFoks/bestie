@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -74,8 +74,8 @@ export default function PulsePage() {
   const otherFree = myCity ? todayFree.filter(u => !u.city?.toLowerCase().includes(myCity.toLowerCase())) : todayFree
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <ProfileNav />
       </nav>
@@ -84,26 +84,26 @@ export default function PulsePage() {
 
         {/* Header */}
         <div style={{ marginBottom: '32px' }}>
-          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 7vw, 34px)', color: '#E8E0FF', marginBottom: '6px' }}>
+          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 7vw, 34px)', color: '#F0EAFF', marginBottom: '6px' }}>
             🌍 City Pulse
           </h1>
-          <p style={{ fontSize: '14px', color: '#9B93C0' }}>
+          <p style={{ fontSize: '14px', color: '#A99ECC' }}>
             {myCity ? `What's happening in ${myCity} and around the world` : 'What\'s happening right now'}
           </p>
         </div>
 
         {/* Free today toggle */}
         {myId && (
-          <div style={{ marginBottom: '32px', padding: '20px 24px', borderRadius: '20px', background: iAmFree ? 'rgba(57,255,20,0.06)' : 'rgba(255,255,255,0.03)', border: iAmFree ? '1px solid rgba(57,255,20,0.25)' : '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={{ marginBottom: '32px', padding: '20px 24px', borderRadius: '20px', background: iAmFree ? 'rgba(57,255,20,0.06)' : '#111120', border: iAmFree ? '1px solid rgba(57,255,20,0.25)' : '1px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
             <div>
-              <p style={{ fontSize: '15px', fontWeight: 700, color: iAmFree ? '#39FF14' : '#E8E0FF', marginBottom: '3px' }}>
+              <p style={{ fontSize: '15px', fontWeight: 700, color: iAmFree ? '#34D399' : '#F0EAFF', marginBottom: '3px' }}>
                 {iAmFree ? '🟢 You\'re free today' : '⚪ Are you free today?'}
               </p>
-              <p style={{ fontSize: '13px', color: '#9B93C0' }}>
+              <p style={{ fontSize: '13px', color: '#A99ECC' }}>
                 {iAmFree ? 'Others can see you\'re available for a meetup' : 'Let others know you\'re up for a spontaneous meetup'}
               </p>
             </div>
-            <button onClick={toggleFree} disabled={toggling} style={{ padding: '10px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.1)' : 'rgba(57,255,20,0.12)', border: iAmFree ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(57,255,20,0.35)', color: iAmFree ? '#FF6B35' : '#39FF14', whiteSpace: 'nowrap' }}>
+            <button onClick={toggleFree} disabled={toggling} style={{ padding: '10px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.1)' : 'rgba(57,255,20,0.12)', border: iAmFree ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(57,255,20,0.35)', color: iAmFree ? '#FF6B35' : '#34D399', whiteSpace: 'nowrap' }}>
               {toggling ? '…' : iAmFree ? 'Turn off' : '🟢 I\'m free today!'}
             </button>
           </div>
@@ -119,13 +119,13 @@ export default function PulsePage() {
             {/* Free in your city */}
             {(cityFree.length > 0 || iAmFree) && (
               <section style={{ marginBottom: '36px' }}>
-                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '14px' }}>
+                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '14px' }}>
                   🟢 FREE TODAY {myCity ? `· ${myCity.toUpperCase()}` : ''}
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                   {cityFree.map(u => <FreePill key={u.id} user={u} />)}
                   {cityFree.length === 0 && (
-                    <p style={{ fontSize: '13px', color: '#9B93C0' }}>No one in your city yet — be the first! 👆</p>
+                    <p style={{ fontSize: '13px', color: '#A99ECC' }}>No one in your city yet — be the first! 👆</p>
                   )}
                 </div>
               </section>
@@ -134,7 +134,7 @@ export default function PulsePage() {
             {/* Free elsewhere */}
             {otherFree.length > 0 && (
               <section style={{ marginBottom: '36px' }}>
-                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '14px' }}>
+                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '14px' }}>
                   🟢 FREE TODAY · WORLDWIDE
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
@@ -144,9 +144,9 @@ export default function PulsePage() {
             )}
 
             {freeToday.length === 0 && (
-              <section style={{ marginBottom: '36px', padding: '32px', textAlign: 'center', borderRadius: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <section style={{ marginBottom: '36px', padding: '32px', textAlign: 'center', borderRadius: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.10)' }}>
                 <p style={{ fontSize: '32px', marginBottom: '8px' }}>🌙</p>
-                <p style={{ fontSize: '14px', color: '#9B93C0' }}>No one is free today yet. Be the first!</p>
+                <p style={{ fontSize: '14px', color: '#A99ECC' }}>No one is free today yet. Be the first!</p>
               </section>
             )}
 
@@ -154,7 +154,7 @@ export default function PulsePage() {
             {groupSessions.length > 0 && (
               <section style={{ marginBottom: '36px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                  <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0' }}>🎉 UPCOMING GROUP SESSIONS</p>
+                  <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC' }}>🎉 UPCOMING GROUP SESSIONS</p>
                   <Link href="/group-sessions/new" style={{ fontSize: '12px', color: '#D4AF37', textDecoration: 'none' }}>+ Host one →</Link>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -172,21 +172,21 @@ export default function PulsePage() {
 
 function FreePill({ user }: { user: any }) {
   const initials = user.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
-  const scoreColor = (user.bestie_score || 0) >= 800 ? '#39FF14' : (user.bestie_score || 0) >= 600 ? '#D4AF37' : '#9B93C0'
+  const scoreColor = (user.bestie_score || 0) >= 800 ? '#34D399' : (user.bestie_score || 0) >= 600 ? '#D4AF37' : '#A99ECC'
   return (
     <Link href={`/${user.username}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '14px', background: 'rgba(57,255,20,0.05)', border: '1px solid rgba(57,255,20,0.18)', textDecoration: 'none', transition: 'all 0.15s' }}>
       <div style={{ position: 'relative' }}>
-        <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: '#1a1a35', border: `1.5px solid ${scoreColor}50`, flexShrink: 0 }}>
+        <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: '#1A1A2E', border: `1.5px solid ${scoreColor}50`, flexShrink: 0 }}>
           {user.avatar_url
             ? <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: scoreColor }}>{initials}</div>
           }
         </div>
-        <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '10px', height: '10px', borderRadius: '50%', background: '#39FF14', border: '1.5px solid #080810' }} />
+        <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '10px', height: '10px', borderRadius: '50%', background: '#34D399', border: '1.5px solid #09090F' }} />
       </div>
       <div>
-        <p style={{ fontSize: '13px', fontWeight: 600, color: '#E8E0FF' }}>{user.full_name?.split(' ')[0]}</p>
-        {user.city && <p style={{ fontSize: '11px', color: '#9B93C0' }}>{user.city}</p>}
+        <p style={{ fontSize: '13px', fontWeight: 600, color: '#F0EAFF' }}>{user.full_name?.split(' ')[0]}</p>
+        {user.city && <p style={{ fontSize: '11px', color: '#A99ECC' }}>{user.city}</p>}
       </div>
     </Link>
   )
@@ -198,23 +198,23 @@ function GroupSessionCard({ session }: { session: any }) {
   const isFull = session.status === 'full'
   const host = session.host
   return (
-    <Link href={`/group-sessions/${session.id}`} style={{ display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', textDecoration: 'none', transition: 'all 0.15s' }}>
+    <Link href={`/group-sessions/${session.id}`} style={{ display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: '#111120', border: '1px solid rgba(255,255,255,0.11)', textDecoration: 'none', transition: 'all 0.15s' }}>
       <div style={{ flexShrink: 0, width: '48px', textAlign: 'center' }}>
         <p style={{ fontSize: '11px', fontWeight: 700, color: '#D4AF37', letterSpacing: '1px' }}>{d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}</p>
-        <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', fontWeight: 700, color: '#E8E0FF', lineHeight: 1.1 }}>{d.getDate()}</p>
-        <p style={{ fontSize: '10px', color: '#9B93C0' }}>{d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+        <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', fontWeight: 700, color: '#F0EAFF', lineHeight: 1.1 }}>{d.getDate()}</p>
+        <p style={{ fontSize: '10px', color: '#A99ECC' }}>{d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: '15px', fontWeight: 600, color: '#E8E0FF', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{session.title}</p>
-        <p style={{ fontSize: '12px', color: '#9B93C0', marginBottom: '6px' }}>
+        <p style={{ fontSize: '15px', fontWeight: 600, color: '#F0EAFF', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{session.title}</p>
+        <p style={{ fontSize: '12px', color: '#A99ECC', marginBottom: '6px' }}>
           {session.location && `📍 ${session.location} · `}
           by {host?.full_name?.split(' ')[0]}
         </p>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 8px', borderRadius: '999px', background: isFull ? 'rgba(255,107,53,0.1)' : 'rgba(57,255,20,0.08)', border: isFull ? '1px solid rgba(255,107,53,0.25)' : '1px solid rgba(57,255,20,0.2)', color: isFull ? '#FF6B35' : '#39FF14' }}>
+          <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 8px', borderRadius: '999px', background: isFull ? 'rgba(255,107,53,0.1)' : 'rgba(57,255,20,0.08)', border: isFull ? '1px solid rgba(255,107,53,0.25)' : '1px solid rgba(57,255,20,0.2)', color: isFull ? '#FF6B35' : '#34D399' }}>
             {isFull ? 'Full' : 'Open'}
           </span>
-          <span style={{ fontSize: '11px', color: '#9B93C0' }}>{participantCount}/{session.max_participants} joined</span>
+          <span style={{ fontSize: '11px', color: '#A99ECC' }}>{participantCount}/{session.max_participants} joined</span>
         </div>
       </div>
     </Link>

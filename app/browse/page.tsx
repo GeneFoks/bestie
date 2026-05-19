@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -258,7 +258,7 @@ export default function BrowsePage() {
 
   const getCompatLabel = (p) => {
     if (!myProfile || !compatMode || !p._compat) return null
-    if (p._compat >= 7) return { label: '🔥 Great match', color: '#39FF14' }
+    if (p._compat >= 7) return { label: '🔥 Great match', color: '#34D399' }
     if (p._compat >= 4) return { label: '✨ Good match', color: '#D4AF37' }
     return null
   }
@@ -269,8 +269,8 @@ export default function BrowsePage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <ProfileNav />
       </nav>
@@ -278,13 +278,13 @@ export default function BrowsePage() {
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
-            <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', fontWeight: 700, color: '#E8E0FF', marginBottom: '8px' }}>Browse Besties</h1>
-            <p style={{ fontSize: '15px', color: '#9B93C0' }}>
+            <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', fontWeight: 700, color: '#F0EAFF', marginBottom: '8px' }}>Browse Besties</h1>
+            <p style={{ fontSize: '15px', color: '#A99ECC' }}>
               {loading ? 'Loading...' : `${providers.length} Bestie${providers.length !== 1 ? 's' : ''} available`}
             </p>
           </div>
           {myProfile && (
-            <button onClick={() => setCompatMode(!compatMode)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', background: compatMode ? 'rgba(57,255,20,0.12)' : 'rgba(255,255,255,0.04)', border: compatMode ? '1px solid rgba(57,255,20,0.35)' : '1px solid rgba(255,255,255,0.1)', color: compatMode ? '#39FF14' : '#9B93C0', transition: 'all 0.2s' }}>
+            <button onClick={() => setCompatMode(!compatMode)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', background: compatMode ? 'rgba(57,255,20,0.12)' : '#131323', border: compatMode ? '1px solid rgba(57,255,20,0.35)' : '1px solid rgba(255,255,255,0.1)', color: compatMode ? '#34D399' : '#A99ECC', transition: 'all 0.2s' }}>
               <span>✨</span>
               {compatMode ? 'Compatibility ON' : 'Compatibility'}
             </button>
@@ -292,30 +292,30 @@ export default function BrowsePage() {
         </div>
 
         {myProfile && compatMode && (
-          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(57,255,20,0.06)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '13px', color: '#9B93C0' }}>
-            Showing people compatible with your type <span style={{ color: '#39FF14', fontWeight: 600 }}>{myProfile.energy_type} · {myProfile.mind_type} · {myProfile.vibe_type}</span> — best matches first
+          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(57,255,20,0.06)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '13px', color: '#A99ECC' }}>
+            Showing people compatible with your type <span style={{ color: '#34D399', fontWeight: 600 }}>{myProfile.energy_type} · {myProfile.mind_type} · {myProfile.vibe_type}</span> — best matches first
           </div>
         )}
 
         {!myProfile && (
-          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', fontSize: '13px', color: '#9B93C0' }}>
+          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', fontSize: '13px', color: '#A99ECC' }}>
             <Link href="/bestie-type" style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>Take the Bestie Type quiz →</Link> and we'll show the most compatible people first
           </div>
         )}
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 16px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 16px', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', marginBottom: '16px' }}>
           <span style={{ fontSize: '18px' }}>🔍</span>
-          <input type="text" placeholder="Search by name, city, or activity..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px', color: '#E8E0FF', padding: '6px 0' }} />
-          {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', color: '#9B93C0', cursor: 'pointer', fontSize: '18px' }}>×</button>}
+          <input type="text" placeholder="Search by name, city, or activity..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px', color: '#F0EAFF', padding: '6px 0' }} />
+          {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', color: '#A99ECC', cursor: 'pointer', fontSize: '18px' }}>×</button>}
         </div>
 
         {/* Group tabs */}
         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '12px', scrollbarWidth: 'none' }}>
-          <button onClick={() => { setActiveGroup(null); setFilter('all') }} style={{ padding: '8px 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: !activeGroup && filter === 'all' ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', border: !activeGroup && filter === 'all' ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.08)', color: !activeGroup && filter === 'all' ? '#D4AF37' : '#9B93C0' }}>
+          <button onClick={() => { setActiveGroup(null); setFilter('all') }} style={{ padding: '8px 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: !activeGroup && filter === 'all' ? 'rgba(212,175,55,0.15)' : '#131323', border: !activeGroup && filter === 'all' ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.12)', color: !activeGroup && filter === 'all' ? '#D4AF37' : '#A99ECC' }}>
             All
           </button>
           {FILTER_GROUPS.map(group => (
-            <button key={group.label} onClick={() => toggleGroup(group.label)} style={{ padding: '8px 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: activeGroup === group.label ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', border: activeGroup === group.label ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.08)', color: activeGroup === group.label ? '#D4AF37' : '#9B93C0' }}>
+            <button key={group.label} onClick={() => toggleGroup(group.label)} style={{ padding: '8px 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: activeGroup === group.label ? 'rgba(212,175,55,0.15)' : '#131323', border: activeGroup === group.label ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.12)', color: activeGroup === group.label ? '#D4AF37' : '#A99ECC' }}>
               {group.label}
             </button>
           ))}
@@ -323,9 +323,9 @@ export default function BrowsePage() {
 
         {/* Sub-filters when group selected */}
         {activeGroup && (
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px', padding: '16px', background: '#0F0F1E', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px', padding: '16px', background: '#111120', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.10)' }}>
             {FILTER_GROUPS.find(g => g.label === activeGroup)?.filters.map(f => (
-              <button key={f.id} onClick={() => setFilter(f.id)} style={{ padding: '7px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', background: filter === f.id ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', border: filter === f.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.06)', color: filter === f.id ? '#D4AF37' : '#9B93C0' }}>
+              <button key={f.id} onClick={() => setFilter(f.id)} style={{ padding: '7px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', background: filter === f.id ? 'rgba(212,175,55,0.15)' : '#131323', border: filter === f.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', color: filter === f.id ? '#D4AF37' : '#A99ECC' }}>
                 {f.label}
               </button>
             ))}
@@ -335,7 +335,7 @@ export default function BrowsePage() {
         {loading ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
             {[1,2,3,4,5,6].map(i => (
-              <div key={i} style={{ height: '420px', borderRadius: '20px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', animation: 'pulse 1.5s ease-in-out infinite' }} />
+              <div key={i} style={{ height: '420px', borderRadius: '20px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', animation: 'pulse 1.5s ease-in-out infinite' }} />
             ))}
             <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }`}</style>
           </div>
@@ -358,9 +358,9 @@ export default function BrowsePage() {
         ) : (
           <div style={{ textAlign: 'center', padding: '80px 0' }}>
             <p style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</p>
-            <h3 style={{ fontSize: '20px', fontWeight: 600, color: '#E8E0FF', marginBottom: '8px' }}>No Besties found</h3>
-            <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '24px' }}>Try a different search or filter</p>
-            <button onClick={() => { setSearch(''); setFilter('all'); setActiveGroup(null) }} style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: 'pointer' }}>
+            <h3 style={{ fontSize: '20px', fontWeight: 600, color: '#F0EAFF', marginBottom: '8px' }}>No Besties found</h3>
+            <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '24px' }}>Try a different search or filter</p>
+            <button onClick={() => { setSearch(''); setFilter('all'); setActiveGroup(null) }} style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer' }}>
               Clear filters
             </button>
           </div>

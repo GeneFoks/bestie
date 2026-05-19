@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -236,11 +236,11 @@ export default function BestieTypePage() {
   const currentBlock = q?.blockLabel
 
   if (step === 'intro') return (
-    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ maxWidth: '480px', padding: '0 24px', textAlign: 'center' }}>
         <div style={{ fontSize: '56px', marginBottom: '24px' }}>✨</div>
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', color: '#E8E0FF', marginBottom: '12px' }}>Discover your Bestie Type</h1>
-        <p style={{ fontSize: '15px', color: '#9B93C0', lineHeight: 1.7, marginBottom: '32px' }}>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', color: '#F0EAFF', marginBottom: '12px' }}>Discover your Bestie Type</h1>
+        <p style={{ fontSize: '15px', color: '#A99ECC', lineHeight: 1.7, marginBottom: '32px' }}>
           12 questions. Three layers — Energy, Mind, Vibe. Your result will appear on your Social Passport.
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginBottom: '32px' }}>
@@ -249,54 +249,54 @@ export default function BestieTypePage() {
             { emoji: '💡', label: 'Mind', sub: 'How you think and connect' },
             { emoji: '🌊', label: 'Vibe', sub: 'Your natural temperament' },
           ].map(b => (
-            <div key={b.label} style={{ flex: 1, padding: '16px 12px', borderRadius: '16px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div key={b.label} style={{ flex: 1, padding: '16px 12px', borderRadius: '16px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)' }}>
               <div style={{ fontSize: '24px', marginBottom: '8px' }}>{b.emoji}</div>
-              <p style={{ fontSize: '13px', fontWeight: 600, color: '#E8E0FF', marginBottom: '4px' }}>{b.label}</p>
-              <p style={{ fontSize: '11px', color: '#9B93C0', lineHeight: 1.4 }}>{b.sub}</p>
+              <p style={{ fontSize: '13px', fontWeight: 600, color: '#F0EAFF', marginBottom: '4px' }}>{b.label}</p>
+              <p style={{ fontSize: '11px', color: '#A99ECC', lineHeight: 1.4 }}>{b.sub}</p>
             </div>
           ))}
         </div>
         <div style={{ marginBottom: '24px' }}>
-          <label style={{ fontSize: '13px', color: '#9B93C0', display: 'block', marginBottom: '8px', textAlign: 'left' }}>
+          <label style={{ fontSize: '13px', color: '#A99ECC', display: 'block', marginBottom: '8px', textAlign: 'left' }}>
             Date of birth <span style={{ color: '#6B5EA8' }}>(optional — used for Vibe)</span>
           </label>
           <input type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)}
-            style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', outline: 'none', boxSizing: 'border-box', colorScheme: 'dark' }} />
+            style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', outline: 'none', boxSizing: 'border-box', colorScheme: 'dark' }} />
         </div>
-        <button onClick={() => setStep('quiz')} style={{ width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: 'pointer' }}>
+        <button onClick={() => setStep('quiz')} style={{ width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer' }}>
           Start →
         </button>
-        <Link href="/dashboard" style={{ display: 'block', marginTop: '16px', fontSize: '13px', color: '#9B93C0', textDecoration: 'none' }}>Skip for now</Link>
+        <Link href="/dashboard" style={{ display: 'block', marginTop: '16px', fontSize: '13px', color: '#A99ECC', textDecoration: 'none' }}>Skip for now</Link>
       </div>
     </div>
   )
 
   if (step === 'quiz') return (
-    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 24px' }}>
         <div style={{ marginBottom: '32px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <div style={{ display: 'flex', gap: '8px' }}>
               {blocks.map(b => (
-                <span key={b} style={{ fontSize: '12px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', background: b === currentBlock ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', border: b === currentBlock ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.06)', color: b === currentBlock ? '#D4AF37' : '#9B93C0' }}>{b}</span>
+                <span key={b} style={{ fontSize: '12px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', background: b === currentBlock ? 'rgba(212,175,55,0.15)' : '#131323', border: b === currentBlock ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', color: b === currentBlock ? '#D4AF37' : '#A99ECC' }}>{b}</span>
               ))}
             </div>
-            <span style={{ fontSize: '13px', color: '#9B93C0' }}>{currentQ + 1} / {QUESTIONS.length}</span>
+            <span style={{ fontSize: '13px', color: '#A99ECC' }}>{currentQ + 1} / {QUESTIONS.length}</span>
           </div>
-          <div style={{ height: '4px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${progress}%`, borderRadius: '999px', background: 'linear-gradient(90deg, #D4AF37, #39FF14)', transition: 'width 0.3s' }} />
+          <div style={{ height: '4px', borderRadius: '999px', background: 'rgba(255,255,255,0.10)', overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${progress}%`, borderRadius: '999px', background: 'linear-gradient(90deg, #D4AF37, #34D399)', transition: 'width 0.3s' }} />
           </div>
         </div>
 
-        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '26px', color: '#E8E0FF', marginBottom: '32px', lineHeight: 1.4 }}>
+        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '26px', color: '#F0EAFF', marginBottom: '32px', lineHeight: 1.4 }}>
           {q.question}
         </h2>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {q.options.map((opt, i) => (
-            <button key={i} onClick={() => handleAnswer(i)} style={{ padding: '18px 20px', borderRadius: '16px', fontSize: '15px', textAlign: 'left', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.08)', color: '#E8E0FF', cursor: 'pointer', transition: 'all 0.15s', lineHeight: 1.5 }}
+            <button key={i} onClick={() => handleAnswer(i)} style={{ padding: '18px 20px', borderRadius: '16px', fontSize: '15px', textAlign: 'left', background: '#111120', border: '1px solid rgba(255,255,255,0.12)', color: '#F0EAFF', cursor: 'pointer', transition: 'all 0.15s', lineHeight: 1.5 }}
               onMouseEnter={e => { (e.target as HTMLElement).style.border = '1px solid rgba(212,175,55,0.4)'; (e.target as HTMLElement).style.background = 'rgba(212,175,55,0.06)' }}
-              onMouseLeave={e => { (e.target as HTMLElement).style.border = '1px solid rgba(255,255,255,0.08)'; (e.target as HTMLElement).style.background = '#0F0F1E' }}
+              onMouseLeave={e => { (e.target as HTMLElement).style.border = '1px solid rgba(255,255,255,0.12)'; (e.target as HTMLElement).style.background = '#111120' }}
             >
               {opt.text}
             </button>
@@ -304,7 +304,7 @@ export default function BestieTypePage() {
         </div>
 
         {currentQ > 0 && (
-          <button onClick={() => setCurrentQ(currentQ - 1)} style={{ marginTop: '24px', background: 'none', border: 'none', fontSize: '13px', color: '#9B93C0', cursor: 'pointer' }}>← Back</button>
+          <button onClick={() => setCurrentQ(currentQ - 1)} style={{ marginTop: '24px', background: 'none', border: 'none', fontSize: '13px', color: '#A99ECC', cursor: 'pointer' }}>← Back</button>
         )}
       </div>
     </div>
@@ -315,38 +315,38 @@ export default function BestieTypePage() {
     const m = MIND_INFO[result.mind]
     const v = VIBE_INFO[result.vibe]
     return (
-      <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
         <div style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 24px' }}>
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
             <p style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '16px' }}>YOUR BESTIE TYPE</p>
-            <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '32px', color: '#E8E0FF', marginBottom: '8px' }}>
+            <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '32px', color: '#F0EAFF', marginBottom: '8px' }}>
               {e.emoji} {e.label} · {m.label} · {v.label}
             </h1>
-            <p style={{ fontSize: '14px', color: '#9B93C0' }}>One of ~400 unique combinations</p>
+            <p style={{ fontSize: '14px', color: '#A99ECC' }}>One of ~400 unique combinations</p>
           </div>
 
           {[
             { info: e, label: 'Energy', color: '#D4AF37', borderColor: 'rgba(212,175,55,0.3)' },
-            { info: m, label: 'Mind', color: '#9B8FFF', borderColor: 'rgba(155,143,255,0.3)' },
-            { info: v, label: 'Vibe', color: '#39FF14', borderColor: 'rgba(57,255,20,0.3)' },
+            { info: m, label: 'Mind', color: '#9B7FFF', borderColor: 'rgba(155,143,255,0.3)' },
+            { info: v, label: 'Vibe', color: '#34D399', borderColor: 'rgba(57,255,20,0.3)' },
           ].map(({ info, label, color, borderColor }) => (
-            <div key={label} style={{ background: '#0F0F1E', border: `1px solid ${borderColor}`, borderRadius: '20px', padding: '24px', marginBottom: '16px' }}>
+            <div key={label} style={{ background: '#111120', border: `1px solid ${borderColor}`, borderRadius: '20px', padding: '24px', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                 <span style={{ fontSize: '32px' }}>{info.emoji}</span>
                 <div>
                   <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '1.5px', color, marginBottom: '2px' }}>{label.toUpperCase()}</p>
-                  <p style={{ fontSize: '18px', fontWeight: 700, color: '#E8E0FF', fontFamily: 'DM Serif Display, serif' }}>{info.label}</p>
+                  <p style={{ fontSize: '18px', fontWeight: 700, color: '#F0EAFF', fontFamily: 'DM Serif Display, serif' }}>{info.label}</p>
                 </div>
               </div>
-              <p style={{ fontSize: '14px', color: '#9B93C0', lineHeight: 1.6 }}>{info.desc}</p>
+              <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.6 }}>{info.desc}</p>
             </div>
           ))}
 
-          <button onClick={handleSave} disabled={saving} style={{ width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: 'pointer', marginTop: '8px' }}>
+          <button onClick={handleSave} disabled={saving} style={{ width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer', marginTop: '8px' }}>
             {saving ? 'Saving...' : 'Save and add to passport →'}
           </button>
 
-          <button onClick={() => { setStep('quiz'); setCurrentQ(0); setAnswers({}) }} style={{ width: '100%', marginTop: '12px', padding: '14px', borderRadius: '14px', fontSize: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#9B93C0', cursor: 'pointer' }}>
+          <button onClick={() => { setStep('quiz'); setCurrentQ(0); setAnswers({}) }} style={{ width: '100%', marginTop: '12px', padding: '14px', borderRadius: '14px', fontSize: '14px', background: '#131323', border: '1px solid rgba(255,255,255,0.12)', color: '#A99ECC', cursor: 'pointer' }}>
             Retake quiz
           </button>
         </div>

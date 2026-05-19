@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 export const revalidate = 0
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
@@ -47,8 +47,8 @@ export default async function CrewsPage() {
   const rest = crews?.slice(1) || []
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif', paddingBottom: '88px' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif', paddingBottom: '88px' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <ProfileNav />
       </nav>
@@ -58,20 +58,20 @@ export default async function CrewsPage() {
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
           <div>
-            <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#E8E0FF', marginBottom: '4px' }}>Crews</h1>
-            <p style={{ fontSize: '13px', color: '#9B93C0' }}>Your inner circles · {crews?.length || 0} active</p>
+            <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#F0EAFF', marginBottom: '4px' }}>Crews</h1>
+            <p style={{ fontSize: '13px', color: '#A99ECC' }}>Your inner circles · {crews?.length || 0} active</p>
           </div>
-          <Link href="/crews/new" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 18px', borderRadius: '14px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+          <Link href="/crews/new" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 18px', borderRadius: '14px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none', whiteSpace: 'nowrap' }}>
             + New crew
           </Link>
         </div>
 
         {!crews || crews.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 24px', background: '#0F0F1E', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ textAlign: 'center', padding: '60px 24px', background: '#111120', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.10)' }}>
             <p style={{ fontSize: '48px', marginBottom: '16px' }}>👥</p>
-            <p style={{ fontSize: '18px', color: '#E8E0FF', fontWeight: 600, marginBottom: '8px' }}>No crews yet</p>
-            <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '24px' }}>Be the first to create one</p>
-            <Link href="/crews/new" style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
+            <p style={{ fontSize: '18px', color: '#F0EAFF', fontWeight: 600, marginBottom: '8px' }}>No crews yet</p>
+            <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '24px' }}>Be the first to create one</p>
+            <Link href="/crews/new" style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
               Create Crew
             </Link>
           </div>
@@ -79,10 +79,10 @@ export default async function CrewsPage() {
           <>
             {/* ── FEATURED CARD ── */}
             {featured && (
-              <Link href={`/crews/${featured.slug}`} style={{ display: 'block', borderRadius: '24px', overflow: 'hidden', textDecoration: 'none', marginBottom: '28px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.07)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}>
+              <Link href={`/crews/${featured.slug}`} style={{ display: 'block', borderRadius: '24px', overflow: 'hidden', textDecoration: 'none', marginBottom: '28px', background: '#111120', border: '1px solid rgba(255,255,255,0.11)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}>
 
                 {/* Cover image */}
-                <div style={{ position: 'relative', height: '200px', overflow: 'hidden', background: 'linear-gradient(135deg, #1a1a35 0%, #0d0d22 100%)' }}>
+                <div style={{ position: 'relative', height: '200px', overflow: 'hidden', background: 'linear-gradient(135deg, #1A1A2E 0%, #0d0d22 100%)' }}>
                   {featured.cover_url
                     ? <img src={featured.cover_url} alt={featured.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     : featured.avatar_url
@@ -93,7 +93,7 @@ export default async function CrewsPage() {
                   <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(15,15,30,1) 0%, rgba(15,15,30,0.2) 60%, transparent 100%)' }} />
 
                   {/* FEATURED badge */}
-                  <div style={{ position: 'absolute', top: '14px', left: '14px', padding: '5px 12px', borderRadius: '999px', background: '#D4AF37', color: '#080810', fontSize: '11px', fontWeight: 800, letterSpacing: '1px' }}>
+                  <div style={{ position: 'absolute', top: '14px', left: '14px', padding: '5px 12px', borderRadius: '999px', background: '#D4AF37', color: '#09090F', fontSize: '11px', fontWeight: 800, letterSpacing: '1px' }}>
                     FEATURED
                   </div>
 
@@ -101,19 +101,19 @@ export default async function CrewsPage() {
                   <div style={{ position: 'absolute', top: '14px', right: '14px', display: 'flex', gap: '6px' }}>
                     {featured.avg_bestie_score >= 700 && <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '999px', background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37', fontWeight: 700, backdropFilter: 'blur(8px)' }}>🌟 Elite</span>}
                     {featured.member_count >= 15 && <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '999px', background: 'rgba(255,107,53,0.2)', border: '1px solid rgba(255,107,53,0.4)', color: '#FF6B35', fontWeight: 700, backdropFilter: 'blur(8px)' }}>🔥 Hot</span>}
-                    {!featured.is_public && <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '999px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)', color: '#9B93C0', fontWeight: 600, backdropFilter: 'blur(8px)' }}>🔒</span>}
+                    {!featured.is_public && <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '999px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)', color: '#A99ECC', fontWeight: 600, backdropFilter: 'blur(8px)' }}>🔒</span>}
                   </div>
                 </div>
 
                 {/* Card body */}
                 <div style={{ padding: '18px 20px 20px' }}>
-                  <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#E8E0FF', marginBottom: '4px' }}>{featured.name}</h2>
-                  <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: featured.description ? '12px' : '0' }}>
+                  <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', marginBottom: '4px' }}>{featured.name}</h2>
+                  <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: featured.description ? '12px' : '0' }}>
                     {featured.member_count} members
                     {featured.avg_bestie_score ? ` · avg BS ${featured.avg_bestie_score}` : ''}
                   </p>
                   {featured.description && (
-                    <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.6, marginBottom: '14px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{featured.description}</p>
+                    <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.6, marginBottom: '14px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{featured.description}</p>
                   )}
 
                   {/* Next event mini block */}
@@ -124,15 +124,15 @@ export default async function CrewsPage() {
                     const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
                     return (
                       <div style={{ background: 'rgba(57,255,20,0.06)', border: '1px solid rgba(57,255,20,0.18)', borderRadius: '14px', padding: '12px 14px', marginBottom: '16px' }}>
-                        <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '1.5px', color: '#39FF14', marginBottom: '6px' }}>✦ NEXT EVENT</p>
+                        <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '1.5px', color: '#34D399', marginBottom: '6px' }}>✦ NEXT EVENT</p>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <div style={{ background: 'rgba(57,255,20,0.12)', border: '1px solid rgba(57,255,20,0.25)', borderRadius: '10px', padding: '6px 10px', textAlign: 'center', flexShrink: 0 }}>
-                            <p style={{ fontSize: '10px', fontWeight: 700, color: '#39FF14', lineHeight: 1 }}>{day}</p>
-                            <p style={{ fontSize: '20px', fontWeight: 700, color: '#E8E0FF', fontFamily: 'DM Serif Display, serif', lineHeight: 1.1 }}>{dateNum}</p>
+                            <p style={{ fontSize: '10px', fontWeight: 700, color: '#34D399', lineHeight: 1 }}>{day}</p>
+                            <p style={{ fontSize: '20px', fontWeight: 700, color: '#F0EAFF', fontFamily: 'DM Serif Display, serif', lineHeight: 1.1 }}>{dateNum}</p>
                           </div>
                           <div>
-                            <p style={{ fontSize: '14px', fontWeight: 700, color: '#E8E0FF', marginBottom: '2px' }}>{featured.nextEvent.title}</p>
-                            <p style={{ fontSize: '12px', color: '#9B93C0' }}>
+                            <p style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF', marginBottom: '2px' }}>{featured.nextEvent.title}</p>
+                            <p style={{ fontSize: '12px', color: '#A99ECC' }}>
                               {day} · {time}{featured.nextEvent.location ? ` · 📍 ${featured.nextEvent.location}` : ''}
                             </p>
                           </div>
@@ -146,7 +146,7 @@ export default async function CrewsPage() {
                     {/* Member avatar stack */}
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                       {featured.members.slice(0, 4).map((m, i) => (
-                        <div key={i} style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden', border: '2px solid #0F0F1E', marginLeft: i === 0 ? 0 : '-8px', background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 4 - i }}>
+                        <div key={i} style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden', border: '2px solid #111120', marginLeft: i === 0 ? 0 : '-8px', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 4 - i }}>
                           {m.user?.avatar_url
                             ? <img src={m.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             : <span style={{ fontSize: '12px', fontWeight: 700, color: '#D4AF37' }}>{m.user?.full_name?.[0]}</span>
@@ -154,11 +154,11 @@ export default async function CrewsPage() {
                         </div>
                       ))}
                       {featured.member_count > 4 && (
-                        <span style={{ fontSize: '11px', color: '#9B93C0', marginLeft: '8px' }}>+{featured.member_count - 4} more</span>
+                        <span style={{ fontSize: '11px', color: '#A99ECC', marginLeft: '8px' }}>+{featured.member_count - 4} more</span>
                       )}
                     </div>
 
-                    <div style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810' }}>
+                    <div style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F' }}>
                       Join crew →
                     </div>
                   </div>
@@ -169,14 +169,14 @@ export default async function CrewsPage() {
             {/* ── DISCOVER MORE ── */}
             {rest.length > 0 && (
               <>
-                <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#9B93C0', marginBottom: '14px' }}>DISCOVER MORE</p>
+                <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#A99ECC', marginBottom: '14px' }}>DISCOVER MORE</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {rest.map((crew, idx) => {
-                    const scoreColor = crew.avg_bestie_score >= 800 ? '#39FF14' : crew.avg_bestie_score >= 600 ? '#D4AF37' : '#9B93C0'
+                    const scoreColor = crew.avg_bestie_score >= 800 ? '#34D399' : crew.avg_bestie_score >= 600 ? '#D4AF37' : '#A99ECC'
                     return (
-                      <Link key={crew.crew_id} href={`/crews/${crew.slug}`} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', textDecoration: 'none' }}>
+                      <Link key={crew.crew_id} href={`/crews/${crew.slug}`} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', textDecoration: 'none' }}>
                         {/* Thumbnail */}
-                        <div style={{ width: '64px', height: '64px', borderRadius: '14px', overflow: 'hidden', flexShrink: 0, background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ width: '64px', height: '64px', borderRadius: '14px', overflow: 'hidden', flexShrink: 0, background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {crew.avatar_url
                             ? <img src={crew.avatar_url} alt={crew.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             : <span style={{ fontSize: '26px' }}>👥</span>
@@ -186,19 +186,19 @@ export default async function CrewsPage() {
                         {/* Info */}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: '15px', fontWeight: 700, color: '#E8E0FF' }}>{crew.name}</span>
-                            {!crew.is_public && <span style={{ fontSize: '10px', color: '#9B93C0' }}>🔒</span>}
+                            <span style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF' }}>{crew.name}</span>
+                            {!crew.is_public && <span style={{ fontSize: '10px', color: '#A99ECC' }}>🔒</span>}
                             {crew.avg_bestie_score >= 700 && <span style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', color: '#D4AF37', fontWeight: 700 }}>🌟 Elite</span>}
                             {crew.member_count >= 15 && <span style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '999px', background: 'rgba(255,107,53,0.1)', color: '#FF6B35', fontWeight: 700 }}>🔥 Hot</span>}
-                            {crew.member_count < 8 && crew.member_count > 0 && <span style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '999px', background: 'rgba(57,255,20,0.07)', color: '#39FF14', fontWeight: 700 }}>🌱</span>}
+                            {crew.member_count < 8 && crew.member_count > 0 && <span style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '999px', background: 'rgba(57,255,20,0.07)', color: '#34D399', fontWeight: 700 }}>🌱</span>}
                           </div>
-                          <p style={{ fontSize: '12px', color: '#9B93C0' }}>{crew.member_count} members</p>
+                          <p style={{ fontSize: '12px', color: '#A99ECC' }}>{crew.member_count} members</p>
                         </div>
 
                         {/* Score */}
                         <div style={{ textAlign: 'right', flexShrink: 0 }}>
                           <div style={{ fontSize: '18px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif' }}>{crew.avg_bestie_score ?? '—'}</div>
-                          <div style={{ fontSize: '9px', color: '#9B93C0', letterSpacing: '1px' }}>AVG BS</div>
+                          <div style={{ fontSize: '9px', color: '#A99ECC', letterSpacing: '1px' }}>AVG BS</div>
                         </div>
                       </Link>
                     )

@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
@@ -156,8 +156,8 @@ export default function GraphPage() {
   const frameColor = (sessions: number) => {
     if (sessions >= 25) return '#FFFFFF'
     if (sessions >= 10) return '#D4AF37'
-    if (sessions >= 5)  return '#9B8FFF'
-    if (sessions >= 1)  return '#9B93C0'
+    if (sessions >= 5)  return '#9B7FFF'
+    if (sessions >= 1)  return '#A99ECC'
     return 'rgba(255,255,255,0.2)'
   }
 
@@ -175,7 +175,7 @@ export default function GraphPage() {
     const svg = d3.select(svgRef.current)
       .attr('width', width)
       .attr('height', height)
-      .style('background', '#080810')
+      .style('background', '#09090F')
 
     // Defs
     const defs = svg.append('defs')
@@ -227,11 +227,11 @@ export default function GraphPage() {
       .data(links)
       .join('line')
       .attr('stroke', (d: any) => {
-        if (d.type === 'contact') return '#9B93C0'
+        if (d.type === 'contact') return '#A99ECC'
         const w = d.weight
         if (w >= 5) return '#D4AF37'
-        if (w >= 3) return '#9B8FFF'
-        return '#9B93C0'
+        if (w >= 3) return '#9B7FFF'
+        return '#A99ECC'
       })
       .attr('stroke-opacity', (d: any) => {
         if (d.type === 'contact') return 0.35
@@ -298,7 +298,7 @@ export default function GraphPage() {
       const el = d3.select(this)
       const r = nodeRadius(d)
       const safeId = d.id.replace(/-/g, '')
-      el.append('circle').attr('r', r).attr('fill', '#0F0F1E')
+      el.append('circle').attr('r', r).attr('fill', '#111120')
       if (d.avatar) {
         el.append('image')
           .attr('href', d.avatar)
@@ -323,7 +323,7 @@ export default function GraphPage() {
       .attr('text-anchor', 'middle')
       .attr('dy', (d: any) => nodeRadius(d) + 13)
       .attr('font-size', 9)
-      .attr('fill', '#9B93C0')
+      .attr('fill', '#A99ECC')
       .attr('font-family', 'Plus Jakarta Sans, sans-serif')
       .attr('pointer-events', 'none')
       .attr('opacity', (d: any) => d.score >= 300 ? 0.85 : 0)
@@ -360,7 +360,7 @@ export default function GraphPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', flexDirection: 'column' }}>
       <style>{`
         @media (max-width: 600px) {
           .graph-stats { display: none !important; }
@@ -369,11 +369,11 @@ export default function GraphPage() {
         }
       `}</style>
 
-      <nav style={{ position: 'relative', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', background: 'rgba(8,8,16,0.95)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, minHeight: '56px' }}>
+      <nav style={{ position: 'relative', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', background: 'rgba(8,8,16,0.95)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)', flexShrink: 0, minHeight: '56px' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none', flexShrink: 0 }}>BESTIE</Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
           {!loading && !empty && (
-            <div className="graph-stats" style={{ display: 'flex', gap: '12px', fontSize: '12px', color: '#9B93C0' }}>
+            <div className="graph-stats" style={{ display: 'flex', gap: '12px', fontSize: '12px', color: '#A99ECC' }}>
               <span><span style={{ color: '#D4AF37', fontWeight: 700 }}>{nodeCount}</span> people</span>
               <span><span style={{ color: '#D4AF37', fontWeight: 700 }}>{edgeCount}</span> connections</span>
             </div>
@@ -384,36 +384,36 @@ export default function GraphPage() {
 
       {/* Legend */}
       {!loading && !empty && (
-        <div className="graph-legend" style={{ position: 'absolute', bottom: '24px', left: '24px', zIndex: 10, padding: '14px 18px', borderRadius: '16px', background: 'rgba(8,8,16,0.88)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}>
-          <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1.5px', color: '#9B93C0', marginBottom: '8px' }}>LEGEND</p>
+        <div className="graph-legend" style={{ position: 'absolute', bottom: '24px', left: '24px', zIndex: 10, padding: '14px 18px', borderRadius: '16px', background: 'rgba(8,8,16,0.88)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(12px)' }}>
+          <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1.5px', color: '#A99ECC', marginBottom: '8px' }}>LEGEND</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#1a1a35', border: '2px solid rgba(255,255,255,0.9)', boxShadow: '0 0 8px rgba(255,255,255,0.25)', flexShrink: 0 }} />
-              <span style={{ fontSize: '11px', color: '#E8E0FF' }}>25+ sessions</span>
+              <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#1A1A2E', border: '2px solid rgba(255,255,255,0.9)', boxShadow: '0 0 8px rgba(255,255,255,0.25)', flexShrink: 0 }} />
+              <span style={{ fontSize: '11px', color: '#F0EAFF' }}>25+ sessions</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#1a1a35', border: '2px solid #D4AF37', flexShrink: 0 }} />
-              <span style={{ fontSize: '11px', color: '#E8E0FF' }}>10+ sessions</span>
+              <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#1A1A2E', border: '2px solid #D4AF37', flexShrink: 0 }} />
+              <span style={{ fontSize: '11px', color: '#F0EAFF' }}>10+ sessions</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#1a1a35', border: '1.5px solid #9B8FFF', flexShrink: 0 }} />
-              <span style={{ fontSize: '11px', color: '#E8E0FF' }}>5+ sessions</span>
+              <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#1A1A2E', border: '1.5px solid #9B7FFF', flexShrink: 0 }} />
+              <span style={{ fontSize: '11px', color: '#F0EAFF' }}>5+ sessions</span>
             </div>
-            <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '3px 0' }} />
+            <div style={{ height: '1px', background: 'rgba(255,255,255,0.10)', margin: '3px 0' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: '22px', height: '3px', borderRadius: '999px', background: 'rgba(212,175,55,0.6)', flexShrink: 0 }} />
-              <span style={{ fontSize: '11px', color: '#E8E0FF' }}>5+ meets</span>
+              <span style={{ fontSize: '11px', color: '#F0EAFF' }}>5+ meets</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: '22px', height: '1px', borderRadius: '999px', background: 'rgba(155,147,192,0.3)', flexShrink: 0 }} />
-              <span style={{ fontSize: '11px', color: '#E8E0FF' }}>1 session</span>
+              <span style={{ fontSize: '11px', color: '#F0EAFF' }}>1 session</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: '22px', height: '0px', borderBottom: '1px dashed rgba(155,147,192,0.45)', flexShrink: 0 }} />
-              <span style={{ fontSize: '11px', color: '#E8E0FF' }}>contact</span>
+              <span style={{ fontSize: '11px', color: '#F0EAFF' }}>contact</span>
             </div>
           </div>
-          <p className="graph-legend-hint" style={{ fontSize: '10px', color: '#9B93C0', marginTop: '8px' }}>Size = Score · Drag · Pinch to zoom</p>
+          <p className="graph-legend-hint" style={{ fontSize: '10px', color: '#A99ECC', marginTop: '8px' }}>Size = Score · Drag · Pinch to zoom</p>
         </div>
       )}
 
@@ -426,16 +426,16 @@ export default function GraphPage() {
           zIndex: 100,
           padding: '10px 14px',
           borderRadius: '12px',
-          background: '#0F0F1E',
+          background: '#111120',
           border: `1px solid ${frameColor(hovered.sessions)}40`,
           pointerEvents: 'none',
           minWidth: '140px',
         }}>
-          <p style={{ fontSize: '13px', fontWeight: 700, color: '#E8E0FF', marginBottom: '2px' }}>{hovered.name}</p>
-          <p style={{ fontSize: '11px', color: '#9B93C0', marginBottom: '4px' }}>@{hovered.username}{hovered.city ? ` · ${hovered.city}` : ''}</p>
+          <p style={{ fontSize: '13px', fontWeight: 700, color: '#F0EAFF', marginBottom: '2px' }}>{hovered.name}</p>
+          <p style={{ fontSize: '11px', color: '#A99ECC', marginBottom: '4px' }}>@{hovered.username}{hovered.city ? ` · ${hovered.city}` : ''}</p>
           <div style={{ display: 'flex', gap: '10px' }}>
             <span style={{ fontSize: '11px', color: scoreColor(hovered.score), fontWeight: 700 }}>BS {hovered.score}</span>
-            <span style={{ fontSize: '11px', color: '#9B93C0' }}>{hovered.sessions} sessions</span>
+            <span style={{ fontSize: '11px', color: '#A99ECC' }}>{hovered.sessions} sessions</span>
           </div>
         </div>
       )}
@@ -445,15 +445,15 @@ export default function GraphPage() {
         {loading ? (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
             <div style={{ width: '40px', height: '40px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-            <p style={{ fontSize: '14px', color: '#9B93C0' }}>Building the web of connections...</p>
+            <p style={{ fontSize: '14px', color: '#A99ECC' }}>Building the web of connections...</p>
             <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
           </div>
         ) : empty ? (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
             <p style={{ fontSize: '48px' }}>🕸️</p>
-            <p style={{ fontSize: '18px', color: '#E8E0FF' }}>No connections yet</p>
-            <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '8px' }}>Confirmed sessions will appear here as connections</p>
-            <Link href="/browse" style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
+            <p style={{ fontSize: '18px', color: '#F0EAFF' }}>No connections yet</p>
+            <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '8px' }}>Confirmed sessions will appear here as connections</p>
+            <Link href="/browse" style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
               Meet someone →
             </Link>
           </div>
@@ -468,13 +468,13 @@ export default function GraphPage() {
 function frameColor(sessions: number): string {
   if (sessions >= 25) return '#FFFFFF'
   if (sessions >= 10) return '#D4AF37'
-  if (sessions >= 5)  return '#9B8FFF'
-  if (sessions >= 1)  return '#9B93C0'
+  if (sessions >= 5)  return '#9B7FFF'
+  if (sessions >= 1)  return '#A99ECC'
   return 'rgba(255,255,255,0.2)'
 }
 
 function scoreColor(score: number): string {
-  if (score >= 800) return '#39FF14'
+  if (score >= 800) return '#34D399'
   if (score >= 600) return '#D4AF37'
-  return '#9B93C0'
+  return '#A99ECC'
 }

@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 export const revalidate = 0
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
@@ -73,11 +73,11 @@ export default async function CityHubPage({ params }) {
         .limit(5)
     : { data: [] }
 
-  const scoreColor = (s: number) => s >= 800 ? '#39FF14' : s >= 600 ? '#D4AF37' : '#9B93C0'
+  const scoreColor = (s: number) => s >= 800 ? '#34D399' : s >= 600 ? '#D4AF37' : '#A99ECC'
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <ProfileNav />
       </nav>
@@ -86,12 +86,12 @@ export default async function CityHubPage({ params }) {
 
         {/* Header */}
         <div style={{ marginBottom: '36px' }}>
-          <Link href="/cities" style={{ fontSize: '13px', color: '#9B93C0', textDecoration: 'none', marginBottom: '12px', display: 'inline-block' }}>← All cities</Link>
+          <Link href="/cities" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none', marginBottom: '12px', display: 'inline-block' }}>← All cities</Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span style={{ fontSize: '36px' }}>📍</span>
             <div>
-              <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', color: '#E8E0FF', lineHeight: 1 }}>{city}</h1>
-              <p style={{ fontSize: '14px', color: '#9B93C0', marginTop: '4px' }}>{topBesties?.length || 0} Besties · {crews?.length || 0} Crews · {upcomingEvents?.length || 0} upcoming events</p>
+              <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', color: '#F0EAFF', lineHeight: 1 }}>{city}</h1>
+              <p style={{ fontSize: '14px', color: '#A99ECC', marginTop: '4px' }}>{topBesties?.length || 0} Besties · {crews?.length || 0} Crews · {upcomingEvents?.length || 0} upcoming events</p>
             </div>
           </div>
         </div>
@@ -99,13 +99,13 @@ export default async function CityHubPage({ params }) {
         {/* Top Activities */}
         {topActivities.length > 0 && (
           <div style={{ marginBottom: '36px' }}>
-            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#E8E0FF', marginBottom: '14px' }}>Popular in {city}</h2>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', marginBottom: '14px' }}>Popular in {city}</h2>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
               {topActivities.map(([type, count]) => (
                 <Link key={type} href={`/browse?activity=${type}&city=${encodeURIComponent(city)}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '999px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', textDecoration: 'none' }}>
                   <span style={{ fontSize: '16px' }}>{ACTIVITY_EMOJI[type] || '✨'}</span>
                   <span style={{ fontSize: '13px', fontWeight: 600, color: '#D4AF37' }}>{type.replace(/_/g, ' ')}</span>
-                  <span style={{ fontSize: '12px', color: '#9B93C0' }}>{count}</span>
+                  <span style={{ fontSize: '12px', color: '#A99ECC' }}>{count}</span>
                 </Link>
               ))}
             </div>
@@ -115,19 +115,19 @@ export default async function CityHubPage({ params }) {
         {/* Upcoming Events */}
         {upcomingEvents && upcomingEvents.length > 0 && (
           <div style={{ marginBottom: '36px' }}>
-            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#E8E0FF', marginBottom: '14px' }}>Upcoming events</h2>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', marginBottom: '14px' }}>Upcoming events</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {upcomingEvents.map(ev => {
                 const d = new Date(ev.datetime)
                 return (
-                  <Link key={ev.id} href={`/events/${ev.id}`} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', textDecoration: 'none' }}>
+                  <Link key={ev.id} href={`/events/${ev.id}`} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', textDecoration: 'none' }}>
                     <div style={{ minWidth: '48px', textAlign: 'center', padding: '8px', borderRadius: '12px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)' }}>
                       <div style={{ fontSize: '11px', fontWeight: 600, color: '#D4AF37', letterSpacing: '1px' }}>{d.toLocaleString('en-US', { month: 'short' }).toUpperCase()}</div>
-                      <div style={{ fontSize: '22px', fontWeight: 700, color: '#E8E0FF', fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{d.getDate()}</div>
+                      <div style={{ fontSize: '22px', fontWeight: 700, color: '#F0EAFF', fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{d.getDate()}</div>
                     </div>
                     <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: '15px', fontWeight: 600, color: '#E8E0FF', marginBottom: '3px' }}>{ev.title}</p>
-                      <p style={{ fontSize: '12px', color: '#9B93C0' }}>{ev.crew?.name}{ev.location ? ` · ${ev.location}` : ''} · {d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+                      <p style={{ fontSize: '15px', fontWeight: 600, color: '#F0EAFF', marginBottom: '3px' }}>{ev.title}</p>
+                      <p style={{ fontSize: '12px', color: '#A99ECC' }}>{ev.crew?.name}{ev.location ? ` · ${ev.location}` : ''} · {d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
                   </Link>
                 )
@@ -140,7 +140,7 @@ export default async function CityHubPage({ params }) {
         {topBesties && topBesties.length > 0 && (
           <div style={{ marginBottom: '36px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#E8E0FF' }}>Top Besties in {city}</h2>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF' }}>Top Besties in {city}</h2>
               <Link href={`/browse?city=${encodeURIComponent(city)}`} style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>See all →</Link>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -148,16 +148,16 @@ export default async function CityHubPage({ params }) {
                 const sc = scoreColor(u.bestie_score || 0)
                 const initials = u.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
                 return (
-                  <Link key={u.id} href={`/${u.username}`} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', textDecoration: 'none' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: i === 0 ? '#D4AF37' : '#9B93C0', minWidth: '20px' }}>#{i + 1}</span>
-                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, background: '#1a1a35', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Link key={u.id} href={`/${u.username}`} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', textDecoration: 'none' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: i === 0 ? '#D4AF37' : '#A99ECC', minWidth: '20px' }}>#{i + 1}</span>
+                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, background: '#1A1A2E', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {u.avatar_url
                         ? <img src={u.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         : <span style={{ fontSize: '16px', fontWeight: 700, color: '#D4AF37' }}>{initials}</span>}
                     </div>
                     <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF' }}>{u.full_name}</p>
-                      <p style={{ fontSize: '12px', color: '#9B93C0' }}>@{u.username}{u.energy_type ? ` · ${u.energy_type}` : ''}</p>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>{u.full_name}</p>
+                      <p style={{ fontSize: '12px', color: '#A99ECC' }}>@{u.username}{u.energy_type ? ` · ${u.energy_type}` : ''}</p>
                     </div>
                     <span style={{ fontSize: '16px', fontWeight: 700, color: sc }}>{u.bestie_score || 0}</span>
                   </Link>
@@ -170,19 +170,19 @@ export default async function CityHubPage({ params }) {
         {/* Crews */}
         {crews && crews.length > 0 && (
           <div style={{ marginBottom: '36px' }}>
-            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#E8E0FF', marginBottom: '14px' }}>Crews in {city}</h2>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', marginBottom: '14px' }}>Crews in {city}</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' }}>
               {crews.map(crew => (
-                <Link key={crew.id} href={`/crews/${crew.slug}`} style={{ padding: '18px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', textDecoration: 'none' }}>
+                <Link key={crew.id} href={`/crews/${crew.slug}`} style={{ padding: '18px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', textDecoration: 'none' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: '#1a1a35', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(212,175,55,0.15)' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: '#1A1A2E', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(212,175,55,0.15)' }}>
                       {crew.avatar_url
                         ? <img src={crew.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         : <span style={{ fontSize: '16px' }}>👥</span>}
                     </div>
-                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF' }}>{crew.name}</p>
+                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>{crew.name}</p>
                   </div>
-                  {crew.description && <p style={{ fontSize: '12px', color: '#9B93C0', lineHeight: 1.5 }}>{crew.description.slice(0, 70)}{crew.description.length > 70 ? '…' : ''}</p>}
+                  {crew.description && <p style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.5 }}>{crew.description.slice(0, 70)}{crew.description.length > 70 ? '…' : ''}</p>}
                 </Link>
               ))}
             </div>
@@ -190,11 +190,11 @@ export default async function CityHubPage({ params }) {
         )}
 
         {!topBesties?.length && !crews?.length && (
-          <div style={{ textAlign: 'center', padding: '60px', background: '#0F0F1E', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ textAlign: 'center', padding: '60px', background: '#111120', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.10)' }}>
             <p style={{ fontSize: '32px', marginBottom: '12px' }}>🌱</p>
-            <p style={{ fontSize: '16px', color: '#E8E0FF', marginBottom: '8px' }}>No Besties in {city} yet</p>
-            <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '20px' }}>Be the first to represent your city.</p>
-            <Link href="/signup" style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>Join Bestie →</Link>
+            <p style={{ fontSize: '16px', color: '#F0EAFF', marginBottom: '8px' }}>No Besties in {city} yet</p>
+            <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '20px' }}>Be the first to represent your city.</p>
+            <Link href="/signup" style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Join Bestie →</Link>
           </div>
         )}
 

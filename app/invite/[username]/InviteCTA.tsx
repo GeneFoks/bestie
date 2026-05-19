@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 // Client component — checks auth state and shows correct CTA:
 // - Logged in  → "Book Session" + "Message" (no need to sign up)
 // - Logged out → "Accept & Create Account" + "Log in"
@@ -44,13 +44,13 @@ export default function InviteCTA({ username, activityKey, signupUrl }: Props) {
       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <Link
           href={bookUrl}
-          style={{ display: 'block', padding: '16px', borderRadius: '16px', textAlign: 'center', fontSize: '16px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}
+          style={{ display: 'block', padding: '16px', borderRadius: '16px', textAlign: 'center', fontSize: '16px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}
         >
           Book a Session →
         </Link>
         <Link
           href={messageUrl}
-          style={{ display: 'block', padding: '14px', borderRadius: '16px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', textDecoration: 'none' }}
+          style={{ display: 'block', padding: '14px', borderRadius: '16px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#A99ECC', textDecoration: 'none' }}
         >
           💬 Send a message
         </Link>
@@ -62,13 +62,13 @@ export default function InviteCTA({ username, activityKey, signupUrl }: Props) {
     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
       <Link
         href={signupUrl}
-        style={{ display: 'block', padding: '16px', borderRadius: '16px', textAlign: 'center', fontSize: '16px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}
+        style={{ display: 'block', padding: '16px', borderRadius: '16px', textAlign: 'center', fontSize: '16px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}
       >
         Accept &amp; Create Account →
       </Link>
       <Link
         href={loginUrl}
-        style={{ display: 'block', padding: '14px', borderRadius: '16px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', textDecoration: 'none' }}
+        style={{ display: 'block', padding: '14px', borderRadius: '16px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#A99ECC', textDecoration: 'none' }}
       >
         Already have an account? Log in
       </Link>
