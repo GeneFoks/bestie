@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { Mail } from 'lucide-react'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -39,7 +40,9 @@ export default function ForgotPasswordPage() {
         <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '20px', padding: '32px' }}>
           {sent ? (
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>📬</div>
+              <div style={{ width: '52px', height: '52px', margin: '0 auto 16px', borderRadius: '14px', background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Mail size={26} color="#D4AF37" strokeWidth={2} />
+              </div>
               <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginBottom: '12px' }}>Check your email</h2>
               <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.7, marginBottom: '24px' }}>
                 We sent a password reset link to <span style={{ color: '#D4AF37' }}>{email}</span>. Check your inbox and click the link.

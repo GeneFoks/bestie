@@ -3,6 +3,7 @@ export const revalidate = 0
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import ProfileNav from '@/components/ProfileNav'
+import { MapPin } from 'lucide-react'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -57,7 +58,7 @@ export default async function CitiesPage() {
                 href={`/cities/${encodeURIComponent(city)}`}
                 style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '20px', borderRadius: '18px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', textDecoration: 'none', transition: 'border-color 0.15s' }}
               >
-                <span style={{ fontSize: '28px' }}>📍</span>
+                <MapPin size={28} color="#D4AF37" strokeWidth={2} />
                 <span style={{ fontSize: '16px', fontWeight: 700, color: '#F0EAFF', fontFamily: 'DM Serif Display, serif' }}>{city}</span>
                 {country && <span style={{ fontSize: '12px', color: '#A99ECC' }}>{country}</span>}
                 <span style={{ fontSize: '13px', fontWeight: 600, color: '#D4AF37', marginTop: '4px' }}>{count} {count === 1 ? 'Bestie' : 'Besties'}</span>

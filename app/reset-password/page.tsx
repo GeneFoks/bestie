@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { Check } from 'lucide-react'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -63,7 +64,9 @@ export default function ResetPasswordPage() {
         <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '20px', padding: '32px' }}>
           {done ? (
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>✅</div>
+              <div style={{ width: '52px', height: '52px', margin: '0 auto 16px', borderRadius: '14px', background: 'rgba(52,211,153,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Check size={26} color="#34D399" strokeWidth={2.5} />
+              </div>
               <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginBottom: '12px' }}>Password updated!</h2>
               <p style={{ fontSize: '14px', color: '#A99ECC' }}>Redirecting to dashboard...</p>
             </div>

@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import CallButton from '@/components/CallButton'
 import { PageLoader } from '@/components/Loading'
+import { MessageCircle } from 'lucide-react'
 
 export default function MessagesPage() {
   const router = useRouter()
@@ -205,7 +206,9 @@ export default function MessagesPage() {
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {conversations.length === 0 ? (
               <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-                <p style={{ fontSize: '32px', marginBottom: '12px' }}>💬</p>
+                <div style={{ width: '44px', height: '44px', margin: '0 auto 12px', borderRadius: '14px', background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <MessageCircle size={22} color="#D4AF37" strokeWidth={2} />
+                </div>
                 <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', marginBottom: '8px' }}>No messages yet</p>
                 <Link href="/browse" style={{ fontSize: '13px', fontWeight: 600, padding: '8px 16px', borderRadius: '10px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Browse Besties</Link>
               </div>
@@ -239,7 +242,9 @@ export default function MessagesPage() {
         <div style={{ flex: 1, background: '#111120', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {!activeConv ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
-              <p style={{ fontSize: '48px' }}>💬</p>
+              <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <MessageCircle size={32} color="#D4AF37" strokeWidth={2} />
+              </div>
               <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF' }}>Select a conversation</h3>
               <Link href="/browse" style={{ fontSize: '14px', fontWeight: 600, padding: '10px 24px', borderRadius: '12px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Browse Besties</Link>
             </div>

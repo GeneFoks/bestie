@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import ProfileNav from '@/components/ProfileNav'
 import { PageLoader } from '@/components/Loading'
+import { Network } from 'lucide-react'
 
 export default function GraphPage() {
   const svgRef = useRef<SVGSVGElement>(null)
@@ -447,7 +448,9 @@ export default function GraphPage() {
           <PageLoader fullscreen={false} message="Building the web of connections..." />
         ) : empty ? (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-            <p style={{ fontSize: '48px' }}>🕸️</p>
+            <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Network size={32} color="#D4AF37" strokeWidth={2} />
+            </div>
             <p style={{ fontSize: '18px', color: '#F0EAFF' }}>No connections yet</p>
             <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '8px' }}>Confirmed sessions will appear here as connections</p>
             <Link href="/browse" style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>

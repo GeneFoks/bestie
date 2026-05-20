@@ -3,6 +3,7 @@ export const revalidate = 0
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import ProfileNav from '@/components/ProfileNav'
+import { MapPin, Users, Sprout } from 'lucide-react'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -88,7 +89,9 @@ export default async function CityHubPage({ params }) {
         <div style={{ marginBottom: '36px' }}>
           <Link href="/cities" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none', marginBottom: '12px', display: 'inline-block' }}>← All cities</Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '36px' }}>📍</span>
+            <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <MapPin size={28} color="#D4AF37" strokeWidth={2} />
+            </div>
             <div>
               <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', color: '#F0EAFF', lineHeight: 1 }}>{city}</h1>
               <p style={{ fontSize: '14px', color: '#A99ECC', marginTop: '4px' }}>{topBesties?.length || 0} Besties · {crews?.length || 0} Crews · {upcomingEvents?.length || 0} upcoming events</p>
@@ -178,7 +181,7 @@ export default async function CityHubPage({ params }) {
                     <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: '#1A1A2E', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(212,175,55,0.15)' }}>
                       {crew.avatar_url
                         ? <img src={crew.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : <span style={{ fontSize: '16px' }}>👥</span>}
+                        : <Users size={16} color="#D4AF37" strokeWidth={2} />}
                     </div>
                     <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>{crew.name}</p>
                   </div>
@@ -191,7 +194,9 @@ export default async function CityHubPage({ params }) {
 
         {!topBesties?.length && !crews?.length && (
           <div style={{ textAlign: 'center', padding: '60px', background: '#111120', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.10)' }}>
-            <p style={{ fontSize: '32px', marginBottom: '12px' }}>🌱</p>
+            <div style={{ width: '44px', height: '44px', margin: '0 auto 12px', borderRadius: '14px', background: 'rgba(52,211,153,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Sprout size={22} color="#34D399" strokeWidth={2} />
+            </div>
             <p style={{ fontSize: '16px', color: '#F0EAFF', marginBottom: '8px' }}>No Besties in {city} yet</p>
             <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '20px' }}>Be the first to represent your city.</p>
             <Link href="/signup" style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Join Bestie →</Link>
