@@ -1,7 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-
-type LucideIcon = React.ComponentType<{ size?: number | string; color?: string; strokeWidth?: number | string }>
+import type { LucideIcon } from 'lucide-react'
 
 type CTA = {
   label: string

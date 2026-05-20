@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { Theater, Frown, Megaphone, Siren, DollarSign, HelpCircle, CheckCircle2, Ban, AlertTriangle } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
-const REPORT_REASONS: Array<{ id: string; Icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; label: string }> = [
+const REPORT_REASONS: Array<{ id: string; Icon: LucideIcon; label: string }> = [
   { id: 'fake_profile', Icon: Theater, label: 'Fake profile' },
   { id: 'harassment', Icon: Frown, label: 'Harassment' },
   { id: 'spam', Icon: Megaphone, label: 'Spam' },

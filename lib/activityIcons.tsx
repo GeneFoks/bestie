@@ -19,8 +19,7 @@ import {
   // Generic / fallback
   Users, UserCheck, Phone, Smartphone, Handshake, Sparkles,
 } from 'lucide-react'
-
-type LucideIcon = React.ComponentType<{ size?: number | string; color?: string; strokeWidth?: number | string }>
+import type { LucideIcon } from 'lucide-react'
 
 // Centralised activity → Lucide icon mapping.
 // Edit this map whenever a new activity type is added in the database/schema.
