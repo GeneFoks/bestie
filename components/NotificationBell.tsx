@@ -88,7 +88,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
       <button
         onClick={() => setOpen(o => !o)}
         aria-label="Notifications"
-        style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '10px', color: unread > 0 ? '#D4AF37' : '#A99ECC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: '10px', borderRadius: '10px', color: unread > 0 ? '#D4AF37' : '#A99ECC', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '40px', minHeight: '40px' }}
       >
         <Bell size={20} strokeWidth={2} />
         {unread > 0 && (
@@ -99,7 +99,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
       </button>
 
       {open && (
-        <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: '340px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', overflow: 'hidden', zIndex: 100, boxShadow: '0 12px 36px rgba(0,0,0,0.5)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+        <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: 'min(340px, calc(100vw - 24px))', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', overflow: 'hidden', zIndex: 100, boxShadow: '0 12px 36px rgba(0,0,0,0.5)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             <span style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF' }}>Notifications</span>
             {unread > 0 && (

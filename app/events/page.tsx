@@ -161,7 +161,7 @@ export default function EventsPage() {
         )}
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '4px' }}>
+        <div className="filters-scroll" style={{ display: 'flex', gap: '8px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '4px' }}>
           {TABS.map(t => (
             <button
               key={t.id}

@@ -86,10 +86,17 @@ export default function StreakStrip({ weeks, totalSessions = 0, hideWhenEmpty = 
           }
         </p>
       </div>
-      <span style={{ fontSize: '13px', color: tone.color, fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap' }}>
+      <span className="streak-hint" style={{ fontSize: '13px', color: tone.color, fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap' }}>
         How it works →
       </span>
-      <style>{`@keyframes streak-pulse { 0% { transform: scale(1); opacity: 1 } 100% { transform: scale(1.5); opacity: 0 } }`}</style>
+      <span className="streak-hint-mobile" style={{ display: 'none', color: tone.color, fontWeight: 700, fontSize: '18px', flexShrink: 0 }}>→</span>
+      <style>{`
+        @keyframes streak-pulse { 0% { transform: scale(1); opacity: 1 } 100% { transform: scale(1.5); opacity: 0 } }
+        @media (max-width: 480px) {
+          .streak-hint { display: none !important; }
+          .streak-hint-mobile { display: inline !important; }
+        }
+      `}</style>
     </Link>
   )
 }
