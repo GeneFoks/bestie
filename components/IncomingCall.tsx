@@ -13,6 +13,16 @@ export default function IncomingCall() {
   const [acting, setActing] = useState(false)
   const channelRef = useRef<any>(null)
   const timeoutRef = useRef<any>(null)
+  const acceptBtnRef = useRef<HTMLButtonElement>(null)
+
+  // Auto-focus Accept when a call comes in, allow Escape to decline
+  useEffect(() => {
+    if (!call) return
+    acceptBtnRef.current?.focus()
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') decline() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [call])
 
   useEffect(() => {
     const setup = async () => {
@@ -98,7 +108,11 @@ export default function IncomingCall() {
   if (!call || !caller) return null
 
   return (
-    <div style={{
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Incoming call from ${caller.full_name}`}
+      style={{
       position: 'fixed', top: '16px', left: '50%', transform: 'translateX(-50%)',
       zIndex: 9999, width: 'min(400px, calc(100vw - 32px))',
       background: '#0F0F1E', border: '1px solid rgba(57,255,20,0.4)',
@@ -148,7 +162,7 @@ export default function IncomingCall() {
         }}>
           <PhoneOff size={16} strokeWidth={2.2} /> Decline
         </button>
-        <button onClick={accept} disabled={acting} style={{
+        <button ref={acceptBtnRef} onClick={accept} disabled={acting} style={{
           flex: 1, padding: '13px', borderRadius: '14px', fontSize: '14px', fontWeight: 700,
           background: 'linear-gradient(135deg, #39FF14 0%, #2AE600 100%)',
           border: 'none', color: '#080810', cursor: acting ? 'not-allowed' : 'pointer',

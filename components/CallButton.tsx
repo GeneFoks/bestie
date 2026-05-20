@@ -76,6 +76,7 @@ export default function CallButton({ toUserId, toUserName, bookingId, variant = 
       onClick={startCall}
       disabled={calling}
       title={toUserName ? `Call ${toUserName}` : 'Start call'}
+      aria-label={toUserName ? `Call ${toUserName}` : 'Start call'}
       style={{
         width: '36px', height: '36px', borderRadius: '10px',
         border: '1px solid rgba(57,255,20,0.25)',

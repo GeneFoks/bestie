@@ -242,7 +242,7 @@ export default function BrowsePage() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', marginBottom: '16px' }}>
           <Search size={18} color="#A99ECC" strokeWidth={2} />
-          <input type="text" placeholder="Search by name, city, or activity..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px', color: '#F0EAFF', padding: '6px 0', minWidth: 0 }} />
+          <input type="text" placeholder="Search by name, city, or activity..." aria-label="Search Besties" value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px', color: '#F0EAFF', padding: '6px 0', minWidth: 0 }} />
           {search && (
             <button onClick={() => setSearch('')} aria-label="Clear search" style={{ background: 'none', border: 'none', color: '#A99ECC', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}>
               <X size={16} strokeWidth={2} />
