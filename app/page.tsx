@@ -9,9 +9,9 @@ import ProviderCard from '@/components/ProviderCard'
 import MatchModal from '@/components/MatchModal'
 import {
   Zap, Gamepad2, BookOpen, Palette, Heart, Moon, Coffee,
-  IdCard, Trophy, Flame, CalendarDays, Bell, Users, Map, Globe,
+  Contact, Trophy, Flame, CalendarDays, Bell, Users, Map, Globe,
   Share2, Camera, Sparkles, ShieldCheck, Search, UserCheck,
-  Target, Star, Link2, Network, BarChart2, Handshake,
+  Target, Star, Link2, Network, BarChart2,
 } from 'lucide-react'
 
 const ACTIVITY_GROUPS = [
@@ -25,7 +25,7 @@ const ACTIVITY_GROUPS = [
 ]
 
 const FEATURES = [
-  { Icon: IdCard,      title: 'Social Passport',       desc: 'Your verified profile: Bestie Score, session count, sparks, badges, streak, availability. One link to share it all.' },
+  { Icon: Contact,      title: 'Social Passport',       desc: 'Your verified profile: Bestie Score, session count, sparks, badges, streak, availability. One link to share it all.' },
   { Icon: Trophy,      title: 'Bestie Score & Badges', desc: 'Score grows with every confirmed session, spark, and week of consistency. Earn badges — Top 1%, Session King, streak milestones, Rising Star.' },
   { Icon: Flame,       title: 'Weekly Streak',         desc: 'Meet someone every week and your streak grows. 12-week streaks unlock the rarest badges and a bonus on your score.' },
   { Icon: CalendarDays,title: 'Availability Calendar', desc: 'Set your available days and time slots. Visible on your passport so people know the best time to reach out — no guessing.' },
@@ -453,7 +453,7 @@ export default function HomePage() {
             </div>
             <div className="how-grid">
               {[
-                { num: '01', Icon: IdCard,    title: 'Build your Social Passport', desc: 'Add your bio, photo, city, activities, and set your weekly availability. Take the Bestie Type quiz — your energy, mind, and vibe type appear on your passport and power the compatibility engine.' },
+                { num: '01', Icon: Contact,    title: 'Build your Social Passport', desc: 'Add your bio, photo, city, activities, and set your weekly availability. Take the Bestie Type quiz — your energy, mind, and vibe type appear on your passport and power the compatibility engine.' },
                 { num: '02', Icon: Search,    title: 'Discover your people', desc: 'Browse with type compatibility, explore the Nearby Map, check City Pulse for who\'s free today, or send a Knock to someone interesting — an anonymous signal that only reveals your identity on a mutual match.' },
                 { num: '03', Icon: UserCheck, title: 'Meet IRL', desc: 'Book a 1-on-1 session, join a Group Session hosted by someone in your city, or flip "I\'m free today" on Pulse for spontaneous meetups. Show up — that\'s all it takes.' },
                 { num: '04', Icon: Camera,    title: 'Build your story', desc: 'Both sides confirm the session and rate each other. Record a memory — mood, note, photo. Give Sparks. Your streak grows, badges unlock, your passport becomes proof of a life well lived.' },
