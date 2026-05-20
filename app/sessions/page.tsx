@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import CallButton from '@/components/CallButton'
+import { PageLoader } from '@/components/Loading'
 
 const ACTIVITY_EMOJI = {
   meet_irl: '🤝', dance_crew: '💃', trail_crew: '🥾', travel_buddy: '✈️',
@@ -123,12 +124,7 @@ export default function SessionsPage() {
     return { dateStr, timeStr, label, isPast: diffDays < 0, isToday: diffDays === 0 }
   }
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: '36px', height: '36px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-    </div>
-  )
+  if (loading) return <PageLoader message="Loading your sessions…" />
 
   const upcoming = sessions.filter(s => s.status === 'accepted' && (!s.scheduled_at || new Date(s.scheduled_at) >= new Date()))
   const needsConfirm = sessions.filter(s => {

@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { PageLoader } from '@/components/Loading'
 
 function toSlug(str: string) {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -69,7 +70,8 @@ export default function NewCrewPage() {
     router.push(`/crews/${crew.slug}`)
   }
 
-  if (authLoading) return null
+  if (authLoading) return <PageLoader />
+
 
   const maxCrews = myScore >= 1000 ? 5 : myScore >= 800 ? 4 : myScore >= 600 ? 3 : myScore >= 400 ? 2 : 1
   const atLimit = captainedCount >= maxCrews

@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import ProfileNav from '@/components/ProfileNav'
+import { PageLoader } from '@/components/Loading'
 
 function isToday(ts: string | null): boolean {
   if (!ts) return false
@@ -110,10 +111,7 @@ export default function PulsePage() {
         )}
 
         {loading ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 0' }}>
-            <div style={{ width: '36px', height: '36px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-            <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-          </div>
+          <PageLoader fullscreen={false} message="Loading…" />
         ) : (
           <>
             {/* Free in your city */}

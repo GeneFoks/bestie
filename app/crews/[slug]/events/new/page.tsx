@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { PageLoader } from '@/components/Loading'
 
 export default function NewEventPage() {
   const router = useRouter()
@@ -75,15 +76,7 @@ export default function NewEventPage() {
     router.push(`/events/${event.id}`)
   }
 
-  if (authLoading) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ width: '36px', height: '36px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', margin: '0 auto 16px', animation: 'spin 1s linear infinite' }} />
-        <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-        <p style={{ color: '#A99ECC', fontSize: '14px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Loading…</p>
-      </div>
-    </div>
-  )
+  if (authLoading) return <PageLoader />
 
   const inputStyle: React.CSSProperties = { width: '100%', padding: '13px 16px', borderRadius: '12px', fontSize: '15px', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', outline: 'none', boxSizing: 'border-box' }
   const labelStyle: React.CSSProperties = { fontSize: '12px', fontWeight: 600, letterSpacing: '1px', color: '#A99ECC', marginBottom: '8px', display: 'block' }

@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import NotificationBell from '@/components/NotificationBell'
 import { usePushNotifications } from '@/lib/usePushNotifications'
 import FindFriends from '@/components/FindFriends'
+import { PageLoader } from '@/components/Loading'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -171,15 +172,7 @@ export default function DashboardPage() {
     setTogglingFree(false)
   }
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ width: '40px', height: '40px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', margin: '0 auto 16px', animation: 'spin 1s linear infinite' }} />
-        <p style={{ color: '#A99ECC', fontSize: '14px' }}>Loading your profile...</p>
-      </div>
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-    </div>
-  )
+  if (loading) return <PageLoader message="Loading your profile…" />
 
   const score = profile?.bestie_score || 0
   const scoreColor = score >= 800 ? '#34D399' : score >= 600 ? '#D4AF37' : '#A99ECC'

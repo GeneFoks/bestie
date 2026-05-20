@@ -5,6 +5,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { PageLoader } from '@/components/Loading'
 
 type Message = {
   id: string
@@ -109,11 +110,7 @@ export default function CrewChatPage() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
   }
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <p style={{ color: '#A99ECC', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Loading…</p>
-    </div>
-  )
+  if (loading) return <PageLoader message="Loading chat…" />
 
   const groupedMessages = messages.reduce((groups: any[], msg, i) => {
     const prev = messages[i - 1]

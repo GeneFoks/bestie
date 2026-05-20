@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import ProfileNav from '@/components/ProfileNav'
 import BottomNav from '@/components/BottomNav'
+import { PageLoader } from '@/components/Loading'
 
 const ACTIVITY_EMOJI: Record<string, string> = {
   hiking: '🥾', running: '🏃', gym_partner: '💪', cycling: '🚴', yoga: '🧘', climbing: '🧗',
@@ -195,10 +196,7 @@ export default function EventsPage() {
         </div>
 
         {loading ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 0' }}>
-            <div style={{ width: '36px', height: '36px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-            <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-          </div>
+          <PageLoader fullscreen={false} message="Loading…" />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
 

@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { PageLoader } from '@/components/Loading'
 
 export default function CallPage({ params }: { params: { roomId: string } }) {
   const router = useRouter()
@@ -88,13 +89,7 @@ export default function CallPage({ params }: { params: { roomId: string } }) {
   }
 
   if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif', gap: '16px' }}>
-        <div style={{ width: '48px', height: '48px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-        <p style={{ fontSize: '14px', color: '#A99ECC' }}>Connecting…</p>
-        <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-      </div>
-    )
+    return <PageLoader message="Connecting…" />
   }
 
   return (
