@@ -28,10 +28,16 @@ export default function NewEventPage() {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) { router.push('/login'); return }
       const uid = session.user.id
-      const { data: crew } = await supabase
+      const { data: crew, error: crewErr } = await supabase
         .from('crews').select('id, captain_id').eq('slug', slug).single()
-      if (!crew || crew.captain_id !== uid) {
-        router.push(`/crews/${slug}`)
+      if (crewErr || !crew) {
+        setError('Could not load crew. Please try again.')
+        setAuthLoading(false)
+        return
+      }
+      if (crew.captain_id !== uid) {
+        setError('Only the crew captain can create events.')
+        setAuthLoading(false)
         return
       }
       setUserId(uid)
@@ -69,10 +75,28 @@ export default function NewEventPage() {
     router.push(`/events/${event.id}`)
   }
 
-  if (authLoading) return null
+  if (authLoading) return (
+    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ width: '36px', height: '36px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', margin: '0 auto 16px', animation: 'spin 1s linear infinite' }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+        <p style={{ color: '#A99ECC', fontSize: '14px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Loading…</p>
+      </div>
+    </div>
+  )
 
   const inputStyle: React.CSSProperties = { width: '100%', padding: '13px 16px', borderRadius: '12px', fontSize: '15px', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', outline: 'none', boxSizing: 'border-box' }
   const labelStyle: React.CSSProperties = { fontSize: '12px', fontWeight: 600, letterSpacing: '1px', color: '#A99ECC', marginBottom: '8px', display: 'block' }
+
+  if (!crewId) return (
+    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <div style={{ textAlign: 'center', padding: '24px' }}>
+        <p style={{ fontSize: '32px', marginBottom: '16px' }}>🔒</p>
+        <p style={{ color: '#F0EAFF', fontSize: '16px', fontWeight: 700, marginBottom: '8px' }}>{error || 'Access denied'}</p>
+        <Link href={`/crews/${slug}`} style={{ fontSize: '14px', color: '#D4AF37' }}>← Back to Crew</Link>
+      </div>
+    </div>
+  )
 
   return (
     <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
