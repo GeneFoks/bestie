@@ -6,6 +6,8 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
+import { createNotification } from '@/lib/notifications'
+import { celebrate, buzz } from '@/lib/celebrate'
 
 const SPARK_TYPES = [
   { id: 'kind', emoji: '💛', label: 'Kind' },
@@ -108,6 +110,23 @@ export default function GiveSparkContent() {
       setSending(false)
       return
     }
+
+    // Notify the recipient — sparks are the rarest trust signal, this should feel like a moment
+    const labels = selectedTypes
+      .map(id => SPARK_TYPES.find(s => s.id === id)?.label)
+      .filter(Boolean) as string[]
+    const myName = myProfile?.full_name?.split(' ')[0] || 'Someone'
+    await createNotification({
+      userId: recipient.id,
+      type: 'spark_received',
+      title: selectedTypes.length === 1 ? `${myName} gave you a Spark` : `${myName} gave you ${selectedTypes.length} Sparks`,
+      body: labels.join(' · '),
+      link: `/${recipient.username}`,
+    })
+
+    // Sensory reward for the giver
+    celebrate({ count: 40, spread: 80 })
+    buzz('success')
 
     setSentTypes(selectedTypes)
     setDone(true)
