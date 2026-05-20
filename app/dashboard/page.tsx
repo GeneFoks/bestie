@@ -269,7 +269,7 @@ export default function DashboardPage() {
                 <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '180px', height: '180px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%)', pointerEvents: 'none' }} />
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
                   <span style={{ width: '64px', height: '64px', borderRadius: '18px', background: 'rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Sparkles size={30} color="#D4AF37" strokeWidth={1.6} /></span>
-                  <div style={{ flex: 1, minWidth: '200px' }}>
+                  <div style={{ flex: 1, minWidth: '140px' }}>
                     <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#D4AF37', marginBottom: '4px' }}>START HERE</p>
                     <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginBottom: '4px', lineHeight: 1.2 }}>Discover your Bestie Type</h2>
                     <p style={{ fontSize: '13px', color: '#A99ECC' }}>12 questions — unlocks compatibility matching, shows on your passport</p>
@@ -314,7 +314,7 @@ export default function DashboardPage() {
                 <div style={{ position: 'absolute', top: '-30px', right: '-30px', width: '160px', height: '160px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(155,127,255,0.16) 0%, transparent 70%)', pointerEvents: 'none' }} />
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '18px', flexWrap: 'wrap' }}>
                   <span style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(155,127,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Sparkles size={26} color="#9B7FFF" strokeWidth={1.6} /></span>
-                  <div style={{ flex: 1, minWidth: '180px' }}>
+                  <div style={{ flex: 1, minWidth: '140px' }}>
                     <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#9B7FFF', marginBottom: '4px' }}>HOW DID IT GO?</p>
                     <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', marginBottom: '2px', lineHeight: 1.2 }}>Record your session with {first.partner?.full_name?.split(' ')[0] || 'someone'}</h2>
                     <p style={{ fontSize: '13px', color: '#A99ECC' }}>Mood, note, photo — it lives on your passport</p>
@@ -332,7 +332,7 @@ export default function DashboardPage() {
                 <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(52,211,153,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
                   <span style={{ width: '64px', height: '64px', borderRadius: '18px', background: 'rgba(52,211,153,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Users size={30} color="#34D399" strokeWidth={1.6} /></span>
-                  <div style={{ flex: 1, minWidth: '200px' }}>
+                  <div style={{ flex: 1, minWidth: '140px' }}>
                     <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#34D399', marginBottom: '4px' }}>WELCOME, {firstName.toUpperCase()}</p>
                     <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginBottom: '4px', lineHeight: 1.2 }}>Find your first Bestie</h2>
                     <p style={{ fontSize: '13px', color: '#A99ECC' }}>
@@ -357,7 +357,7 @@ export default function DashboardPage() {
                     <span style={{ display: 'inline-block', width: '20px', height: '20px', borderRadius: '50%', background: iAmFree ? '#34D399' : 'transparent', border: iAmFree ? 'none' : '3px solid #A99ECC', boxShadow: iAmFree ? '0 0 20px rgba(52,211,153,0.7)' : 'none' }} />
                     {iAmFree && <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '2px solid rgba(52,211,153,0.4)', animation: 'pulse-free 2s ease-out infinite' }} />}
                   </span>
-                  <div style={{ flex: 1, minWidth: '180px' }}>
+                  <div style={{ flex: 1, minWidth: '140px' }}>
                     <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: iAmFree ? '#34D399' : '#D4AF37', marginBottom: '4px' }}>{iAmFree ? "YOU'RE LIVE TODAY" : 'SPONTANEOUS MEETUPS'}</p>
                     <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginBottom: '4px', lineHeight: 1.2 }}>{iAmFree ? 'Visible to Besties nearby' : 'Free for a meetup today?'}</h2>
                     <p style={{ fontSize: '13px', color: '#A99ECC' }}>
@@ -385,7 +385,7 @@ export default function DashboardPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', marginBottom: '24px' }}>
           <div style={{ background: '#111120', border: `1px solid ${scoreColor}25`, borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '8px' }}>BESTIE SCORE</p>
-            <div style={{ fontSize: '56px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{score}</div>
+            <div className="stat-number-lg" style={{ fontSize: '56px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{score}</div>
             <div style={{ height: '6px', borderRadius: '999px', background: 'rgba(255,255,255,0.10)', margin: '12px 0 8px', overflow: 'hidden' }}>
               <div style={{ height: '100%', width: `${score / 10}%`, borderRadius: '999px', background: `linear-gradient(90deg, ${scoreColor} 0%, #D4AF37 100%)` }} />
             </div>
@@ -393,12 +393,12 @@ export default function DashboardPage() {
           </div>
           <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '8px' }}>SESSIONS</p>
-            <div style={{ fontSize: '56px', fontWeight: 700, color: '#F0EAFF', fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{profile?.total_sessions || 0}</div>
+            <div className="stat-number-lg" style={{ fontSize: '56px', fontWeight: 700, color: '#F0EAFF', fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{profile?.total_sessions || 0}</div>
             <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '12px' }}>completed</p>
           </div>
           <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '8px' }}>RATING</p>
-            <div style={{ fontSize: '56px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{profile?.avg_rating ? profile.avg_rating.toFixed(1) : '—'}</div>
+            <div className="stat-number-lg" style={{ fontSize: '56px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{profile?.avg_rating ? profile.avg_rating.toFixed(1) : '—'}</div>
             <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '12px' }}>avg rating</p>
           </div>
           <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px', textAlign: 'center' }}>

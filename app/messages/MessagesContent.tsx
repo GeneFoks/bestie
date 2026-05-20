@@ -210,10 +210,10 @@ export default function MessagesPage() {
         <Link href="/dashboard" style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>← Dashboard</Link>
       </nav>
 
-      <div style={{ flex: 1, display: 'flex', maxWidth: '1100px', width: '100%', margin: '0 auto', padding: '24px', gap: '20px', height: 'calc(100vh - 65px)' }}>
+      <div className="messages-layout" data-view={activeConv ? 'thread' : 'inbox'} style={{ flex: 1, display: 'flex', maxWidth: '1100px', width: '100%', margin: '0 auto', padding: '24px', gap: '20px', height: 'calc(100dvh - 65px)' }}>
 
         {/* Sidebar */}
-        <div style={{ width: '320px', flexShrink: 0, background: '#111120', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div className="messages-sidebar" style={{ width: '320px', flexShrink: 0, background: '#111120', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.10)', display: activeConv ? undefined : 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
             <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#F0EAFF' }}>Messages</h2>
           </div>
@@ -256,7 +256,7 @@ export default function MessagesPage() {
         </div>
 
         {/* Chat area */}
-        <div style={{ flex: 1, background: '#111120', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div className="messages-thread" style={{ flex: 1, background: '#111120', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.10)', display: activeConv ? 'flex' : 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {!activeConv ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
               <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -268,6 +268,14 @@ export default function MessagesPage() {
           ) : (
             <>
               <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <button
+                  onClick={() => setActiveConv(null)}
+                  className="messages-back"
+                  aria-label="Back to inbox"
+                  style={{ display: 'none', background: 'none', border: 'none', color: '#A99ECC', cursor: 'pointer', padding: '4px 8px', fontSize: '18px', lineHeight: 1 }}
+                >
+                  ←
+                </button>
                 <div style={{ width: '40px', height: '40px', borderRadius: '12px', overflow: 'hidden', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {activeConv.user.avatar_url ? <img src={activeConv.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700, fontSize: '13px' }}>{initials(activeConv.user.full_name)}</span>}
                 </div>

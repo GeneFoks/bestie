@@ -52,42 +52,43 @@ export default function PassportScoreCard({ score, rating, sessions, sparks, ful
     return () => cancelAnimationFrame(raf)
   }, [score])
 
-  // Mouse parallax (desktop)
+  // Tilt is disabled for users who prefer reduced motion AND on touch-primary
+  // devices (no hover) where the gyro UX is too jittery / requires a permission
+  // gesture on iOS. Desktop keeps the subtle mouse parallax.
+  const tiltEnabled = (() => {
+    if (typeof window === 'undefined') return false
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
+    if (window.matchMedia('(hover: none)').matches) return false
+    return true
+  })()
+
+  // Mouse parallax (desktop only, rAF-throttled)
   useEffect(() => {
+    if (!tiltEnabled) return
     const el = cardRef.current
     if (!el) return
+    let raf = 0
+    let nextX = 0, nextY = 0
     const onMove = (e: MouseEvent) => {
       const rect = el.getBoundingClientRect()
       const cx = rect.left + rect.width / 2
       const cy = rect.top + rect.height / 2
-      const dx = (e.clientX - cx) / rect.width
-      const dy = (e.clientY - cy) / rect.height
-      setTilt({ x: dx * 6, y: -dy * 6 })
+      nextX = ((e.clientX - cx) / rect.width) * 6
+      nextY = -((e.clientY - cy) / rect.height) * 6
+      if (!raf) raf = requestAnimationFrame(() => {
+        setTilt({ x: nextX, y: nextY })
+        raf = 0
+      })
     }
     const onLeave = () => setTilt({ x: 0, y: 0 })
     el.addEventListener('mousemove', onMove)
     el.addEventListener('mouseleave', onLeave)
     return () => {
+      if (raf) cancelAnimationFrame(raf)
       el.removeEventListener('mousemove', onMove)
       el.removeEventListener('mouseleave', onLeave)
     }
-  }, [])
-
-  // Device-orientation parallax (mobile)
-  useEffect(() => {
-    if (typeof window === 'undefined' || !('DeviceOrientationEvent' in window)) return
-    const handler = (e: DeviceOrientationEvent) => {
-      // gamma: left-right tilt (-90 to 90), beta: front-back (-180 to 180)
-      const g = e.gamma ?? 0
-      const b = e.beta ?? 0
-      // clamp
-      const x = Math.max(-15, Math.min(15, g)) / 3
-      const y = Math.max(-15, Math.min(15, b - 30)) / 3
-      setTilt({ x, y })
-    }
-    window.addEventListener('deviceorientation', handler)
-    return () => window.removeEventListener('deviceorientation', handler)
-  }, [])
+  }, [tiltEnabled])
 
   const initials = fullName?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?'
 
