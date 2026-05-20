@@ -6,100 +6,33 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import ProviderCard from '@/components/ProviderCard'
 import ProfileNav from '@/components/ProfileNav'
+import { ActivityIcon } from '@/lib/activityIcons'
+import { EmptyState } from '@/components/EmptyState'
+import { CardSkeleton } from '@/components/Loading'
+import { Search, Sparkles, Flame, X, Zap, Gamepad2, BookOpen, Palette, Heart, Moon, Coffee, Users } from 'lucide-react'
 
 const FILTER_GROUPS = [
-  {
-    label: '🏃 Active & Outdoors',
-    filters: [
-      { id: 'hiking', label: '🥾 Hiking' },
-      { id: 'running', label: '🏃 Running' },
-      { id: 'gym_partner', label: '💪 Gym Partner' },
-      { id: 'cycling', label: '🚴 Cycling' },
-      { id: 'swimming', label: '🏊 Swimming' },
-      { id: 'cold_plunge', label: '🧊 Cold Plunge' },
-      { id: 'yoga', label: '🧘 Yoga' },
-      { id: 'martial_arts', label: '🥋 Martial Arts' },
-      { id: 'climbing', label: '🧗 Climbing' },
-    ],
-  },
-  {
-    label: '🎮 Fun & Social',
-    filters: [
-      { id: 'game_night', label: '🎮 Game Night' },
-      { id: 'movie_night', label: '🎬 Movie Night' },
-      { id: 'night_out', label: '🍸 Night Out' },
-      { id: 'bar_hopping', label: '🍺 Bar Hopping' },
-      { id: 'karaoke', label: '🎤 Karaoke' },
-      { id: 'festival_crew', label: '🎪 Festival Crew' },
-      { id: 'travel_buddy', label: '✈️ Travel Buddy' },
-      { id: 'wing_person', label: '😎 Wing Person' },
-      { id: 'comedy_show', label: '😂 Comedy Show' },
-    ],
-  },
-  {
-    label: '🧠 Mind & Growth',
-    filters: [
-      { id: 'deep_chat', label: '🫂 Deep Chat' },
-      { id: 'debate_club', label: '🗣️ Debate Club' },
-      { id: 'book_club', label: '📚 Book Club' },
-      { id: 'language_exchange', label: '🌐 Language Exchange' },
-      { id: 'career_talk', label: '💼 Career Talk' },
-      { id: 'money_talk', label: '💰 Money Talk' },
-      { id: 'journaling', label: '📓 Journaling' },
-      { id: 'accountability_partner', label: '🎯 Accountability' },
-      { id: 'storytelling_night', label: '📖 Storytelling' },
-    ],
-  },
-  {
-    label: '🎨 Creative & Skills',
-    filters: [
-      { id: 'music_lesson', label: '🎸 Music Lesson' },
-      { id: 'art_together', label: '🎨 Art Together' },
-      { id: 'photography_walk', label: '📸 Photography' },
-      { id: 'cooking_together', label: '🍳 Cooking' },
-      { id: 'dance', label: '💃 Dance' },
-      { id: 'improv_acting', label: '🎭 Improv' },
-      { id: 'writing_club', label: '✍️ Writing Club' },
-    ],
-  },
-  {
-    label: '🫂 Emotional & Support',
-    filters: [
-      { id: 'vent_session', label: '💬 Vent Session' },
-      { id: '3am_talk', label: '🌙 3am Talk' },
-      { id: 'hype_person', label: '🔥 Hype Person' },
-      { id: 'sobriety_buddy', label: '🌿 Sobriety Buddy' },
-      { id: 'silence_buddy', label: '🤫 Silence Buddy' },
-      { id: 'grief_support', label: '🤍 Grief Support' },
-      { id: 'ugly_cry_buddy', label: '😭 Ugly Cry Buddy' },
-    ],
-  },
-  {
-    label: '🔮 Spiritual & Sacred',
-    filters: [
-      { id: 'meditation_circle', label: '🧘 Meditation' },
-      { id: 'breathwork', label: '🌬️ Breathwork' },
-      { id: 'sound_healing', label: '🔔 Sound Healing' },
-      { id: 'cacao_ceremony', label: '🍫 Cacao Ceremony' },
-      { id: 'tarot', label: '🔮 Tarot' },
-      { id: 'retreat_buddy', label: '🏕️ Retreat Buddy' },
-      { id: 'psychedelic_integration', label: '🌀 Psychedelic' },
-      { id: 'nature_ritual', label: '🌿 Nature Ritual' },
-      { id: 'lucid_dream_club', label: '💫 Lucid Dream' },
-    ],
-  },
-  {
-    label: '☕ Chill & Everyday',
-    filters: [
-      { id: 'coffee_chat', label: '☕ Coffee Chat' },
-      { id: 'digital_detox_walk', label: '📵 Digital Detox' },
-      { id: 'skincare_night', label: '✨ Skincare Night' },
-      { id: 'smoke_buddy', label: '💨 Smoke Buddy' },
-      { id: 'astrology_session', label: '⭐ Astrology' },
-      { id: 'coworking', label: '💻 Coworking' },
-      { id: 'errand_buddy', label: '🛒 Errand Buddy' },
-    ],
-  },
+  { id: 'active',    label: 'Active & Outdoors',  Icon: Zap,       filters: [
+    { id: 'hiking', label: 'Hiking' },{ id: 'running', label: 'Running' },{ id: 'gym_partner', label: 'Gym Partner' },{ id: 'cycling', label: 'Cycling' },{ id: 'swimming', label: 'Swimming' },{ id: 'cold_plunge', label: 'Cold Plunge' },{ id: 'yoga', label: 'Yoga' },{ id: 'martial_arts', label: 'Martial Arts' },{ id: 'climbing', label: 'Climbing' },
+  ] },
+  { id: 'social',    label: 'Fun & Social',       Icon: Gamepad2,  filters: [
+    { id: 'game_night', label: 'Game Night' },{ id: 'movie_night', label: 'Movie Night' },{ id: 'night_out', label: 'Night Out' },{ id: 'bar_hopping', label: 'Bar Hopping' },{ id: 'karaoke', label: 'Karaoke' },{ id: 'festival_crew', label: 'Festival Crew' },{ id: 'travel_buddy', label: 'Travel Buddy' },{ id: 'wing_person', label: 'Wing Person' },{ id: 'comedy_show', label: 'Comedy Show' },
+  ] },
+  { id: 'mind',      label: 'Mind & Growth',      Icon: BookOpen,  filters: [
+    { id: 'deep_chat', label: 'Deep Chat' },{ id: 'debate_club', label: 'Debate Club' },{ id: 'book_club', label: 'Book Club' },{ id: 'language_exchange', label: 'Language Exchange' },{ id: 'career_talk', label: 'Career Talk' },{ id: 'money_talk', label: 'Money Talk' },{ id: 'journaling', label: 'Journaling' },{ id: 'accountability_partner', label: 'Accountability' },{ id: 'storytelling_night', label: 'Storytelling' },
+  ] },
+  { id: 'creative',  label: 'Creative & Skills',  Icon: Palette,   filters: [
+    { id: 'music_lesson', label: 'Music Lesson' },{ id: 'art_together', label: 'Art Together' },{ id: 'photography_walk', label: 'Photography' },{ id: 'cooking_together', label: 'Cooking' },{ id: 'dance', label: 'Dance' },{ id: 'improv_acting', label: 'Improv' },{ id: 'writing_club', label: 'Writing Club' },
+  ] },
+  { id: 'support',   label: 'Emotional & Support', Icon: Heart,    filters: [
+    { id: 'vent_session', label: 'Vent Session' },{ id: '3am_talk', label: '3am Talk' },{ id: 'hype_person', label: 'Hype Person' },{ id: 'sobriety_buddy', label: 'Sobriety Buddy' },{ id: 'silence_buddy', label: 'Silence Buddy' },{ id: 'grief_support', label: 'Grief Support' },{ id: 'ugly_cry_buddy', label: 'Ugly Cry Buddy' },
+  ] },
+  { id: 'spiritual', label: 'Spiritual & Sacred', Icon: Moon,      filters: [
+    { id: 'meditation_circle', label: 'Meditation' },{ id: 'breathwork', label: 'Breathwork' },{ id: 'sound_healing', label: 'Sound Healing' },{ id: 'cacao_ceremony', label: 'Cacao Ceremony' },{ id: 'tarot', label: 'Tarot' },{ id: 'retreat_buddy', label: 'Retreat Buddy' },{ id: 'psychedelic_integration', label: 'Psychedelic' },{ id: 'nature_ritual', label: 'Nature Ritual' },{ id: 'lucid_dream_club', label: 'Lucid Dream' },
+  ] },
+  { id: 'chill',     label: 'Chill & Everyday',   Icon: Coffee,    filters: [
+    { id: 'coffee_chat', label: 'Coffee Chat' },{ id: 'digital_detox_walk', label: 'Digital Detox' },{ id: 'skincare_night', label: 'Skincare Night' },{ id: 'smoke_buddy', label: 'Smoke Buddy' },{ id: 'astrology_session', label: 'Astrology' },{ id: 'coworking', label: 'Coworking' },{ id: 'errand_buddy', label: 'Errand Buddy' },
+  ] },
 ]
 
 const ALL_FILTERS = FILTER_GROUPS.flatMap(g => g.filters)
@@ -258,15 +191,17 @@ export default function BrowsePage() {
 
   const getCompatLabel = (p) => {
     if (!myProfile || !compatMode || !p._compat) return null
-    if (p._compat >= 7) return { label: '🔥 Great match', color: '#34D399' }
-    if (p._compat >= 4) return { label: '✨ Good match', color: '#D4AF37' }
+    if (p._compat >= 7) return { Icon: Flame,    label: 'Great match', color: '#34D399' }
+    if (p._compat >= 4) return { Icon: Sparkles, label: 'Good match',  color: '#D4AF37' }
     return null
   }
 
-  const toggleGroup = (groupLabel) => {
-    setActiveGroup(prev => prev === groupLabel ? null : groupLabel)
+  const toggleGroup = (groupId) => {
+    setActiveGroup(prev => prev === groupId ? null : groupId)
     setFilter('all')
   }
+
+  const currentGroup = activeGroup ? FILTER_GROUPS.find(g => g.id === activeGroup) : null
 
   return (
     <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
@@ -284,8 +219,8 @@ export default function BrowsePage() {
             </p>
           </div>
           {myProfile && (
-            <button onClick={() => setCompatMode(!compatMode)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', background: compatMode ? 'rgba(57,255,20,0.12)' : '#131323', border: compatMode ? '1px solid rgba(57,255,20,0.35)' : '1px solid rgba(255,255,255,0.1)', color: compatMode ? '#34D399' : '#A99ECC', transition: 'all 0.2s' }}>
-              <span>✨</span>
+            <button onClick={() => setCompatMode(!compatMode)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', background: compatMode ? 'rgba(52,211,153,0.12)' : '#131323', border: compatMode ? '1px solid rgba(52,211,153,0.35)' : '1px solid rgba(255,255,255,0.1)', color: compatMode ? '#34D399' : '#A99ECC', transition: 'all 0.2s' }}>
+              <Sparkles size={14} strokeWidth={1.8} />
               {compatMode ? 'Compatibility ON' : 'Compatibility'}
             </button>
           )}
@@ -303,29 +238,35 @@ export default function BrowsePage() {
           </div>
         )}
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 16px', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', marginBottom: '16px' }}>
-          <span style={{ fontSize: '18px' }}>🔍</span>
-          <input type="text" placeholder="Search by name, city, or activity..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px', color: '#F0EAFF', padding: '6px 0' }} />
-          {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', color: '#A99ECC', cursor: 'pointer', fontSize: '18px' }}>×</button>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', marginBottom: '16px' }}>
+          <Search size={18} color="#A99ECC" strokeWidth={2} />
+          <input type="text" placeholder="Search by name, city, or activity..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px', color: '#F0EAFF', padding: '6px 0', minWidth: 0 }} />
+          {search && (
+            <button onClick={() => setSearch('')} aria-label="Clear search" style={{ background: 'none', border: 'none', color: '#A99ECC', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}>
+              <X size={16} strokeWidth={2} />
+            </button>
+          )}
         </div>
 
         {/* Group tabs */}
-        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '12px', scrollbarWidth: 'none' }}>
+        <div className="filters-scroll" style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '12px' }}>
           <button onClick={() => { setActiveGroup(null); setFilter('all') }} style={{ padding: '8px 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: !activeGroup && filter === 'all' ? 'rgba(212,175,55,0.15)' : '#131323', border: !activeGroup && filter === 'all' ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.12)', color: !activeGroup && filter === 'all' ? '#D4AF37' : '#A99ECC' }}>
             All
           </button>
           {FILTER_GROUPS.map(group => (
-            <button key={group.label} onClick={() => toggleGroup(group.label)} style={{ padding: '8px 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: activeGroup === group.label ? 'rgba(212,175,55,0.15)' : '#131323', border: activeGroup === group.label ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.12)', color: activeGroup === group.label ? '#D4AF37' : '#A99ECC' }}>
+            <button key={group.id} onClick={() => toggleGroup(group.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: activeGroup === group.id ? 'rgba(212,175,55,0.15)' : '#131323', border: activeGroup === group.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.12)', color: activeGroup === group.id ? '#D4AF37' : '#A99ECC' }}>
+              <group.Icon size={13} strokeWidth={1.8} />
               {group.label}
             </button>
           ))}
         </div>
 
         {/* Sub-filters when group selected */}
-        {activeGroup && (
+        {currentGroup && (
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px', padding: '16px', background: '#111120', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.10)' }}>
-            {FILTER_GROUPS.find(g => g.label === activeGroup)?.filters.map(f => (
-              <button key={f.id} onClick={() => setFilter(f.id)} style={{ padding: '7px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', background: filter === f.id ? 'rgba(212,175,55,0.15)' : '#131323', border: filter === f.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', color: filter === f.id ? '#D4AF37' : '#A99ECC' }}>
+            {currentGroup.filters.map(f => (
+              <button key={f.id} onClick={() => setFilter(f.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', background: filter === f.id ? 'rgba(212,175,55,0.15)' : '#131323', border: filter === f.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', color: filter === f.id ? '#D4AF37' : '#A99ECC' }}>
+                <ActivityIcon type={f.id} size={12} color={filter === f.id ? '#D4AF37' : '#A99ECC'} strokeWidth={1.8} />
                 {f.label}
               </button>
             ))}
@@ -334,10 +275,7 @@ export default function BrowsePage() {
 
         {loading ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-            {[1,2,3,4,5,6].map(i => (
-              <div key={i} style={{ height: '420px', borderRadius: '20px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', animation: 'pulse 1.5s ease-in-out infinite' }} />
-            ))}
-            <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }`}</style>
+            {[1,2,3,4,5,6].map(i => <CardSkeleton key={i} height={420} radius={20} />)}
           </div>
         ) : providers.length > 0 ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
@@ -346,7 +284,8 @@ export default function BrowsePage() {
               return (
                 <div key={p.id} style={{ position: 'relative' }}>
                   {compat && (
-                    <div style={{ position: 'absolute', top: '12px', left: '12px', zIndex: 10, padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 700, background: 'rgba(0,0,0,0.7)', border: `1px solid ${compat.color}40`, color: compat.color }}>
+                    <div style={{ position: 'absolute', top: '12px', left: '12px', zIndex: 10, padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 700, background: 'rgba(0,0,0,0.7)', border: `1px solid ${compat.color}40`, color: compat.color, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                      <compat.Icon size={11} strokeWidth={2} fill={compat.color} />
                       {compat.label}
                     </div>
                   )}
@@ -356,14 +295,15 @@ export default function BrowsePage() {
             })}
           </div>
         ) : (
-          <div style={{ textAlign: 'center', padding: '80px 0' }}>
-            <p style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</p>
-            <h3 style={{ fontSize: '20px', fontWeight: 600, color: '#F0EAFF', marginBottom: '8px' }}>No Besties found</h3>
-            <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '24px' }}>Try a different search or filter</p>
-            <button onClick={() => { setSearch(''); setFilter('all'); setActiveGroup(null) }} style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer' }}>
-              Clear filters
-            </button>
-          </div>
+          <EmptyState
+            Icon={Search}
+            title="No Besties found"
+            description={search || filter !== 'all' || activeGroup ? 'Try a different search or clear filters to see everyone.' : 'Be the first Bestie in your city — invite a friend or fill out your activities.'}
+            primaryCTA={search || filter !== 'all' || activeGroup
+              ? { label: 'Clear filters', onClick: () => { setSearch(''); setFilter('all'); setActiveGroup(null) } }
+              : { label: 'Add your activities', href: '/profile/edit' }}
+            accent="gold"
+          />
         )}
       </div>
     </div>
