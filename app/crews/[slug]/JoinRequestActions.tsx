@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { createNotification } from '@/lib/notifications'
 
 type Props = {
   requestId: string
@@ -31,6 +32,17 @@ export default function JoinRequestActions({ requestId, userId, crewId, captainI
     await supabase.from('crew_join_requests').update({ status: 'accepted' }).eq('id', requestId)
     await supabase.from('crew_members').insert({ crew_id: crewId, user_id: userId })
     await supabase.from('users').update({ crew_id: crewId }).eq('id', userId)
+    // Notify the requester
+    const { data: crew } = await supabase.from('crews').select('name, slug').eq('id', crewId).single()
+    if (crew) {
+      createNotification({
+        userId,
+        type: 'join_accepted',
+        title: `You're in! Welcome to ${crew.name}`,
+        body: 'Tap to see your new crew',
+        link: `/crews/${crew.slug}`,
+      }).catch(() => {})
+    }
     setDone(true)
     onDone?.()
     router.refresh()
