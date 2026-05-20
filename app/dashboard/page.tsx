@@ -255,10 +255,12 @@ export default function DashboardPage() {
 
         {/* ─────────── HERO ZONE (single primary action, context-aware) ─────────── */}
         {(() => {
+          const isBrandNew = (profile?.total_sessions || 0) === 0 && pendingKnocks.length === 0 && pendingMemories.length === 0
           const showBestieType = !profile?.bestie_type_completed
           const showKnocks = !showBestieType && pendingKnocks.length > 0
           const showMemories = !showBestieType && !showKnocks && pendingMemories.length > 0
-          const showFreeToday = !showBestieType && !showKnocks && !showMemories
+          const showWelcome = !showBestieType && !showKnocks && !showMemories && isBrandNew
+          const showFreeToday = !showBestieType && !showKnocks && !showMemories && !showWelcome
 
           if (showBestieType) {
             return (
@@ -317,6 +319,28 @@ export default function DashboardPage() {
                     <p style={{ fontSize: '13px', color: '#A99ECC' }}>Mood, note, photo — it lives on your passport</p>
                   </div>
                   <span style={{ padding: '12px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'rgba(155,127,255,0.2)', border: '1px solid rgba(155,127,255,0.4)', color: '#9B7FFF', whiteSpace: 'nowrap', flexShrink: 0 }}>Record →</span>
+                </div>
+              </Link>
+            )
+          }
+
+          if (showWelcome) {
+            const firstName = profile?.full_name?.split(' ')[0] || 'Bestie'
+            return (
+              <Link href="/browse" style={{ display: 'block', marginBottom: '20px', padding: '28px', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(52,211,153,0.10) 0%, rgba(212,175,55,0.08) 100%)', border: '1px solid rgba(52,211,153,0.25)', textDecoration: 'none', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(52,211,153,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                  <span style={{ width: '64px', height: '64px', borderRadius: '18px', background: 'rgba(52,211,153,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Users size={30} color="#34D399" strokeWidth={1.6} /></span>
+                  <div style={{ flex: 1, minWidth: '200px' }}>
+                    <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#34D399', marginBottom: '4px' }}>WELCOME, {firstName.toUpperCase()}</p>
+                    <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginBottom: '4px', lineHeight: 1.2 }}>Find your first Bestie</h2>
+                    <p style={{ fontSize: '13px', color: '#A99ECC' }}>
+                      {profile?.city
+                        ? <>Browse people in {profile.city} — knock anonymously, match privately, meet IRL</>
+                        : <>Browse real people nearby — knock anonymously, match privately, meet IRL</>}
+                    </p>
+                  </div>
+                  <span style={{ padding: '12px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #34D399 0%, #2AAA75 100%)', color: '#09090F', whiteSpace: 'nowrap', flexShrink: 0, boxShadow: '0 4px 16px rgba(52,211,153,0.25)' }}>Browse Besties →</span>
                 </div>
               </Link>
             )
