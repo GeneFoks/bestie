@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { Calendar, Clock, MessageCircle, CheckCircle2, Hourglass, CalendarDays } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
@@ -199,7 +200,13 @@ export default function BookingsPage() {
         {/* Empty state */}
         {current.length === 0 && (
           <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <p style={{ fontSize: '44px', marginBottom: '12px' }}>{tab === 'upcoming' ? '📅' : tab === 'pending' ? '⏳' : '✅'}</p>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+              {tab === 'upcoming'
+                ? <Calendar size={44} color="#A99ECC" strokeWidth={1.6} />
+                : tab === 'pending'
+                  ? <Hourglass size={44} color="#A99ECC" strokeWidth={1.6} />
+                  : <CheckCircle2 size={44} color="#A99ECC" strokeWidth={1.6} />}
+            </div>
             <p style={{ fontSize: '16px', fontWeight: 600, color: '#F0EAFF', marginBottom: '8px' }}>
               {tab === 'upcoming' ? 'No upcoming sessions' : tab === 'pending' ? 'No pending requests' : 'No completed sessions yet'}
             </p>
@@ -257,7 +264,7 @@ export default function BookingsPage() {
 
                   {dateStr && (
                     <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ color: '#D4AF37' }}>🕐</span> {dateStr}
+                      <Clock size={12} color="#D4AF37" strokeWidth={2} /> {dateStr}
                     </p>
                   )}
                 </div>
@@ -277,7 +284,7 @@ export default function BookingsPage() {
                 return (
                   <div style={{ position: 'relative', marginBottom: '10px' }}>
                     <button onClick={() => setCalOpen(calOpen === booking.id ? null : booking.id)} style={{ width: '100%', padding: '9px', borderRadius: '10px', fontSize: '12px', fontWeight: 600, background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                      📅 Add to Calendar
+                      <Calendar size={13} strokeWidth={2} /> Add to Calendar
                     </button>
                     {calOpen === booking.id && (
                       <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '6px', background: '#13132a', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '12px', overflow: 'hidden', zIndex: 10 }}>
@@ -285,7 +292,7 @@ export default function BookingsPage() {
                           <img src="https://ssl.gstatic.com/calendar/images/dynamiclogo_2020q4/calendar_31_2x.png" alt="" style={{ width: '18px', height: '18px', borderRadius: '4px' }} />Google Calendar
                         </a>
                         <button onClick={() => { downloadICS({ title, start, description, filename: 'bestie-session.ics' }); setCalOpen(null) }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', fontSize: '13px', color: '#F0EAFF', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-                          🗓 Apple / Outlook (.ics)
+                          <CalendarDays size={16} strokeWidth={2} /> Apple / Outlook (.ics)
                         </button>
                       </div>
                     )}
@@ -336,7 +343,7 @@ export default function BookingsPage() {
 
                 {/* Always: Message button */}
                 {booking.status !== 'cancelled' && booking.status !== 'declined' && (
-                  <Link href={other?.username ? `/messages?to=${other.username}` : '#'} className="btn-ghost">💬 Message</Link>
+                  <Link href={other?.username ? `/messages?to=${other.username}` : '#'} className="btn-ghost"><MessageCircle size={13} strokeWidth={2} /> Message</Link>
                 )}
 
               </div>
