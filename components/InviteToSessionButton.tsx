@@ -55,7 +55,10 @@ export default function InviteToSessionButton({ username, activityType }: Props)
     <button
       onClick={() => setOpen(true)}
       style={{
-        display: 'block',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '6px',
         width: '100%',
         padding: '12px',
         borderRadius: '12px',
@@ -66,9 +69,6 @@ export default function InviteToSessionButton({ username, activityType }: Props)
         border: copied ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(255,255,255,0.1)',
         color: copied ? '#39FF14' : '#9B93C0',
         cursor: 'pointer',
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '6px',
       }}
     >
       {copied ? '✓ Link copied!' : (<><Send size={13} strokeWidth={2} /> Invite to session</>)}
