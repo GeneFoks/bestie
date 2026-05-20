@@ -86,7 +86,7 @@ const STEP_TITLES = ['Who are you?', 'Where are you?', 'What are you into?', 'Yo
 
 export default function OnboardingPage() {
   const router = useRouter()
-  const [step, setStep] = useState(1)
+  const [step, setStepRaw] = useState(1)
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
   const [userId, setUserId] = useState(null)
@@ -96,6 +96,25 @@ export default function OnboardingPage() {
     activities: [], activityTitle: '', activityType: '',
     activityPrice: '', activityFree: false, activityDesc: '',
   })
+
+  // Persist step + selected activities across refresh
+  const setStep = (s: any) => {
+    const next = typeof s === 'function' ? s(step) : s
+    setStepRaw(next)
+    if (typeof window !== 'undefined') localStorage.setItem('bestie_onb_step', String(next))
+  }
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const savedStep = parseInt(localStorage.getItem('bestie_onb_step') || '1', 10)
+    if (savedStep >= 1 && savedStep <= 4) setStepRaw(savedStep)
+    const savedActivities = localStorage.getItem('bestie_onb_activities')
+    if (savedActivities) {
+      try {
+        const arr = JSON.parse(savedActivities)
+        if (Array.isArray(arr)) setForm(f => ({ ...f, activities: arr }))
+      } catch {}
+    }
+  }, [])
 
   useEffect(() => {
     const getSession = async () => {
@@ -131,12 +150,15 @@ export default function OnboardingPage() {
   }, [])
 
   const toggleActivity = (id) => {
-    setForm(f => ({
-      ...f,
-      activities: f.activities.includes(id)
+    setForm(f => {
+      const next = f.activities.includes(id)
         ? f.activities.filter(a => a !== id)
         : [...f.activities, id]
-    }))
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('bestie_onb_activities', JSON.stringify(next))
+      }
+      return { ...f, activities: next }
+    })
   }
 
   const handleFinish = async () => {
@@ -161,6 +183,12 @@ export default function OnboardingPage() {
         price_per_session: form.activityFree ? 0 : parseFloat(form.activityPrice) || 0,
         is_free: form.activityFree,
       })
+    }
+
+    // Clear persisted onboarding state
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('bestie_onb_step')
+      localStorage.removeItem('bestie_onb_activities')
     }
 
     // Send new users straight into the Bestie Type quiz — the quiz page itself
