@@ -10,6 +10,7 @@ import InviteToSessionButton from '@/components/InviteToSessionButton'
 import EditActivitiesLink from '@/components/EditActivitiesLink'
 import BlockReportButton from '@/components/BlockReportButton'
 import KnockButton from '@/components/KnockButton'
+import PassportScoreCard from '@/components/PassportScoreCard'
 import MutualFriends from '@/components/MutualFriends'
 import { getAvatarFrame } from '@/lib/avatarFrame'
 import CompatibilityScore from './CompatibilityScore'
@@ -284,39 +285,18 @@ export default async function ProfilePage({ params }) {
           )}
         </div>
 
-        {/* STATS ROW */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '20px' }}>
-          {/* BS Score */}
-          <div style={{ gridColumn: 'span 2', background: 'linear-gradient(135deg, rgba(15,15,30,0.9) 0%, rgba(20,20,40,0.9) 100%)', border: `1px solid ${scoreColor}25`, borderRadius: '18px', padding: '16px 20px', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '80px', height: '80px', borderRadius: '50%', background: `radial-gradient(circle, ${scoreColor}15 0%, transparent 70%)` }} />
-            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '6px' }}>BESTIE SCORE</p>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-              <span style={{ fontSize: '36px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{score}</span>
-              <span style={{ fontSize: '11px', color: '#A99ECC' }}>/ 1000</span>
-            </div>
-            <div style={{ marginTop: '8px', height: '4px', borderRadius: '999px', background: 'rgba(255,255,255,0.10)', overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${Math.min(score / 10, 100)}%`, borderRadius: '999px', background: `linear-gradient(90deg, ${scoreColor} 0%, #D4AF37 100%)`, transition: 'width 1s ease' }} />
-            </div>
-            <p style={{ fontSize: '10px', fontWeight: 600, color: scoreColor, marginTop: '4px' }}>{scoreLabel}</p>
-          </div>
-
-          {/* Sessions */}
-          <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '18px', padding: '16px', textAlign: 'center' }}>
-            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '1px', color: '#A99ECC', marginBottom: '8px' }}>SESSIONS</p>
-            <div style={{ fontSize: '28px', fontWeight: 700, color: '#F0EAFF', fontFamily: 'DM Serif Display, serif' }}>{sessionCount}</div>
-            <p style={{ fontSize: '10px', color: '#A99ECC', marginTop: '4px' }}>met IRL</p>
-          </div>
-
-          {/* Sparks */}
-          <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '18px', padding: '16px', textAlign: 'center' }}>
-            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '1px', color: '#A99ECC', marginBottom: '8px' }}>SPARKS</p>
-            <div style={{ fontSize: '26px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>✨{totalSparks}</div>
-            {avgRating > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4px' }}>
-                <StarRating rating={avgRating} count={ratingValues.length} />
-              </div>
-            )}
-          </div>
+        {/* PREMIUM SCORE CARD */}
+        <div style={{ marginBottom: '20px' }}>
+          <PassportScoreCard
+            score={score}
+            rating={avgRating || null}
+            sessions={sessionCount}
+            sparks={totalSparks}
+            fullName={profile.full_name}
+            username={profile.username}
+            city={profile.city}
+            avatarUrl={profile.avatar_url}
+          />
         </div>
 
         {/* COMPATIBILITY (client — only shows if viewer logged in + not own profile) */}
