@@ -10,6 +10,7 @@ import { usePushNotifications } from '@/lib/usePushNotifications'
 import FindFriends from '@/components/FindFriends'
 import { PageLoader } from '@/components/Loading'
 import StreakStrip from '@/components/StreakStrip'
+import OnboardingResumeBanner from '@/components/OnboardingResumeBanner'
 import {
   Camera, Pencil, MapPin, Sparkles, Mail, Inbox, Users, Calendar,
   UsersRound, Globe, Network, Search, Zap, Settings, Share2,
@@ -236,6 +237,8 @@ export default function DashboardPage() {
       </nav>
 
       <div style={{ maxWidth: '960px', margin: '0 auto', padding: '40px 24px' }}>
+
+        <OnboardingResumeBanner />
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
