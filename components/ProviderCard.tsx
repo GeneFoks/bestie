@@ -2,7 +2,9 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { MapPin, Users, Sparkles } from 'lucide-react'
 import { getFrameColor } from '@/lib/avatarFrame'
+import { ActivityIcon } from '@/lib/activityIcons'
 
 interface ActivityPackage {
   title: string
@@ -42,16 +44,9 @@ interface ProviderCardProps {
   featured?: boolean
 }
 
-const ACTIVITY_EMOJI: Record<string, string> = {
-  meet_irl: '🤝', dance_crew: '💃', trail_crew: '🥾', travel_buddy: '✈️',
-  game_night: '🎮', watch_together: '🎬', vibe_call: '📱', deep_chat: '🫂',
-  real_talk: '💬', festival_crew: '🎪', epic_journey: '🌍', fishing_crew: '🎣',
-}
-
 export default function ProviderCard({ provider, featured = false }: ProviderCardProps) {
   const [imgError, setImgError] = useState(false)
   const mainPackage = provider.activity_packages?.[0]
-  const activityEmoji = mainPackage ? (ACTIVITY_EMOJI[mainPackage.activity_type] || '✨') : '✨'
   const score = provider.bestie_score || 0
   const scoreColor = score >= 800 ? '#39FF14' : score >= 600 ? '#D4AF37' : '#9B93C0'
   const initials = provider.full_name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || '??'
@@ -100,8 +95,8 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
 
         <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
           {mainPackage && (
-            <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: 'rgba(8,8,16,0.75)', backdropFilter: 'blur(8px)', color: '#E8E0FF', border: '1px solid rgba(232,224,255,0.12)' }}>
-              {activityEmoji} {mainPackage.activity_type.replace(/_/g, ' ')}
+            <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: 'rgba(8,8,16,0.75)', backdropFilter: 'blur(8px)', color: '#E8E0FF', border: '1px solid rgba(232,224,255,0.12)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <ActivityIcon type={mainPackage.activity_type} size={12} color="#D4AF37" strokeWidth={1.8} /> {mainPackage.activity_type.replace(/_/g, ' ')}
             </span>
           )}
           {provider.is_verified && (
@@ -118,8 +113,8 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
                 {provider.full_name}
               </h3>
               {provider.city && (
-                <p className="text-xs mt-0.5" style={{ color: '#9B93C0' }}>
-                  📍 {provider.city}{provider.country ? `, ${provider.country}` : ''}
+                <p className="text-xs mt-0.5" style={{ color: '#9B93C0', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <MapPin size={11} strokeWidth={2} /> {provider.city}{provider.country ? `, ${provider.country}` : ''}
                 </p>
               )}
             </div>
@@ -138,10 +133,10 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '11px', fontWeight: 700, color: scoreColor }}>BS {score}</span>
           {totalSessions > 0 && (
-            <span style={{ fontSize: '11px', color: '#9B93C0' }}>· 🤝 {totalSessions} met</span>
+            <span style={{ fontSize: '11px', color: '#9B93C0', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>· <Users size={11} strokeWidth={2} /> {totalSessions} met</span>
           )}
           {sparksReceived > 0 && (
-            <span style={{ fontSize: '11px', color: '#9B93C0' }}>· ✨ {sparksReceived}</span>
+            <span style={{ fontSize: '11px', color: '#9B93C0', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>· <Sparkles size={11} strokeWidth={2} /> {sparksReceived}</span>
           )}
           {(() => {
             const rating = provider.avg_rating ?? provider.average_rating ?? 0

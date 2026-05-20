@@ -6,27 +6,10 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import CallButton from '@/components/CallButton'
-
-const ACTIVITY_EMOJI = {
-  meet_irl: '🤝', dance_crew: '💃', trail_crew: '🥾', travel_buddy: '✈️',
-  game_night: '🎮', watch_together: '🎬', vibe_call: '📱', deep_chat: '🫂',
-  real_talk: '💬', festival_crew: '🎪', epic_journey: '🌍', fishing_crew: '🎣',
-  hiking: '🥾', running: '🏃', gym_partner: '💪', cycling: '🚴', swimming: '🏊',
-  cold_plunge: '🧊', yoga: '🧘', martial_arts: '🥋', climbing: '🧗',
-  movie_night: '🎬', night_out: '🍸', bar_hopping: '🍺', karaoke: '🎤',
-  festival_crew2: '🎪', wing_person: '😎', comedy_show: '😂',
-  debate_club: '🗣️', book_club: '📚', language_exchange: '🌐', career_talk: '💼',
-  money_talk: '💰', journaling: '📓', accountability_partner: '🎯',
-  storytelling_night: '📖', music_lesson: '🎸', art_together: '🎨',
-  photography_walk: '📸', cooking_together: '🍳', dance: '💃', improv_acting: '🎭',
-  writing_club: '✍️', vent_session: '💬', '3am_talk': '🌙', hype_person: '🔥',
-  sobriety_buddy: '🌿', silence_buddy: '🤫', grief_support: '🤍',
-  ugly_cry_buddy: '😭', meditation_circle: '🧘', breathwork: '🌬️',
-  sound_healing: '🔔', cacao_ceremony: '🍫', tarot: '🔮', retreat_buddy: '🏕️',
-  psychedelic_integration: '🌀', nature_ritual: '🌿', lucid_dream_club: '💫',
-  coffee_chat: '☕', digital_detox_walk: '📵', skincare_night: '✨',
-  smoke_buddy: '💨', astrology_session: '⭐', coworking: '💻', errand_buddy: '🛒',
-}
+import { PageLoader } from '@/components/Loading'
+import { ActivityIcon } from '@/lib/activityIcons'
+import { EmptyState } from '@/components/EmptyState'
+import { Calendar } from 'lucide-react'
 
 export default function SessionsPage() {
   const router = useRouter()
@@ -123,12 +106,7 @@ export default function SessionsPage() {
     return { dateStr, timeStr, label, isPast: diffDays < 0, isToday: diffDays === 0 }
   }
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: '36px', height: '36px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-    </div>
-  )
+  if (loading) return <PageLoader message="Loading your sessions…" />
 
   const upcoming = sessions.filter(s => s.status === 'accepted' && (!s.scheduled_at || new Date(s.scheduled_at) >= new Date()))
   const needsConfirm = sessions.filter(s => {
@@ -196,12 +174,13 @@ export default function SessionsPage() {
         <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '32px' }}>{sessions.length} accepted {sessions.length === 1 ? 'session' : 'sessions'}</p>
 
         {sessions.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 0' }}>
-            <p style={{ fontSize: '48px', marginBottom: '16px' }}>📅</p>
-            <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#F0EAFF', marginBottom: '8px' }}>No sessions yet</h3>
-            <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '24px' }}>Accepted bookings will appear here</p>
-            <Link href="/browse" style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Browse Besties</Link>
-          </div>
+          <EmptyState
+            Icon={Calendar}
+            title="No sessions yet"
+            description="Book your first session with a Bestie — your meetup history lives here."
+            primaryCTA={{ label: 'Browse Besties', href: '/browse' }}
+            accent="gold"
+          />
         ) : (
           <>
             {needsConfirm.length > 0 && (
@@ -218,7 +197,7 @@ export default function SessionsPage() {
                         </div>
                         <div>
                           <p style={{ fontSize: '15px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>{other?.full_name}</p>
-                          <p style={{ fontSize: '13px', color: '#A99ECC' }}>{ACTIVITY_EMOJI[s.package?.activity_type] || '✨'} {s.package?.title || 'Session'}</p>
+                          <p style={{ fontSize: '13px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><ActivityIcon type={s.package?.activity_type} size={14} color="#D4AF37" strokeWidth={1.8} /> {s.package?.title || 'Session'}</p>
                         </div>
                       </div>
                       <p style={{ fontSize: '13px', color: '#34D399', marginBottom: '12px' }}>
@@ -248,7 +227,7 @@ export default function SessionsPage() {
                         </div>
                         <div>
                           <p style={{ fontSize: '15px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>{other?.full_name}</p>
-                          <p style={{ fontSize: '13px', color: '#A99ECC' }}>{ACTIVITY_EMOJI[s.package?.activity_type] || '✨'} {s.package?.title || 'Session'}</p>
+                          <p style={{ fontSize: '13px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><ActivityIcon type={s.package?.activity_type} size={14} color="#D4AF37" strokeWidth={1.8} /> {s.package?.title || 'Session'}</p>
                         </div>
                       </div>
                       {myRating ? (
@@ -283,8 +262,8 @@ export default function SessionsPage() {
                         </div>
                         <div style={{ flex: 1 }}>
                           <p style={{ fontSize: '15px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>{other?.full_name}</p>
-                          <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '10px' }}>
-                            {ACTIVITY_EMOJI[s.package?.activity_type] || '✨'} {s.package?.title || 'Session'}
+                          <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '10px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <ActivityIcon type={s.package?.activity_type} size={14} color="#D4AF37" strokeWidth={1.8} /> {s.package?.title || 'Session'}
                           </p>
                           {date && (
                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -336,7 +315,7 @@ export default function SessionsPage() {
                         </div>
                         <div style={{ flex: 1 }}>
                           <p style={{ fontSize: '15px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>{other?.full_name}</p>
-                          <p style={{ fontSize: '13px', color: '#A99ECC' }}>{ACTIVITY_EMOJI[s.package?.activity_type] || '✨'} {s.package?.title || 'Session'} · {date?.dateStr}</p>
+                          <p style={{ fontSize: '13px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><ActivityIcon type={s.package?.activity_type} size={14} color="#D4AF37" strokeWidth={1.8} /> {s.package?.title || 'Session'} · {date?.dateStr}</p>
                         </div>
                       </div>
                       {myRating ? (

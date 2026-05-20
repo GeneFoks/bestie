@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { Phone, PhoneOff } from 'lucide-react'
 
 export default function IncomingCall() {
   const router = useRouter()
@@ -143,8 +144,9 @@ export default function IncomingCall() {
           background: 'rgba(255,59,48,0.12)', border: '1px solid rgba(255,59,48,0.3)',
           color: '#FF3B30', cursor: acting ? 'not-allowed' : 'pointer',
           fontFamily: 'Plus Jakarta Sans, sans-serif',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
         }}>
-          📵 Decline
+          <PhoneOff size={16} strokeWidth={2.2} /> Decline
         </button>
         <button onClick={accept} disabled={acting} style={{
           flex: 1, padding: '13px', borderRadius: '14px', fontSize: '14px', fontWeight: 700,
@@ -152,8 +154,9 @@ export default function IncomingCall() {
           border: 'none', color: '#080810', cursor: acting ? 'not-allowed' : 'pointer',
           fontFamily: 'Plus Jakarta Sans, sans-serif',
           boxShadow: '0 4px 16px rgba(57,255,20,0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
         }}>
-          📞 Accept
+          <Phone size={16} strokeWidth={2.2} /> Accept
         </button>
       </div>
     </div>

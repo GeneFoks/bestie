@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { Hand, Sparkles } from 'lucide-react'
+import { celebrateMatch, buzz } from '@/lib/celebrate'
+
+const iconStyle: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: '6px' }
 
 type KnockStatus = 'loading' | 'idle' | 'sent' | 'matched' | 'received'
 
@@ -37,39 +41,45 @@ export default function KnockButton({ profileId }: { profileId: string }) {
 
   const knock = async () => {
     setActing(true)
+    buzz('tap')
     const { data } = await supabase.rpc('send_knock', { p_receiver_id: profileId })
-    if (data === 'matched') setStatus('matched')
-    else if (data === 'sent') setStatus('sent')
+    if (data === 'matched') {
+      setStatus('matched')
+      celebrateMatch()
+    } else if (data === 'sent') {
+      setStatus('sent')
+      buzz('success')
+    }
     setActing(false)
   }
 
   if (status === 'matched') {
     return (
-      <div style={{ padding: '8px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'rgba(57,255,20,0.1)', border: '1px solid rgba(57,255,20,0.3)', color: '#39FF14' }}>
-        🤝 Match!
+      <div style={{ padding: '8px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'rgba(57,255,20,0.1)', border: '1px solid rgba(57,255,20,0.3)', color: '#39FF14', ...iconStyle }}>
+        <Sparkles size={13} strokeWidth={2} /> Match!
       </div>
     )
   }
 
   if (status === 'sent') {
     return (
-      <div style={{ padding: '8px 14px', borderRadius: '12px', fontSize: '13px', color: '#9B93C0', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-        👋 Knock sent
+      <div style={{ padding: '8px 14px', borderRadius: '12px', fontSize: '13px', color: '#9B93C0', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', ...iconStyle }}>
+        <Hand size={13} strokeWidth={2} /> Knock sent
       </div>
     )
   }
 
   if (status === 'received') {
     return (
-      <button onClick={knock} disabled={acting} style={{ padding: '8px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37', cursor: 'pointer' }}>
-        {acting ? '…' : '👋 Knock back!'}
+      <button onClick={knock} disabled={acting} style={{ padding: '8px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37', cursor: 'pointer', ...iconStyle }}>
+        {acting ? '…' : (<><Hand size={13} strokeWidth={2} /> Knock back!</>)}
       </button>
     )
   }
 
   return (
-    <button onClick={knock} disabled={acting} style={{ padding: '8px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', cursor: 'pointer' }}>
-      {acting ? '…' : '👋 Knock'}
+    <button onClick={knock} disabled={acting} style={{ padding: '8px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', cursor: 'pointer', ...iconStyle }}>
+      {acting ? '…' : (<><Hand size={13} strokeWidth={2} /> Knock</>)}
     </button>
   )
 }

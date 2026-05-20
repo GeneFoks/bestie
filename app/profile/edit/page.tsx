@@ -3,8 +3,10 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { MapPin, Calendar } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { PageLoader } from '@/components/Loading'
 
 const ACTIVITY_GROUPS = [
   {
@@ -287,12 +289,7 @@ export default function EditProfilePage() {
   const labelStyle = { fontSize: '13px', fontWeight: 500, color: '#A99ECC', display: 'block', marginBottom: '8px' }
   const sectionStyle = { background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px', marginBottom: '20px' }
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: '40px', height: '40px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-    </div>
-  )
+  if (loading) return <PageLoader message="Loading your profile…" />
 
   return (
     <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
@@ -395,7 +392,7 @@ export default function EditProfilePage() {
         {/* Activities */}
         <div style={sectionStyle}>
           <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF', marginBottom: '16px' }}>My Activities</h3>
-          {packages.length === 0 && <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '16px' }}>No activities yet.</p>}
+          {packages.length === 0 && <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '16px' }}>No activities added yet — pick what you love doing below to get started.</p>}
           {packages.map(pkg => (
             <div key={pkg.id} style={{ marginBottom: '8px' }}>
               {editingPkg === pkg.id ? (
@@ -448,8 +445,8 @@ export default function EditProfilePage() {
                     <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>{pkg.title}</p>
                     <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '2px' }}>{getActivityLabel(pkg.activity_type)} · {pkg.is_free ? 'Free' : `$${pkg.price_per_session}/session`}</p>
                     {pkg.scheduled_at && (
-                      <p style={{ fontSize: '12px', color: '#D4AF37', marginTop: '3px' }}>
-                        📅 {new Date(pkg.scheduled_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      <p style={{ fontSize: '12px', color: '#D4AF37', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Calendar size={12} strokeWidth={2} /> {new Date(pkg.scheduled_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </p>
                     )}
                   </div>
@@ -514,7 +511,7 @@ export default function EditProfilePage() {
 
         {/* Map visibility */}
         <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
-          <p style={{ fontSize: '13px', fontWeight: 700, color: '#F0EAFF', marginBottom: '4px' }}>🗺️ Appear on the map</p>
+          <p style={{ fontSize: '13px', fontWeight: 700, color: '#F0EAFF', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={14} strokeWidth={2} /> Appear on the map</p>
           <p style={{ fontSize: '12px', color: '#A99ECC', marginBottom: '16px' }}>Shows your approximate location (city-level, ~1km) so others nearby can find you. Requires your city to be set.</p>
           {locationShared ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -526,15 +523,15 @@ export default function EditProfilePage() {
               </button>
             </div>
           ) : (
-            <button onClick={shareLocation} disabled={locating || !form.city} style={{ width: '100%', padding: '11px', borderRadius: '10px', fontSize: '14px', fontWeight: 600, background: form.city ? 'rgba(212,175,55,0.1)' : '#111120', border: form.city ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255,255,255,0.12)', color: form.city ? '#D4AF37' : '#444', cursor: form.city ? 'pointer' : 'not-allowed' }}>
-              {locating ? 'Locating...' : form.city ? `📍 Put me on the map (${form.city})` : 'Add your city first'}
+            <button onClick={shareLocation} disabled={locating || !form.city} style={{ width: '100%', padding: '11px', borderRadius: '10px', fontSize: '14px', fontWeight: 600, background: form.city ? 'rgba(212,175,55,0.1)' : '#111120', border: form.city ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255,255,255,0.12)', color: form.city ? '#D4AF37' : '#444', cursor: form.city ? 'pointer' : 'not-allowed', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              {locating ? 'Locating...' : form.city ? (<><MapPin size={14} strokeWidth={2} /> Put me on the map ({form.city})</>) : 'Add your city first'}
             </button>
           )}
         </div>
 
         {/* Availability */}
         <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
-          <p style={{ fontSize: '13px', fontWeight: 700, color: '#F0EAFF', marginBottom: '4px' }}>📅 Availability</p>
+          <p style={{ fontSize: '13px', fontWeight: 700, color: '#F0EAFF', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={14} strokeWidth={2} /> Availability</p>
           <p style={{ fontSize: '12px', color: '#A99ECC', marginBottom: '16px' }}>Let people know when you're free to meet up</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {DAYS.map(day => {

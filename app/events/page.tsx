@@ -7,21 +7,10 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import ProfileNav from '@/components/ProfileNav'
 import BottomNav from '@/components/BottomNav'
-
-const ACTIVITY_EMOJI: Record<string, string> = {
-  hiking: '🥾', running: '🏃', gym_partner: '💪', cycling: '🚴', yoga: '🧘', climbing: '🧗',
-  swimming: '🏊', cold_plunge: '🧊', martial_arts: '🥋',
-  game_night: '🎮', movie_night: '🎬', night_out: '🍸', karaoke: '🎤', festival_crew: '🎪',
-  travel_buddy: '✈️', wing_person: '😎', comedy_show: '😂', bar_hopping: '🍺',
-  deep_chat: '🫂', book_club: '📚', debate_club: '🗣️', language_exchange: '🌐',
-  career_talk: '💼', money_talk: '💰', journaling: '📓',
-  cooking_together: '🍳', dance: '💃', art_together: '🎨', music_lesson: '🎸',
-  photography_walk: '📸', improv_acting: '🎭', writing_club: '✍️',
-  meditation_circle: '🧘', breathwork: '🌬️', cacao_ceremony: '🍫', sound_healing: '🔔',
-  coffee_chat: '☕', coworking: '💻', digital_detox_walk: '📵',
-  vent_session: '💬', hype_person: '🔥', grief_support: '🤍',
-  meet_irl: '🤝', real_talk: '💬', vibe_call: '📱',
-}
+import { Users, UsersRound, Calendar, MapPin, Plus, ArrowUp, Sparkles } from 'lucide-react'
+import { EmptyState } from '@/components/EmptyState'
+import { PageLoader } from '@/components/Loading'
+import { ActivityIcon } from '@/lib/activityIcons'
 
 function isToday(ts: string | null): boolean {
   if (!ts) return false
@@ -112,11 +101,11 @@ export default function EventsPage() {
 
   const totalEvents = crewEvents.length + groupSessions.length
 
-  const TABS: { id: Tab; label: string; count?: number }[] = [
-    { id: 'all', label: 'All', count: totalEvents },
-    { id: 'crew', label: '👥 Crew Events', count: crewEvents.length },
-    { id: 'group', label: '🎉 Group Sessions', count: groupSessions.length },
-    { id: 'free', label: '🟢 Free Today', count: freePeople.length },
+  const TABS: { id: Tab; label: string; Icon?: any; count?: number }[] = [
+    { id: 'all',   label: 'All',                            count: totalEvents },
+    { id: 'crew',  label: 'Crew Events',     Icon: Users,   count: crewEvents.length },
+    { id: 'group', label: 'Group Sessions',  Icon: UsersRound, count: groupSessions.length },
+    { id: 'free',  label: 'Free Today',                     count: freePeople.length },
   ]
 
   return (
@@ -144,7 +133,7 @@ export default function EventsPage() {
               href="/group-sessions/new"
               style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '9px 16px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none', whiteSpace: 'nowrap' }}
             >
-              + Host
+              <Plus size={14} strokeWidth={2.5} /> Host
             </Link>
           </div>
         </div>
@@ -153,8 +142,9 @@ export default function EventsPage() {
         {myId && (
           <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '16px', background: iAmFree ? 'rgba(57,255,20,0.06)' : '#111120', border: iAmFree ? '1px solid rgba(57,255,20,0.22)' : '1px solid rgba(255,255,255,0.11)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
             <div>
-              <p style={{ fontSize: '14px', fontWeight: 700, color: iAmFree ? '#34D399' : '#F0EAFF', margin: 0 }}>
-                {iAmFree ? '🟢 You\'re free today' : '⚪ Free today?'}
+              <p style={{ fontSize: '14px', fontWeight: 700, color: iAmFree ? '#34D399' : '#F0EAFF', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: iAmFree ? '#34D399' : 'transparent', border: iAmFree ? 'none' : '2px solid #A99ECC', boxShadow: iAmFree ? '0 0 10px rgba(52,211,153,0.7)' : 'none' }} />
+                {iAmFree ? "You're free today" : 'Free today?'}
               </p>
               <p style={{ fontSize: '11px', color: '#A99ECC', marginTop: '2px' }}>
                 {iAmFree ? 'Visible to others for spontaneous meetups' : 'Let Besties know you\'re available'}
@@ -184,7 +174,13 @@ export default function EventsPage() {
                 color: tab === t.id ? '#D4AF37' : '#A99ECC',
               }}
             >
-              {t.label}
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                {t.id === 'free' && (
+                  <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: tab === t.id ? '#34D399' : '#A99ECC', boxShadow: tab === t.id ? '0 0 8px rgba(52,211,153,0.6)' : 'none' }} />
+                )}
+                {t.Icon && <t.Icon size={14} strokeWidth={1.8} />}
+                {t.label}
+              </span>
               {t.count != null && t.count > 0 && (
                 <span style={{ marginLeft: '6px', background: tab === t.id ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.12)', borderRadius: '6px', padding: '1px 6px', fontSize: '11px' }}>
                   {t.count}
@@ -195,24 +191,25 @@ export default function EventsPage() {
         </div>
 
         {loading ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 0' }}>
-            <div style={{ width: '36px', height: '36px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-            <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-          </div>
+          <PageLoader fullscreen={false} message="Loading…" />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
 
             {/* FREE TODAY section */}
             {(tab === 'all' || tab === 'free') && (
               <section>
-                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '12px' }}>
-                  🟢 FREE TODAY{myCity ? ` · ${myCity.toUpperCase()}` : ''}
+                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#34D399', boxShadow: '0 0 8px rgba(52,211,153,0.6)' }} />
+                  FREE TODAY{myCity ? ` · ${myCity.toUpperCase()}` : ''}
                 </p>
 
                 {freePeople.length === 0 ? (
-                  <div style={{ padding: '24px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.10)', textAlign: 'center' }}>
-                    <p style={{ fontSize: '13px', color: '#A99ECC' }}>No one is free today yet — be the first! 👆</p>
-                  </div>
+                  <EmptyState
+                    Icon={Sparkles}
+                    title="No one is free today yet"
+                    description="Be the first in your city — the moment you flip Free Today, others see you on Pulse and the map."
+                    accent="green"
+                  />
                 ) : (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {(cityFree.length > 0 ? cityFree : freePeople).slice(0, 8).map(u => (
@@ -245,7 +242,7 @@ export default function EventsPage() {
             {(tab === 'all' || tab === 'crew') && (
               <section>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC' }}>👥 CREW EVENTS</p>
+                  <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', display: 'flex', alignItems: 'center', gap: '8px' }}><Users size={13} strokeWidth={2} /> CREW EVENTS</p>
                   <Link href="/crews" style={{ fontSize: '12px', color: '#D4AF37', textDecoration: 'none' }}>Browse crews →</Link>
                 </div>
 
@@ -266,7 +263,7 @@ export default function EventsPage() {
             {(tab === 'all' || tab === 'group') && (
               <section>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC' }}>🎉 GROUP SESSIONS</p>
+                  <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', display: 'flex', alignItems: 'center', gap: '8px' }}><UsersRound size={13} strokeWidth={2} /> GROUP SESSIONS</p>
                   <Link href="/group-sessions/new" style={{ fontSize: '12px', color: '#D4AF37', textDecoration: 'none' }}>+ Host one →</Link>
                 </div>
 
@@ -277,7 +274,7 @@ export default function EventsPage() {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {groupSessions.map(gs => <GroupSessionCard key={gs.id} session={gs} activityEmoji={ACTIVITY_EMOJI} />)}
+                    {groupSessions.map(gs => <GroupSessionCard key={gs.id} session={gs} />)}
                   </div>
                 )}
               </section>
@@ -344,9 +341,9 @@ function CrewEventCard({ event }: { event: any }) {
               {crew.name}
             </span>
           )}
-          {event.location && <span style={{ fontSize: '11px', color: '#A99ECC' }}>📍 {event.location}</span>}
-          <span style={{ fontSize: '11px', color: isFull ? '#FF6B35' : '#A99ECC' }}>
-            👥 {attendeeCount}{event.max_attendees ? `/${event.max_attendees}` : ''}
+          {event.location && <span style={{ fontSize: '11px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={11} strokeWidth={2} /> {event.location}</span>}
+          <span style={{ fontSize: '11px', color: isFull ? '#FF6B35' : '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            <Users size={11} strokeWidth={2} /> {attendeeCount}{event.max_attendees ? `/${event.max_attendees}` : ''}
             {isFull && ' · Full'}
           </span>
         </div>
@@ -355,11 +352,10 @@ function CrewEventCard({ event }: { event: any }) {
   )
 }
 
-function GroupSessionCard({ session, activityEmoji }: { session: any; activityEmoji: Record<string, string> }) {
+function GroupSessionCard({ session }: { session: any }) {
   const { month, day, time } = formatDate(session.scheduled_at)
   const participantCount = session.participants?.[0]?.count || 0
   const isFull = session.status === 'full'
-  const emoji = activityEmoji[session.activity_type] || '🎉'
   const host = session.host
 
   return (
@@ -373,8 +369,10 @@ function GroupSessionCard({ session, activityEmoji }: { session: any; activityEm
 
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-          <span style={{ fontSize: '16px' }}>{emoji}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+          <span style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <ActivityIcon type={session.activity_type} size={14} color="#D4AF37" strokeWidth={1.8} />
+          </span>
           <p style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{session.title}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
@@ -384,9 +382,9 @@ function GroupSessionCard({ session, activityEmoji }: { session: any; activityEm
               by {host.full_name?.split(' ')[0]}
             </span>
           )}
-          {session.location && <span style={{ fontSize: '11px', color: '#A99ECC' }}>📍 {session.location}</span>}
-          <span style={{ fontSize: '11px', color: isFull ? '#FF6B35' : '#A99ECC' }}>
-            👥 {participantCount}{session.max_participants ? `/${session.max_participants}` : ''}
+          {session.location && <span style={{ fontSize: '11px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={11} strokeWidth={2} /> {session.location}</span>}
+          <span style={{ fontSize: '11px', color: isFull ? '#FF6B35' : '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            <Users size={11} strokeWidth={2} /> {participantCount}{session.max_participants ? `/${session.max_participants}` : ''}
           </span>
           <span style={{ fontSize: '11px', fontWeight: 600, color: isFull ? '#FF6B35' : '#34D399', background: isFull ? 'rgba(255,107,53,0.1)' : 'rgba(57,255,20,0.08)', padding: '2px 8px', borderRadius: '6px', border: isFull ? '1px solid rgba(255,107,53,0.25)' : '1px solid rgba(57,255,20,0.2)' }}>
             {isFull ? 'Full' : 'Open'}

@@ -5,6 +5,10 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { PageLoader } from '@/components/Loading'
+import { ActivityIcon } from '@/lib/activityIcons'
+import { EmptyState } from '@/components/EmptyState'
+import { MapPin } from 'lucide-react'
 
 const ACTIVITY_GROUPS = [
   { label: '🏃 Active', activities: [
@@ -166,12 +170,7 @@ export default function GoingToPage() {
 
   const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: '40px', height: '40px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-    </div>
-  )
+  if (loading) return <PageLoader message="Loading…" />
 
   const currentGroup = ACTIVITY_GROUPS.find(g => g.label === activeGroup)
 
@@ -195,7 +194,9 @@ export default function GoingToPage() {
               <span style={{ fontSize: '12px', color: '#A99ECC' }}>⏱ {getTimeLeft(current.expires_at)}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <span style={{ fontSize: '24px' }}>{getActivity(current.activity_type)?.emoji}</span>
+              <span style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <ActivityIcon type={current.activity_type} size={22} color="#D4AF37" strokeWidth={1.6} />
+              </span>
               <span style={{ fontSize: '16px', fontWeight: 600, color: '#F0EAFF' }}>{getActivity(current.activity_type)?.label}</span>
             </div>
             {current.description && <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '4px' }}>{current.description}</p>}
@@ -224,7 +225,7 @@ export default function GoingToPage() {
                 const selected = form.activity_type === a.id
                 return (
                   <button key={a.id} onClick={() => setForm(f => ({ ...f, activity_type: a.id }))} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 6px', borderRadius: '12px', border: selected ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', background: selected ? 'rgba(212,175,55,0.1)' : '#111120', cursor: 'pointer' }}>
-                    <span style={{ fontSize: '20px' }}>{a.emoji}</span>
+                    <ActivityIcon type={a.id} size={20} color={selected ? '#D4AF37' : '#A99ECC'} strokeWidth={1.8} />
                     <span style={{ fontSize: '10px', color: selected ? '#D4AF37' : '#A99ECC', textAlign: 'center', lineHeight: 1.3 }}>{a.label}</span>
                   </button>
                 )
@@ -233,7 +234,7 @@ export default function GoingToPage() {
 
             {form.activity_type && (
               <div style={{ marginBottom: '12px', padding: '8px 14px', borderRadius: '10px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', fontSize: '13px', color: '#D4AF37' }}>
-                Selected: {getActivity(form.activity_type)?.emoji} {getActivity(form.activity_type)?.label}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>Selected: <ActivityIcon type={form.activity_type} size={14} color="#D4AF37" strokeWidth={1.8} /> {getActivity(form.activity_type)?.label}</span>
               </div>
             )}
 
@@ -259,10 +260,12 @@ export default function GoingToPage() {
           </h3>
 
           {stories.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px 0', color: '#A99ECC' }}>
-              <p style={{ fontSize: '32px', marginBottom: '12px' }}>👀</p>
-              <p style={{ fontSize: '14px' }}>No one is out yet. Be the first!</p>
-            </div>
+            <EmptyState
+              Icon={MapPin}
+              title="Nobody's out yet"
+              description="Share what you're up to — others see it in their feed and may want to join."
+              accent="gold"
+            />
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {stories.map(story => {
@@ -282,7 +285,7 @@ export default function GoingToPage() {
                         <span style={{ fontSize: '11px', color: '#A99ECC' }}>⏱ {getTimeLeft(story.expires_at)}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '16px' }}>{activity?.emoji}</span>
+                        <ActivityIcon type={story.activity_type} size={16} color="#D4AF37" strokeWidth={1.8} />
                         <span style={{ fontSize: '13px', fontWeight: 500, color: '#D4AF37' }}>{activity?.label}</span>
                         {story.users?.city && <span style={{ fontSize: '12px', color: '#A99ECC' }}>· 📍 {story.users.city}</span>}
                       </div>

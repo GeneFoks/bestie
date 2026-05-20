@@ -5,6 +5,9 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import ProfileNav from '@/components/ProfileNav'
+import { PageLoader } from '@/components/Loading'
+import { Globe, MapPin, Moon, PartyPopper, Sparkles } from 'lucide-react'
+import { EmptyState } from '@/components/EmptyState'
 
 function isToday(ts: string | null): boolean {
   if (!ts) return false
@@ -84,8 +87,8 @@ export default function PulsePage() {
 
         {/* Header */}
         <div style={{ marginBottom: '32px' }}>
-          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 7vw, 34px)', color: '#F0EAFF', marginBottom: '6px' }}>
-            🌍 City Pulse
+          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 7vw, 34px)', color: '#F0EAFF', marginBottom: '6px', display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
+            <Globe size={28} color="#D4AF37" strokeWidth={2} /> City Pulse
           </h1>
           <p style={{ fontSize: '14px', color: '#A99ECC' }}>
             {myCity ? `What's happening in ${myCity} and around the world` : 'What\'s happening right now'}
@@ -96,36 +99,43 @@ export default function PulsePage() {
         {myId && (
           <div style={{ marginBottom: '32px', padding: '20px 24px', borderRadius: '20px', background: iAmFree ? 'rgba(57,255,20,0.06)' : '#111120', border: iAmFree ? '1px solid rgba(57,255,20,0.25)' : '1px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
             <div>
-              <p style={{ fontSize: '15px', fontWeight: 700, color: iAmFree ? '#34D399' : '#F0EAFF', marginBottom: '3px' }}>
-                {iAmFree ? '🟢 You\'re free today' : '⚪ Are you free today?'}
+              <p style={{ fontSize: '15px', fontWeight: 700, color: iAmFree ? '#34D399' : '#F0EAFF', marginBottom: '3px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: iAmFree ? '#34D399' : '#6B5EA8', display: 'inline-block' }} />
+                {iAmFree ? 'You\'re free today' : 'Are you free today?'}
               </p>
               <p style={{ fontSize: '13px', color: '#A99ECC' }}>
                 {iAmFree ? 'Others can see you\'re available for a meetup' : 'Let others know you\'re up for a spontaneous meetup'}
               </p>
             </div>
-            <button onClick={toggleFree} disabled={toggling} style={{ padding: '10px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.1)' : 'rgba(57,255,20,0.12)', border: iAmFree ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(57,255,20,0.35)', color: iAmFree ? '#FF6B35' : '#34D399', whiteSpace: 'nowrap' }}>
-              {toggling ? '…' : iAmFree ? 'Turn off' : '🟢 I\'m free today!'}
+            <button onClick={toggleFree} disabled={toggling} style={{ padding: '10px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.1)' : 'rgba(57,255,20,0.12)', border: iAmFree ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(57,255,20,0.35)', color: iAmFree ? '#FF6B35' : '#34D399', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              {toggling ? '…' : iAmFree ? 'Turn off' : (<><span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34D399', display: 'inline-block' }} />I'm free today!</>)}
             </button>
           </div>
         )}
 
         {loading ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 0' }}>
-            <div style={{ width: '36px', height: '36px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-            <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-          </div>
+          <PageLoader fullscreen={false} message="Loading…" />
         ) : (
           <>
             {/* Free in your city */}
             {(cityFree.length > 0 || iAmFree) && (
               <section style={{ marginBottom: '36px' }}>
-                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '14px' }}>
-                  🟢 FREE TODAY {myCity ? `· ${myCity.toUpperCase()}` : ''}
+                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '14px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34D399', display: 'inline-block' }} />
+                  FREE TODAY {myCity ? `· ${myCity.toUpperCase()}` : ''}
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                   {cityFree.map(u => <FreePill key={u.id} user={u} />)}
                   {cityFree.length === 0 && (
-                    <p style={{ fontSize: '13px', color: '#A99ECC' }}>No one in your city yet — be the first! 👆</p>
+                    <div style={{ width: '100%' }}>
+                      <EmptyState
+                        Icon={MapPin}
+                        title="Your city is quiet right now"
+                        description="Flip 'I'm free today' to be the first lit pin in your area."
+                        primaryCTA={{ label: 'Try Pulse →', href: '/pulse' }}
+                        accent="green"
+                      />
+                    </div>
                   )}
                 </div>
               </section>
@@ -134,8 +144,9 @@ export default function PulsePage() {
             {/* Free elsewhere */}
             {otherFree.length > 0 && (
               <section style={{ marginBottom: '36px' }}>
-                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '14px' }}>
-                  🟢 FREE TODAY · WORLDWIDE
+                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '14px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34D399', display: 'inline-block' }} />
+                  FREE TODAY · WORLDWIDE
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                   {otherFree.slice(0, 12).map(u => <FreePill key={u.id} user={u} />)}
@@ -144,9 +155,14 @@ export default function PulsePage() {
             )}
 
             {freeToday.length === 0 && (
-              <section style={{ marginBottom: '36px', padding: '32px', textAlign: 'center', borderRadius: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.10)' }}>
-                <p style={{ fontSize: '32px', marginBottom: '8px' }}>🌙</p>
-                <p style={{ fontSize: '14px', color: '#A99ECC' }}>No one is free today yet. Be the first!</p>
+              <section style={{ marginBottom: '36px' }}>
+                <EmptyState
+                  Icon={Sparkles}
+                  title="No Besties free yet today"
+                  description="Be the first to flip Free Today — you'll show up on the map for everyone nearby."
+                  primaryCTA={{ label: "I'm free today", href: '/dashboard' }}
+                  accent="green"
+                />
               </section>
             )}
 
@@ -154,7 +170,7 @@ export default function PulsePage() {
             {groupSessions.length > 0 && (
               <section style={{ marginBottom: '36px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                  <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC' }}>🎉 UPCOMING GROUP SESSIONS</p>
+                  <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '8px' }}><PartyPopper size={12} color="#D4AF37" strokeWidth={2} /> UPCOMING GROUP SESSIONS</p>
                   <Link href="/group-sessions/new" style={{ fontSize: '12px', color: '#D4AF37', textDecoration: 'none' }}>+ Host one →</Link>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -206,8 +222,8 @@ function GroupSessionCard({ session }: { session: any }) {
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontSize: '15px', fontWeight: 600, color: '#F0EAFF', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{session.title}</p>
-        <p style={{ fontSize: '12px', color: '#A99ECC', marginBottom: '6px' }}>
-          {session.location && `📍 ${session.location} · `}
+        <p style={{ fontSize: '12px', color: '#A99ECC', marginBottom: '6px', display: 'inline-flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+          {session.location && <><MapPin size={11} strokeWidth={2} /> {session.location} · </>}
           by {host?.full_name?.split(' ')[0]}
         </p>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

@@ -6,6 +6,9 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import CallButton from '@/components/CallButton'
+import { PageLoader } from '@/components/Loading'
+import { MessageCircle } from 'lucide-react'
+import { EmptyState } from '@/components/EmptyState'
 
 export default function MessagesPage() {
   const router = useRouter()
@@ -185,12 +188,7 @@ export default function MessagesPage() {
 
   const initials = (name) => name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?'
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: '40px', height: '40px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-    </div>
-  )
+  if (loading) return <PageLoader fullscreen={false} message="Loading messages…" />
 
   return (
     <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', flexDirection: 'column' }}>
@@ -208,10 +206,15 @@ export default function MessagesPage() {
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {conversations.length === 0 ? (
-              <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-                <p style={{ fontSize: '32px', marginBottom: '12px' }}>💬</p>
-                <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', marginBottom: '8px' }}>No messages yet</p>
-                <Link href="/browse" style={{ fontSize: '13px', fontWeight: 600, padding: '8px 16px', borderRadius: '10px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Browse Besties</Link>
+              <div style={{ padding: '20px' }}>
+                <EmptyState
+                  Icon={MessageCircle}
+                  title="Inbox is empty"
+                  description="Knock on someone's profile to start a conversation — they appear here once you match."
+                  primaryCTA={{ label: 'Browse Besties', href: '/browse' }}
+                  accent="gold"
+                  size="sm"
+                />
               </div>
             ) : conversations.map(conv => (
               <button key={conv.user.id} onClick={() => setActiveConv(conv)} style={{ width: '100%', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px', background: activeConv?.user.id === conv.user.id ? 'rgba(212,175,55,0.08)' : 'transparent', border: 'none', borderBottom: '1px solid #131323', cursor: 'pointer', textAlign: 'left' }}>
@@ -243,7 +246,9 @@ export default function MessagesPage() {
         <div style={{ flex: 1, background: '#111120', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {!activeConv ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
-              <p style={{ fontSize: '48px' }}>💬</p>
+              <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <MessageCircle size={32} color="#D4AF37" strokeWidth={2} />
+              </div>
               <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF' }}>Select a conversation</h3>
               <Link href="/browse" style={{ fontSize: '14px', fontWeight: 600, padding: '10px 24px', borderRadius: '12px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Browse Besties</Link>
             </div>

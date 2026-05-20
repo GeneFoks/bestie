@@ -1,6 +1,7 @@
 ﻿// @ts-nocheck
 export const revalidate = 0
 import Link from 'next/link'
+import { MapPin, Lock, Search, Calendar, Clock } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 import ProfileNav from '@/components/ProfileNav'
 import SocialPassportCTA from '@/components/SocialPassportCTA'
@@ -9,10 +10,12 @@ import InviteToSessionButton from '@/components/InviteToSessionButton'
 import EditActivitiesLink from '@/components/EditActivitiesLink'
 import BlockReportButton from '@/components/BlockReportButton'
 import KnockButton from '@/components/KnockButton'
+import PassportScoreCard from '@/components/PassportScoreCard'
 import MutualFriends from '@/components/MutualFriends'
 import { getAvatarFrame } from '@/lib/avatarFrame'
 import CompatibilityScore from './CompatibilityScore'
 import StickyBookCTA from './StickyBookCTA'
+import { ActivityIcon } from '@/lib/activityIcons'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -43,12 +46,6 @@ const SPARK_TYPES = [
   { id: 'worldly', emoji: '🌍', label: 'Worldly' },
   { id: 'knowledgeable', emoji: '🎓', label: 'Knowledgeable' },
 ]
-
-const ACTIVITY_EMOJI = {
-  meet_irl: '🤝', dance_crew: '💃', trail_crew: '🥾', travel_buddy: '✈️',
-  game_night: '🎮', watch_together: '🎬', vibe_call: '📱', deep_chat: '🫂',
-  real_talk: '💬', festival_crew: '🎪', epic_journey: '🌍', fishing_crew: '🎣',
-}
 
 const ACTIVITY_DURATION = {
   meet_irl: '1–2h', dance_crew: '2h', trail_crew: '3–5h', travel_buddy: 'Multi-day',
@@ -121,7 +118,7 @@ export default async function ProfilePage({ params }) {
     return (
       <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
         <div style={{ textAlign: 'center' }}>
-          <p style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</p>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}><Search size={48} color="#A99ECC" strokeWidth={1.8} /></div>
           <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#F0EAFF', marginBottom: '8px' }}>Profile not found</h1>
           <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '24px' }}>@{params.username} doesn't exist yet</p>
           <Link href="/browse" style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Browse Besties</Link>
@@ -255,13 +252,18 @@ export default async function ProfilePage({ params }) {
                   </span>
                 )}
               </div>
-              <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '8px' }}>
-                {profile.city && `📍 ${profile.city}${profile.country ? `, ${profile.country}` : ''} · `}@{profile.username}
-                {memberSince && ` · joined ${memberSince}`}
+              <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>
+                {profile.city && (
+                  <>
+                    <MapPin size={13} strokeWidth={2} />
+                    <span>{profile.city}{profile.country ? `, ${profile.country}` : ''} · </span>
+                  </>
+                )}
+                <span>@{profile.username}{memberSince && ` · joined ${memberSince}`}</span>
               </p>
               {crew && (
                 <Link href={`/crews/${crew.slug}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', marginBottom: '8px', padding: '3px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', textDecoration: 'none' }}>
-                  {!crew.is_public && '🔒 '}{crew.name}
+                  {!crew.is_public && <Lock size={11} strokeWidth={2.2} />}{crew.name}
                 </Link>
               )}
               {profile.bio && <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.65, maxWidth: '520px' }}>{profile.bio}</p>}
@@ -283,39 +285,18 @@ export default async function ProfilePage({ params }) {
           )}
         </div>
 
-        {/* STATS ROW */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '20px' }}>
-          {/* BS Score */}
-          <div style={{ gridColumn: 'span 2', background: 'linear-gradient(135deg, rgba(15,15,30,0.9) 0%, rgba(20,20,40,0.9) 100%)', border: `1px solid ${scoreColor}25`, borderRadius: '18px', padding: '16px 20px', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '80px', height: '80px', borderRadius: '50%', background: `radial-gradient(circle, ${scoreColor}15 0%, transparent 70%)` }} />
-            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '6px' }}>BESTIE SCORE</p>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-              <span style={{ fontSize: '36px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{score}</span>
-              <span style={{ fontSize: '11px', color: '#A99ECC' }}>/ 1000</span>
-            </div>
-            <div style={{ marginTop: '8px', height: '4px', borderRadius: '999px', background: 'rgba(255,255,255,0.10)', overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${Math.min(score / 10, 100)}%`, borderRadius: '999px', background: `linear-gradient(90deg, ${scoreColor} 0%, #D4AF37 100%)`, transition: 'width 1s ease' }} />
-            </div>
-            <p style={{ fontSize: '10px', fontWeight: 600, color: scoreColor, marginTop: '4px' }}>{scoreLabel}</p>
-          </div>
-
-          {/* Sessions */}
-          <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '18px', padding: '16px', textAlign: 'center' }}>
-            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '1px', color: '#A99ECC', marginBottom: '8px' }}>SESSIONS</p>
-            <div style={{ fontSize: '28px', fontWeight: 700, color: '#F0EAFF', fontFamily: 'DM Serif Display, serif' }}>{sessionCount}</div>
-            <p style={{ fontSize: '10px', color: '#A99ECC', marginTop: '4px' }}>met IRL</p>
-          </div>
-
-          {/* Sparks */}
-          <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '18px', padding: '16px', textAlign: 'center' }}>
-            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '1px', color: '#A99ECC', marginBottom: '8px' }}>SPARKS</p>
-            <div style={{ fontSize: '26px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>✨{totalSparks}</div>
-            {avgRating > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4px' }}>
-                <StarRating rating={avgRating} count={ratingValues.length} />
-              </div>
-            )}
-          </div>
+        {/* PREMIUM SCORE CARD */}
+        <div style={{ marginBottom: '20px' }}>
+          <PassportScoreCard
+            score={score}
+            rating={avgRating || null}
+            sessions={sessionCount}
+            sparks={totalSparks}
+            fullName={profile.full_name}
+            username={profile.username}
+            city={profile.city}
+            avatarUrl={profile.avatar_url}
+          />
         </div>
 
         {/* COMPATIBILITY (client — only shows if viewer logged in + not own profile) */}
@@ -343,8 +324,8 @@ export default async function ProfilePage({ params }) {
                 <div key={pkg.id} style={{ background: 'linear-gradient(135deg, #111120 0%, #131324 100%)', border: '1px solid rgba(255,255,255,0.11)', borderRadius: '18px', padding: '18px 20px', transition: 'border-color 0.2s' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     {/* Emoji circle */}
-                    <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', flexShrink: 0 }}>
-                      {ACTIVITY_EMOJI[pkg.activity_type] || '✨'}
+                    <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <ActivityIcon type={pkg.activity_type} size={26} color="#D4AF37" strokeWidth={1.6} />
                     </div>
                     {/* Details */}
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -352,11 +333,11 @@ export default async function ProfilePage({ params }) {
                       {pkg.description && <p style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.5, marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pkg.description}</p>}
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                         {ACTIVITY_DURATION[pkg.activity_type] && (
-                          <span style={{ fontSize: '11px', color: '#A99ECC' }}>⏱ {ACTIVITY_DURATION[pkg.activity_type]}</span>
+                          <span style={{ fontSize: '11px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Clock size={11} strokeWidth={2} /> {ACTIVITY_DURATION[pkg.activity_type]}</span>
                         )}
                         {pkg.scheduled_at && (
-                          <span style={{ fontSize: '11px', color: '#D4AF37', fontWeight: 600 }}>
-                            📅 {new Date(pkg.scheduled_at).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          <span style={{ fontSize: '11px', color: '#D4AF37', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <Calendar size={11} strokeWidth={2} /> {new Date(pkg.scheduled_at).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                           </span>
                         )}
                       </div>

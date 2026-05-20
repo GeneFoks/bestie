@@ -5,15 +5,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-
-const ACTIVITY_EMOJI: Record<string, string> = {
-  hiking: '🥾', running: '🏃', gym_partner: '💪', cycling: '🚴', yoga: '🧘', climbing: '🧗',
-  game_night: '🎮', movie_night: '🎬', night_out: '🍸', karaoke: '🎤', festival_crew: '🎪', travel_buddy: '✈️',
-  deep_chat: '🫂', book_club: '📚', debate_club: '🗣️', language_exchange: '🌐',
-  cooking_together: '🍳', dance: '💃', art_together: '🎨', music_lesson: '🎸',
-  meditation_circle: '🧘', breathwork: '🌬️', cacao_ceremony: '🍫', sound_healing: '🔔',
-  coffee_chat: '☕', coworking: '💻', digital_detox_walk: '📵',
-}
+import { PageLoader } from '@/components/Loading'
+import { ActivityIcon } from '@/lib/activityIcons'
 
 export default function GroupSessionPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -82,12 +75,7 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
     navigator.clipboard.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) })
   }
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: '36px', height: '36px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-    </div>
-  )
+  if (loading) return <PageLoader message="Loading…" />
 
   if (!session) return (
     <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
@@ -123,7 +111,9 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
         {/* Header card */}
         <div style={{ background: 'linear-gradient(135deg, #111120 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '24px', padding: '28px', marginBottom: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-            <span style={{ fontSize: '32px' }}>{ACTIVITY_EMOJI[session.activity_type] || '🎉'}</span>
+            <span style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <ActivityIcon type={session.activity_type} size={28} color="#D4AF37" strokeWidth={1.6} />
+            </span>
             <div style={{ flex: 1 }}>
               <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#F0EAFF', lineHeight: 1.2 }}>{session.title}</h1>
             </div>

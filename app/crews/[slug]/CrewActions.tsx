@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { Crown, Star } from 'lucide-react'
 
 type Props = {
   crewId: string
@@ -132,16 +133,16 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
     const isFeatured = userCrewId === crewId
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <div style={{ padding: '12px', borderRadius: '14px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37' }}>
-          👑 You are the Captain
+        <div style={{ padding: '12px', borderRadius: '14px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+          <Crown size={16} strokeWidth={2} /> You are the Captain
         </div>
         {!isFeatured ? (
-          <button onClick={setFeatured} disabled={acting} style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', cursor: acting ? 'not-allowed' : 'pointer' }}>
-            {acting ? '…' : '⭐ Set as featured on passport'}
+          <button onClick={setFeatured} disabled={acting} style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', cursor: acting ? 'not-allowed' : 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            {acting ? '…' : (<><Star size={13} fill="#D4AF37" strokeWidth={0} /> Set as featured on passport</>)}
           </button>
         ) : (
-          <div style={{ padding: '8px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '12px', color: '#D4AF37', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
-            ⭐ Featured on your passport
+          <div style={{ padding: '8px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '12px', color: '#D4AF37', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <Star size={12} fill="#D4AF37" strokeWidth={0} /> Featured on your passport
           </div>
         )}
       </div>
@@ -153,13 +154,13 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {!isFeatured && (
-          <button onClick={setFeatured} disabled={acting} style={{ display: 'block', width: '100%', padding: '10px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', cursor: acting ? 'not-allowed' : 'pointer' }}>
-            {acting ? '…' : '⭐ Set as featured on passport'}
+          <button onClick={setFeatured} disabled={acting} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', padding: '10px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', cursor: acting ? 'not-allowed' : 'pointer' }}>
+            {acting ? '…' : (<><Star size={13} fill="#D4AF37" strokeWidth={0} /> Set as featured on passport</>)}
           </button>
         )}
         {isFeatured && (
-          <div style={{ padding: '8px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '12px', color: '#D4AF37', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
-            ⭐ Featured on your passport
+          <div style={{ padding: '8px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '12px', color: '#D4AF37', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <Star size={12} fill="#D4AF37" strokeWidth={0} /> Featured on your passport
           </div>
         )}
         <button onClick={leave} disabled={acting} style={{ display: 'block', width: '100%', padding: '10px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '13px', fontWeight: 600, background: 'rgba(255,107,53,0.08)', border: '1px solid rgba(255,107,53,0.2)', color: '#FF6B35', cursor: acting ? 'not-allowed' : 'pointer', opacity: acting ? 0.6 : 1 }}>

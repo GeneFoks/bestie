@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Share2 } from 'lucide-react'
 
 type Props = {
   eventId: string
@@ -35,9 +36,12 @@ export default function ShareEventButton({ eventId, eventTitle }: Props) {
         border: copied ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(255,255,255,0.1)',
         color: copied ? '#39FF14' : '#9B93C0',
         cursor: 'pointer',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '6px',
       }}
     >
-      {copied ? '✓ Copied!' : '🔗 Share event'}
+      {copied ? '✓ Copied!' : (<><Share2 size={13} strokeWidth={2} /> Share event</>)}
     </button>
   )
 }

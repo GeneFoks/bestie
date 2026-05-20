@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { Send, Plus } from 'lucide-react'
 
 type Props = {
   crewId: string
@@ -59,7 +60,7 @@ export default function CrewTelegramLink({ crewId, captainId, initialUrl }: Prop
         {url ? (
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <a href={url} target="_blank" rel="noopener noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', borderRadius: '12px', background: 'rgba(39,174,239,0.08)', border: '1px solid rgba(39,174,239,0.2)', textDecoration: 'none' }}>
-              <span style={{ fontSize: '18px' }}>✈️</span>
+              <Send size={18} color="#29B6F6" strokeWidth={2} />
               <span style={{ fontSize: '14px', fontWeight: 600, color: '#29B6F6' }}>Join Telegram Community</span>
             </a>
             <button onClick={() => { setEditing(true); setInput(url) }} style={{ padding: '12px 14px', borderRadius: '12px', fontSize: '12px', background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#A99ECC', cursor: 'pointer' }}>
@@ -67,8 +68,8 @@ export default function CrewTelegramLink({ crewId, captainId, initialUrl }: Prop
             </button>
           </div>
         ) : (
-          <button onClick={() => setEditing(true)} style={{ width: '100%', padding: '10px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'transparent', border: '1px dashed rgba(39,174,239,0.3)', color: 'rgba(39,174,239,0.7)', cursor: 'pointer' }}>
-            + Add Telegram community link
+          <button onClick={() => setEditing(true)} style={{ width: '100%', padding: '10px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'transparent', border: '1px dashed rgba(39,174,239,0.3)', color: 'rgba(39,174,239,0.7)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <Plus size={13} strokeWidth={2.5} /> Add Telegram community link
           </button>
         )}
       </div>
@@ -80,7 +81,7 @@ export default function CrewTelegramLink({ crewId, captainId, initialUrl }: Prop
 
   return (
     <a href={url} target="_blank" rel="noopener noreferrer" style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', borderRadius: '12px', background: 'rgba(39,174,239,0.08)', border: '1px solid rgba(39,174,239,0.2)', textDecoration: 'none' }}>
-      <span style={{ fontSize: '18px' }}>✈️</span>
+      <Send size={18} color="#29B6F6" strokeWidth={2} />
       <span style={{ fontSize: '14px', fontWeight: 600, color: '#29B6F6' }}>Join Telegram Community</span>
       <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#29B6F6' }}>→</span>
     </a>

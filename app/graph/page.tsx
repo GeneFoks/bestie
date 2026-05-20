@@ -5,6 +5,9 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import ProfileNav from '@/components/ProfileNav'
+import { PageLoader } from '@/components/Loading'
+import { Network } from 'lucide-react'
+import { EmptyState } from '@/components/EmptyState'
 
 export default function GraphPage() {
   const svgRef = useRef<SVGSVGElement>(null)
@@ -443,19 +446,16 @@ export default function GraphPage() {
       {/* Graph area */}
       <div ref={containerRef} style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
         {loading ? (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
-            <div style={{ width: '40px', height: '40px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-            <p style={{ fontSize: '14px', color: '#A99ECC' }}>Building the web of connections...</p>
-            <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-          </div>
+          <PageLoader fullscreen={false} message="Building the web of connections..." />
         ) : empty ? (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-            <p style={{ fontSize: '48px' }}>🕸️</p>
-            <p style={{ fontSize: '18px', color: '#F0EAFF' }}>No connections yet</p>
-            <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '8px' }}>Confirmed sessions will appear here as connections</p>
-            <Link href="/browse" style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
-              Meet someone →
-            </Link>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+            <EmptyState
+              Icon={Network}
+              title="Your graph is empty"
+              description="Every confirmed session draws a line. Book your first to start building."
+              primaryCTA={{ label: 'Browse Besties', href: '/browse' }}
+              accent="purple"
+            />
           </div>
         ) : (
           <svg ref={svgRef} style={{ width: '100%', height: '100%', display: 'block' }} />

@@ -4,6 +4,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { PageLoader } from '@/components/Loading'
+import { Phone, PhoneOff, AlertTriangle } from 'lucide-react'
 
 export default function CallPage({ params }: { params: { roomId: string } }) {
   const router = useRouter()
@@ -68,7 +70,9 @@ export default function CallPage({ params }: { params: { roomId: string } }) {
   if (ended) {
     return (
       <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif', gap: '16px' }}>
-        <span style={{ fontSize: '56px' }}>📞</span>
+        <div style={{ width: '72px', height: '72px', borderRadius: '18px', background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Phone size={36} color="#D4AF37" strokeWidth={2} />
+        </div>
         <p style={{ fontSize: '20px', fontWeight: 700, color: '#F0EAFF' }}>Call ended</p>
         <button onClick={() => router.back()} style={{ marginTop: '8px', padding: '12px 28px', borderRadius: '14px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
           Back
@@ -80,7 +84,9 @@ export default function CallPage({ params }: { params: { roomId: string } }) {
   if (error) {
     return (
       <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif', gap: '16px', padding: '24px' }}>
-        <span style={{ fontSize: '48px' }}>⚠️</span>
+        <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: 'rgba(255,107,53,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <AlertTriangle size={32} color="#FF6B35" strokeWidth={2} />
+        </div>
         <p style={{ fontSize: '16px', color: '#FF6B35', textAlign: 'center' }}>{error}</p>
         <button onClick={() => router.back()} style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.12)', color: '#F0EAFF', border: 'none', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Go back</button>
       </div>
@@ -88,13 +94,7 @@ export default function CallPage({ params }: { params: { roomId: string } }) {
   }
 
   if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif', gap: '16px' }}>
-        <div style={{ width: '48px', height: '48px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-        <p style={{ fontSize: '14px', color: '#A99ECC' }}>Connecting…</p>
-        <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-      </div>
-    )
+    return <PageLoader message="Connecting…" />
   }
 
   return (
@@ -114,9 +114,9 @@ export default function CallPage({ params }: { params: { roomId: string } }) {
 
         <button
           onClick={leaveCall}
-          style={{ padding: '8px 18px', borderRadius: '20px', border: 'none', background: '#FF3B30', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+          style={{ padding: '8px 18px', borderRadius: '20px', border: 'none', background: '#FF3B30', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
         >
-          📵 End call
+          <PhoneOff size={14} strokeWidth={2} /> End call
         </button>
       </div>
 

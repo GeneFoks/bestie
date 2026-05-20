@@ -5,6 +5,7 @@ import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { Sparkles } from 'lucide-react'
 
 function SignupForm() {
   const router = useRouter()
@@ -48,8 +49,8 @@ function SignupForm() {
           <p style={{ marginTop: '8px', fontSize: '14px', color: '#A99ECC' }}>Create your social passport</p>
         </div>
         {refCode && (
-          <div style={{ marginBottom: '20px', padding: '12px 16px', borderRadius: '12px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', textAlign: 'center', fontSize: '13px', color: '#D4AF37' }}>
-            ✨ You were invited by a friend
+          <div style={{ marginBottom: '20px', padding: '12px 16px', borderRadius: '12px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', textAlign: 'center', fontSize: '13px', color: '#D4AF37', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', boxSizing: 'border-box' }}>
+            <Sparkles size={14} strokeWidth={2} /> You were invited by a friend
           </div>
         )}
         <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '20px', padding: '32px' }}>
