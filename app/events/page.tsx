@@ -9,21 +9,7 @@ import ProfileNav from '@/components/ProfileNav'
 import BottomNav from '@/components/BottomNav'
 import { Users, UsersRound, Calendar, MapPin, Plus, ArrowUp } from 'lucide-react'
 import { PageLoader } from '@/components/Loading'
-
-const ACTIVITY_EMOJI: Record<string, string> = {
-  hiking: '🥾', running: '🏃', gym_partner: '💪', cycling: '🚴', yoga: '🧘', climbing: '🧗',
-  swimming: '🏊', cold_plunge: '🧊', martial_arts: '🥋',
-  game_night: '🎮', movie_night: '🎬', night_out: '🍸', karaoke: '🎤', festival_crew: '🎪',
-  travel_buddy: '✈️', wing_person: '😎', comedy_show: '😂', bar_hopping: '🍺',
-  deep_chat: '🫂', book_club: '📚', debate_club: '🗣️', language_exchange: '🌐',
-  career_talk: '💼', money_talk: '💰', journaling: '📓',
-  cooking_together: '🍳', dance: '💃', art_together: '🎨', music_lesson: '🎸',
-  photography_walk: '📸', improv_acting: '🎭', writing_club: '✍️',
-  meditation_circle: '🧘', breathwork: '🌬️', cacao_ceremony: '🍫', sound_healing: '🔔',
-  coffee_chat: '☕', coworking: '💻', digital_detox_walk: '📵',
-  vent_session: '💬', hype_person: '🔥', grief_support: '🤍',
-  meet_irl: '🤝', real_talk: '💬', vibe_call: '📱',
-}
+import { ActivityIcon } from '@/lib/activityIcons'
 
 function isToday(ts: string | null): boolean {
   if (!ts) return false
@@ -284,7 +270,7 @@ export default function EventsPage() {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {groupSessions.map(gs => <GroupSessionCard key={gs.id} session={gs} activityEmoji={ACTIVITY_EMOJI} />)}
+                    {groupSessions.map(gs => <GroupSessionCard key={gs.id} session={gs} />)}
                   </div>
                 )}
               </section>
@@ -362,11 +348,10 @@ function CrewEventCard({ event }: { event: any }) {
   )
 }
 
-function GroupSessionCard({ session, activityEmoji }: { session: any; activityEmoji: Record<string, string> }) {
+function GroupSessionCard({ session }: { session: any }) {
   const { month, day, time } = formatDate(session.scheduled_at)
   const participantCount = session.participants?.[0]?.count || 0
   const isFull = session.status === 'full'
-  const emoji = activityEmoji[session.activity_type] || '🎉'
   const host = session.host
 
   return (
@@ -380,8 +365,10 @@ function GroupSessionCard({ session, activityEmoji }: { session: any; activityEm
 
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-          <span style={{ fontSize: '16px' }}>{emoji}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+          <span style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <ActivityIcon type={session.activity_type} size={14} color="#D4AF37" strokeWidth={1.8} />
+          </span>
           <p style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{session.title}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>

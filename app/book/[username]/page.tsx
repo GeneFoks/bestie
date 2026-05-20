@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { createNotification } from '@/lib/notifications'
 import { PageLoader } from '@/components/Loading'
+import { ActivityIcon } from '@/lib/activityIcons'
 
 export default function BookPage({ params }) {
   const router = useRouter()
@@ -89,12 +90,6 @@ export default function BookPage({ params }) {
     setSending(false)
   }
 
-  const ACTIVITY_EMOJI = {
-    meet_irl: '🤝', dance_crew: '💃', trail_crew: '🥾', travel_buddy: '✈️',
-    game_night: '🎮', watch_together: '🎬', vibe_call: '📱', deep_chat: '🫂',
-    real_talk: '💬', festival_crew: '🎪', epic_journey: '🌍', fishing_crew: '🎣',
-  }
-
   const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
 
   if (loading) return <PageLoader message="Loading…" />
@@ -150,7 +145,9 @@ export default function BookPage({ params }) {
             {provider.activity_packages?.map(pkg => (
               <button key={pkg.id} onClick={() => setSelectedPackage(pkg)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: '14px', border: selectedPackage?.id === pkg.id ? '2px solid rgba(212,175,55,0.5)' : '1px solid rgba(255,255,255,0.12)', background: selectedPackage?.id === pkg.id ? 'rgba(212,175,55,0.08)' : '#111120', cursor: 'pointer', textAlign: 'left' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '20px' }}>{ACTIVITY_EMOJI[pkg.activity_type] || '✨'}</span>
+                  <span style={{ width: '32px', height: '32px', borderRadius: '9px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <ActivityIcon type={pkg.activity_type} size={16} color="#D4AF37" strokeWidth={1.8} />
+                  </span>
                   <div>
                     <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>{pkg.title}</p>
                     {pkg.description && <p style={{ fontSize: '12px', color: '#A99ECC' }}>{pkg.description}</p>}

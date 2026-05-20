@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
+import { ActivityIcon } from '@/lib/activityIcons'
 
 const ACTIVITY_GROUPS = [
   {
@@ -261,7 +262,7 @@ export default function ActivitiesPage() {
                       }}
                       style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '12px 14px', borderRadius: '16px', border: alreadyHave ? '1px solid rgba(57,255,20,0.35)' : i < 3 ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(255,255,255,0.11)', background: alreadyHave ? 'rgba(57,255,20,0.06)' : i < 3 ? 'rgba(255,107,53,0.06)' : '#111120', cursor: alreadyHave ? 'default' : 'pointer', minWidth: '72px' }}
                     >
-                      <span style={{ fontSize: '24px' }}>{a.emoji}</span>
+                      <ActivityIcon type={a.id} size={22} color={alreadyHave ? '#34D399' : '#D4AF37'} strokeWidth={1.7} />
                       <span style={{ fontSize: '10px', fontWeight: 600, color: alreadyHave ? '#34D399' : '#F0EAFF', textAlign: 'center', lineHeight: 1.3, whiteSpace: 'nowrap' }}>{a.label}</span>
                       <span style={{ fontSize: '10px', color: alreadyHave ? '#34D399' : '#A99ECC' }}>{a.count} besties{alreadyHave ? ' ✓' : ''}</span>
                     </button>
@@ -293,7 +294,7 @@ export default function ActivitiesPage() {
                         const selected = form.activity_type === a.id
                         return (
                           <button key={a.id} onClick={() => setForm(f => ({ ...f, activity_type: a.id }))} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '8px 4px', borderRadius: '10px', border: selected ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', background: selected ? 'rgba(212,175,55,0.1)' : '#111120', cursor: 'pointer' }}>
-                            <span style={{ fontSize: '16px' }}>{a.emoji}</span>
+                            <ActivityIcon type={a.id} size={16} color={selected ? '#D4AF37' : '#A99ECC'} strokeWidth={1.8} />
                             <span style={{ fontSize: '9px', color: selected ? '#D4AF37' : '#A99ECC', textAlign: 'center', lineHeight: 1.3 }}>{a.label}</span>
                           </button>
                         )
@@ -347,7 +348,7 @@ export default function ActivitiesPage() {
                 <div key={pkg.id} style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', padding: '20px' }}>
                   <div style={{ marginBottom: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '20px' }}>{activity?.emoji || '✨'}</span>
+                      <ActivityIcon type={pkg.activity_type} size={18} color="#D4AF37" strokeWidth={1.8} />
                       <h4 style={{ fontSize: '16px', fontWeight: 600, color: '#F0EAFF' }}>{pkg.title}</h4>
                     </div>
                     <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '4px' }}>

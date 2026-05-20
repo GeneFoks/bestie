@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { ActivityIcon } from '@/lib/activityIcons'
 
 const ACTIVITY_GROUPS = [
   { label: '🏃 Active', activities: [
@@ -234,7 +235,7 @@ export default function OnboardingPage() {
                   const selected = form.activities.includes(a.id)
                   return (
                     <button key={a.id} onClick={() => toggleActivity(a.id)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '12px 8px', borderRadius: '14px', border: selected ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', background: selected ? 'rgba(212,175,55,0.1)' : '#111120', cursor: 'pointer' }}>
-                      <span style={{ fontSize: '24px' }}>{a.emoji}</span>
+                      <ActivityIcon type={a.id} size={22} color={selected ? '#D4AF37' : '#A99ECC'} strokeWidth={1.7} />
                       <span style={{ fontSize: '11px', fontWeight: 500, color: selected ? '#D4AF37' : '#A99ECC', textAlign: 'center' }}>{a.label}</span>
                     </button>
                   )

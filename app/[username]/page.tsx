@@ -14,6 +14,7 @@ import MutualFriends from '@/components/MutualFriends'
 import { getAvatarFrame } from '@/lib/avatarFrame'
 import CompatibilityScore from './CompatibilityScore'
 import StickyBookCTA from './StickyBookCTA'
+import { ActivityIcon } from '@/lib/activityIcons'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -44,12 +45,6 @@ const SPARK_TYPES = [
   { id: 'worldly', emoji: '🌍', label: 'Worldly' },
   { id: 'knowledgeable', emoji: '🎓', label: 'Knowledgeable' },
 ]
-
-const ACTIVITY_EMOJI = {
-  meet_irl: '🤝', dance_crew: '💃', trail_crew: '🥾', travel_buddy: '✈️',
-  game_night: '🎮', watch_together: '🎬', vibe_call: '📱', deep_chat: '🫂',
-  real_talk: '💬', festival_crew: '🎪', epic_journey: '🌍', fishing_crew: '🎣',
-}
 
 const ACTIVITY_DURATION = {
   meet_irl: '1–2h', dance_crew: '2h', trail_crew: '3–5h', travel_buddy: 'Multi-day',
@@ -349,8 +344,8 @@ export default async function ProfilePage({ params }) {
                 <div key={pkg.id} style={{ background: 'linear-gradient(135deg, #111120 0%, #131324 100%)', border: '1px solid rgba(255,255,255,0.11)', borderRadius: '18px', padding: '18px 20px', transition: 'border-color 0.2s' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     {/* Emoji circle */}
-                    <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', flexShrink: 0 }}>
-                      {ACTIVITY_EMOJI[pkg.activity_type] || '✨'}
+                    <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <ActivityIcon type={pkg.activity_type} size={26} color="#D4AF37" strokeWidth={1.6} />
                     </div>
                     {/* Details */}
                     <div style={{ flex: 1, minWidth: 0 }}>

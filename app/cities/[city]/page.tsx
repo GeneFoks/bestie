@@ -4,20 +4,12 @@ import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import ProfileNav from '@/components/ProfileNav'
 import { MapPin, Users, Sprout } from 'lucide-react'
+import { ActivityIcon } from '@/lib/activityIcons'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
-
-const ACTIVITY_EMOJI: Record<string, string> = {
-  hiking: '🥾', running: '🏃', gym_partner: '💪', cycling: '🚴', swimming: '🏊',
-  cold_plunge: '🧊', yoga: '🧘', martial_arts: '🥋', climbing: '🧗',
-  game_night: '🎮', movie_night: '🎬', night_out: '🌙', bar_hopping: '🍻',
-  karaoke: '🎤', festival_crew: '🎪', travel_buddy: '✈️',
-  deep_chat: '🫂', book_club: '📚', coffee_chat: '☕', cooking_together: '🍳',
-  dance: '💃', meditation_circle: '🔮', breathwork: '🌬️',
-}
 
 export async function generateMetadata({ params }) {
   const city = decodeURIComponent(params.city)
@@ -106,7 +98,7 @@ export default async function CityHubPage({ params }) {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
               {topActivities.map(([type, count]) => (
                 <Link key={type} href={`/browse?activity=${type}&city=${encodeURIComponent(city)}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '999px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', textDecoration: 'none' }}>
-                  <span style={{ fontSize: '16px' }}>{ACTIVITY_EMOJI[type] || '✨'}</span>
+                  <ActivityIcon type={type} size={14} color="#D4AF37" strokeWidth={1.8} />
                   <span style={{ fontSize: '13px', fontWeight: 600, color: '#D4AF37' }}>{type.replace(/_/g, ' ')}</span>
                   <span style={{ fontSize: '12px', color: '#A99ECC' }}>{count}</span>
                 </Link>
