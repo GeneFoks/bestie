@@ -30,7 +30,7 @@ export default function LoginPage() {
       <div style={{ width: '100%', maxWidth: '400px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-          <p style={{ marginTop: '8px', fontSize: '14px', color: '#A99ECC' }}>Welcome back</p>
+          <p style={{ marginTop: '12px', fontSize: '15px', color: '#F0EAFF', fontFamily: 'DM Serif Display, serif' }}>Welcome back</p>
         </div>
         <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '20px', padding: '32px' }}>
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

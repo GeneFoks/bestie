@@ -46,7 +46,8 @@ function SignupForm() {
       <div style={{ width: '100%', maxWidth: '400px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-          <p style={{ marginTop: '8px', fontSize: '14px', color: '#A99ECC' }}>Create your social passport</p>
+          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginTop: '20px', marginBottom: '6px' }}>Real people. Real moments.</h1>
+          <p style={{ fontSize: '13px', color: '#A99ECC' }}>Create your social passport — takes 60 seconds.</p>
         </div>
         {refCode && (
           <div style={{ marginBottom: '20px', padding: '12px 16px', borderRadius: '12px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', textAlign: 'center', fontSize: '13px', color: '#D4AF37', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', boxSizing: 'border-box' }}>
