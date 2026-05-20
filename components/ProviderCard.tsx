@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { MapPin, Users, Sparkles } from 'lucide-react'
 import { getFrameColor } from '@/lib/avatarFrame'
 
 interface ActivityPackage {
@@ -118,8 +119,8 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
                 {provider.full_name}
               </h3>
               {provider.city && (
-                <p className="text-xs mt-0.5" style={{ color: '#9B93C0' }}>
-                  📍 {provider.city}{provider.country ? `, ${provider.country}` : ''}
+                <p className="text-xs mt-0.5" style={{ color: '#9B93C0', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <MapPin size={11} strokeWidth={2} /> {provider.city}{provider.country ? `, ${provider.country}` : ''}
                 </p>
               )}
             </div>
@@ -138,10 +139,10 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '11px', fontWeight: 700, color: scoreColor }}>BS {score}</span>
           {totalSessions > 0 && (
-            <span style={{ fontSize: '11px', color: '#9B93C0' }}>· 🤝 {totalSessions} met</span>
+            <span style={{ fontSize: '11px', color: '#9B93C0', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>· <Users size={11} strokeWidth={2} /> {totalSessions} met</span>
           )}
           {sparksReceived > 0 && (
-            <span style={{ fontSize: '11px', color: '#9B93C0' }}>· ✨ {sparksReceived}</span>
+            <span style={{ fontSize: '11px', color: '#9B93C0', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>· <Sparkles size={11} strokeWidth={2} /> {sparksReceived}</span>
           )}
           {(() => {
             const rating = provider.avg_rating ?? provider.average_rating ?? 0

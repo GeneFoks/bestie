@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Share2 } from 'lucide-react'
 
 type Props = {
   username: string
@@ -39,7 +40,7 @@ export default function SharePassportButton({ username }: Props) {
         gap: '6px',
       }}
     >
-      {copied ? '✓ Copied!' : '🔗 Share Passport'}
+      {copied ? '✓ Copied!' : (<><Share2 size={13} strokeWidth={2} /> Share Passport</>)}
     </button>
   )
 }

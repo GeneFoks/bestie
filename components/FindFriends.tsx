@@ -3,6 +3,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { Search, Smartphone, Pencil, Lock, AlertTriangle, Sprout } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 interface MatchedUser {
@@ -119,7 +120,7 @@ export default function FindFriends() {
   return (
     <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '18px', padding: '20px 20px', marginBottom: '24px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-        <span style={{ fontSize: '22px' }}>🔍</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', color: '#D4AF37' }}><Search size={22} strokeWidth={2} /></span>
         <div>
           <p style={{ fontSize: '15px', fontWeight: 700, color: '#E8E0FF', margin: 0 }}>Find friends on Bestie</p>
           <p style={{ fontSize: '12px', color: '#9B93C0', margin: 0 }}>Import contacts · All data is hashed &amp; never stored in plain text</p>
@@ -134,16 +135,16 @@ export default function FindFriends() {
             padding: '12px 20px', borderRadius: '12px', cursor: 'pointer', fontWeight: 600,
             fontSize: '14px', color: '#080810', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)',
           }}>
-            <span>📱</span> Import from phone contacts (.vcf)
+            <Smartphone size={16} strokeWidth={2} /> Import from phone contacts (.vcf)
             <input type="file" accept=".vcf,text/vcard" onChange={handleFileChange} style={{ display: 'none' }} />
           </label>
 
           {/* Manual entry toggle */}
           <button
             onClick={() => setShowManual(!showManual)}
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '10px 20px', color: '#9B93C0', fontSize: '13px', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '10px 20px', color: '#9B93C0', fontSize: '13px', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
           >
-            ✏️ Enter emails / phones manually
+            <Pencil size={14} strokeWidth={2} /> Enter emails / phones manually
           </button>
 
           {showManual && (
@@ -165,8 +166,8 @@ export default function FindFriends() {
             </div>
           )}
 
-          <p style={{ fontSize: '11px', color: '#9B93C0', textAlign: 'center', marginTop: '4px' }}>
-            🔒 Your contacts are hashed with SHA-256 before leaving your device
+          <p style={{ fontSize: '11px', color: '#9B93C0', textAlign: 'center', marginTop: '4px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <Lock size={11} strokeWidth={2} /> Your contacts are hashed with SHA-256 before leaving your device
           </p>
         </div>
       )}
@@ -181,7 +182,7 @@ export default function FindFriends() {
 
       {phase === 'error' && (
         <div style={{ textAlign: 'center', padding: '16px 0' }}>
-          <p style={{ fontSize: '14px', color: '#FF6B6B', marginBottom: '12px' }}>⚠️ {errorMsg}</p>
+          <p style={{ fontSize: '14px', color: '#FF6B6B', marginBottom: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><AlertTriangle size={14} strokeWidth={2} /> {errorMsg}</p>
           <button onClick={() => { setPhase('idle'); setErrorMsg('') }} style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '10px', padding: '8px 18px', color: '#E8E0FF', fontSize: '13px', border: 'none', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
             Try again
           </button>
@@ -204,7 +205,7 @@ export default function FindFriends() {
 
           {matchedUsers.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
-              <p style={{ fontSize: '32px', marginBottom: '8px' }}>🌱</p>
+              <p style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center', color: '#9B8FFF' }}><Sprout size={32} strokeWidth={2} /></p>
               <p style={{ fontSize: '14px', color: '#9B93C0' }}>None of your contacts are on Bestie yet.</p>
               <p style={{ fontSize: '12px', color: '#9B93C0', marginTop: '4px' }}>
                 We'll notify you when they join!

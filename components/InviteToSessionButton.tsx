@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Send } from 'lucide-react'
 
 type Props = {
   username: string
@@ -65,9 +66,12 @@ export default function InviteToSessionButton({ username, activityType }: Props)
         border: copied ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(255,255,255,0.1)',
         color: copied ? '#39FF14' : '#9B93C0',
         cursor: 'pointer',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '6px',
       }}
     >
-      {copied ? '✓ Link copied!' : '📨 Invite to session'}
+      {copied ? '✓ Link copied!' : (<><Send size={13} strokeWidth={2} /> Invite to session</>)}
     </button>
   )
 }

@@ -1,15 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Theater, Frown, Megaphone, Siren, DollarSign, HelpCircle, CheckCircle2, Ban, AlertTriangle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
-const REPORT_REASONS = [
-  { id: 'fake_profile', label: '🎭 Fake profile' },
-  { id: 'harassment', label: '😠 Harassment' },
-  { id: 'spam', label: '📢 Spam' },
-  { id: 'inappropriate', label: '🚨 Inappropriate behavior' },
-  { id: 'scam', label: '💸 Scam / fraud' },
-  { id: 'other', label: '❓ Other' },
+const REPORT_REASONS: Array<{ id: string; Icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; label: string }> = [
+  { id: 'fake_profile', Icon: Theater, label: 'Fake profile' },
+  { id: 'harassment', Icon: Frown, label: 'Harassment' },
+  { id: 'spam', Icon: Megaphone, label: 'Spam' },
+  { id: 'inappropriate', Icon: Siren, label: 'Inappropriate behavior' },
+  { id: 'scam', Icon: DollarSign, label: 'Scam / fraud' },
+  { id: 'other', Icon: HelpCircle, label: 'Other' },
 ]
 
 export default function BlockReportButton({ profileUserId }: { profileUserId: string }) {
@@ -89,9 +90,9 @@ export default function BlockReportButton({ profileUserId }: { profileUserId: st
                 <button
                   key={r.id}
                   onClick={() => setSelectedReason(r.id)}
-                  style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', textAlign: 'left', background: selectedReason === r.id ? 'rgba(255,80,80,0.12)' : 'rgba(255,255,255,0.03)', border: selectedReason === r.id ? '1px solid rgba(255,80,80,0.4)' : '1px solid rgba(255,255,255,0.08)', color: selectedReason === r.id ? '#FF6B6B' : '#E8E0FF', cursor: 'pointer' }}
+                  style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', textAlign: 'left', background: selectedReason === r.id ? 'rgba(255,80,80,0.12)' : 'rgba(255,255,255,0.03)', border: selectedReason === r.id ? '1px solid rgba(255,80,80,0.4)' : '1px solid rgba(255,255,255,0.08)', color: selectedReason === r.id ? '#FF6B6B' : '#E8E0FF', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                 >
-                  {r.label}
+                  <r.Icon size={16} strokeWidth={2} /> {r.label}
                 </button>
               ))}
             </div>
@@ -132,17 +133,17 @@ export default function BlockReportButton({ profileUserId }: { profileUserId: st
               disabled={loading}
               style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 12px', borderRadius: '10px', fontSize: '14px', background: 'none', border: 'none', color: isBlocked ? '#39FF14' : '#9B93C0', cursor: 'pointer', textAlign: 'left' }}
             >
-              {isBlocked ? '✅ Unblock user' : '🚫 Block user'}
+              {isBlocked ? (<><CheckCircle2 size={16} strokeWidth={2} /> Unblock user</>) : (<><Ban size={16} strokeWidth={2} /> Block user</>)}
             </button>
             {!hasReported ? (
               <button
                 onClick={() => { setMenuOpen(false); setReportOpen(true) }}
                 style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 12px', borderRadius: '10px', fontSize: '14px', background: 'none', border: 'none', color: '#FF6B6B', cursor: 'pointer', textAlign: 'left' }}
               >
-                🚨 Report user
+                <AlertTriangle size={16} strokeWidth={2} /> Report user
               </button>
             ) : (
-              <div style={{ padding: '10px 12px', fontSize: '14px', color: '#555' }}>🚨 Already reported</div>
+              <div style={{ padding: '10px 12px', fontSize: '14px', color: '#555', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><AlertTriangle size={16} strokeWidth={2} /> Already reported</div>
             )}
           </div>
         )}

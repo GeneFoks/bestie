@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { Inbox, CheckCircle2, XCircle, PartyPopper, Users, MessageCircle, Sparkles, Hand, Trophy, Bell } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function NotificationBell({ userId }: { userId: string }) {
@@ -68,16 +69,16 @@ export default function NotificationBell({ userId }: { userId: string }) {
     return `${Math.floor(h / 24)}d ago`
   }
 
-  const typeIcon: Record<string, string> = {
-    booking_request: '📋',
-    booking_accepted: '✅',
-    booking_declined: '❌',
-    booking_completed: '🎉',
-    session_confirmed: '🤝',
-    new_message: '💬',
-    spark_received: '✨',
-    join_request: '👋',
-    join_accepted: '🎊',
+  const typeIcon: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
+    booking_request: Inbox,
+    booking_accepted: CheckCircle2,
+    booking_declined: XCircle,
+    booking_completed: PartyPopper,
+    session_confirmed: Users,
+    new_message: MessageCircle,
+    spark_received: Sparkles,
+    join_request: Hand,
+    join_accepted: Trophy,
   }
 
   return (
@@ -119,7 +120,14 @@ export default function NotificationBell({ userId }: { userId: string }) {
                 onClick={() => { markRead(n.id); if (n.link) window.location.href = n.link; setOpen(false) }}
                 style={{ display: 'flex', gap: '12px', padding: '12px 16px', cursor: n.link ? 'pointer' : 'default', background: n.read ? 'transparent' : 'rgba(212,175,55,0.05)', borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.15s' }}
               >
-                <span style={{ fontSize: '20px', flexShrink: 0, lineHeight: 1.3 }}>{typeIcon[n.type] || '🔔'}</span>
+                {(() => {
+                  const Icon = typeIcon[n.type] || Bell
+                  return (
+                    <span style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(212,175,55,0.12)', color: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Icon size={16} strokeWidth={2} />
+                    </span>
+                  )
+                })()}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: '13px', fontWeight: n.read ? 400 : 600, color: '#E8E0FF', marginBottom: '2px' }}>{n.title}</p>
                   {n.body && <p style={{ fontSize: '12px', color: '#9B93C0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.body}</p>}

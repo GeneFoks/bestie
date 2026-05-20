@@ -50,7 +50,10 @@
       "PowerShell([System.IO.File]::Exists\\(\"C:\\\\bestie\\\\package-lock.json\"\\))",
       "Bash(git checkout *)",
       "Bash(New-Item -Path \"C:\\\\bestie\\\\.claude\\\\worktrees\\\\determined-jones-650d27\\\\app\\\\reset-password\" -ItemType Directory -Force)",
-      "Bash(which gh *)"
+      "Bash(which gh *)",
+      "Bash(node -e \"const l = require\\('lucide-react'\\); console.log\\('Theater:', !!l.Theater, 'Mask:', !!l.Mask, 'Siren:', !!l.Siren, 'PartyPopper:', !!l.PartyPopper, 'Trophy:', !!l.Trophy\\);\")",
+      "PowerShell(node -e \"const l = require\\('lucide-react'\\); console.log\\('Theater:', !!l.Theater, 'Mask:', !!l.Mask, 'Siren:', !!l.Siren, 'PartyPopper:', !!l.PartyPopper, 'Trophy:', !!l.Trophy\\);\")",
+      "Bash(ls C:/bestie/.claude/worktrees/jolly-newton-aa6c9a/node_modules/lucide-react/dist/esm/icons/ 2>/dev/null | head -20; ls C:/bestie/node_modules/lucide-react/ 2>/dev/null)"
     ]
   }
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { Pencil } from 'lucide-react'
 
 export default function EditActivitiesLink({ profileUserId }: { profileUserId: string }) {
   const [isOwner, setIsOwner] = useState(false)
@@ -27,9 +28,12 @@ export default function EditActivitiesLink({ profileUserId }: { profileUserId: s
         borderRadius: '8px',
         background: 'rgba(212,175,55,0.08)',
         border: '1px solid rgba(212,175,55,0.2)',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '6px',
       }}
     >
-      ✏️ Edit
+      <Pencil size={12} strokeWidth={2} /> Edit
     </Link>
   )
 }
