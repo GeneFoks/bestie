@@ -392,7 +392,7 @@ export default function EditProfilePage() {
         {/* Activities */}
         <div style={sectionStyle}>
           <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF', marginBottom: '16px' }}>My Activities</h3>
-          {packages.length === 0 && <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '16px' }}>No activities yet.</p>}
+          {packages.length === 0 && <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '16px' }}>No activities added yet — pick what you love doing below to get started.</p>}
           {packages.map(pkg => (
             <div key={pkg.id} style={{ marginBottom: '8px' }}>
               {editingPkg === pkg.id ? (

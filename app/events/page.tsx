@@ -7,7 +7,8 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import ProfileNav from '@/components/ProfileNav'
 import BottomNav from '@/components/BottomNav'
-import { Users, UsersRound, Calendar, MapPin, Plus, ArrowUp } from 'lucide-react'
+import { Users, UsersRound, Calendar, MapPin, Plus, ArrowUp, Sparkles } from 'lucide-react'
+import { EmptyState } from '@/components/EmptyState'
 import { PageLoader } from '@/components/Loading'
 import { ActivityIcon } from '@/lib/activityIcons'
 
@@ -203,9 +204,12 @@ export default function EventsPage() {
                 </p>
 
                 {freePeople.length === 0 ? (
-                  <div style={{ padding: '24px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.10)', textAlign: 'center' }}>
-                    <p style={{ fontSize: '13px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>No one is free today yet — be the first <ArrowUp size={14} strokeWidth={2} /></p>
-                  </div>
+                  <EmptyState
+                    Icon={Sparkles}
+                    title="No one is free today yet"
+                    description="Be the first in your city — the moment you flip Free Today, others see you on Pulse and the map."
+                    accent="green"
+                  />
                 ) : (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {(cityFree.length > 0 ? cityFree : freePeople).slice(0, 8).map(u => (

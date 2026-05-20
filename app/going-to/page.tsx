@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
 import { ActivityIcon } from '@/lib/activityIcons'
+import { EmptyState } from '@/components/EmptyState'
+import { MapPin } from 'lucide-react'
 
 const ACTIVITY_GROUPS = [
   { label: '🏃 Active', activities: [
@@ -258,10 +260,12 @@ export default function GoingToPage() {
           </h3>
 
           {stories.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px 0', color: '#A99ECC' }}>
-              <p style={{ fontSize: '32px', marginBottom: '12px' }}>👀</p>
-              <p style={{ fontSize: '14px' }}>No one is out yet. Be the first!</p>
-            </div>
+            <EmptyState
+              Icon={MapPin}
+              title="Nobody's out yet"
+              description="Share what you're up to — others see it in their feed and may want to join."
+              accent="gold"
+            />
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {stories.map(story => {

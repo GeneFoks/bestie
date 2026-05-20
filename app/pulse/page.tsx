@@ -6,7 +6,8 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import ProfileNav from '@/components/ProfileNav'
 import { PageLoader } from '@/components/Loading'
-import { Globe, MapPin, Moon, PartyPopper } from 'lucide-react'
+import { Globe, MapPin, Moon, PartyPopper, Sparkles } from 'lucide-react'
+import { EmptyState } from '@/components/EmptyState'
 
 function isToday(ts: string | null): boolean {
   if (!ts) return false
@@ -126,7 +127,15 @@ export default function PulsePage() {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                   {cityFree.map(u => <FreePill key={u.id} user={u} />)}
                   {cityFree.length === 0 && (
-                    <p style={{ fontSize: '13px', color: '#A99ECC' }}>No one in your city yet — be the first!</p>
+                    <div style={{ width: '100%' }}>
+                      <EmptyState
+                        Icon={MapPin}
+                        title="Your city is quiet right now"
+                        description="Flip 'I'm free today' to be the first lit pin in your area."
+                        primaryCTA={{ label: 'Try Pulse →', href: '/pulse' }}
+                        accent="green"
+                      />
+                    </div>
                   )}
                 </div>
               </section>
@@ -146,11 +155,14 @@ export default function PulsePage() {
             )}
 
             {freeToday.length === 0 && (
-              <section style={{ marginBottom: '36px', padding: '32px', textAlign: 'center', borderRadius: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.10)' }}>
-                <div style={{ width: '44px', height: '44px', margin: '0 auto 8px', borderRadius: '14px', background: 'rgba(155,143,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Moon size={22} color="#9B7FFF" strokeWidth={2} />
-                </div>
-                <p style={{ fontSize: '14px', color: '#A99ECC' }}>No one is free today yet. Be the first!</p>
+              <section style={{ marginBottom: '36px' }}>
+                <EmptyState
+                  Icon={Sparkles}
+                  title="No Besties free yet today"
+                  description="Be the first to flip Free Today — you'll show up on the map for everyone nearby."
+                  primaryCTA={{ label: "I'm free today", href: '/dashboard' }}
+                  accent="green"
+                />
               </section>
             )}
 

@@ -8,6 +8,8 @@ import { supabase } from '@/lib/supabase'
 import CallButton from '@/components/CallButton'
 import { PageLoader } from '@/components/Loading'
 import { ActivityIcon } from '@/lib/activityIcons'
+import { EmptyState } from '@/components/EmptyState'
+import { Calendar } from 'lucide-react'
 
 export default function SessionsPage() {
   const router = useRouter()
@@ -172,12 +174,13 @@ export default function SessionsPage() {
         <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '32px' }}>{sessions.length} accepted {sessions.length === 1 ? 'session' : 'sessions'}</p>
 
         {sessions.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 0' }}>
-            <p style={{ fontSize: '48px', marginBottom: '16px' }}>📅</p>
-            <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#F0EAFF', marginBottom: '8px' }}>No sessions yet</h3>
-            <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '24px' }}>Accepted bookings will appear here</p>
-            <Link href="/browse" style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Browse Besties</Link>
-          </div>
+          <EmptyState
+            Icon={Calendar}
+            title="No sessions yet"
+            description="Book your first session with a Bestie — your meetup history lives here."
+            primaryCTA={{ label: 'Browse Besties', href: '/browse' }}
+            accent="gold"
+          />
         ) : (
           <>
             {needsConfirm.length > 0 && (

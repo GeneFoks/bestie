@@ -467,7 +467,7 @@ export default function DashboardPage() {
             {myCrews.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '24px 0' }}>
                 <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(155,127,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}><Users size={26} color="#9B7FFF" strokeWidth={1.6} /></div>
-                <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '16px' }}>You're not in any crew yet</p>
+                <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '16px', maxWidth: '280px', margin: '0 auto 16px', lineHeight: 1.5 }}>You're not in any crew yet — crews are little communities for shared vibes, meetups, and events.</p>
                 <Link href="/crews" style={{ fontSize: '13px', fontWeight: 600, padding: '8px 20px', borderRadius: '10px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Find a Crew</Link>
               </div>
             ) : (

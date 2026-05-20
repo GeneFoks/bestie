@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import CallButton from '@/components/CallButton'
 import { PageLoader } from '@/components/Loading'
 import { MessageCircle } from 'lucide-react'
+import { EmptyState } from '@/components/EmptyState'
 
 export default function MessagesPage() {
   const router = useRouter()
@@ -205,12 +206,15 @@ export default function MessagesPage() {
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {conversations.length === 0 ? (
-              <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-                <div style={{ width: '44px', height: '44px', margin: '0 auto 12px', borderRadius: '14px', background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <MessageCircle size={22} color="#D4AF37" strokeWidth={2} />
-                </div>
-                <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', marginBottom: '8px' }}>No messages yet</p>
-                <Link href="/browse" style={{ fontSize: '13px', fontWeight: 600, padding: '8px 16px', borderRadius: '10px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Browse Besties</Link>
+              <div style={{ padding: '20px' }}>
+                <EmptyState
+                  Icon={MessageCircle}
+                  title="Inbox is empty"
+                  description="Knock on someone's profile to start a conversation — they appear here once you match."
+                  primaryCTA={{ label: 'Browse Besties', href: '/browse' }}
+                  accent="gold"
+                  size="sm"
+                />
               </div>
             ) : conversations.map(conv => (
               <button key={conv.user.id} onClick={() => setActiveConv(conv)} style={{ width: '100%', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px', background: activeConv?.user.id === conv.user.id ? 'rgba(212,175,55,0.08)' : 'transparent', border: 'none', borderBottom: '1px solid #131323', cursor: 'pointer', textAlign: 'left' }}>

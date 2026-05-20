@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
 import { ActivityIcon } from '@/lib/activityIcons'
+import { EmptyState } from '@/components/EmptyState'
+import { Sparkles } from 'lucide-react'
 
 const ACTIVITY_GROUPS = [
   {
@@ -332,14 +334,13 @@ export default function ActivitiesPage() {
         )}
 
         {packages.length === 0 && !showForm ? (
-          <div style={{ textAlign: 'center', padding: '60px 0' }}>
-            <p style={{ fontSize: '48px', marginBottom: '16px' }}>🎯</p>
-            <h3 style={{ fontSize: '20px', fontWeight: 600, color: '#F0EAFF', marginBottom: '8px' }}>No activities yet</h3>
-            <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '24px' }}>Add your first activity so people can book you</p>
-            <button onClick={() => setShowForm(true)} style={{ padding: '12px 28px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer' }}>
-              + Add first activity
-            </button>
-          </div>
+          <EmptyState
+            Icon={Sparkles}
+            title="No activities yet"
+            description="Add what you love doing — Besties will find you by activity."
+            primaryCTA={{ label: 'Add my first activity', onClick: () => setShowForm(true) }}
+            accent="gold"
+          />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {packages.map(pkg => {

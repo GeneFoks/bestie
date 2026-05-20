@@ -13,7 +13,8 @@ import CrewTelegramLink from './CrewTelegramLink'
 import CrewKickButton from './CrewKickButton'
 import JoinRequestsPanel from './JoinRequestsPanel'
 import EventGoingButton from './EventGoingButton'
-import { Search, Lock, MessageCircle, Plus, Clock, MapPin, Flame, Zap, Trophy, Medal, Award } from 'lucide-react'
+import { Search, Lock, MessageCircle, Plus, Clock, MapPin, Flame, Zap, Trophy, Medal, Award, Users } from 'lucide-react'
+import { EmptyState } from '@/components/EmptyState'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -255,9 +256,13 @@ export default async function CrewPage({ params }) {
         <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginBottom: '16px' }}>Members</h2>
 
         {memberCount === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px', background: '#111120', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.10)' }}>
-            <p style={{ fontSize: '14px', color: '#A99ECC' }}>No members yet</p>
-          </div>
+          <EmptyState
+            Icon={Users}
+            title="First in the door"
+            description="Invite friends with the share link — they'll appear here as they join."
+            accent="gold"
+            size="sm"
+          />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {members.map(({ user, joined_at }, memberIdx) => {

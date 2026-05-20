@@ -53,7 +53,8 @@
       "Bash(which gh *)",
       "Bash(node -e \"const l = require\\('lucide-react'\\); console.log\\('Theater:', !!l.Theater, 'Mask:', !!l.Mask, 'Siren:', !!l.Siren, 'PartyPopper:', !!l.PartyPopper, 'Trophy:', !!l.Trophy\\);\")",
       "PowerShell(node -e \"const l = require\\('lucide-react'\\); console.log\\('Theater:', !!l.Theater, 'Mask:', !!l.Mask, 'Siren:', !!l.Siren, 'PartyPopper:', !!l.PartyPopper, 'Trophy:', !!l.Trophy\\);\")",
-      "Bash(ls C:/bestie/.claude/worktrees/jolly-newton-aa6c9a/node_modules/lucide-react/dist/esm/icons/ 2>/dev/null | head -20; ls C:/bestie/node_modules/lucide-react/ 2>/dev/null)"
+      "Bash(ls C:/bestie/.claude/worktrees/jolly-newton-aa6c9a/node_modules/lucide-react/dist/esm/icons/ 2>/dev/null | head -20; ls C:/bestie/node_modules/lucide-react/ 2>/dev/null)",
+      "Bash(npx --no-install tsc --noEmit)"
     ]
   }
 }

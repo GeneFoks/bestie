@@ -6,6 +6,8 @@ import ProfileNav from '@/components/ProfileNav'
 import EventActions from './EventActions'
 import DeleteEventButton from './DeleteEventButton'
 import ShareEventButton from '@/components/ShareEventButton'
+import { EmptyState } from '@/components/EmptyState'
+import { Users } from 'lucide-react'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -136,9 +138,12 @@ export default async function EventPage({ params }) {
         </h2>
 
         {attendeeCount === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px', background: '#111120', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.10)' }}>
-            <p style={{ fontSize: '14px', color: '#A99ECC' }}>No one yet — be the first</p>
-          </div>
+          <EmptyState
+            Icon={Users}
+            title="No one's joined yet"
+            description="Be the first to go — your name shows up here once you tap join."
+            accent="gold"
+          />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {attendees.map(({ user, joined_at }) => {

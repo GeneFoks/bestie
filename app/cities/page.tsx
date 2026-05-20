@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import ProfileNav from '@/components/ProfileNav'
 import { MapPin } from 'lucide-react'
+import { EmptyState } from '@/components/EmptyState'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -47,9 +48,13 @@ export default async function CitiesPage() {
         <p style={{ fontSize: '15px', color: '#A99ECC', marginBottom: '32px' }}>Top Besties, popular activities, and upcoming events near you.</p>
 
         {cities.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px', background: '#111120', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.10)' }}>
-            <p style={{ fontSize: '14px', color: '#A99ECC' }}>No cities yet — be the first to add yours in your profile.</p>
-          </div>
+          <EmptyState
+            Icon={MapPin}
+            title="No cities lit up yet"
+            description="Add your city to your profile — and others will see you on the map."
+            primaryCTA={{ label: 'Add my city', href: '/profile/edit' }}
+            accent="gold"
+          />
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
             {cities.map(({ city, count, country }) => (
