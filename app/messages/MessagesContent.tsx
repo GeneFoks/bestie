@@ -9,11 +9,13 @@ import CallButton from '@/components/CallButton'
 import { PageLoader } from '@/components/Loading'
 import { MessageCircle } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
+import { createNotification } from '@/lib/notifications'
 
 export default function MessagesPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [userId, setUserId] = useState(null)
+  const [myName, setMyName] = useState('')
   const [conversations, setConversations] = useState([])
   const [activeConv, setActiveConv] = useState(null)
   const [messages, setMessages] = useState([])
@@ -31,6 +33,9 @@ export default function MessagesPage() {
         if (!user) { router.push('/login'); return }
         setUserId(user.id)
         userIdRef.current = user.id
+        // Cache own display name for notification copy
+        const { data: me } = await supabase.from('users').select('full_name').eq('id', user.id).single()
+        setMyName(me?.full_name?.split(' ')[0] || 'Someone')
         await loadConversations(user.id)
       } catch (e) {
         console.error(e)
@@ -167,6 +172,14 @@ export default function MessagesPage() {
     if (data) {
       setMessages(m => m.some(x => x.id === data.id) ? m : [...m, data])
       await loadConversations(userId)
+      // Fire-and-forget notification to the recipient
+      createNotification({
+        userId: activeConv.user.id,
+        type: 'new_message',
+        title: `${myName || 'Someone'} sent you a message`,
+        body: text.length > 80 ? text.slice(0, 80) + '…' : text,
+        link: `/messages?to=${activeConv.user.username || activeConv.user.id}`,
+      }).catch(() => {})
     } else {
       // Restore message if failed
       setNewMessage(text)

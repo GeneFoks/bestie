@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Crown, Star } from 'lucide-react'
+import { createNotification } from '@/lib/notifications'
 
 type Props = {
   crewId: string
@@ -109,6 +110,16 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
       .from('crew_join_requests').insert({ crew_id: crewId, user_id: userId })
     if (err) { setError(err.message); setActing(false); return }
     setRequestStatus('pending')
+    // Notify the captain
+    const { data: me } = await supabase.from('users').select('full_name').eq('id', userId).single()
+    const myName = me?.full_name?.split(' ')[0] || 'Someone'
+    createNotification({
+      userId: captainId,
+      type: 'join_request',
+      title: `${myName} wants to join your crew`,
+      body: 'Tap to review the request',
+      link: `/crews/${crewSlug}`,
+    }).catch(() => {})
     setActing(false)
   }
 

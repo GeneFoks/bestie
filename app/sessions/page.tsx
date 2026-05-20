@@ -10,6 +10,8 @@ import { PageLoader } from '@/components/Loading'
 import { ActivityIcon } from '@/lib/activityIcons'
 import { EmptyState } from '@/components/EmptyState'
 import { Calendar } from 'lucide-react'
+import { createNotification } from '@/lib/notifications'
+import { celebrate } from '@/lib/celebrate'
 
 export default function SessionsPage() {
   const router = useRouter()
@@ -91,7 +93,38 @@ export default function SessionsPage() {
   const confirmSession = async (booking) => {
     const isSeeker = booking.seeker_id === userId
     const field = isSeeker ? 'confirmed_by_seeker' : 'confirmed_by_provider'
+    const theirConfirm = isSeeker ? booking.confirmed_by_provider : booking.confirmed_by_seeker
     await supabase.from('bookings').update({ [field]: true }).eq('id', booking.id)
+
+    const partnerId = isSeeker ? booking.provider_id : booking.seeker_id
+    const partner = isSeeker ? booking.provider : booking.seeker
+    const partnerName = partner?.full_name?.split(' ')[0] || 'Bestie'
+
+    if (theirConfirm) {
+      // Both sides confirmed — this is the "session happened" moment for both
+      const { data: me } = await supabase.from('users').select('full_name').eq('id', userId).single()
+      const myName = me?.full_name?.split(' ')[0] || 'Bestie'
+      createNotification({
+        userId: partnerId,
+        type: 'session_confirmed',
+        title: `${myName} confirmed your session`,
+        body: 'Tap to leave a memory and Sparks',
+        link: `/sessions/${booking.id}/memory`,
+      }).catch(() => {})
+      celebrate({ count: 36, spread: 70 })
+    } else {
+      // Only I confirmed — nudge the partner to confirm too
+      const { data: me } = await supabase.from('users').select('full_name').eq('id', userId).single()
+      const myName = me?.full_name?.split(' ')[0] || 'Bestie'
+      createNotification({
+        userId: partnerId,
+        type: 'session_confirmed',
+        title: `${myName} confirmed your session`,
+        body: 'Confirm on your end to lock it in',
+        link: '/sessions',
+      }).catch(() => {})
+    }
+
     await loadSessions(userId)
   }
 
