@@ -7,65 +7,36 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import ProviderCard from '@/components/ProviderCard'
 import MatchModal from '@/components/MatchModal'
+import {
+  Zap, Gamepad2, BookOpen, Palette, Heart, Moon, Coffee,
+  IdCard, Trophy, Flame, CalendarDays, Bell, Users, Map, Globe,
+  Share2, Camera, Sparkles, ShieldCheck, Search, UserCheck,
+  Target, Star, Link2, Network, BarChart2, Handshake,
+} from 'lucide-react'
 
 const ACTIVITY_GROUPS = [
-  {
-    id: 'active_outdoors',
-    emoji: '🏃',
-    label: 'Active & Outdoors',
-    types: ['hiking', 'running', 'gym_partner', 'cycling', 'swimming', 'cold_plunge', 'yoga', 'martial_arts', 'climbing', 'trail_crew', 'fishing_crew', 'meet_irl'],
-  },
-  {
-    id: 'fun_social',
-    emoji: '🎮',
-    label: 'Fun & Social',
-    types: ['game_night', 'movie_night', 'night_out', 'bar_hopping', 'karaoke', 'festival_crew', 'travel_buddy', 'wing_person', 'comedy_show', 'dance_crew', 'epic_journey', 'watch_together', 'meet_irl'],
-  },
-  {
-    id: 'mind_growth',
-    emoji: '🧠',
-    label: 'Mind & Growth',
-    types: ['deep_chat', 'debate_club', 'book_club', 'language_exchange', 'career_talk', 'money_talk', 'journaling', 'accountability_partner', 'storytelling_night', 'real_talk', 'vibe_call'],
-  },
-  {
-    id: 'creative_skills',
-    emoji: '🎨',
-    label: 'Creative & Skills',
-    types: ['music_lesson', 'art_together', 'photography_walk', 'cooking_together', 'dance', 'improv_acting', 'writing_club'],
-  },
-  {
-    id: 'emotional_support',
-    emoji: '🫂',
-    label: 'Emotional & Support',
-    types: ['vent_session', '3am_talk', 'hype_person', 'sobriety_buddy', 'silence_buddy', 'grief_support', 'ugly_cry_buddy', 'deep_chat', 'real_talk'],
-  },
-  {
-    id: 'spiritual_sacred',
-    emoji: '🔮',
-    label: 'Spiritual & Sacred',
-    types: ['meditation_circle', 'breathwork', 'sound_healing', 'cacao_ceremony', 'tarot', 'retreat_buddy', 'psychedelic_integration', 'nature_ritual', 'lucid_dream_club', 'yoga'],
-  },
-  {
-    id: 'chill_everyday',
-    emoji: '☕',
-    label: 'Chill & Everyday',
-    types: ['coffee_chat', 'digital_detox_walk', 'skincare_night', 'smoke_buddy', 'astrology_session', 'coworking', 'errand_buddy', 'meet_irl', 'walk_meet', 'vibe_call'],
-  },
+  { id: 'active_outdoors', Icon: Zap, label: 'Active & Outdoors', types: ['hiking', 'running', 'gym_partner', 'cycling', 'swimming', 'cold_plunge', 'yoga', 'martial_arts', 'climbing', 'trail_crew', 'fishing_crew', 'meet_irl'] },
+  { id: 'fun_social', Icon: Gamepad2, label: 'Fun & Social', types: ['game_night', 'movie_night', 'night_out', 'bar_hopping', 'karaoke', 'festival_crew', 'travel_buddy', 'wing_person', 'comedy_show', 'dance_crew', 'epic_journey', 'watch_together', 'meet_irl'] },
+  { id: 'mind_growth', Icon: BookOpen, label: 'Mind & Growth', types: ['deep_chat', 'debate_club', 'book_club', 'language_exchange', 'career_talk', 'money_talk', 'journaling', 'accountability_partner', 'storytelling_night', 'real_talk', 'vibe_call'] },
+  { id: 'creative_skills', Icon: Palette, label: 'Creative & Skills', types: ['music_lesson', 'art_together', 'photography_walk', 'cooking_together', 'dance', 'improv_acting', 'writing_club'] },
+  { id: 'emotional_support', Icon: Heart, label: 'Emotional & Support', types: ['vent_session', '3am_talk', 'hype_person', 'sobriety_buddy', 'silence_buddy', 'grief_support', 'ugly_cry_buddy', 'deep_chat', 'real_talk'] },
+  { id: 'spiritual_sacred', Icon: Moon, label: 'Spiritual & Sacred', types: ['meditation_circle', 'breathwork', 'sound_healing', 'cacao_ceremony', 'tarot', 'retreat_buddy', 'psychedelic_integration', 'nature_ritual', 'lucid_dream_club', 'yoga'] },
+  { id: 'chill_everyday', Icon: Coffee, label: 'Chill & Everyday', types: ['coffee_chat', 'digital_detox_walk', 'skincare_night', 'smoke_buddy', 'astrology_session', 'coworking', 'errand_buddy', 'meet_irl', 'walk_meet', 'vibe_call'] },
 ]
 
 const FEATURES = [
-  { emoji: '🪪', title: 'Social Passport', desc: 'Your verified profile: Bestie Score, session count, sparks, badges, streak, availability. One link to share it all.' },
-  { emoji: '🏆', title: 'Bestie Score & Badges', desc: 'Score grows with every confirmed session, spark, and week of consistency. Earn badges — Top 1%, Session King, streak milestones, Rising Star.' },
-  { emoji: '🔥', title: 'Weekly Streak', desc: 'Meet someone every week and your streak grows. 12-week streaks unlock the rarest badges and a bonus on your score.' },
-  { emoji: '📅', title: 'Availability Calendar', desc: 'Set your available days and time slots. Visible on your passport so people know the best time to reach out — no guessing.' },
-  { emoji: '👋', title: 'Knock', desc: 'Send an anonymous signal of interest. If they knock back — you match and can connect. No awkward cold messages.' },
-  { emoji: '🎉', title: 'Group Sessions', desc: 'Host open meetups for 3–20 people. Set a date, location, and max size. Anyone can join, share, or leave.' },
-  { emoji: '🗺️', title: 'Nearby Map', desc: 'See Besties near you on a live map. Pins show their session tier — gold for veterans, white glow for the most active.' },
-  { emoji: '🌍', title: 'City Pulse', desc: 'Live feed of who\'s free today, upcoming group sessions, and what\'s happening in your city right now.' },
-  { emoji: '🕸️', title: 'Connection Graph', desc: 'A live web of every real connection made on Bestie. Clusters form naturally — your crew, your city, your world.' },
-  { emoji: '💾', title: 'Session Memories', desc: 'After every session, record your mood, what you did, and add a photo. Your passport becomes a living story of real moments.' },
-  { emoji: '✨', title: 'Sparks', desc: '30 rare tokens you earn at signup. Give up to 3 per person, 1 per type. The rarest signal of real trust.' },
-  { emoji: '🔒', title: 'Block & Report', desc: 'Session-gated safety tools — only people who\'ve actually met can block or report. Keeps the community honest.' },
+  { Icon: IdCard,      title: 'Social Passport',       desc: 'Your verified profile: Bestie Score, session count, sparks, badges, streak, availability. One link to share it all.' },
+  { Icon: Trophy,      title: 'Bestie Score & Badges', desc: 'Score grows with every confirmed session, spark, and week of consistency. Earn badges — Top 1%, Session King, streak milestones, Rising Star.' },
+  { Icon: Flame,       title: 'Weekly Streak',         desc: 'Meet someone every week and your streak grows. 12-week streaks unlock the rarest badges and a bonus on your score.' },
+  { Icon: CalendarDays,title: 'Availability Calendar', desc: 'Set your available days and time slots. Visible on your passport so people know the best time to reach out — no guessing.' },
+  { Icon: Bell,        title: 'Knock',                 desc: 'Send an anonymous signal of interest. If they knock back — you match and can connect. No awkward cold messages.' },
+  { Icon: Users,       title: 'Group Sessions',        desc: 'Host open meetups for 3–20 people. Set a date, location, and max size. Anyone can join, share, or leave.' },
+  { Icon: Map,         title: 'Nearby Map',            desc: 'See Besties near you on a live map. Pins show their session tier — gold for veterans, white glow for the most active.' },
+  { Icon: Globe,       title: 'City Pulse',            desc: "Live feed of who's free today, upcoming group sessions, and what's happening in your city right now." },
+  { Icon: Network,     title: 'Connection Graph',      desc: 'A live web of every real connection made on Bestie. Clusters form naturally — your crew, your city, your world.' },
+  { Icon: Camera,      title: 'Session Memories',      desc: 'After every session, record your mood, what you did, and add a photo. Your passport becomes a living story of real moments.' },
+  { Icon: Sparkles,    title: 'Sparks',                desc: '30 rare tokens you earn at signup. Give up to 3 per person, 1 per type. The rarest signal of real trust.' },
+  { Icon: ShieldCheck, title: 'Block & Report',        desc: 'Session-gated safety tools — only people who\'ve actually met can block or report. Keeps the community honest.' },
 ]
 
 // Scroll reveal hook
@@ -239,8 +210,8 @@ export default function HomePage() {
         .group-btn:hover::after { opacity: 1; }
         .group-btn.active { background: rgba(212,175,55,0.1); border-color: rgba(212,175,55,0.4); box-shadow: 0 0 24px rgba(212,175,55,0.08); }
         .group-btn.active::after { opacity: 1; }
-        .group-btn .emoji { font-size: 28px; transition: transform 0.22s; }
-        .group-btn:hover .emoji { transform: scale(1.15); }
+        .group-btn .group-icon { transition: transform 0.22s; }
+        .group-btn:hover .group-icon { transform: scale(1.15); }
 
         /* ── CTA Button ── */
         .btn-gold {
@@ -354,7 +325,7 @@ export default function HomePage() {
 
           {/* Search bar */}
           <div className="hero-search" style={{ display: 'flex', alignItems: 'center', gap: '8px', maxWidth: '540px', margin: '0 auto 14px', padding: '7px', background: 'rgba(15,15,30,0.8)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', backdropFilter: 'blur(12px)', boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }}>
-            <span style={{ paddingLeft: '10px', fontSize: '18px', flexShrink: 0 }}>🔍</span>
+            <span style={{ paddingLeft: '10px', flexShrink: 0, display: 'flex', alignItems: 'center' }}><Search size={17} color="#A99ECC" strokeWidth={2} /></span>
             <input
               type="text"
               placeholder="Search by name, activity, or city..."
@@ -391,7 +362,7 @@ export default function HomePage() {
                   className={`group-btn ${active ? 'active' : ''}`}
                   onClick={() => handleGroupClick(group)}
                 >
-                  <span className="emoji">{group.emoji}</span>
+                  <span className="group-icon"><group.Icon size={22} color={active ? '#D4AF37' : '#A99ECC'} strokeWidth={1.8} /></span>
                   <span style={{ fontSize: '11px', fontWeight: 600, color: active ? '#D4AF37' : '#A99ECC', textAlign: 'center', lineHeight: 1.3 }}>{group.label}</span>
                 </button>
               )
@@ -401,8 +372,9 @@ export default function HomePage() {
           {activeGroup && (
             <div style={{ marginTop: '36px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF' }}>
-                  {activeGroup.emoji} {activeGroup.label}
+                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <activeGroup.Icon size={20} color="#D4AF37" strokeWidth={1.8} />
+                  {activeGroup.label}
                 </h2>
                 <Link href="/browse" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none', transition: 'opacity 0.2s' }} onMouseEnter={e=>e.target.style.opacity='.7'} onMouseLeave={e=>e.target.style.opacity='1'}>See all →</Link>
               </div>
@@ -481,16 +453,16 @@ export default function HomePage() {
             </div>
             <div className="how-grid">
               {[
-                { num: '01', icon: '🪪', title: 'Build your Social Passport', desc: 'Add your bio, photo, city, activities, and set your weekly availability. Take the Bestie Type quiz — your energy, mind, and vibe type appear on your passport and power the compatibility engine.' },
-                { num: '02', icon: '🔍', title: 'Discover your people', desc: 'Browse with type compatibility, explore the Nearby Map, check City Pulse for who\'s free today, or send a Knock to someone interesting — an anonymous signal that only reveals your identity on a mutual match.' },
-                { num: '03', icon: '🤝', title: 'Meet IRL', desc: 'Book a 1-on-1 session, join a Group Session hosted by someone in your city, or flip "I\'m free today" on Pulse for spontaneous meetups. Show up — that\'s all it takes.' },
-                { num: '04', icon: '📖', title: 'Build your story', desc: 'Both sides confirm the session and rate each other. Record a memory — mood, note, photo. Give Sparks. Your streak grows, badges unlock, your passport becomes proof of a life well lived.' },
+                { num: '01', Icon: IdCard,    title: 'Build your Social Passport', desc: 'Add your bio, photo, city, activities, and set your weekly availability. Take the Bestie Type quiz — your energy, mind, and vibe type appear on your passport and power the compatibility engine.' },
+                { num: '02', Icon: Search,    title: 'Discover your people', desc: 'Browse with type compatibility, explore the Nearby Map, check City Pulse for who\'s free today, or send a Knock to someone interesting — an anonymous signal that only reveals your identity on a mutual match.' },
+                { num: '03', Icon: UserCheck, title: 'Meet IRL', desc: 'Book a 1-on-1 session, join a Group Session hosted by someone in your city, or flip "I\'m free today" on Pulse for spontaneous meetups. Show up — that\'s all it takes.' },
+                { num: '04', Icon: Camera,    title: 'Build your story', desc: 'Both sides confirm the session and rate each other. Record a memory — mood, note, photo. Give Sparks. Your streak grows, badges unlock, your passport becomes proof of a life well lived.' },
               ].map((step, idx) => (
                 <div key={step.num} className={`how-card reveal-delay-${idx + 1}`}>
-                  {/* Big step number */}
                   <div style={{ fontSize: '52px', fontWeight: 800, color: 'rgba(212,175,55,0.08)', fontFamily: 'DM Serif Display, serif', lineHeight: 1, marginBottom: '-8px' }}>{step.num}</div>
-                  {/* Icon with pill background */}
-                  <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)', fontSize: '24px', margin: '10px 0 14px' }}>{step.icon}</div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)', margin: '10px 0 14px' }}>
+                    <step.Icon size={22} color="#D4AF37" strokeWidth={1.6} />
+                  </div>
                   <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '17px', fontWeight: 700, color: '#F0EAFF', marginBottom: '10px' }}>{step.title}</h3>
                   <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.75 }}>{step.desc}</p>
                 </div>
@@ -510,7 +482,9 @@ export default function HomePage() {
           <div className="features-grid">
             {FEATURES.map((f) => (
               <div key={f.title} className="glass-card" style={{ padding: '22px' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.12)', fontSize: '22px', marginBottom: '14px' }}>{f.emoji}</div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.12)', marginBottom: '14px' }}>
+                  <f.Icon size={20} color="#D4AF37" strokeWidth={1.6} />
+                </div>
                 <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '16px', fontWeight: 700, color: '#F0EAFF', marginBottom: '7px' }}>{f.title}</h3>
                 <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.65 }}>{f.desc}</p>
               </div>
@@ -623,13 +597,15 @@ export default function HomePage() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '28px' }}>
                   {[
-                    { icon: '🔗', title: 'Auto-built from sessions', desc: 'As soon as both sides confirm a meetup — the edge appears on the graph. Zero clicks needed.' },
-                    { icon: '🔍', title: 'Search by name', desc: 'Type anyone\'s name to find their node. See who they\'ve met and how you\'re connected.' },
-                    { icon: '🕸️', title: 'See 2nd-degree connections', desc: 'Friend-of-a-friend visibility. Crews form clusters. Your city becomes a real social map.' },
-                    { icon: '📏', title: 'Edge thickness = trust', desc: 'The more sessions two people have had — the thicker and brighter their connection line.' },
+                    { Icon: Link2,    title: 'Auto-built from sessions',    desc: 'As soon as both sides confirm a meetup — the edge appears on the graph. Zero clicks needed.' },
+                    { Icon: Search,   title: 'Search by name',              desc: 'Type anyone\'s name to find their node. See who they\'ve met and how you\'re connected.' },
+                    { Icon: Network,  title: 'See 2nd-degree connections',  desc: 'Friend-of-a-friend visibility. Crews form clusters. Your city becomes a real social map.' },
+                    { Icon: BarChart2,title: 'Edge thickness = trust',      desc: 'The more sessions two people have had — the thicker and brighter their connection line.' },
                   ].map(item => (
                     <div key={item.title} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                      <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(155,147,192,0.08)', border: '1px solid rgba(155,147,192,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0, marginTop: '1px' }}>{item.icon}</div>
+                      <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(155,147,192,0.08)', border: '1px solid rgba(155,147,192,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>
+                        <item.Icon size={16} color="#A99ECC" strokeWidth={1.6} />
+                      </div>
                       <div>
                         <p style={{ fontSize: '13px', fontWeight: 700, color: '#F0EAFF', marginBottom: '2px' }}>{item.title}</p>
                         <p style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.6 }}>{item.desc}</p>
@@ -657,13 +633,15 @@ export default function HomePage() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '36px' }}>
             {[
-              { emoji: '🎯', title: 'Create or join', desc: 'Public crews are open to anyone. Private crews require a request or a captain\'s invite link — it bypasses the queue instantly.' },
-              { emoji: '📅', title: 'Run crew events', desc: 'Captains post events visible to all members. New events show up as notifications on your dashboard.' },
-              { emoji: '⭐', title: 'Crew Rating', desc: 'Members rate their crew 1–5 stars. The average is shown on the crew card. Highly-rated crews rank higher in the public listings.' },
-              { emoji: '🏆', title: 'Crew leaderboard', desc: 'Crews are ranked by rating and size. A great vibe, active events, and happy members push your crew up the charts.' },
+              { Icon: Target,      title: 'Create or join',    desc: 'Public crews are open to anyone. Private crews require a request or a captain\'s invite link — it bypasses the queue instantly.' },
+              { Icon: CalendarDays,title: 'Run crew events',   desc: 'Captains post events visible to all members. New events show up as notifications on your dashboard.' },
+              { Icon: Star,        title: 'Crew Rating',       desc: 'Members rate their crew 1–5 stars. The average is shown on the crew card. Highly-rated crews rank higher in the public listings.' },
+              { Icon: Trophy,      title: 'Crew leaderboard',  desc: 'Crews are ranked by rating and size. A great vibe, active events, and happy members push your crew up the charts.' },
             ].map(f => (
               <div key={f.title} className="glass-card" style={{ padding: '22px' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.12)', fontSize: '22px', marginBottom: '14px' }}>{f.emoji}</div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.12)', marginBottom: '14px' }}>
+                  <f.Icon size={20} color="#D4AF37" strokeWidth={1.6} />
+                </div>
                 <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '16px', fontWeight: 700, color: '#F0EAFF', marginBottom: '7px' }}>{f.title}</h3>
                 <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.65 }}>{f.desc}</p>
               </div>
