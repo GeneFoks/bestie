@@ -163,7 +163,9 @@ export default function OnboardingPage() {
       })
     }
 
-    router.push('/dashboard')
+    // Send new users straight into the Bestie Type quiz — the quiz page itself
+    // has a "Skip for now" exit to dashboard, so this isn't a forced flow.
+    router.push('/bestie-type')
   }
 
   const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
@@ -296,7 +298,7 @@ export default function OnboardingPage() {
           ) : <div />}
           <div style={{ display: 'flex', gap: '10px' }}>
             {step === 4 && (
-              <button onClick={() => router.push('/dashboard')} style={{ fontSize: '14px', color: '#A99ECC', background: 'none', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer' }}>Skip</button>
+              <button onClick={() => router.push('/bestie-type')} style={{ fontSize: '14px', color: '#A99ECC', background: 'none', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Skip</button>
             )}
             {step < 4 ? (
               <button onClick={() => setStep(s => s + 1)} disabled={step === 1 && !form.full_name} style={{ padding: '12px 28px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer', opacity: (step === 1 && !form.full_name) ? 0.5 : 1 }}>
