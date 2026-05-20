@@ -14,6 +14,7 @@ import {
   UsersRound, Globe, Network, Search, Zap, Settings, Share2,
   TrendingUp, Hand, Star, Crown, PartyPopper, Target,
 } from 'lucide-react'
+import { buzz, celebrate } from '@/lib/celebrate'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -183,9 +184,13 @@ export default function DashboardPage() {
     if (iAmFree) {
       await supabase.from('users').update({ free_today_at: null }).eq('id', user.id)
       setIAmFree(false)
+      buzz('tap')
     } else {
       await supabase.from('users').update({ free_today_at: new Date().toISOString() }).eq('id', user.id)
       setIAmFree(true)
+      buzz('success')
+      // Tiny celebratory burst — first time today
+      celebrate({ count: 18, spread: 50, origin: { x: 0.5, y: 0.25 } })
     }
     setTogglingFree(false)
   }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Hand, Sparkles } from 'lucide-react'
+import { celebrateMatch, buzz } from '@/lib/celebrate'
 
 const iconStyle: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: '6px' }
 
@@ -40,9 +41,15 @@ export default function KnockButton({ profileId }: { profileId: string }) {
 
   const knock = async () => {
     setActing(true)
+    buzz('tap')
     const { data } = await supabase.rpc('send_knock', { p_receiver_id: profileId })
-    if (data === 'matched') setStatus('matched')
-    else if (data === 'sent') setStatus('sent')
+    if (data === 'matched') {
+      setStatus('matched')
+      celebrateMatch()
+    } else if (data === 'sent') {
+      setStatus('sent')
+      buzz('success')
+    }
     setActing(false)
   }
 
