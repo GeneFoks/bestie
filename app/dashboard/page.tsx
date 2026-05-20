@@ -33,6 +33,7 @@ export default function DashboardPage() {
   const [pendingMemories, setPendingMemories] = useState<any[]>([])
   const [iAmFree, setIAmFree] = useState(false)
   const [togglingFree, setTogglingFree] = useState(false)
+  const [freeInCityCount, setFreeInCityCount] = useState(0)
 
   useEffect(() => {
     const getUser = async () => {
@@ -68,6 +69,18 @@ export default function DashboardPage() {
 
       const isToday = (ts: string | null) => ts && new Date(ts).toDateString() === new Date().toDateString()
       if (isToday(data?.free_today_at)) setIAmFree(true)
+
+      // Count other Besties free today in the user's city (social proof for Free Today)
+      if (data?.city) {
+        const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
+        const { count: freeCount } = await supabase
+          .from('users')
+          .select('id', { count: 'exact', head: true })
+          .ilike('city', `%${data.city}%`)
+          .gte('free_today_at', todayStart.toISOString())
+          .neq('id', session.user.id)
+        setFreeInCityCount(freeCount || 0)
+      }
 
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
 
@@ -235,6 +248,106 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* ─────────── HERO ZONE (single primary action, context-aware) ─────────── */}
+        {(() => {
+          const showBestieType = !profile?.bestie_type_completed
+          const showKnocks = !showBestieType && pendingKnocks.length > 0
+          const showMemories = !showBestieType && !showKnocks && pendingMemories.length > 0
+          const showFreeToday = !showBestieType && !showKnocks && !showMemories
+
+          if (showBestieType) {
+            return (
+              <Link href="/bestie-type" style={{ display: 'block', marginBottom: '20px', padding: '28px 28px', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(155,127,255,0.10) 100%)', border: '1px solid rgba(212,175,55,0.30)', textDecoration: 'none', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '180px', height: '180px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%)', pointerEvents: 'none' }} />
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                  <span style={{ width: '64px', height: '64px', borderRadius: '18px', background: 'rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Sparkles size={30} color="#D4AF37" strokeWidth={1.6} /></span>
+                  <div style={{ flex: 1, minWidth: '200px' }}>
+                    <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#D4AF37', marginBottom: '4px' }}>START HERE</p>
+                    <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginBottom: '4px', lineHeight: 1.2 }}>Discover your Bestie Type</h2>
+                    <p style={{ fontSize: '13px', color: '#A99ECC' }}>12 questions — unlocks compatibility matching, shows on your passport</p>
+                  </div>
+                  <span style={{ padding: '12px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', whiteSpace: 'nowrap', flexShrink: 0 }}>Take the quiz →</span>
+                </div>
+              </Link>
+            )
+          }
+
+          if (showKnocks) {
+            const first = pendingKnocks.slice(0, 3)
+            return (
+              <Link href={`/${first[0].sender?.username}`} style={{ display: 'block', marginBottom: '20px', padding: '24px 28px', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(212,175,55,0.14) 0%, rgba(212,175,55,0.06) 100%)', border: '1px solid rgba(212,175,55,0.30)', textDecoration: 'none', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: '-30px', right: '-30px', width: '160px', height: '160px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.16) 0%, transparent 70%)', pointerEvents: 'none' }} />
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '18px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', flexShrink: 0 }}>
+                    {first.map((k: any, i: number) => (
+                      <div key={k.id} style={{ width: '50px', height: '50px', borderRadius: '14px', overflow: 'hidden', background: '#1A1A2E', border: '2px solid #131323', marginLeft: i === 0 ? 0 : '-12px', flexShrink: 0 }}>
+                        {k.sender?.avatar_url
+                          ? <img src={k.sender.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: 700, color: '#D4AF37' }}>{k.sender?.full_name?.[0]}</div>
+                        }
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ flex: 1, minWidth: '160px' }}>
+                    <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#D4AF37', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}><Hand size={13} strokeWidth={2} /> NEW KNOCKS</p>
+                    <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', marginBottom: '2px', lineHeight: 1.2 }}>{pendingKnocks.length === 1 ? `${pendingKnocks[0].sender?.full_name?.split(' ')[0]} knocked` : `${pendingKnocks.length} people knocked`}</h2>
+                    <p style={{ fontSize: '13px', color: '#A99ECC' }}>Knock back to reveal who you matched with</p>
+                  </div>
+                  <span style={{ padding: '12px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', whiteSpace: 'nowrap', flexShrink: 0 }}>View →</span>
+                </div>
+              </Link>
+            )
+          }
+
+          if (showMemories) {
+            const first = pendingMemories[0]
+            return (
+              <Link href={`/sessions/${first.id}/memory`} style={{ display: 'block', marginBottom: '20px', padding: '24px 28px', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(155,127,255,0.14) 0%, rgba(155,127,255,0.06) 100%)', border: '1px solid rgba(155,127,255,0.30)', textDecoration: 'none', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: '-30px', right: '-30px', width: '160px', height: '160px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(155,127,255,0.16) 0%, transparent 70%)', pointerEvents: 'none' }} />
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '18px', flexWrap: 'wrap' }}>
+                  <span style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(155,127,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Sparkles size={26} color="#9B7FFF" strokeWidth={1.6} /></span>
+                  <div style={{ flex: 1, minWidth: '180px' }}>
+                    <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#9B7FFF', marginBottom: '4px' }}>HOW DID IT GO?</p>
+                    <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', marginBottom: '2px', lineHeight: 1.2 }}>Record your session with {first.partner?.full_name?.split(' ')[0] || 'someone'}</h2>
+                    <p style={{ fontSize: '13px', color: '#A99ECC' }}>Mood, note, photo — it lives on your passport</p>
+                  </div>
+                  <span style={{ padding: '12px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'rgba(155,127,255,0.2)', border: '1px solid rgba(155,127,255,0.4)', color: '#9B7FFF', whiteSpace: 'nowrap', flexShrink: 0 }}>Record →</span>
+                </div>
+              </Link>
+            )
+          }
+
+          // Free Today as hero (default)
+          if (showFreeToday) {
+            return (
+              <div style={{ marginBottom: '20px', padding: '28px', borderRadius: '24px', background: iAmFree ? 'linear-gradient(135deg, rgba(52,211,153,0.12) 0%, rgba(52,211,153,0.04) 100%)' : 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(212,175,55,0.04) 100%)', border: iAmFree ? '1px solid rgba(52,211,153,0.30)' : '1px solid rgba(212,175,55,0.20)', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '180px', height: '180px', borderRadius: '50%', background: iAmFree ? 'radial-gradient(circle, rgba(52,211,153,0.16) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(212,175,55,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                  <span style={{ width: '64px', height: '64px', borderRadius: '50%', background: iAmFree ? 'rgba(52,211,153,0.18)' : 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
+                    <span style={{ display: 'inline-block', width: '20px', height: '20px', borderRadius: '50%', background: iAmFree ? '#34D399' : 'transparent', border: iAmFree ? 'none' : '3px solid #A99ECC', boxShadow: iAmFree ? '0 0 20px rgba(52,211,153,0.7)' : 'none' }} />
+                    {iAmFree && <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '2px solid rgba(52,211,153,0.4)', animation: 'pulse-free 2s ease-out infinite' }} />}
+                  </span>
+                  <div style={{ flex: 1, minWidth: '180px' }}>
+                    <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: iAmFree ? '#34D399' : '#D4AF37', marginBottom: '4px' }}>{iAmFree ? "YOU'RE LIVE TODAY" : 'SPONTANEOUS MEETUPS'}</p>
+                    <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginBottom: '4px', lineHeight: 1.2 }}>{iAmFree ? 'Visible to Besties nearby' : 'Free for a meetup today?'}</h2>
+                    <p style={{ fontSize: '13px', color: '#A99ECC' }}>
+                      {freeInCityCount > 0
+                        ? <><span style={{ color: '#34D399', fontWeight: 700 }}>{freeInCityCount}</span> {freeInCityCount === 1 ? 'Bestie is' : 'Besties are'} free{profile?.city ? ` in ${profile.city}` : ''} right now</>
+                        : (profile?.city ? `Be the first in ${profile.city} today — others will see you on Pulse` : 'Let others know you\'re up for a meetup')
+                      }
+                    </p>
+                  </div>
+                  <button onClick={toggleFree} disabled={togglingFree} style={{ padding: '14px 28px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.12)' : 'linear-gradient(135deg, #34D399 0%, #2AAA75 100%)', border: iAmFree ? '1px solid rgba(255,107,53,0.35)' : 'none', color: iAmFree ? '#FF6B35' : '#09090F', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: 'Plus Jakarta Sans, sans-serif', boxShadow: iAmFree ? 'none' : '0 4px 16px rgba(52,211,153,0.25)' }}>
+                    {togglingFree ? '…' : iAmFree ? 'Turn off' : "I'm free!"}
+                  </button>
+                </div>
+                <style>{`@keyframes pulse-free { 0% { transform: scale(1); opacity: 1 } 100% { transform: scale(1.8); opacity: 0 } }`}</style>
+              </div>
+            )
+          }
+          return null
+        })()}
+
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', marginBottom: '24px' }}>
           <div style={{ background: '#111120', border: `1px solid ${scoreColor}25`, borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
@@ -263,22 +376,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Bestie Type banner */}
-        {!profile?.bestie_type_completed && (
-          <div style={{ marginBottom: '24px', background: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(155,143,255,0.08) 100%)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: '20px', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <span style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Sparkles size={22} color="#D4AF37" strokeWidth={1.8} /></span>
-              <div>
-                <p style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF', marginBottom: '2px' }}>Discover your Bestie Type</p>
-                <p style={{ fontSize: '13px', color: '#A99ECC' }}>12 questions · Energy · Mind · Vibe · shows on your passport</p>
-              </div>
-            </div>
-            <Link href="/bestie-type" style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-              Take the test →
-            </Link>
-          </div>
-        )}
-
         {/* Bestie Type result */}
         {profile?.bestie_type_completed && (
           <div style={{ marginBottom: '24px', background: '#111120', border: '1px solid rgba(155,143,255,0.25)', borderRadius: '20px', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
@@ -297,22 +394,29 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Free Today toggle */}
-        <div style={{ marginBottom: '20px', padding: '16px 20px', borderRadius: '16px', background: iAmFree ? 'rgba(57,255,20,0.06)' : '#111120', border: iAmFree ? '1px solid rgba(57,255,20,0.25)' : '1px solid rgba(255,255,255,0.11)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ display: 'inline-flex', width: '12px', height: '12px', borderRadius: '50%', background: iAmFree ? '#34D399' : 'transparent', border: iAmFree ? 'none' : '2px solid #A99ECC', boxShadow: iAmFree ? '0 0 12px rgba(52,211,153,0.7)' : 'none' }} />
-            <div>
-              <p style={{ fontSize: '14px', fontWeight: 700, color: iAmFree ? '#34D399' : '#F0EAFF' }}>{iAmFree ? 'You\'re free today' : 'Free today?'}</p>
-              <p style={{ fontSize: '12px', color: '#A99ECC' }}>{iAmFree ? 'Visible on Pulse & Map' : 'Let others know you\'re up for a meetup'}</p>
+        {/* Compact Free Today — only shown when Free Today is NOT the hero (i.e. hero is currently knocks or memories) */}
+        {profile?.bestie_type_completed && (pendingKnocks.length > 0 || pendingMemories.length > 0) && (
+          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: iAmFree ? 'rgba(52,211,153,0.06)' : '#111120', border: iAmFree ? '1px solid rgba(52,211,153,0.25)' : '1px solid rgba(255,255,255,0.11)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ display: 'inline-flex', width: '12px', height: '12px', borderRadius: '50%', background: iAmFree ? '#34D399' : 'transparent', border: iAmFree ? 'none' : '2px solid #A99ECC', boxShadow: iAmFree ? '0 0 12px rgba(52,211,153,0.7)' : 'none' }} />
+              <div>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: iAmFree ? '#34D399' : '#F0EAFF' }}>{iAmFree ? "You're free today" : 'Free today?'}</p>
+                <p style={{ fontSize: '12px', color: '#A99ECC' }}>
+                  {freeInCityCount > 0
+                    ? <><span style={{ color: '#34D399', fontWeight: 600 }}>{freeInCityCount}</span> {freeInCityCount === 1 ? 'Bestie' : 'Besties'} free nearby</>
+                    : (iAmFree ? 'Visible on Pulse & Map' : "Let others know you're up for a meetup")
+                  }
+                </p>
+              </div>
             </div>
+            <button onClick={toggleFree} disabled={togglingFree} style={{ padding: '8px 18px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.1)' : 'rgba(52,211,153,0.12)', border: iAmFree ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(52,211,153,0.35)', color: iAmFree ? '#FF6B35' : '#34D399', whiteSpace: 'nowrap' }}>
+              {togglingFree ? '…' : iAmFree ? 'Turn off' : "I'm free!"}
+            </button>
           </div>
-          <button onClick={toggleFree} disabled={togglingFree} style={{ padding: '8px 18px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.1)' : 'rgba(57,255,20,0.12)', border: iAmFree ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(57,255,20,0.35)', color: iAmFree ? '#FF6B35' : '#34D399', whiteSpace: 'nowrap' }}>
-            {togglingFree ? '…' : iAmFree ? 'Turn off' : "I'm free!"}
-          </button>
-        </div>
+        )}
 
-        {/* Knocks */}
-        {pendingKnocks.length > 0 && (
+        {/* Knocks panel — only when knocks is NOT the hero (i.e. bestie_type quiz is the hero instead) */}
+        {pendingKnocks.length > 0 && !profile?.bestie_type_completed && (
           <div style={{ marginBottom: '20px', padding: '16px 20px', borderRadius: '16px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Hand size={13} color="#D4AF37" strokeWidth={2} /> NEW KNOCKS</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
@@ -332,8 +436,8 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Pending session memories */}
-        {pendingMemories.length > 0 && (
+        {/* Pending session memories — hidden when it's currently the hero (no knocks AND quiz complete) */}
+        {pendingMemories.length > 0 && (!profile?.bestie_type_completed || pendingKnocks.length > 0) && (
           <div style={{ marginBottom: '20px', padding: '16px 20px', borderRadius: '16px', background: 'rgba(155,143,255,0.05)', border: '1px solid rgba(155,143,255,0.2)' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Sparkles size={13} color="#9B7FFF" strokeWidth={2} /> HOW DID IT GO?</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
