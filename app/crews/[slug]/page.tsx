@@ -13,6 +13,7 @@ import CrewTelegramLink from './CrewTelegramLink'
 import CrewKickButton from './CrewKickButton'
 import JoinRequestsPanel from './JoinRequestsPanel'
 import EventGoingButton from './EventGoingButton'
+import { Search, Lock, MessageCircle, Plus, Clock, MapPin, Flame, Zap, Trophy, Medal, Award } from 'lucide-react'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -39,7 +40,9 @@ export default async function CrewPage({ params }) {
     return (
       <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
         <div style={{ textAlign: 'center' }}>
-          <p style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</p>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+            <Search size={48} color="#A99ECC" strokeWidth={1.5} />
+          </div>
           <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#F0EAFF', marginBottom: '8px' }}>Crew not found</h1>
           <Link href="/crews" style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Browse Crews</Link>
         </div>
@@ -101,7 +104,7 @@ export default async function CrewPage({ params }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
             <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '26px', color: '#F0EAFF', margin: 0 }}>{crew.name}</h1>
             <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '999px', background: crew.is_public ? 'rgba(57,255,20,0.15)' : 'rgba(155,147,192,0.15)', border: crew.is_public ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(155,147,192,0.3)', color: crew.is_public ? '#34D399' : '#A99ECC', fontWeight: 600, backdropFilter: 'blur(8px)' }}>
-              {crew.is_public ? 'Open' : '🔒 Private'}
+              {crew.is_public ? 'Open' : (<span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Lock size={10} strokeWidth={2} /> Private</span>)}
             </span>
           </div>
           <p style={{ fontSize: '13px', color: 'rgba(232,224,255,0.7)', margin: 0 }}>
@@ -155,8 +158,8 @@ export default async function CrewPage({ params }) {
 
         {/* Actions */}
         <div style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
-          <Link href={`/crews/${params.slug}/chat`} style={{ flex: 1, display: 'block', padding: '14px', borderRadius: '14px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: '#111120', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', textDecoration: 'none' }}>
-            💬 Crew Chat
+          <Link href={`/crews/${params.slug}/chat`} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '14px', borderRadius: '14px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: '#111120', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', textDecoration: 'none' }}>
+            <MessageCircle size={16} strokeWidth={2} /> Crew Chat
           </Link>
           <div style={{ flex: 1 }}>
             <CrewActions crewId={crew.id} captainId={crew.captain_id} isPublic={crew.is_public} isFull={spotsLeft <= 0} captainUsername={crew.captain?.username} crewSlug={params.slug} />
@@ -170,8 +173,8 @@ export default async function CrewPage({ params }) {
         {/* Events */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
           <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF' }}>Events</h2>
-          <Link href={`/crews/${params.slug}/events/new`} style={{ fontSize: '13px', fontWeight: 600, padding: '7px 14px', borderRadius: '10px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', textDecoration: 'none' }}>
-            + New Event
+          <Link href={`/crews/${params.slug}/events/new`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 600, padding: '7px 14px', borderRadius: '10px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', textDecoration: 'none' }}>
+            <Plus size={13} strokeWidth={2.5} /> New Event
           </Link>
         </div>
 
@@ -204,13 +207,13 @@ export default async function CrewPage({ params }) {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                           <span style={{ fontSize: '17px', fontWeight: 700, color: '#F0EAFF' }}>{event.title}</span>
-                          {event.is_members_only && <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '999px', background: 'rgba(155,147,192,0.15)', color: '#A99ECC', fontWeight: 600 }}>🔒 Members only</span>}
+                          {event.is_members_only && <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '999px', background: 'rgba(155,147,192,0.15)', color: '#A99ECC', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Lock size={10} strokeWidth={2} /> Members only</span>}
                         </div>
-                        <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '4px' }}>
-                          🕐 {timeStr}{event.location ? ` · 📍 ${event.location}` : ''}
+                        <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+                          <Clock size={12} strokeWidth={2} /> {timeStr}{event.location ? <> · <MapPin size={12} strokeWidth={2} /> {event.location}</> : ''}
                         </p>
-                        <p style={{ fontSize: '12px', color: daysUntil <= 3 ? '#FF6B35' : '#A99ECC', fontWeight: daysUntil <= 3 ? 700 : 400 }}>
-                          {daysUntil === 0 ? '🔥 Today!' : daysUntil === 1 ? '⚡ Tomorrow' : `In ${daysUntil} days`}
+                        <p style={{ fontSize: '12px', color: daysUntil <= 3 ? '#FF6B35' : '#A99ECC', fontWeight: daysUntil <= 3 ? 700 : 400, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          {daysUntil === 0 ? (<><Flame size={12} strokeWidth={2} /> Today!</>) : daysUntil === 1 ? (<><Zap size={12} strokeWidth={2} /> Tomorrow</>) : `In ${daysUntil} days`}
                           {event.max_attendees && ` · Max ${event.max_attendees} attendees`}
                         </p>
                       </div>
@@ -232,7 +235,7 @@ export default async function CrewPage({ params }) {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
                       <span style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>{event.title}</span>
-                      {event.is_members_only && <span style={{ fontSize: '10px', color: '#A99ECC' }}>🔒</span>}
+                      {event.is_members_only && <Lock size={10} color="#A99ECC" strokeWidth={2} />}
                     </div>
                     <div style={{ fontSize: '12px', color: '#A99ECC' }}>{timeStr}{event.location ? ` · ${event.location}` : ''}</div>
                   </div>
@@ -265,8 +268,8 @@ export default async function CrewPage({ params }) {
                 <div key={user.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', background: '#111120', border: isCaptain ? '1px solid rgba(212,175,55,0.2)' : '1px solid rgba(255,255,255,0.10)', borderRadius: '14px' }}>
                   <Link href={`/${user.username}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0, textDecoration: 'none' }}>
                     {/* Rank number */}
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#A99ECC', width: '20px', flexShrink: 0, textAlign: 'center' }}>
-                      {memberIdx === 0 ? '🥇' : memberIdx === 1 ? '🥈' : memberIdx === 2 ? '🥉' : `#${memberIdx + 1}`}
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#A99ECC', width: '20px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {memberIdx === 0 ? <Trophy size={14} color="#FFD700" strokeWidth={2} /> : memberIdx === 1 ? <Medal size={14} color="#C0C0C0" strokeWidth={2} /> : memberIdx === 2 ? <Award size={14} color="#CD7F32" strokeWidth={2} /> : `#${memberIdx + 1}`}
                     </span>
                     <div style={{ width: '40px', height: '40px', borderRadius: '12px', overflow: 'hidden', background: '#1A1A2E', flexShrink: 0, border: isCaptain ? '2px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {user.avatar_url
@@ -279,7 +282,7 @@ export default async function CrewPage({ params }) {
                         <span style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>{user.full_name}</span>
                         {isCaptain && <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '999px', background: 'rgba(212,175,55,0.15)', color: '#D4AF37', fontWeight: 600 }}>Captain</span>}
                       </div>
-                      <span style={{ fontSize: '12px', color: '#A99ECC' }}>{user.city ? `📍 ${user.city}` : `@${user.username}`}</span>
+                      <span style={{ fontSize: '12px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>{user.city ? <><MapPin size={11} strokeWidth={2} /> {user.city}</> : `@${user.username}`}</span>
                     </div>
                     {/* Score circle */}
                     <div style={{ width: '44px', height: '44px', borderRadius: '50%', border: `2px solid ${sc}40`, background: `${sc}10`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

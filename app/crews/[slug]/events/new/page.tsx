@@ -6,6 +6,7 @@ import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
+import { Lock, Globe } from 'lucide-react'
 
 export default function NewEventPage() {
   const router = useRouter()
@@ -84,7 +85,9 @@ export default function NewEventPage() {
   if (!crewId) return (
     <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ textAlign: 'center', padding: '24px' }}>
-        <p style={{ fontSize: '32px', marginBottom: '16px' }}>🔒</p>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+          <Lock size={32} color="#A99ECC" strokeWidth={1.8} />
+        </div>
         <p style={{ color: '#F0EAFF', fontSize: '16px', fontWeight: 700, marginBottom: '8px' }}>{error || 'Access denied'}</p>
         <Link href={`/crews/${slug}`} style={{ fontSize: '14px', color: '#D4AF37' }}>← Back to Crew</Link>
       </div>
@@ -132,12 +135,12 @@ export default function NewEventPage() {
             <label style={labelStyle}>ACCESS</label>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               {[
-                { value: false, icon: '🌐', label: 'Open', desc: 'Anyone can join' },
-                { value: true, icon: '🔒', label: 'Members only', desc: 'Crew members only' },
+                { value: false, Icon: Globe, label: 'Open', desc: 'Anyone can join' },
+                { value: true, Icon: Lock, label: 'Members only', desc: 'Crew members only' },
               ].map(opt => (
                 <button key={String(opt.value)} type="button" onClick={() => setIsMembersOnly(opt.value)}
                   style={{ padding: '14px', borderRadius: '14px', border: isMembersOnly === opt.value ? '2px solid #D4AF37' : '1px solid rgba(255,255,255,0.12)', background: isMembersOnly === opt.value ? 'rgba(212,175,55,0.08)' : '#111120', cursor: 'pointer', textAlign: 'left' }}>
-                  <div style={{ fontSize: '20px', marginBottom: '4px' }}>{opt.icon}</div>
+                  <div style={{ marginBottom: '4px' }}><opt.Icon size={20} color="#D4AF37" strokeWidth={1.8} /></div>
                   <div style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF' }}>{opt.label}</div>
                   <div style={{ fontSize: '12px', color: '#A99ECC' }}>{opt.desc}</div>
                 </button>

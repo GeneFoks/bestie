@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
+import { Users, Hand } from 'lucide-react'
 
 type Message = {
   id: string
@@ -131,7 +132,7 @@ export default function CrewChatPage() {
         <Link href={`/crews/${slug}`} style={{ color: '#A99ECC', textDecoration: 'none', fontSize: '20px', lineHeight: 1 }}>←</Link>
         {crew?.avatar_url
           ? <img src={crew.avatar_url} alt="" style={{ width: '32px', height: '32px', borderRadius: '10px', objectFit: 'cover' }} />
-          : <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>👥</div>
+          : <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Users size={16} color="#D4AF37" strokeWidth={1.8} /></div>
         }
         <div>
           <div style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF' }}>{crew?.name}</div>
@@ -142,8 +143,8 @@ export default function CrewChatPage() {
       {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {messages.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '60px 0', color: '#A99ECC', fontSize: '14px' }}>
-            No messages yet. Say hello 👋
+          <div style={{ textAlign: 'center', padding: '60px 0', color: '#A99ECC', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            No messages yet. Say hello <Hand size={14} strokeWidth={2} />
           </div>
         )}
         {groupedMessages.map((group, gi) => (

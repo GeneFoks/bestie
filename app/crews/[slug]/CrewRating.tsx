@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { Star } from 'lucide-react'
 
 type Props = {
   crewId: string
@@ -58,21 +59,30 @@ export default function CrewRating({ crewId, avgRating, ratingCount }: Props) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-        {[1, 2, 3, 4, 5].map(i => (
-          <span
-            key={i}
-            onClick={() => isMember && rate(i)}
-            onMouseEnter={() => isMember && setHovered(i)}
-            onMouseLeave={() => setHovered(null)}
-            style={{
-              fontSize: '20px',
-              cursor: isMember ? 'pointer' : 'default',
-              color: i <= (isMember ? display : Math.round(currentAvg)) ? '#D4AF37' : 'rgba(212,175,55,0.2)',
-              transition: 'color 0.1s',
-              lineHeight: 1,
-            }}
-          >★</span>
-        ))}
+        {[1, 2, 3, 4, 5].map(i => {
+          const active = i <= (isMember ? display : Math.round(currentAvg))
+          return (
+            <span
+              key={i}
+              onClick={() => isMember && rate(i)}
+              onMouseEnter={() => isMember && setHovered(i)}
+              onMouseLeave={() => setHovered(null)}
+              style={{
+                cursor: isMember ? 'pointer' : 'default',
+                transition: 'color 0.1s',
+                lineHeight: 1,
+                display: 'inline-flex',
+              }}
+            >
+              <Star
+                size={20}
+                fill={active ? '#D4AF37' : 'transparent'}
+                color={active ? '#D4AF37' : 'rgba(212,175,55,0.4)'}
+                strokeWidth={active ? 0 : 2}
+              />
+            </span>
+          )
+        })}
       </div>
       {currentAvg > 0 && (
         <span style={{ fontSize: '13px', color: '#A99ECC' }}>

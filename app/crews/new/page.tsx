@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
+import { Globe, Lock, Swords } from 'lucide-react'
 
 function toSlug(str: string) {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -161,8 +162,8 @@ export default function NewCrewPage() {
             <label style={labelStyle}>VISIBILITY</label>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               {[
-                { value: true, icon: '🌐', label: 'Open', desc: 'Anyone can join' },
-                { value: false, icon: '🔒', label: 'Private', desc: 'Invite only' },
+                { value: true, Icon: Globe, label: 'Open', desc: 'Anyone can join' },
+                { value: false, Icon: Lock, label: 'Private', desc: 'Invite only' },
               ].map(opt => (
                 <button
                   key={String(opt.value)}
@@ -170,7 +171,7 @@ export default function NewCrewPage() {
                   onClick={() => setIsPublic(opt.value)}
                   style={{ padding: '14px', borderRadius: '14px', border: isPublic === opt.value ? '2px solid #D4AF37' : '1px solid rgba(255,255,255,0.12)', background: isPublic === opt.value ? 'rgba(212,175,55,0.08)' : '#111120', cursor: 'pointer', textAlign: 'left' }}
                 >
-                  <div style={{ fontSize: '20px', marginBottom: '4px' }}>{opt.icon}</div>
+                  <div style={{ marginBottom: '4px' }}><opt.Icon size={20} color="#D4AF37" strokeWidth={1.8} /></div>
                   <div style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF' }}>{opt.label}</div>
                   <div style={{ fontSize: '12px', color: '#A99ECC' }}>{opt.desc}</div>
                 </button>
@@ -187,7 +188,7 @@ export default function NewCrewPage() {
             disabled={submitting || atLimit}
             style={{ padding: '16px', borderRadius: '14px', fontSize: '16px', fontWeight: 700, background: atLimit ? 'rgba(255,255,255,0.10)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: atLimit ? '#A99ECC' : '#09090F', border: atLimit ? '1px solid rgba(255,255,255,0.1)' : 'none', cursor: submitting || atLimit ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1 }}
           >
-            {submitting ? 'Creating…' : atLimit ? `Limit reached · BS ${nextThreshold} to unlock` : '⚔️ Create Crew'}
+            {submitting ? 'Creating…' : atLimit ? `Limit reached · BS ${nextThreshold} to unlock` : (<span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}><Swords size={18} strokeWidth={2} /> Create Crew</span>)}
           </button>
         </form>
       </div>
