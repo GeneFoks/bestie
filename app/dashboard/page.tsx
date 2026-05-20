@@ -9,6 +9,11 @@ import NotificationBell from '@/components/NotificationBell'
 import { usePushNotifications } from '@/lib/usePushNotifications'
 import FindFriends from '@/components/FindFriends'
 import { PageLoader } from '@/components/Loading'
+import {
+  Camera, Pencil, MapPin, Sparkles, Mail, Inbox, Users, Calendar,
+  UsersRound, Globe, Network, Search, Zap, Settings, Share2,
+  TrendingUp, Hand, Star, Crown, PartyPopper, Target,
+} from 'lucide-react'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -179,25 +184,25 @@ export default function DashboardPage() {
   const scoreLabel = score >= 800 ? 'Excellent' : score >= 600 ? 'Good' : score >= 400 ? 'Fair' : 'New'
 
   const boostItems = [
-    { icon: '📸', label: 'Add profile photo', points: '+50 BS', done: !!profile?.avatar_url, href: '/profile/edit' },
-    { icon: '✍️', label: 'Complete your bio', points: '+30 BS', done: !!profile?.bio, href: '/profile/edit' },
-    { icon: '📍', label: 'Add your city', points: '+20 BS', done: !!profile?.city, href: '/profile/edit' },
-    { icon: '🎯', label: 'Create an activity', points: '+50 BS', done: profile?.activity_packages?.length > 0, href: '/profile/edit' },
+    { Icon: Camera, label: 'Add profile photo', points: '+50 BS', done: !!profile?.avatar_url, href: '/profile/edit' },
+    { Icon: Pencil, label: 'Complete your bio', points: '+30 BS', done: !!profile?.bio, href: '/profile/edit' },
+    { Icon: MapPin, label: 'Add your city',    points: '+20 BS', done: !!profile?.city, href: '/profile/edit' },
+    { Icon: Target, label: 'Create an activity', points: '+50 BS', done: profile?.activity_packages?.length > 0, href: '/profile/edit' },
   ]
   const remainingBoost = boostItems.filter(i => !i.done)
   const totalNewCrewEvents = Object.values(crewNewEvents).reduce((s, n) => s + n, 0)
 
   const actions = [
-    { emoji: '✉️', label: 'Messages', sub: 'Check your conversations', href: '/messages', badge: unreadMessages },
-    { emoji: '📋', label: 'Bookings', sub: 'Incoming booking requests', href: '/bookings', badge: pendingBookings },
-    { emoji: '👥', label: 'My Crews', sub: myCrews.length ? `${myCrews.length} crew${myCrews.length > 1 ? 's' : ''}` : 'Find or create a crew', href: '/crews', badge: totalNewCrewEvents },
-    { emoji: '📅', label: 'My Sessions', sub: 'Upcoming accepted sessions', href: '/sessions' },
-    { emoji: '🎉', label: 'Group Sessions', sub: 'Host or join group meetups', href: '/group-sessions/new', badge: upcomingGroupSessions.length || 0 },
-    { emoji: '🌍', label: 'City Pulse', sub: "What's happening near you today", href: '/pulse', badge: pendingKnocks.length },
-    { emoji: '🕸️', label: 'Connection Graph', sub: 'See how everyone is connected', href: '/graph' },
-{ emoji: '🔍', label: 'Browse Besties', sub: 'Find someone for your activity', href: '/browse' },
-    { emoji: '⚡', label: 'Going to', sub: "Share what you're up to today", href: '/going-to' },
-    { emoji: '✏️', label: 'Edit profile', sub: 'Bio, photo, city, activities', href: '/profile/edit' },
+    { Icon: Mail,        label: 'Messages',         sub: 'Check your conversations',            href: '/messages',           badge: unreadMessages },
+    { Icon: Inbox,       label: 'Bookings',         sub: 'Incoming booking requests',           href: '/bookings',           badge: pendingBookings },
+    { Icon: Users,       label: 'My Crews',         sub: myCrews.length ? `${myCrews.length} crew${myCrews.length > 1 ? 's' : ''}` : 'Find or create a crew', href: '/crews', badge: totalNewCrewEvents },
+    { Icon: Calendar,    label: 'My Sessions',      sub: 'Upcoming accepted sessions',          href: '/sessions' },
+    { Icon: UsersRound,  label: 'Group Sessions',   sub: 'Host or join group meetups',          href: '/group-sessions/new', badge: upcomingGroupSessions.length || 0 },
+    { Icon: Globe,       label: 'City Pulse',       sub: "What's happening near you today",     href: '/pulse',              badge: pendingKnocks.length },
+    { Icon: Network,     label: 'Connection Graph', sub: 'See how everyone is connected',       href: '/graph' },
+    { Icon: Search,      label: 'Browse Besties',   sub: 'Find someone for your activity',      href: '/browse' },
+    { Icon: Zap,         label: 'Going to',         sub: "Share what you're up to today",       href: '/going-to' },
+    { Icon: Settings,    label: 'Edit profile',     sub: 'Bio, photo, city, activities',        href: '/profile/edit' },
   ]
 
   return (
@@ -222,7 +227,7 @@ export default function DashboardPage() {
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
             <button onClick={handleShare} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: copied ? 'rgba(57,255,20,0.15)' : 'linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0.08) 100%)', border: copied ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(212,175,55,0.3)', color: copied ? '#34D399' : '#D4AF37', cursor: 'pointer' }}>
-              {copied ? '✓ Copied!' : '🔗 Share my Passport'}
+              {copied ? '✓ Copied!' : (<><Share2 size={14} strokeWidth={2} style={{ verticalAlign: 'middle', marginRight: '6px' }} />Share my Passport</>)}
             </button>
             <Link href={`/${profile?.username}`} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', textDecoration: 'none' }}>
               View my profile →
@@ -248,11 +253,11 @@ export default function DashboardPage() {
           <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '8px' }}>RATING</p>
             <div style={{ fontSize: '56px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{profile?.avg_rating ? profile.avg_rating.toFixed(1) : '—'}</div>
-            <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '12px' }}>avg rating ⭐</p>
+            <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '12px' }}>avg rating</p>
           </div>
           <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '8px' }}>LOCATION</p>
-            <div style={{ fontSize: '32px', marginBottom: '8px' }}>📍</div>
+            <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}><MapPin size={26} color="#D4AF37" strokeWidth={1.8} /></div>
             <p style={{ fontSize: '16px', fontWeight: 600, color: '#F0EAFF' }}>{profile?.city || 'Not set'}</p>
             <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '4px' }}>{profile?.country || 'Add your city'}</p>
           </div>
@@ -262,7 +267,7 @@ export default function DashboardPage() {
         {!profile?.bestie_type_completed && (
           <div style={{ marginBottom: '24px', background: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(155,143,255,0.08) 100%)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: '20px', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <span style={{ fontSize: '32px' }}>✨</span>
+              <span style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Sparkles size={22} color="#D4AF37" strokeWidth={1.8} /></span>
               <div>
                 <p style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF', marginBottom: '2px' }}>Discover your Bestie Type</p>
                 <p style={{ fontSize: '13px', color: '#A99ECC' }}>12 questions · Energy · Mind · Vibe · shows on your passport</p>
@@ -278,7 +283,7 @@ export default function DashboardPage() {
         {profile?.bestie_type_completed && (
           <div style={{ marginBottom: '24px', background: '#111120', border: '1px solid rgba(155,143,255,0.25)', borderRadius: '20px', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <span style={{ fontSize: '32px' }}>✨</span>
+              <span style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Sparkles size={22} color="#D4AF37" strokeWidth={1.8} /></span>
               <div>
                 <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '1.5px', color: '#9B7FFF', marginBottom: '4px' }}>BESTIE TYPE</p>
                 <p style={{ fontSize: '16px', fontWeight: 700, color: '#F0EAFF', fontFamily: 'DM Serif Display, serif' }}>
@@ -295,21 +300,21 @@ export default function DashboardPage() {
         {/* Free Today toggle */}
         <div style={{ marginBottom: '20px', padding: '16px 20px', borderRadius: '16px', background: iAmFree ? 'rgba(57,255,20,0.06)' : '#111120', border: iAmFree ? '1px solid rgba(57,255,20,0.25)' : '1px solid rgba(255,255,255,0.11)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '20px' }}>{iAmFree ? '🟢' : '⚪'}</span>
+            <span style={{ display: 'inline-flex', width: '12px', height: '12px', borderRadius: '50%', background: iAmFree ? '#34D399' : 'transparent', border: iAmFree ? 'none' : '2px solid #A99ECC', boxShadow: iAmFree ? '0 0 12px rgba(52,211,153,0.7)' : 'none' }} />
             <div>
               <p style={{ fontSize: '14px', fontWeight: 700, color: iAmFree ? '#34D399' : '#F0EAFF' }}>{iAmFree ? 'You\'re free today' : 'Free today?'}</p>
               <p style={{ fontSize: '12px', color: '#A99ECC' }}>{iAmFree ? 'Visible on Pulse & Map' : 'Let others know you\'re up for a meetup'}</p>
             </div>
           </div>
           <button onClick={toggleFree} disabled={togglingFree} style={{ padding: '8px 18px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.1)' : 'rgba(57,255,20,0.12)', border: iAmFree ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(57,255,20,0.35)', color: iAmFree ? '#FF6B35' : '#34D399', whiteSpace: 'nowrap' }}>
-            {togglingFree ? '…' : iAmFree ? 'Turn off' : '🟢 I\'m free!'}
+            {togglingFree ? '…' : iAmFree ? 'Turn off' : "I'm free!"}
           </button>
         </div>
 
         {/* Knocks */}
         {pendingKnocks.length > 0 && (
           <div style={{ marginBottom: '20px', padding: '16px 20px', borderRadius: '16px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '12px' }}>👋 NEW KNOCKS</p>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Hand size={13} color="#D4AF37" strokeWidth={2} /> NEW KNOCKS</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
               {pendingKnocks.map((k: any) => (
                 <Link key={k.id} href={`/${k.sender?.username}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', borderRadius: '12px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', textDecoration: 'none' }}>
@@ -320,7 +325,7 @@ export default function DashboardPage() {
                     }
                   </div>
                   <span style={{ fontSize: '13px', fontWeight: 600, color: '#D4AF37' }}>{k.sender?.full_name?.split(' ')[0]}</span>
-                  <span style={{ fontSize: '11px', color: '#A99ECC' }}>knocked 👋</span>
+                  <span style={{ fontSize: '11px', color: '#A99ECC' }}>knocked</span>
                 </Link>
               ))}
             </div>
@@ -330,7 +335,7 @@ export default function DashboardPage() {
         {/* Pending session memories */}
         {pendingMemories.length > 0 && (
           <div style={{ marginBottom: '20px', padding: '16px 20px', borderRadius: '16px', background: 'rgba(155,143,255,0.05)', border: '1px solid rgba(155,143,255,0.2)' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '12px' }}>✨ HOW DID IT GO?</p>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Sparkles size={13} color="#9B7FFF" strokeWidth={2} /> HOW DID IT GO?</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {pendingMemories.map((b: any) => (
                 <Link key={b.id} href={`/sessions/${b.id}/memory`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '12px', background: 'rgba(155,143,255,0.07)', border: '1px solid rgba(155,143,255,0.15)', textDecoration: 'none' }}>
@@ -357,7 +362,7 @@ export default function DashboardPage() {
             </div>
             {myCrews.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                <p style={{ fontSize: '32px', marginBottom: '8px' }}>👥</p>
+                <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(155,127,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}><Users size={26} color="#9B7FFF" strokeWidth={1.6} /></div>
                 <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '16px' }}>You're not in any crew yet</p>
                 <Link href="/crews" style={{ fontSize: '13px', fontWeight: 600, padding: '8px 20px', borderRadius: '10px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Find a Crew</Link>
               </div>
@@ -371,11 +376,11 @@ export default function DashboardPage() {
                       <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: '#1A1A2E', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {crew.avatar_url
                           ? <img src={crew.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          : <span style={{ fontSize: '16px' }}>👥</span>}
+                          : <Users size={16} color="#A99ECC" strokeWidth={1.8} />}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{crew.name}</p>
-                        {isFeatured && <p style={{ fontSize: '11px', color: '#D4AF37' }}>⭐ On your passport</p>}
+                        {isFeatured && <p style={{ fontSize: '11px', color: '#D4AF37', display: 'flex', alignItems: 'center', gap: '4px' }}><Star size={11} fill="#D4AF37" strokeWidth={0} /> On your passport</p>}
                       </div>
                       {newEvents > 0 && (
                         <span style={{ background: '#D4AF37', color: '#09090F', fontSize: '11px', fontWeight: 700, borderRadius: '999px', padding: '2px 7px', flexShrink: 0 }}>
@@ -404,10 +409,13 @@ export default function DashboardPage() {
                   const d = new Date(gs.scheduled_at)
                   return (
                     <Link key={gs.id} href={`/group-sessions/${gs.id}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', textDecoration: 'none' }}>
-                      <span style={{ fontSize: '22px' }}>🎉</span>
+                      <span style={{ width: '38px', height: '38px', borderRadius: '11px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><UsersRound size={20} color="#D4AF37" strokeWidth={1.7} /></span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{gs.title}</p>
-                        <p style={{ fontSize: '12px', color: '#A99ECC' }}>{d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · {d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} · {gs.role === 'host' ? '👑 Host' : '✓ Joined'}</p>
+                        <p style={{ fontSize: '12px', color: '#A99ECC', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · {d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} ·
+                          {gs.role === 'host' ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Crown size={11} color="#D4AF37" strokeWidth={2} /> Host</span> : <span>✓ Joined</span>}
+                        </p>
                       </div>
                     </Link>
                   )
@@ -422,7 +430,9 @@ export default function DashboardPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {actions.map((action) => (
                 <Link key={action.label} href={action.href} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', background: action.badge > 0 ? 'rgba(212,175,55,0.06)' : '#111120', border: action.badge > 0 ? '1px solid rgba(212,175,55,0.2)' : '1px solid rgba(255,255,255,0.10)', textDecoration: 'none' }}>
-                  <span style={{ fontSize: '20px' }}>{action.emoji}</span>
+                  <span style={{ width: '36px', height: '36px', borderRadius: '10px', background: action.badge > 0 ? 'rgba(212,175,55,0.10)' : '#131323', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <action.Icon size={18} color={action.badge > 0 ? '#D4AF37' : '#A99ECC'} strokeWidth={1.8} />
+                  </span>
                   <div style={{ flex: 1 }}>
                     <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', marginBottom: '1px' }}>{action.label}</p>
                     <p style={{ fontSize: '12px', color: '#A99ECC' }}>{action.sub}</p>
@@ -440,13 +450,15 @@ export default function DashboardPage() {
         {remainingBoost.length > 0 && (
           <div style={{ marginTop: '20px', background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(57,255,20,0.04) 100%)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '20px', padding: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF' }}>🚀 Boost your Bestie Score</h3>
+              <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF', display: 'flex', alignItems: 'center', gap: '10px' }}><TrendingUp size={20} color="#D4AF37" strokeWidth={1.8} /> Boost your Bestie Score</h3>
               <Link href="/score-guide" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>How it works →</Link>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
               {remainingBoost.map(tip => (
                 <Link key={tip.label} href={tip.href} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', borderRadius: '12px', background: '#131323', textDecoration: 'none' }}>
-                  <span style={{ fontSize: '20px' }}>{tip.icon}</span>
+                  <span style={{ width: '32px', height: '32px', borderRadius: '9px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <tip.Icon size={16} color="#D4AF37" strokeWidth={1.8} />
+                  </span>
                   <div>
                     <p style={{ fontSize: '13px', fontWeight: 500, color: '#F0EAFF' }}>{tip.label}</p>
                     <p style={{ fontSize: '12px', color: '#34D399', fontWeight: 600 }}>{tip.points}</p>
@@ -485,7 +497,7 @@ export default function DashboardPage() {
         {remainingBoost.length === 0 && (
           <div style={{ marginTop: '20px', background: 'rgba(57,255,20,0.05)', border: '1px solid rgba(57,255,20,0.15)', borderRadius: '20px', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '24px' }}>🎉</span>
+              <span style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(52,211,153,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><PartyPopper size={22} color="#34D399" strokeWidth={1.8} /></span>
               <div>
                 <p style={{ fontSize: '14px', fontWeight: 600, color: '#34D399' }}>Profile complete!</p>
                 <p style={{ fontSize: '13px', color: '#A99ECC' }}>Keep earning sessions and Sparks to grow your Score</p>
