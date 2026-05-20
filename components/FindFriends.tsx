@@ -136,7 +136,7 @@ export default function FindFriends() {
             fontSize: '14px', color: '#080810', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)',
           }}>
             <Smartphone size={16} strokeWidth={2} /> Import from phone contacts (.vcf)
-            <input type="file" accept=".vcf,text/vcard" onChange={handleFileChange} style={{ display: 'none' }} />
+            <input type="file" accept=".vcf,text/vcard" onChange={handleFileChange} aria-label="Import contacts vCard file" style={{ display: 'none' }} />
           </label>
 
           {/* Manual entry toggle */}

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { X, Sparkles } from 'lucide-react'
 
 interface MatchModalProps {
   onClose: () => void
@@ -27,6 +28,15 @@ export default function MatchModal({ onClose }: MatchModalProps) {
   const [selected, setSelected] = useState<string[]>([])
   const [city, setCity] = useState('')
   const [budget, setBudget] = useState<'free' | 'paid' | 'both'>('both')
+  const closeBtnRef = useRef<HTMLButtonElement>(null)
+
+  // Escape closes; focus close button on mount so keyboard users can dismiss
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    closeBtnRef.current?.focus()
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
 
   const toggle = (id: string) =>
     setSelected((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])
@@ -38,6 +48,9 @@ export default function MatchModal({ onClose }: MatchModalProps) {
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="match-modal-title"
         className="w-full max-w-lg rounded-3xl overflow-hidden"
         style={{
           background: '#0F0F1E',
@@ -55,6 +68,7 @@ export default function MatchModal({ onClose }: MatchModalProps) {
               SMART MATCH
             </p>
             <h3
+              id="match-modal-title"
               className="text-xl font-bold"
               style={{ color: '#E8E0FF', fontFamily: 'DM Serif Display, serif' }}
             >
@@ -62,11 +76,13 @@ export default function MatchModal({ onClose }: MatchModalProps) {
             </h3>
           </div>
           <button
+            ref={closeBtnRef}
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full text-lg transition-colors hover:bg-white/10"
+            aria-label="Close Smart Match"
+            className="w-10 h-10 flex items-center justify-center rounded-full transition-colors hover:bg-white/10"
             style={{ color: '#9B93C0' }}
           >
-            ✕
+            <X size={18} strokeWidth={2} />
           </button>
         </div>
 
@@ -213,14 +229,14 @@ export default function MatchModal({ onClose }: MatchModalProps) {
           ) : (
             <Link
               href={`/browse?activities=${selected.join(',')}&city=${encodeURIComponent(city)}&budget=${budget}`}
-              className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
+              className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-90 inline-flex items-center gap-1.5"
               style={{
                 background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)',
                 color: '#080810',
               }}
               onClick={onClose}
             >
-              Find my Bestie ✨
+              Find my Bestie <Sparkles size={14} strokeWidth={2} />
             </Link>
           )}
         </div>

@@ -6,6 +6,7 @@ import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
+import { Camera } from 'lucide-react'
 
 const MOODS = ['🔥', '😊', '🤝', '💭', '😌', '🥹', '✨', '💎']
 
@@ -190,15 +191,15 @@ export default function SessionMemoryPage() {
           <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '12px' }}>PHOTO <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></p>
           {photoPreview ? (
             <div style={{ position: 'relative', borderRadius: '14px', overflow: 'hidden', height: '180px' }}>
-              <img src={photoPreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              <button onClick={() => { setPhoto(null); setPhotoPreview(null) }} style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.6)', border: 'none', color: '#fff', borderRadius: '8px', padding: '4px 8px', cursor: 'pointer', fontSize: '12px' }}>Remove</button>
+              <img src={photoPreview} alt="Memory photo preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <button onClick={() => { setPhoto(null); setPhotoPreview(null) }} aria-label="Remove photo" style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.6)', border: 'none', color: '#fff', borderRadius: '8px', padding: '4px 8px', cursor: 'pointer', fontSize: '12px' }}>Remove</button>
             </div>
           ) : (
             <button onClick={() => fileRef.current?.click()} style={{ width: '100%', padding: '20px', borderRadius: '14px', background: '#111120', border: '1px dashed rgba(255,255,255,0.12)', color: '#A99ECC', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-              📷 Add a photo from the meetup
+              <Camera size={14} strokeWidth={2} /> Add a photo from the meetup
             </button>
           )}
-          <input ref={fileRef} type="file" accept="image/*" onChange={handlePhoto} style={{ display: 'none' }} />
+          <input ref={fileRef} type="file" accept="image/*" onChange={handlePhoto} aria-label="Add memory photo" style={{ display: 'none' }} />
         </div>
 
         {/* Save */}

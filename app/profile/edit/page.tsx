@@ -326,7 +326,7 @@ export default function EditProfilePage() {
             <div>
               <label style={{ display: 'inline-block', padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', cursor: 'pointer' }}>
                 Upload photo
-                <input type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: 'none' }} />
+                <input type="file" accept="image/*" onChange={handleAvatarChange} aria-label="Upload avatar photo" style={{ display: 'none' }} />
               </label>
               <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '8px' }}>JPG, PNG up to 5MB</p>
             </div>
