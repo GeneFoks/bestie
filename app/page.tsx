@@ -114,14 +114,8 @@ export default function HomePage() {
         .limit(6)
       setGroupProviders(data || [])
     } else {
-      // Fallback: show top providers by score when no typed packages found
-      const { data } = await supabase
-        .from('users')
-        .select('*, activity_packages(*)')
-        .not('activity_packages', 'is', null)
-        .order('bestie_score', { ascending: false })
-        .limit(6)
-      setGroupProviders((data || []).filter(p => p.activity_packages?.length > 0))
+      // Honest empty: no fallback masquerading as filtered results.
+      setGroupProviders([])
     }
     setGroupLoading(false)
   }
@@ -390,7 +384,9 @@ export default function HomePage() {
                 </div>
               ) : (
                 <div style={{ textAlign: 'center', padding: '48px', background: 'rgba(15,15,30,0.7)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.10)', backdropFilter: 'blur(12px)' }}>
-                  <p style={{ fontSize: '32px', marginBottom: '12px' }}>🔍</p>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(212,175,55,0.10)', border: '1px solid rgba(212,175,55,0.18)', marginBottom: '14px' }}>
+                    <Search size={24} color="#D4AF37" strokeWidth={1.6} />
+                  </div>
                   <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '18px' }}>No Besties for this vibe yet</p>
                   <Link href="/signup" className="btn-sm-gold">Be the first →</Link>
                 </div>
@@ -421,8 +417,8 @@ export default function HomePage() {
                   ? { label: '🥉 #3', bg: 'rgba(180,100,40,0.2)', color: '#CD7F32', border: '1px solid rgba(180,100,40,0.3)' }
                   : { label: `#${i + 1}`, bg: '#131323', color: '#A99ECC', border: '1px solid rgba(255,255,255,0.12)' }
                 return (
-                  <div key={provider.id} style={{ position: 'relative', paddingTop: '16px' }}>
-                    <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', zIndex: 10, background: badge.bg, border: badge.border, borderRadius: '999px', padding: '4px 14px', fontSize: '11px', fontWeight: 700, color: badge.color, whiteSpace: 'nowrap' }}>
+                  <div key={provider.id} style={{ position: 'relative', paddingTop: '16px', width: '100%', boxSizing: 'border-box' }}>
+                    <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', zIndex: 10, background: badge.bg, border: badge.border, borderRadius: '999px', padding: '4px 14px', fontSize: '11px', fontWeight: 700, color: badge.color, whiteSpace: 'nowrap', maxWidth: 'calc(100% - 24px)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {badge.label}
                     </div>
                     <ProviderCard provider={provider} featured={i === 0} />

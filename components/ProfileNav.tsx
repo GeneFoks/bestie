@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { Network } from 'lucide-react'
 
 export default function ProfileNav() {
   const [loggedIn, setLoggedIn] = useState(false)
@@ -14,15 +15,25 @@ export default function ProfileNav() {
   }, [])
 
   return (
-    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
       {loggedIn ? (
-        // Logged in: Dashboard button — visible on all screens
-        <Link
-          href="/dashboard"
-          style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', whiteSpace: 'nowrap' }}
-        >
-          Dashboard
-        </Link>
+        // Logged in: quick Graph access + Dashboard button — visible on all screens
+        <>
+          <Link
+            href="/graph"
+            aria-label="Connection Graph"
+            title="Connection Graph"
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '38px', height: '38px', borderRadius: '10px', border: '1px solid rgba(155,127,255,0.25)', background: 'rgba(155,127,255,0.06)', color: '#9B7FFF' }}
+          >
+            <Network size={16} strokeWidth={1.8} />
+          </Link>
+          <Link
+            href="/dashboard"
+            style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', whiteSpace: 'nowrap' }}
+          >
+            Dashboard
+          </Link>
+        </>
       ) : (
         // Logged out: show Join Free on all screens, Log in only on desktop
         <>
