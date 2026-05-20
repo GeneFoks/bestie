@@ -5,9 +5,11 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { ActivityIcon } from '@/lib/activityIcons'
+import { PageLoader } from '@/components/Loading'
+import { Zap, Gamepad2, BookOpen, Palette, Heart, Moon, Coffee, MapPin, Sparkles } from 'lucide-react'
 
 const ACTIVITY_GROUPS = [
-  { label: '🏃 Active', activities: [
+  { id: 'active',   label: 'Active',    Icon: Zap, activities: [
     { id: 'hiking', emoji: '🥾', label: 'Hiking' },
     { id: 'running', emoji: '🏃', label: 'Running' },
     { id: 'gym_partner', emoji: '💪', label: 'Gym' },
@@ -18,7 +20,7 @@ const ACTIVITY_GROUPS = [
     { id: 'martial_arts', emoji: '🥋', label: 'Martial Arts' },
     { id: 'climbing', emoji: '🧗', label: 'Climbing' },
   ]},
-  { label: '🎮 Social', activities: [
+  { id: 'social',   label: 'Social',    Icon: Gamepad2, activities: [
     { id: 'game_night', emoji: '🎮', label: 'Game Night' },
     { id: 'movie_night', emoji: '🎬', label: 'Movie Night' },
     { id: 'night_out', emoji: '🍸', label: 'Night Out' },
@@ -29,7 +31,7 @@ const ACTIVITY_GROUPS = [
     { id: 'wing_person', emoji: '😎', label: 'Wing Person' },
     { id: 'comedy_show', emoji: '😂', label: 'Comedy' },
   ]},
-  { label: '🧠 Mind', activities: [
+  { id: 'mind',     label: 'Mind',      Icon: BookOpen, activities: [
     { id: 'deep_chat', emoji: '🫂', label: 'Deep Chat' },
     { id: 'debate_club', emoji: '🗣️', label: 'Debate' },
     { id: 'book_club', emoji: '📚', label: 'Book Club' },
@@ -40,7 +42,7 @@ const ACTIVITY_GROUPS = [
     { id: 'accountability_partner', emoji: '🎯', label: 'Accountability' },
     { id: 'storytelling_night', emoji: '📖', label: 'Storytelling' },
   ]},
-  { label: '🎨 Creative', activities: [
+  { id: 'creative', label: 'Creative',  Icon: Palette, activities: [
     { id: 'music_lesson', emoji: '🎸', label: 'Music' },
     { id: 'art_together', emoji: '🎨', label: 'Art' },
     { id: 'photography_walk', emoji: '📸', label: 'Photography' },
@@ -49,7 +51,7 @@ const ACTIVITY_GROUPS = [
     { id: 'improv_acting', emoji: '🎭', label: 'Improv' },
     { id: 'writing_club', emoji: '✍️', label: 'Writing' },
   ]},
-  { label: '🫂 Support', activities: [
+  { id: 'support',  label: 'Support',   Icon: Heart, activities: [
     { id: 'vent_session', emoji: '💬', label: 'Vent Session' },
     { id: '3am_talk', emoji: '🌙', label: '3am Talk' },
     { id: 'hype_person', emoji: '🔥', label: 'Hype Person' },
@@ -58,7 +60,7 @@ const ACTIVITY_GROUPS = [
     { id: 'grief_support', emoji: '🤍', label: 'Grief' },
     { id: 'ugly_cry_buddy', emoji: '😭', label: 'Ugly Cry' },
   ]},
-  { label: '🔮 Spiritual', activities: [
+  { id: 'spiritual',label: 'Spiritual', Icon: Moon, activities: [
     { id: 'meditation_circle', emoji: '🧘', label: 'Meditation' },
     { id: 'breathwork', emoji: '🌬️', label: 'Breathwork' },
     { id: 'sound_healing', emoji: '🔔', label: 'Sound Healing' },
@@ -69,7 +71,7 @@ const ACTIVITY_GROUPS = [
     { id: 'nature_ritual', emoji: '🌿', label: 'Nature' },
     { id: 'lucid_dream_club', emoji: '💫', label: 'Lucid Dream' },
   ]},
-  { label: '☕ Chill', activities: [
+  { id: 'chill',    label: 'Chill',     Icon: Coffee, activities: [
     { id: 'coffee_chat', emoji: '☕', label: 'Coffee Chat' },
     { id: 'digital_detox_walk', emoji: '📵', label: 'Detox Walk' },
     { id: 'skincare_night', emoji: '✨', label: 'Skincare' },
@@ -88,7 +90,7 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
   const [userId, setUserId] = useState(null)
-  const [activeGroup, setActiveGroup] = useState(ACTIVITY_GROUPS[0].label)
+  const [activeGroup, setActiveGroup] = useState(ACTIVITY_GROUPS[0].id)
   const [form, setForm] = useState({
     full_name: '', bio: '', city: '', country: '',
     activities: [], activityTitle: '', activityType: '',
@@ -161,18 +163,16 @@ export default function OnboardingPage() {
       })
     }
 
-    router.push('/dashboard')
+    // Send new users straight into the Bestie Type quiz — the quiz page itself
+    // has a "Skip for now" exit to dashboard, so this isn't a forced flow.
+    router.push('/bestie-type')
   }
 
   const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
   const labelStyle = { fontSize: '13px', fontWeight: 500, color: '#A99ECC', display: 'block', marginBottom: '8px' }
-  const currentGroup = ACTIVITY_GROUPS.find(g => g.label === activeGroup)
+  const currentGroup = ACTIVITY_GROUPS.find(g => g.id === activeGroup)
 
-  if (checking) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <span style={{ color: '#A99ECC', fontSize: '14px' }}>Loading...</span>
-    </div>
-  )
+  if (checking) return <PageLoader />
 
   return (
     <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
@@ -214,8 +214,9 @@ export default function OnboardingPage() {
                 <label style={labelStyle}>State / Country</label>
                 <input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} placeholder="TX" style={inputStyle} />
               </div>
-              <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
-                <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.6 }}>📍 Your city helps people find you locally. Vibe calls work anywhere.</p>
+              <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                <MapPin size={16} color="#D4AF37" strokeWidth={2} style={{ flexShrink: 0, marginTop: '2px' }} />
+                <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.6 }}>Your city helps people find you locally. Vibe calls work anywhere.</p>
               </div>
             </div>
           )}
@@ -225,7 +226,8 @@ export default function OnboardingPage() {
               <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '12px' }}>Pick everything you're open to:</p>
               <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '10px', marginBottom: '12px', scrollbarWidth: 'none' }}>
                 {ACTIVITY_GROUPS.map(g => (
-                  <button key={g.label} onClick={() => setActiveGroup(g.label)} style={{ padding: '6px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: activeGroup === g.label ? 'rgba(212,175,55,0.15)' : '#131323', border: activeGroup === g.label ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', color: activeGroup === g.label ? '#D4AF37' : '#A99ECC' }}>
+                  <button key={g.id} onClick={() => setActiveGroup(g.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: activeGroup === g.id ? 'rgba(212,175,55,0.15)' : '#131323', border: activeGroup === g.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', color: activeGroup === g.id ? '#D4AF37' : '#A99ECC' }}>
+                    <g.Icon size={13} strokeWidth={1.8} />
                     {g.label}
                   </button>
                 ))}
@@ -261,9 +263,9 @@ export default function OnboardingPage() {
                 <select value={form.activityType} onChange={e => setForm(f => ({ ...f, activityType: e.target.value }))} style={{ ...inputStyle, cursor: 'pointer' }}>
                   <option value="">Select type...</option>
                   {ACTIVITY_GROUPS.map(group => (
-                    <optgroup key={group.label} label={group.label}>
+                    <optgroup key={group.id} label={group.label}>
                       {group.activities.map(a => (
-                        <option key={a.id} value={a.id}>{a.emoji} {a.label}</option>
+                        <option key={a.id} value={a.id}>{a.label}</option>
                       ))}
                     </optgroup>
                   ))}
@@ -296,15 +298,15 @@ export default function OnboardingPage() {
           ) : <div />}
           <div style={{ display: 'flex', gap: '10px' }}>
             {step === 4 && (
-              <button onClick={() => router.push('/dashboard')} style={{ fontSize: '14px', color: '#A99ECC', background: 'none', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer' }}>Skip</button>
+              <button onClick={() => router.push('/bestie-type')} style={{ fontSize: '14px', color: '#A99ECC', background: 'none', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Skip</button>
             )}
             {step < 4 ? (
               <button onClick={() => setStep(s => s + 1)} disabled={step === 1 && !form.full_name} style={{ padding: '12px 28px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer', opacity: (step === 1 && !form.full_name) ? 0.5 : 1 }}>
                 Continue →
               </button>
             ) : (
-              <button onClick={handleFinish} disabled={loading} style={{ padding: '12px 28px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
-                {loading ? 'Saving...' : 'Finish setup 🎉'}
+              <button onClick={handleFinish} disabled={loading} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 28px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+                {loading ? 'Saving…' : (<><Sparkles size={14} strokeWidth={2} /> Finish setup</>)}
               </button>
             )}
           </div>

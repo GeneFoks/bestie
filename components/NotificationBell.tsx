@@ -69,73 +69,78 @@ export default function NotificationBell({ userId }: { userId: string }) {
     return `${Math.floor(h / 24)}d ago`
   }
 
-  const typeIcon: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
-    booking_request: Inbox,
-    booking_accepted: CheckCircle2,
-    booking_declined: XCircle,
-    booking_completed: PartyPopper,
-    session_confirmed: Users,
-    new_message: MessageCircle,
-    spark_received: Sparkles,
-    join_request: Hand,
-    join_accepted: Trophy,
+  // icon + tint per notification type (visual hierarchy by topic)
+  const typeMeta: Record<string, { Icon: any; color: string; bg: string }> = {
+    booking_request:   { Icon: Inbox,         color: '#D4AF37', bg: 'rgba(212,175,55,0.12)' },
+    booking_accepted:  { Icon: CheckCircle2,  color: '#34D399', bg: 'rgba(52,211,153,0.12)' },
+    booking_declined:  { Icon: XCircle,       color: '#FF6B35', bg: 'rgba(255,107,53,0.12)' },
+    booking_completed: { Icon: PartyPopper,   color: '#34D399', bg: 'rgba(52,211,153,0.12)' },
+    session_confirmed: { Icon: Users,         color: '#34D399', bg: 'rgba(52,211,153,0.12)' },
+    new_message:       { Icon: MessageCircle, color: '#9B7FFF', bg: 'rgba(155,127,255,0.12)' },
+    spark_received:    { Icon: Sparkles,      color: '#D4AF37', bg: 'rgba(212,175,55,0.12)' },
+    join_request:      { Icon: Hand,          color: '#D4AF37', bg: 'rgba(212,175,55,0.12)' },
+    join_accepted:     { Icon: Trophy,        color: '#34D399', bg: 'rgba(52,211,153,0.12)' },
   }
+  const fallbackMeta = { Icon: Bell, color: '#A99ECC', bg: 'rgba(169,158,204,0.12)' }
 
   return (
     <div ref={ref} style={{ position: 'relative' }}>
       <button
         onClick={() => setOpen(o => !o)}
-        style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '10px', color: '#9B93C0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        aria-label="Notifications"
+        style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '10px', color: unread > 0 ? '#D4AF37' : '#A99ECC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-        </svg>
+        <Bell size={20} strokeWidth={2} />
         {unread > 0 && (
-          <span style={{ position: 'absolute', top: '2px', right: '2px', minWidth: '16px', height: '16px', background: '#D4AF37', borderRadius: '999px', fontSize: '10px', fontWeight: 700, color: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>
+          <span style={{ position: 'absolute', top: '2px', right: '2px', minWidth: '16px', height: '16px', background: '#D4AF37', borderRadius: '999px', fontSize: '10px', fontWeight: 700, color: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>
             {unread > 9 ? '9+' : unread}
           </span>
         )}
       </button>
 
       {open && (
-        <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: '320px', background: '#13132a', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '16px', overflow: 'hidden', zIndex: 100, boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            <span style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF' }}>Notifications</span>
+        <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: '340px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', overflow: 'hidden', zIndex: 100, boxShadow: '0 12px 36px rgba(0,0,0,0.5)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <span style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF' }}>Notifications</span>
             {unread > 0 && (
-              <button onClick={markAllRead} style={{ fontSize: '12px', color: '#D4AF37', background: 'none', border: 'none', cursor: 'pointer' }}>
+              <button onClick={markAllRead} style={{ fontSize: '12px', color: '#D4AF37', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
                 Mark all read
               </button>
             )}
           </div>
 
-          <div style={{ maxHeight: '380px', overflowY: 'auto' }}>
+          <div style={{ maxHeight: '420px', overflowY: 'auto' }}>
             {notifications.length === 0 ? (
-              <div style={{ padding: '32px 16px', textAlign: 'center', color: '#9B93C0', fontSize: '13px' }}>
-                No notifications yet
-              </div>
-            ) : notifications.map(n => (
-              <div
-                key={n.id}
-                onClick={() => { markRead(n.id); if (n.link) window.location.href = n.link; setOpen(false) }}
-                style={{ display: 'flex', gap: '12px', padding: '12px 16px', cursor: n.link ? 'pointer' : 'default', background: n.read ? 'transparent' : 'rgba(212,175,55,0.05)', borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.15s' }}
-              >
-                {(() => {
-                  const Icon = typeIcon[n.type] || Bell
-                  return (
-                    <span style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(212,175,55,0.12)', color: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Icon size={16} strokeWidth={2} />
-                    </span>
-                  )
-                })()}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: '13px', fontWeight: n.read ? 400 : 600, color: '#E8E0FF', marginBottom: '2px' }}>{n.title}</p>
-                  {n.body && <p style={{ fontSize: '12px', color: '#9B93C0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.body}</p>}
-                  <p style={{ fontSize: '11px', color: '#6B6490', marginTop: '3px' }}>{timeAgo(n.created_at)}</p>
+              <div style={{ padding: '36px 20px', textAlign: 'center' }}>
+                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(169,158,204,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                  <Bell size={20} color="#A99ECC" strokeWidth={1.6} />
                 </div>
-                {!n.read && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#D4AF37', flexShrink: 0, marginTop: '6px' }} />}
+                <p style={{ fontSize: '13px', color: '#F0EAFF', fontWeight: 600, marginBottom: '4px' }}>You're all caught up</p>
+                <p style={{ fontSize: '12px', color: '#A99ECC' }}>Knocks, sessions, and sparks show up here</p>
               </div>
-            ))}
+            ) : notifications.map(n => {
+              const meta = typeMeta[n.type] || fallbackMeta
+              const Icon = meta.Icon
+              return (
+                <div
+                  key={n.id}
+                  onClick={() => { markRead(n.id); if (n.link) window.location.href = n.link; setOpen(false) }}
+                  style={{ display: 'flex', gap: '12px', padding: '12px 18px', cursor: n.link ? 'pointer' : 'default', background: n.read ? 'transparent' : 'rgba(212,175,55,0.04)', borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = n.read ? 'transparent' : 'rgba(212,175,55,0.04)' }}
+                >
+                  <span style={{ width: '34px', height: '34px', borderRadius: '10px', background: meta.bg, color: meta.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Icon size={16} strokeWidth={2} />
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: '13px', fontWeight: n.read ? 500 : 700, color: '#F0EAFF', marginBottom: '2px', lineHeight: 1.4 }}>{n.title}</p>
+                    {n.body && <p style={{ fontSize: '12px', color: '#A99ECC', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.body}</p>}
+                    <p style={{ fontSize: '11px', color: '#6B6280', marginTop: '3px' }}>{timeAgo(n.created_at)}</p>
+                  </div>
+                  {!n.read && <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: meta.color, flexShrink: 0, marginTop: '8px', boxShadow: `0 0 8px ${meta.color}80` }} />}
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
