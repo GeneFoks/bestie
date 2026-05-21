@@ -1,17 +1,26 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { Check, HelpCircle, X } from 'lucide-react'
+
+type RSVP = 'going' | 'maybe' | 'cant_make'
 
 type Props = {
   eventId: string
   isFull: boolean
 }
 
+const OPTIONS: { id: RSVP; label: string; Icon: any; color: string; bg: string; border: string }[] = [
+  { id: 'going',     label: 'Going',  Icon: Check,      color: '#34D399', bg: 'rgba(52,211,153,0.15)',  border: 'rgba(52,211,153,0.40)' },
+  { id: 'maybe',     label: 'Maybe',  Icon: HelpCircle, color: '#D4AF37', bg: 'rgba(212,175,55,0.15)',  border: 'rgba(212,175,55,0.40)' },
+  { id: 'cant_make', label: "Can't",  Icon: X,          color: '#FF6B35', bg: 'rgba(255,107,53,0.10)',  border: 'rgba(255,107,53,0.30)' },
+]
+
 export default function EventGoingButton({ eventId, isFull }: Props) {
   const [userId, setUserId] = useState<string | null>(null)
-  const [isGoing, setIsGoing] = useState(false)
+  const [rsvp, setRsvp] = useState<RSVP | null>(null)
   const [loading, setLoading] = useState(true)
   const [acting, setActing] = useState(false)
 
@@ -22,25 +31,27 @@ export default function EventGoingButton({ eventId, isFull }: Props) {
       setUserId(uid)
       const { data } = await supabase
         .from('crew_event_attendees')
-        .select('event_id')
+        .select('status')
         .eq('event_id', eventId)
         .eq('user_id', uid)
         .maybeSingle()
-      setIsGoing(!!data)
+      setRsvp((data?.status as RSVP) || null)
       setLoading(false)
     })
   }, [eventId])
 
-  const toggle = async (e: React.MouseEvent) => {
-    e.preventDefault()
+  const setStatus = async (next: RSVP | null) => {
     if (!userId || acting) return
     setActing(true)
-    if (isGoing) {
+    if (next === null) {
       await supabase.from('crew_event_attendees').delete().eq('event_id', eventId).eq('user_id', userId)
-      setIsGoing(false)
+      setRsvp(null)
+    } else if (!rsvp) {
+      await supabase.from('crew_event_attendees').insert({ event_id: eventId, user_id: userId, status: next })
+      setRsvp(next)
     } else {
-      await supabase.from('crew_event_attendees').insert({ event_id: eventId, user_id: userId })
-      setIsGoing(true)
+      await supabase.from('crew_event_attendees').update({ status: next }).eq('event_id', eventId).eq('user_id', userId)
+      setRsvp(next)
     }
     setActing(false)
   }
@@ -50,22 +61,22 @@ export default function EventGoingButton({ eventId, isFull }: Props) {
     return (
       <Link
         href={`/events/${eventId}`}
-        style={{ display: 'block', marginTop: '16px', padding: '13px', borderRadius: '12px', textAlign: 'center', fontSize: '15px', fontWeight: 800, background: '#34D399', color: '#09090F', textDecoration: 'none' }}
+        style={{ display: 'block', marginTop: '16px', padding: '13px', borderRadius: '12px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #34D399 0%, #2AAA75 100%)', color: '#09090F', textDecoration: 'none' }}
       >
-        I'm going →
+        RSVP — sign in →
       </Link>
     )
   }
 
   if (loading) {
     return (
-      <div style={{ marginTop: '16px', padding: '13px', borderRadius: '12px', textAlign: 'center', fontSize: '15px', fontWeight: 800, background: 'rgba(255,255,255,0.10)', color: '#A99ECC' }}>
+      <div style={{ marginTop: '16px', padding: '13px', borderRadius: '12px', textAlign: 'center', fontSize: '15px', background: 'rgba(255,255,255,0.06)', color: '#A99ECC' }}>
         …
       </div>
     )
   }
 
-  if (isFull && !isGoing) {
+  if (isFull && rsvp !== 'going') {
     return (
       <Link
         href={`/events/${eventId}`}
@@ -77,28 +88,35 @@ export default function EventGoingButton({ eventId, isFull }: Props) {
   }
 
   return (
-    <div style={{ marginTop: '16px', display: 'flex', gap: '8px' }}>
-      <button
-        onClick={toggle}
-        disabled={acting}
-        style={{
-          flex: 1, padding: '13px', borderRadius: '12px', textAlign: 'center', fontSize: '15px', fontWeight: 800,
-          border: 'none', cursor: acting ? 'not-allowed' : 'pointer', opacity: acting ? 0.7 : 1,
-          background: isGoing ? 'rgba(57,255,20,0.12)' : '#34D399',
-          color: isGoing ? '#34D399' : '#09090F',
-          outline: isGoing ? '1px solid rgba(57,255,20,0.35)' : 'none',
-          fontFamily: 'Plus Jakarta Sans, sans-serif',
-        }}
-      >
-        {acting ? '…' : isGoing ? '✓ Going' : "I'm going →"}
-      </button>
-      <Link
-        href={`/events/${eventId}`}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', borderRadius: '12px', background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.1)', color: '#A99ECC', textDecoration: 'none', fontSize: '16px', flexShrink: 0 }}
-        title="View event"
-      >
-        →
-      </Link>
+    <div style={{ marginTop: '14px' }}>
+      <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '1.5px', color: '#A99ECC', marginBottom: '8px' }}>YOUR RSVP</p>
+      <div style={{ display: 'flex', gap: '6px' }}>
+        {OPTIONS.map(opt => {
+          const active = rsvp === opt.id
+          return (
+            <button
+              key={opt.id}
+              onClick={() => setStatus(active ? null : opt.id)}
+              disabled={acting}
+              aria-label={opt.label}
+              aria-pressed={active}
+              style={{
+                flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                padding: '11px 8px', borderRadius: '12px', fontSize: '13px', fontWeight: 700,
+                cursor: acting ? 'not-allowed' : 'pointer',
+                background: active ? opt.bg : '#131323',
+                border: `1px solid ${active ? opt.border : 'rgba(255,255,255,0.10)'}`,
+                color: active ? opt.color : '#A99ECC',
+                fontFamily: 'Plus Jakarta Sans, sans-serif',
+                transition: 'all 0.15s',
+              }}
+            >
+              <opt.Icon size={14} strokeWidth={2.2} />
+              {opt.label}
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }

@@ -54,12 +54,12 @@ export default async function CrewPage({ params }) {
   const [{ data: members }, { data: upcomingEvents }, { data: ratings }] = await Promise.all([
     supabase
       .from('crew_members')
-      .select('joined_at, user:users(id, username, full_name, avatar_url, bestie_score, city)')
+      .select('joined_at, user:users(id, username, full_name, avatar_url, bestie_score, city, free_today_at)')
       .eq('crew_id', crew.id)
       .order('bestie_score', { ascending: false, foreignTable: 'users' }),
     supabase
       .from('crew_events')
-      .select('id, title, datetime, location, is_members_only, max_attendees, attendees:crew_event_attendees(count)')
+      .select('id, title, datetime, location, is_members_only, max_attendees, attendees:crew_event_attendees(status)')
       .eq('crew_id', crew.id)
       .gte('datetime', new Date().toISOString())
       .order('datetime', { ascending: true })
@@ -171,6 +171,46 @@ export default async function CrewPage({ params }) {
         <CrewDeleteButton crewId={crew.id} captainId={crew.captain_id} crewName={crew.name} />
         <div style={{ marginBottom: '8px' }} />
 
+        {/* Free Today in this crew — spontaneous meetup signal */}
+        {(() => {
+          const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
+          const freeMembers = (members || []).filter((m: any) =>
+            m.user?.free_today_at && new Date(m.user.free_today_at) >= todayStart
+          )
+          if (freeMembers.length === 0) return null
+          return (
+            <div style={{ marginBottom: '20px', padding: '16px 18px', borderRadius: '16px', background: 'linear-gradient(90deg, rgba(52,211,153,0.10) 0%, transparent 100%)', border: '1px solid rgba(52,211,153,0.25)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', gap: '10px' }}>
+                <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#34D399', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#34D399', boxShadow: '0 0 8px rgba(52,211,153,0.6)' }} />
+                  FREE TODAY · {freeMembers.length} IN CREW
+                </p>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {freeMembers.slice(0, 12).map((m: any) => (
+                  <Link key={m.user.id} href={`/${m.user.username}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 10px', borderRadius: '999px', background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.20)', textDecoration: 'none' }}>
+                    <div style={{ position: 'relative', width: '22px', height: '22px', flexShrink: 0 }}>
+                      <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {m.user.avatar_url
+                          ? <img src={m.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : <span style={{ fontSize: '10px', fontWeight: 700, color: '#34D399' }}>{m.user.full_name?.[0]}</span>
+                        }
+                      </div>
+                      <span style={{ position: 'absolute', bottom: '-1px', right: '-1px', width: '7px', height: '7px', borderRadius: '50%', background: '#34D399', border: '1.5px solid #09090F' }} />
+                    </div>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#F0EAFF' }}>{m.user.full_name?.split(' ')[0]}</span>
+                  </Link>
+                ))}
+                {freeMembers.length > 12 && (
+                  <span style={{ padding: '6px 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)', fontSize: '12px', color: '#A99ECC' }}>
+                    +{freeMembers.length - 12} more
+                  </span>
+                )}
+              </div>
+            </div>
+          )
+        })()}
+
         {/* Events */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
           <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF' }}>Events</h2>
@@ -221,7 +261,7 @@ export default async function CrewPage({ params }) {
                     </div>
                     <EventGoingButton
                       eventId={event.id}
-                      isFull={!!(event.max_attendees && (event.attendees?.[0]?.count ?? 0) >= event.max_attendees)}
+                      isFull={!!(event.max_attendees && (event.attendees || []).filter((a: any) => (a.status || 'going') === 'going').length >= event.max_attendees)}
                     />
                   </div>
                 )
