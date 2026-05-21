@@ -9,6 +9,8 @@ import { PageLoader } from '@/components/Loading'
 import { Users, Hand, Pin, PinOff, Reply, Smile, MoreHorizontal, X, AtSign } from 'lucide-react'
 import { createNotification } from '@/lib/notifications'
 import { buzz } from '@/lib/celebrate'
+import AudioRecorder from '@/components/AudioRecorder'
+import AudioMessage from '@/components/AudioMessage'
 
 const QUICK_REACTIONS = ['👍', '❤️', '🔥', '😂', '👏', '🙏']
 
@@ -18,6 +20,9 @@ type Message = {
   created_at: string
   reply_to_id: string | null
   pinned_at: string | null
+  media_url: string | null
+  media_type: 'audio' | null
+  media_duration: number | null
   sender: {
     id: string
     username: string
@@ -79,7 +84,7 @@ export default function CrewChatPage() {
       // Load messages
       const { data: msgs } = await supabase
         .from('crew_messages')
-        .select('id, content, created_at, reply_to_id, pinned_at, sender:users!sender_id(id, username, full_name, avatar_url)')
+        .select('id, content, created_at, reply_to_id, pinned_at, media_url, media_type, media_duration, sender:users!sender_id(id, username, full_name, avatar_url)')
         .eq('crew_id', crewData.id)
         .order('created_at', { ascending: true })
         .limit(150)
@@ -103,7 +108,7 @@ export default function CrewChatPage() {
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'crew_messages', filter: `crew_id=eq.${crewData.id}` }, async (payload) => {
           const { data: msg } = await supabase
             .from('crew_messages')
-            .select('id, content, created_at, reply_to_id, pinned_at, sender:users!sender_id(id, username, full_name, avatar_url)')
+            .select('id, content, created_at, reply_to_id, pinned_at, media_url, media_type, media_duration, sender:users!sender_id(id, username, full_name, avatar_url)')
             .eq('id', payload.new.id)
             .single()
           if (msg) setMessages(prev => prev.some(m => m.id === msg.id) ? prev : [...prev, msg])
@@ -186,6 +191,42 @@ export default function CrewChatPage() {
     }
     setSending(false)
     inputRef.current?.focus()
+  }
+
+  const sendAudio = async (blob: Blob, durationSec: number) => {
+    if (!crew || !userId) return
+    setSending(true)
+    try {
+      const ext = blob.type.includes('mp4') ? 'm4a' : 'webm'
+      const path = `${userId}/${crew.id}-${Date.now()}.${ext}`
+      const { error: upErr } = await supabase.storage
+        .from('chat-audio')
+        .upload(path, blob, { cacheControl: '3600', contentType: blob.type, upsert: false })
+      if (upErr) { console.error(upErr); setSending(false); return }
+      const { data: { publicUrl } } = supabase.storage.from('chat-audio').getPublicUrl(path)
+
+      const replyId = replyingTo?.id || null
+      setReplyingTo(null)
+      const { data: msg } = await supabase
+        .from('crew_messages')
+        .insert({
+          crew_id: crew.id,
+          sender_id: userId,
+          content: '',
+          reply_to_id: replyId,
+          media_url: publicUrl,
+          media_type: 'audio',
+          media_duration: durationSec,
+        })
+        .select('id, content, created_at, reply_to_id, pinned_at, media_url, media_type, media_duration, sender:users!sender_id(id, username, full_name, avatar_url)')
+        .single()
+      if (msg) {
+        setMessages(prev => prev.some(m => m.id === msg.id) ? prev : [...prev, msg])
+        buzz('success')
+      }
+    } finally {
+      setSending(false)
+    }
   }
 
   const toggleReaction = async (messageId: string, emoji: string) => {
@@ -330,9 +371,13 @@ export default function CrewChatPage() {
                       </div>
                     )}
                     <div style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}>
-                      <div style={{ fontSize: '14px', color: '#C8C0E0', lineHeight: 1.6, wordBreak: 'break-word', paddingRight: '40px' }}>
-                        {renderWithMentions(msg.content)}
-                      </div>
+                      {msg.media_url && msg.media_type === 'audio' ? (
+                        <AudioMessage url={msg.media_url} durationSec={msg.media_duration} />
+                      ) : (
+                        <div style={{ fontSize: '14px', color: '#C8C0E0', lineHeight: 1.6, wordBreak: 'break-word', paddingRight: '40px' }}>
+                          {renderWithMentions(msg.content)}
+                        </div>
+                      )}
                       {/* Hover actions */}
                       <div style={{ position: 'absolute', top: '-2px', right: '-4px', display: 'flex', gap: '2px', opacity: actionsFor === msg.id ? 1 : 0, transition: 'opacity 0.15s', background: '#161628', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '8px', padding: '2px' }}>
                         <button onClick={(e) => { e.stopPropagation(); setReactionPickerFor(reactionPickerFor === msg.id ? null : msg.id) }} aria-label="React" style={iconBtn}><Smile size={14} strokeWidth={1.8} /></button>
@@ -425,13 +470,16 @@ export default function CrewChatPage() {
           maxLength={1000}
           style={{ flex: 1, padding: '12px 14px', borderRadius: '12px', fontSize: '14px', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', outline: 'none', resize: 'none', lineHeight: 1.5, maxHeight: '120px', overflowY: 'auto', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
         />
-        <button
-          onClick={send}
-          disabled={!input.trim() || sending}
-          style={{ padding: '12px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: input.trim() ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.10)', color: input.trim() ? '#09090F' : '#A99ECC', border: 'none', cursor: input.trim() ? 'pointer' : 'not-allowed', flexShrink: 0, transition: 'all 0.15s', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
-        >
-          Send
-        </button>
+        <AudioRecorder onSend={sendAudio} disabled={sending} />
+        {input.trim() && (
+          <button
+            onClick={send}
+            disabled={!input.trim() || sending}
+            style={{ padding: '12px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer', flexShrink: 0, transition: 'all 0.15s', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+          >
+            Send
+          </button>
+        )}
       </div>
     </div>
   )
