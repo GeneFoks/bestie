@@ -134,11 +134,17 @@ export default function HomePage() {
         .mobile-menu { display: none; }
 
         /* ── Layout grids ── */
-        .providers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .providers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; width: 100%; max-width: 100%; }
+        .providers-grid > * { min-width: 0; max-width: 100%; }
+        /* Force single column on narrow phones where 280px min could overflow */
+        @media (max-width: 360px) {
+          .providers-grid { grid-template-columns: 1fr; }
+        }
         .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
         .how-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; }
         .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 64px; align-items: center; }
-        .groups-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+        .groups-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; width: 100%; }
+        .groups-grid > * { min-width: 0; }
 
         /* ── Hero video — respect reduced motion ── */
         @media (prefers-reduced-motion: reduce) {
@@ -396,8 +402,8 @@ export default function HomePage() {
       </section>
 
       {/* ── ACTIVITY GROUPS ── */}
-      <section style={{ padding: '0 20px 56px' }}>
-        <div ref={groupsRef} className={`reveal ${groupsVisible ? 'visible' : ''}`} style={{ maxWidth: '1100px', margin: '0 auto' }}>
+      <section style={{ padding: '0 20px 56px', overflow: 'hidden' }}>
+        <div ref={groupsRef} className={`reveal ${groupsVisible ? 'visible' : ''}`} style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
           <p className="section-label" style={{ textAlign: 'center' }}>FIND BY VIBE</p>
           <div className="groups-grid">
             {ACTIVITY_GROUPS.map(group => {
@@ -449,8 +455,8 @@ export default function HomePage() {
       </section>
 
       {/* ── TOP BESTIES ── */}
-      <section style={{ padding: '0 20px 72px' }}>
-        <div ref={leaderRef} className={`reveal ${leaderVisible ? 'visible' : ''}`} style={{ maxWidth: '1100px', margin: '0 auto' }}>
+      <section style={{ padding: '0 20px 72px', overflow: 'hidden' }}>
+        <div ref={leaderRef} className={`reveal ${leaderVisible ? 'visible' : ''}`} style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '28px' }}>
             <div>
               <p className="section-label">LEADERBOARD</p>

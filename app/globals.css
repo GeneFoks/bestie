@@ -30,12 +30,19 @@
 
 html, body {
   max-width: 100vw;
+  width: 100%;
   overflow-x: hidden;
   background: var(--bg);
   color: var(--text-primary);
   font-family: 'Plus Jakarta Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* iOS Safari fix — `overflow-x: hidden` on body alone is unreliable
+   when a transformed/sticky child exists. Lock the html element too. */
+html {
+  position: relative;
 }
 
 ::placeholder {
