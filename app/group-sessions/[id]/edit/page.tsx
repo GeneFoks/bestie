@@ -1,10 +1,11 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { PageLoader } from '@/components/Loading'
 import { ImagePlus, X } from 'lucide-react'
 
 const ACTIVITY_GROUPS = [
@@ -36,44 +37,56 @@ const ACTIVITY_GROUPS = [
   ]},
 ]
 
-export default function NewGroupSessionPage() {
+export default function EditGroupSessionPage({ params }: { params: { id: string } }) {
   const router = useRouter()
-  const [userId, setUserId] = useState(null)
+  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState({
-    title: '',
-    activity_type: '',
-    description: '',
-    scheduled_at: '',
-    location: '',
-    max_participants: 6,
-  })
+  const [userId, setUserId] = useState<string | null>(null)
+  const [form, setForm] = useState<any>(null)
   const [coverFile, setCoverFile] = useState<File | null>(null)
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
+  const [removeCover, setRemoveCover] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/login'); return }
+      setUserId(user.id)
+      const { data: gs } = await supabase.from('group_sessions').select('*').eq('id', params.id).single()
+      if (!gs) { setLoading(false); return }
+      if (gs.host_id !== user.id) { router.push(`/group-sessions/${params.id}`); return }
+      setForm({
+        title: gs.title || '',
+        activity_type: gs.activity_type || '',
+        description: gs.description || '',
+        scheduled_at: gs.scheduled_at ? gs.scheduled_at.slice(0, 16) : '',
+        location: gs.location || '',
+        max_participants: gs.max_participants || 6,
+        cover_image_url: gs.cover_image_url || null,
+      })
+      if (gs.cover_image_url) setCoverPreview(gs.cover_image_url)
+      setLoading(false)
+    })()
+  }, [params.id])
 
   const handleCoverPick = (e: any) => {
     const f = e.target.files?.[0]
     if (!f) return
     setCoverFile(f)
     setCoverPreview(URL.createObjectURL(f))
+    setRemoveCover(false)
   }
   const clearCover = () => {
-    setCoverFile(null); setCoverPreview(null)
+    setCoverFile(null); setCoverPreview(null); setRemoveCover(true)
     if (fileRef.current) fileRef.current.value = ''
   }
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) router.push('/login')
-      else setUserId(user.id)
-    })
-  }, [])
-
-  const handleCreate = async () => {
-    if (!form.title || !form.scheduled_at) return
+  const handleSave = async () => {
+    if (!form?.title || !form?.scheduled_at) return
     setSaving(true)
-    let cover_image_url: string | null = null
+    let cover_image_url = form.cover_image_url
+    if (removeCover) cover_image_url = null
     if (coverFile && userId) {
       const ext = coverFile.name.split('.').pop()?.toLowerCase() || 'jpg'
       const path = `${userId}/${Date.now()}.${ext}`
@@ -83,8 +96,7 @@ export default function NewGroupSessionPage() {
         cover_image_url = pub.publicUrl
       }
     }
-    const { data, error } = await supabase.from('group_sessions').insert({
-      host_id: userId,
+    const { error } = await supabase.from('group_sessions').update({
       title: form.title,
       activity_type: form.activity_type || null,
       description: form.description || null,
@@ -92,10 +104,12 @@ export default function NewGroupSessionPage() {
       location: form.location || null,
       max_participants: parseInt(form.max_participants) || 6,
       cover_image_url,
-    }).select().single()
+    }).eq('id', params.id)
     setSaving(false)
-    if (!error && data) router.push(`/group-sessions/${data.id}`)
+    if (!error) router.push(`/group-sessions/${params.id}`)
   }
+
+  if (loading || !form) return <PageLoader message="Loading…" />
 
   const inputStyle = { width: '100%', padding: '12px 14px', borderRadius: '12px', fontSize: '14px', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', outline: 'none', boxSizing: 'border-box' as const }
   const labelStyle = { fontSize: '12px', fontWeight: 600, color: '#A99ECC', letterSpacing: '0.5px', marginBottom: '6px', display: 'block' }
@@ -104,13 +118,12 @@ export default function NewGroupSessionPage() {
     <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <Link href="/dashboard" style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>← Dashboard</Link>
+        <Link href={`/group-sessions/${params.id}`} style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>← Cancel</Link>
       </nav>
 
       <div style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 24px' }}>
-        <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '8px' }}>GROUP SESSION</p>
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#F0EAFF', marginBottom: '8px' }}>Host a group meetup</h1>
-        <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '32px' }}>Invite multiple Besties to one event. Share the link, let them join.</p>
+        <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '8px' }}>EDIT SESSION</p>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#F0EAFF', marginBottom: '32px' }}>Update your group session</h1>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
@@ -121,12 +134,15 @@ export default function NewGroupSessionPage() {
                 <button type="button" onClick={clearCover} aria-label="Remove cover" style={{ position: 'absolute', top: '10px', right: '10px', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.15)', color: '#F0EAFF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <X size={16} strokeWidth={2.2} />
                 </button>
+                <label style={{ position: 'absolute', bottom: '10px', right: '10px', padding: '6px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 600, background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.15)', color: '#F0EAFF', cursor: 'pointer' }}>
+                  Replace
+                  <input ref={fileRef} type="file" accept="image/*" onChange={handleCoverPick} style={{ display: 'none' }} />
+                </label>
               </div>
             ) : (
               <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '28px 16px', borderRadius: '14px', background: 'rgba(212,175,55,0.04)', border: '2px dashed rgba(212,175,55,0.3)', color: '#A99ECC', cursor: 'pointer' }}>
                 <ImagePlus size={22} strokeWidth={1.8} color="#D4AF37" />
                 <span style={{ fontSize: '13px', fontWeight: 600, color: '#F0EAFF' }}>Add a cover image</span>
-                <span style={{ fontSize: '11px', color: '#A99ECC' }}>Optional · shows full-width on the card and in shared previews</span>
                 <input ref={fileRef} type="file" accept="image/*" onChange={handleCoverPick} style={{ display: 'none' }} />
               </label>
             )}
@@ -134,7 +150,7 @@ export default function NewGroupSessionPage() {
 
           <div>
             <label style={labelStyle}>Title *</label>
-            <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Sunday morning hike at Runyon" style={inputStyle} />
+            <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} style={inputStyle} />
           </div>
 
           <div>
@@ -152,7 +168,7 @@ export default function NewGroupSessionPage() {
 
           <div>
             <label style={labelStyle}>Description</label>
-            <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="What's the vibe? What should people bring?" rows={3} style={{ ...inputStyle, resize: 'vertical' as const }} />
+            <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} style={{ ...inputStyle, resize: 'vertical' as const }} />
           </div>
 
           <div>
@@ -162,7 +178,7 @@ export default function NewGroupSessionPage() {
 
           <div>
             <label style={labelStyle}>Location</label>
-            <input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="Runyon Canyon Park, Los Angeles" style={inputStyle} />
+            <input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={inputStyle} />
           </div>
 
           <div>
@@ -177,9 +193,9 @@ export default function NewGroupSessionPage() {
             </div>
           </div>
 
-          <button onClick={handleCreate} disabled={saving || !form.title || !form.scheduled_at}
+          <button onClick={handleSave} disabled={saving || !form.title || !form.scheduled_at}
             style={{ padding: '14px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: form.title && form.scheduled_at ? 'pointer' : 'not-allowed', opacity: form.title && form.scheduled_at ? 1 : 0.5, marginTop: '8px' }}>
-            {saving ? 'Creating...' : '🎉 Create Group Session'}
+            {saving ? 'Saving...' : 'Save changes'}
           </button>
         </div>
       </div>
