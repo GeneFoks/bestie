@@ -17,6 +17,7 @@ import CrewRoleManager, { RoleBadge } from './CrewRoleManager'
 import CrewLeaderboard from './CrewLeaderboard'
 import CrewAnniversary from './CrewAnniversary'
 import CrewVibeChip from './CrewVibeChip'
+import CrewBadgesRow from './CrewBadgesRow'
 import { Search, Lock, MessageCircle, Plus, Clock, MapPin, Flame, Zap, Trophy, Medal, Award, Users } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 
@@ -127,6 +128,9 @@ export default async function CrewPage({ params }) {
         <div style={{ marginBottom: '14px' }}>
           <CrewVibeChip crewId={crew.id} />
         </div>
+
+        {/* Streak + badges */}
+        <CrewBadgesRow crewId={crew.id} />
 
         {/* Description + Rating */}
         {crew.description && (
