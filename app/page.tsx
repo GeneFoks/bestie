@@ -11,7 +11,7 @@ import {
   Zap, Gamepad2, BookOpen, Palette, Heart, Moon, Coffee,
   Contact, Trophy, Flame, CalendarDays, Bell, Users, Map, Globe,
   Share2, Camera, Sparkles, ShieldCheck, Search, UserCheck,
-  Target, Star,
+  Target, Star, Network,
 } from 'lucide-react'
 
 const ACTIVITY_GROUPS = [
