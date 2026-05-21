@@ -6,6 +6,8 @@ import ProfileNav from '@/components/ProfileNav'
 import EventActions from './EventActions'
 import DeleteEventButton from './DeleteEventButton'
 import ShareEventButton from '@/components/ShareEventButton'
+import CheckInButton from './CheckInButton'
+import EventPhotoGallery from './EventPhotoGallery'
 import { EmptyState } from '@/components/EmptyState'
 import { Users } from 'lucide-react'
 
@@ -134,6 +136,12 @@ export default async function EventPage({ params }) {
               isFull={spotsLeft !== null && spotsLeft <= 0}
             />
           )}
+          <CheckInButton
+            eventId={event.id}
+            eventTitle={event.title}
+            isPast={isPast}
+            startsAt={event.datetime}
+          />
           <DeleteEventButton
             eventId={event.id}
             captainId={event.crew?.captain_id}
@@ -202,6 +210,9 @@ export default async function EventPage({ params }) {
             </div>
           </>
         )}
+
+        {/* Photo album — appears once anyone uploaded a photo or checked in with one */}
+        <EventPhotoGallery eventId={event.id} />
       </div>
     </div>
   )
