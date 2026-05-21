@@ -47,6 +47,11 @@ export default async function EventPage({ params }) {
     .eq('event_id', event.id)
     .order('joined_at', { ascending: true })
 
+  const { data: coHosts } = await supabase
+    .from('crew_event_co_hosts')
+    .select('crew:crews(id, name, slug, avatar_url)')
+    .eq('event_id', event.id)
+
   const allAttendees = attendees || []
   const goingList = allAttendees.filter(a => (a.status || 'going') === 'going')
   const maybeList = allAttendees.filter(a => a.status === 'maybe')
@@ -74,9 +79,19 @@ export default async function EventPage({ params }) {
 
           {/* Crew link + status */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '8px' }}>
-            <Link href={`/crews/${event.crew?.slug}`} style={{ fontSize: '13px', fontWeight: 600, color: '#D4AF37', textDecoration: 'none', padding: '4px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
-              {event.crew?.name}
-            </Link>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+              <Link href={`/crews/${event.crew?.slug}`} style={{ fontSize: '13px', fontWeight: 600, color: '#D4AF37', textDecoration: 'none', padding: '4px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                {event.crew?.name}
+              </Link>
+              {coHosts && coHosts.length > 0 && coHosts.map((ch: any) => ch.crew && (
+                <span key={ch.crew.id} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#A99ECC' }}>
+                  <span style={{ fontSize: '10px', color: '#6B6280' }}>×</span>
+                  <Link href={`/crews/${ch.crew.slug}`} style={{ fontSize: '13px', fontWeight: 600, color: '#9B7FFF', textDecoration: 'none', padding: '4px 12px', borderRadius: '999px', background: 'rgba(155,127,255,0.10)', border: '1px solid rgba(155,127,255,0.25)' }}>
+                    {ch.crew.name}
+                  </Link>
+                </span>
+              ))}
+            </div>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <ShareEventButton eventId={event.id} eventTitle={event.title} />
               {isPast && <span style={{ fontSize: '12px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(155,147,192,0.1)', border: '1px solid rgba(155,147,192,0.2)', color: '#A99ECC', fontWeight: 600 }}>Ended</span>}

@@ -312,7 +312,14 @@ export default async function ProfilePage({ params }) {
                     </div>
                     {/* Details */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF', marginBottom: '3px' }}>{pkg.title}</p>
+                      <p style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF', marginBottom: '3px', display: 'inline-flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        {pkg.title}
+                        {pkg.crew_id && (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', padding: '1px 7px', borderRadius: '999px', background: 'rgba(155,127,255,0.12)', border: '1px solid rgba(155,127,255,0.35)', color: '#9B7FFF', fontSize: '9px', fontWeight: 700, letterSpacing: '0.5px' }}>
+                            <Lock size={9} strokeWidth={2.2} /> CREW
+                          </span>
+                        )}
+                      </p>
                       {pkg.description && <p style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.5, marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pkg.description}</p>}
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                         {ACTIVITY_DURATION[pkg.activity_type] && (

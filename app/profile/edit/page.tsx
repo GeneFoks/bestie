@@ -121,9 +121,10 @@ export default function EditProfilePage() {
   const [avatarPreview, setAvatarPreview] = useState(null)
   const [packages, setPackages] = useState([])
   const [showAddForm, setShowAddForm] = useState(false)
-  const [newPkg, setNewPkg] = useState({ title: '', activity_type: '', description: '', price_per_session: '', is_free: false, scheduled_at: '' })
+  const [newPkg, setNewPkg] = useState({ title: '', activity_type: '', description: '', price_per_session: '', is_free: false, scheduled_at: '', crew_id: '' })
   const [editingPkg, setEditingPkg] = useState<string | null>(null)
   const [editPkg, setEditPkg] = useState({ title: '', activity_type: '', description: '', price_per_session: '', is_free: false, scheduled_at: '' })
+  const [myCrews, setMyCrews] = useState<Array<{ id: string; name: string }>>([])
   const [selectedLanguages, setSelectedLanguages] = useState([])
   const [form, setForm] = useState({ full_name: '', username: '', bio: '', city: '', country: '', avatar_url: '' })
   const [locationShared, setLocationShared] = useState(false)
@@ -142,7 +143,10 @@ export default function EditProfilePage() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.push('/login'); return }
       setUserId(session.user.id)
-      const { data } = await supabase.from('users').select('*, activity_packages(*)').eq('id', session.user.id).single()
+      const [{ data }, { data: crews }] = await Promise.all([
+        supabase.from('users').select('*, activity_packages(*)').eq('id', session.user.id).single(),
+        supabase.from('crew_members').select('crew:crews(id, name)').eq('user_id', session.user.id),
+      ])
       if (data) {
         setForm({ full_name: data.full_name || '', username: data.username || '', bio: data.bio || '', city: data.city || '', country: data.country || '', avatar_url: data.avatar_url || '' })
         setPackages(data.activity_packages || [])
@@ -151,6 +155,7 @@ export default function EditProfilePage() {
         if (data.lat && data.lng) setLocationShared(true)
         if (data.avatar_url) setAvatarPreview(data.avatar_url)
       }
+      setMyCrews((crews || []).map((c: any) => c.crew).filter(Boolean))
       setLoading(false)
     }
     load()
@@ -245,10 +250,11 @@ export default function EditProfilePage() {
       price_per_session: newPkg.is_free ? 0 : parseFloat(newPkg.price_per_session) || 0,
       is_free: newPkg.is_free,
       scheduled_at: newPkg.scheduled_at || null,
+      crew_id: newPkg.crew_id || null,
     }).select().single()
     if (data) {
       setPackages(p => [...p, data])
-      setNewPkg({ title: '', activity_type: '', description: '', price_per_session: '', is_free: false, scheduled_at: '' })
+      setNewPkg({ title: '', activity_type: '', description: '', price_per_session: '', is_free: false, scheduled_at: '', crew_id: '' })
       setShowAddForm(false)
     }
   }
@@ -498,6 +504,24 @@ export default function EditProfilePage() {
                   <div>
                     <label style={labelStyle}>Price ($)</label>
                     <input type="number" value={newPkg.price_per_session} onChange={e => setNewPkg(p => ({ ...p, price_per_session: e.target.value }))} placeholder="20" style={inputStyle} />
+                  </div>
+                )}
+                {myCrews.length > 0 && (
+                  <div>
+                    <label style={labelStyle}>Crew exclusive (optional)</label>
+                    <select
+                      value={newPkg.crew_id}
+                      onChange={e => setNewPkg(p => ({ ...p, crew_id: e.target.value }))}
+                      style={{ ...inputStyle, cursor: 'pointer' }}
+                    >
+                      <option value="">Anyone can book</option>
+                      {myCrews.map(c => (
+                        <option key={c.id} value={c.id}>Only {c.name} members</option>
+                      ))}
+                    </select>
+                    <p style={{ fontSize: '11px', color: '#A99ECC', marginTop: '4px' }}>
+                      Lock this offering so only crew members can book it.
+                    </p>
                   </div>
                 )}
                 <div style={{ display: 'flex', gap: '8px' }}>

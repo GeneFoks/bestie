@@ -25,6 +25,8 @@ export default function NewEventPage() {
   const [isMembersOnly, setIsMembersOnly] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [otherCrews, setOtherCrews] = useState<Array<{ id: string; name: string }>>([])
+  const [coHosts, setCoHosts] = useState<string[]>([])
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -44,6 +46,17 @@ export default function NewEventPage() {
       }
       setUserId(uid)
       setCrewId(crew.id)
+
+      // Other crews this captain is a member of — potential co-hosts
+      const { data: memberships } = await supabase
+        .from('crew_members')
+        .select('crew:crews(id, name)')
+        .eq('user_id', uid)
+      const others = (memberships || [])
+        .map((m: any) => m.crew)
+        .filter((c: any) => c && c.id !== crew.id)
+      setOtherCrews(others)
+
       setAuthLoading(false)
     })
   }, [slug])
@@ -70,6 +83,13 @@ export default function NewEventPage() {
       .single()
 
     if (err) { setError(err.message); setSubmitting(false); return }
+
+    // Attach co-host crews (best effort)
+    if (coHosts.length > 0) {
+      await supabase.from('crew_event_co_hosts').insert(
+        coHosts.map(cid => ({ event_id: event.id, crew_id: cid }))
+      )
+    }
 
     // Auto-join captain as attendee
     await supabase.from('crew_event_attendees').insert({ event_id: event.id, user_id: userId })
@@ -147,6 +167,33 @@ export default function NewEventPage() {
               ))}
             </div>
           </div>
+
+          {otherCrews.length > 0 && (
+            <div>
+              <label style={labelStyle}>CO-HOST WITH (optional)</label>
+              <p style={{ fontSize: '12px', color: '#A99ECC', marginBottom: '10px' }}>
+                Members of co-host crews can also RSVP to this event.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {otherCrews.map(c => {
+                  const checked = coHosts.includes(c.id)
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => setCoHosts(prev => checked ? prev.filter(id => id !== c.id) : [...prev, c.id])}
+                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', borderRadius: '12px', border: checked ? '1px solid rgba(155,127,255,0.40)' : '1px solid rgba(255,255,255,0.10)', background: checked ? 'rgba(155,127,255,0.08)' : '#111120', cursor: 'pointer', textAlign: 'left', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+                    >
+                      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '6px', border: checked ? 'none' : '1.5px solid rgba(255,255,255,0.20)', background: checked ? '#9B7FFF' : 'transparent', color: '#09090F', fontSize: '13px', fontWeight: 700 }}>
+                        {checked ? '✓' : ''}
+                      </span>
+                      <span style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>{c.name}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {error && <p style={{ fontSize: '13px', color: '#FF6B35', padding: '12px', background: 'rgba(255,107,53,0.08)', borderRadius: '10px', border: '1px solid rgba(255,107,53,0.2)' }}>{error}</p>}
 
