@@ -270,7 +270,7 @@ export default async function ProfilePage({ params }) {
             </div>
             {/* Action buttons */}
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-              <KnockButton profileId={profile.id} />
+              <KnockButton profileId={profile.id} profileUsername={profile.username} />
               <BlockReportButton profileUserId={profile.id} />
             </div>
           </div>
@@ -285,21 +285,7 @@ export default async function ProfilePage({ params }) {
           )}
         </div>
 
-        {/* PREMIUM SCORE CARD */}
-        <div style={{ marginBottom: '20px' }}>
-          <PassportScoreCard
-            score={score}
-            rating={avgRating || null}
-            sessions={sessionCount}
-            sparks={totalSparks}
-            fullName={profile.full_name}
-            username={profile.username}
-            city={profile.city}
-            avatarUrl={profile.avatar_url}
-          />
-        </div>
-
-        {/* COMPATIBILITY (client — only shows if viewer logged in + not own profile) */}
+        {/* COMPATIBILITY — closest signal of "is this person for me", show first */}
         <CompatibilityScore profile={{
           id: profile.id,
           city: profile.city,
@@ -309,10 +295,7 @@ export default async function ProfilePage({ params }) {
           activity_packages: profile.activity_packages,
         }} />
 
-        {/* MUTUAL FRIENDS */}
-        <MutualFriends profileId={profile.id} />
-
-        {/* SESSIONS YOU CAN BOOK */}
+        {/* SESSIONS YOU CAN BOOK — primary meeting action above the fold */}
         {profile.activity_packages?.length > 0 && (
           <div style={{ marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
@@ -369,11 +352,39 @@ export default async function ProfilePage({ params }) {
         )}
 
         {(!profile.activity_packages || profile.activity_packages.length === 0) && (
-          <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '18px', padding: '24px', marginBottom: '20px', textAlign: 'center' }}>
-            <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '12px' }}>No activities listed yet</p>
-            <EditActivitiesLink profileUserId={profile.id} />
+          <div style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(155,127,255,0.05) 100%)', border: '1px solid rgba(212,175,55,0.20)', borderRadius: '18px', padding: '22px', marginBottom: '20px', textAlign: 'center' }}>
+            <p style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF', marginBottom: '6px', fontFamily: 'DM Serif Display, serif' }}>Want to meet {firstName}?</p>
+            <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '14px', lineHeight: 1.55 }}>
+              No activities listed yet — but you can still <strong style={{ color: '#D4AF37' }}>knock</strong> to signal interest, or <strong style={{ color: '#D4AF37' }}>send a message</strong> to suggest a coffee or meetup.
+            </p>
+            <div style={{ display: 'inline-flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <KnockButton profileId={profile.id} profileUsername={profile.username} />
+              <Link href={`/messages?to=${profile.username}`} style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: '#F0EAFF', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                Send a message →
+              </Link>
+            </div>
+            <div style={{ marginTop: '12px' }}>
+              <EditActivitiesLink profileUserId={profile.id} />
+            </div>
           </div>
         )}
+
+        {/* PASSPORT SCORE CARD — credibility, below the meeting CTAs */}
+        <div style={{ marginBottom: '20px' }}>
+          <PassportScoreCard
+            score={score}
+            rating={avgRating || null}
+            sessions={sessionCount}
+            sparks={totalSparks}
+            fullName={profile.full_name}
+            username={profile.username}
+            city={profile.city}
+            avatarUrl={profile.avatar_url}
+          />
+        </div>
+
+        {/* MUTUAL FRIENDS — social proof */}
+        <MutualFriends profileId={profile.id} />
 
         {/* TOP SPARKS */}
         {topSparks.length > 0 && (
@@ -475,7 +486,7 @@ export default async function ProfilePage({ params }) {
       </div>
 
       {/* STICKY BOOK CTA (client component — hides on own profile) */}
-      <StickyBookCTA profileId={profile.id} username={profile.username} firstName={firstName} />
+      <StickyBookCTA profileId={profile.id} username={profile.username} firstName={firstName} hasActivities={(profile.activity_packages?.length || 0) > 0} />
     </div>
   )
 }

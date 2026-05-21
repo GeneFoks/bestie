@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { MapPin, Users, Sparkles } from 'lucide-react'
 import { getFrameColor } from '@/lib/avatarFrame'
 import { ActivityIcon } from '@/lib/activityIcons'
+import KnockButton from '@/components/KnockButton'
 
 interface ActivityPackage {
   title: string
@@ -184,13 +185,18 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
           </div>
         )}
 
-        <Link
-          href={`/${provider.username}`}
-          className="block w-full text-center text-sm font-semibold py-2.5 rounded-xl transition-all duration-200 hover:opacity-90 active:scale-95"
-          style={{ background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
-        >
-          View Profile →
-        </Link>
+        <div style={{ display: 'flex', gap: '6px' }}>
+          <div style={{ flex: 1.5, display: 'flex' }}>
+            <KnockButton profileId={provider.id} profileUsername={provider.username} variant="card" />
+          </div>
+          <Link
+            href={`/${provider.username}`}
+            className="text-sm font-semibold rounded-xl transition-all duration-200 hover:opacity-90 active:scale-95"
+            style={{ flex: 1, textAlign: 'center', padding: '11px 14px', fontSize: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', color: '#F0EAFF', fontFamily: 'Plus Jakarta Sans, sans-serif', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            View →
+          </Link>
+        </div>
       </div>
     </div>
   )
