@@ -17,9 +17,18 @@ const supabase = createClient(
 )
 
 export async function generateMetadata({ params }) {
-  const { data: event } = await supabase.from('crew_events').select('title, description').eq('id', params.id).single()
+  const { data: event } = await supabase.from('crew_events').select('title, description, datetime, location').eq('id', params.id).single()
   if (!event) return { title: 'Event · Bestie' }
-  return { title: `${event.title} · Bestie`, description: event.description || event.title }
+  const when = event.datetime ? new Date(event.datetime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''
+  const where = event.location ? ` · ${event.location}` : ''
+  const description = event.description || `${when}${where} — join this event on Bestie.`
+  const title = `${event.title} · Bestie`
+  return {
+    title,
+    description,
+    openGraph: { title, description, type: 'website' },
+    twitter: { card: 'summary_large_image', title, description },
+  }
 }
 
 export default async function EventPage({ params }) {

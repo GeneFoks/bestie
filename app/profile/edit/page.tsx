@@ -127,6 +127,7 @@ export default function EditProfilePage() {
   const [myCrews, setMyCrews] = useState<Array<{ id: string; name: string }>>([])
   const [selectedLanguages, setSelectedLanguages] = useState([])
   const [form, setForm] = useState({ full_name: '', username: '', bio: '', city: '', country: '', avatar_url: '' })
+  const [hideFromGraph, setHideFromGraph] = useState(false)
   const [locationShared, setLocationShared] = useState(false)
   const [locating, setLocating] = useState(false)
 
@@ -154,6 +155,7 @@ export default function EditProfilePage() {
         if (data.availability) setAvailability({ ...defaultAvail(), ...data.availability })
         if (data.lat && data.lng) setLocationShared(true)
         if (data.avatar_url) setAvatarPreview(data.avatar_url)
+        setHideFromGraph(!!data.hide_from_graph)
       }
       setMyCrews((crews || []).map((c: any) => c.crew).filter(Boolean))
       setLoading(false)
@@ -224,6 +226,7 @@ export default function EditProfilePage() {
       avatar_url,
       languages: selectedLanguages,
       availability,
+      hide_from_graph: hideFromGraph,
     }).eq('id', uid)
 
     setSaving(false)
@@ -374,6 +377,23 @@ export default function EditProfilePage() {
               <input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} placeholder="TX" style={inputStyle} />
             </div>
           </div>
+        </div>
+
+        {/* Privacy */}
+        <div style={sectionStyle}>
+          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF', marginBottom: '8px' }}>Privacy</h3>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '12px', borderRadius: '12px', background: hideFromGraph ? 'rgba(212,175,55,0.06)' : 'transparent', border: hideFromGraph ? '1px solid rgba(212,175,55,0.25)' : '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', transition: 'all 0.15s' }}>
+            <input
+              type="checkbox"
+              checked={hideFromGraph}
+              onChange={e => setHideFromGraph(e.target.checked)}
+              style={{ marginTop: '2px', accentColor: '#D4AF37', cursor: 'pointer' }}
+            />
+            <div>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>Hide me from the Connection Graph</div>
+              <div style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.5 }}>Other people won't see who you've met or had sessions with. Your profile and bookings still work as usual.</div>
+            </div>
+          </label>
         </div>
 
         {/* Languages */}
