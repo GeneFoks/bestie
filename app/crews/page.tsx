@@ -2,9 +2,12 @@
 export const revalidate = 0
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+import { cookies } from 'next/headers'
+import { createServerClient } from '@supabase/ssr'
 import ProfileNav from '@/components/ProfileNav'
 import { Users, Plus, Star, Flame, Lock, Sparkles, MapPin } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
+import { compatPercent, compatTone } from '@/lib/crewCompat'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -47,6 +50,33 @@ export default async function CrewsPage() {
     : null
 
   const rest = crews?.slice(1) || []
+
+  // Viewer Bestie Type + aggregate type per crew → compat %
+  const cookieStore = cookies()
+  const auth = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { get: (n: string) => cookieStore.get(n)?.value } }
+  )
+  const { data: { user } } = await auth.auth.getUser()
+  let viewerType: any = null
+  let aggByCrew: Record<string, any> = {}
+  if (user && crews?.length) {
+    const [{ data: me }, { data: aggs }] = await Promise.all([
+      supabase.from('users').select('energy_type, mind_type, vibe_type, bestie_type_completed').eq('id', user.id).single(),
+      supabase.from('crew_aggregate_type').select('crew_id, energy_type, mind_type, vibe_type').in('crew_id', crews.map((c: any) => c.crew_id)),
+    ])
+    if (me?.bestie_type_completed) viewerType = me
+    ;(aggs || []).forEach((a: any) => { aggByCrew[a.crew_id] = a })
+  }
+  const compatFor = (crewId: string): { pct: number; tone: { color: string; label: string } } | null => {
+    if (!viewerType) return null
+    const agg = aggByCrew[crewId]
+    if (!agg?.energy_type) return null
+    const pct = compatPercent(viewerType, agg)
+    const tone = compatTone(pct)
+    return pct !== null && tone ? { pct, tone } : null
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif', paddingBottom: '88px' }}>
@@ -174,8 +204,9 @@ export default async function CrewsPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {rest.map((crew, idx) => {
                     const scoreColor = crew.avg_bestie_score >= 800 ? '#34D399' : crew.avg_bestie_score >= 600 ? '#D4AF37' : '#A99ECC'
+                    const compat = compatFor(crew.crew_id)
                     return (
-                      <Link key={crew.crew_id} href={`/crews/${crew.slug}`} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', textDecoration: 'none' }}>
+                      <Link key={crew.crew_id} href={`/crews/${crew.slug}`} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', background: '#111120', border: compat && compat.pct >= 60 ? `1px solid ${compat.tone.color}40` : '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', textDecoration: 'none' }}>
                         {/* Thumbnail */}
                         <div style={{ width: '64px', height: '64px', borderRadius: '14px', overflow: 'hidden', flexShrink: 0, background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {crew.avatar_url
@@ -192,6 +223,11 @@ export default async function CrewsPage() {
                             {crew.avg_bestie_score >= 700 && <span style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', color: '#D4AF37', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Sparkles size={9} strokeWidth={2} /> Elite</span>}
                             {crew.member_count >= 15 && <span style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '999px', background: 'rgba(255,107,53,0.1)', color: '#FF6B35', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Flame size={9} strokeWidth={2} /> Hot</span>}
                             {crew.member_count < 8 && crew.member_count > 0 && <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#34D399' }} />}
+                            {compat && compat.pct >= 35 && (
+                              <span style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '999px', background: `${compat.tone.color}1A`, color: compat.tone.color, fontWeight: 700, border: `1px solid ${compat.tone.color}40` }}>
+                                {compat.pct}% match
+                              </span>
+                            )}
                           </div>
                           <p style={{ fontSize: '12px', color: '#A99ECC' }}>{crew.member_count} members</p>
                         </div>

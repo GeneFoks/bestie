@@ -11,6 +11,7 @@ import FindFriends from '@/components/FindFriends'
 import { PageLoader } from '@/components/Loading'
 import StreakStrip from '@/components/StreakStrip'
 import OnboardingResumeBanner from '@/components/OnboardingResumeBanner'
+import SuggestedCrews from '@/components/SuggestedCrews'
 import {
   Camera, Pencil, MapPin, Sparkles, Mail, Inbox, Users, Calendar,
   UsersRound, Globe, Network, Search, Zap, Settings, Share2,
@@ -384,6 +385,9 @@ export default function DashboardPage() {
 
         {/* Streak strip */}
         <StreakStrip weeks={profile?.streak_weeks || 0} totalSessions={profile?.total_sessions || 0} />
+
+        {/* Suggested crews — hidden if user is already in a crew or no match */}
+        <SuggestedCrews />
 
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', marginBottom: '24px' }}>
