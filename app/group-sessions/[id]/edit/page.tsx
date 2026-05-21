@@ -92,10 +92,14 @@ export default function EditGroupSessionPage({ params }: { params: { id: string 
       const ext = coverFile.name.split('.').pop()?.toLowerCase() || 'jpg'
       const path = `${userId}/${Date.now()}.${ext}`
       const { error: upErr } = await supabase.storage.from('group-session-covers').upload(path, coverFile, { contentType: coverFile.type, upsert: false })
-      if (!upErr) {
-        const { data: pub } = supabase.storage.from('group-session-covers').getPublicUrl(path)
-        cover_image_url = pub.publicUrl
+      if (upErr) {
+        console.error('Cover upload failed:', upErr)
+        alert(`Cover upload failed: ${upErr.message}. Check that the "group-session-covers" Storage bucket exists and is public.`)
+        setSaving(false)
+        return
       }
+      const { data: pub } = supabase.storage.from('group-session-covers').getPublicUrl(path)
+      cover_image_url = pub.publicUrl
     }
     const { error } = await supabase.from('group_sessions').update({
       title: form.title,
