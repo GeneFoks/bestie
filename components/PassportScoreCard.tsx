@@ -31,9 +31,18 @@ export default function PassportScoreCard({ score, rating, sessions, sparks, ful
   const cardRef = useRef<HTMLDivElement>(null)
   const [displayedScore, setDisplayedScore] = useState(0)
   const [tilt, setTilt] = useState({ x: 0, y: 0 })
+  const [tiltEnabled, setTiltEnabled] = useState(false)
 
   const tone = scoreTone(score)
   const pct = Math.min(100, Math.max(0, score / 10))
+
+  // Decide tilt support after mount so SSR and first client render match.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (window.matchMedia('(hover: none)').matches) return
+    setTiltEnabled(true)
+  }, [])
 
   // Tick-up animation (eased)
   useEffect(() => {
@@ -51,16 +60,6 @@ export default function PassportScoreCard({ score, rating, sessions, sparks, ful
     raf = requestAnimationFrame(step)
     return () => cancelAnimationFrame(raf)
   }, [score])
-
-  // Tilt is disabled for users who prefer reduced motion AND on touch-primary
-  // devices (no hover) where the gyro UX is too jittery / requires a permission
-  // gesture on iOS. Desktop keeps the subtle mouse parallax.
-  const tiltEnabled = (() => {
-    if (typeof window === 'undefined') return false
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
-    if (window.matchMedia('(hover: none)').matches) return false
-    return true
-  })()
 
   // Mouse parallax (desktop only, rAF-throttled)
   useEffect(() => {
