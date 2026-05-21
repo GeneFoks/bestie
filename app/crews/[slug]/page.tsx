@@ -27,11 +27,15 @@ const supabase = createClient(
 )
 
 export async function generateMetadata({ params }) {
-  const { data: crew } = await supabase.from('crews').select('name, description').eq('slug', params.slug).single()
+  const { data: crew } = await supabase.from('crews').select('name, description, city').eq('slug', params.slug).single()
   if (!crew) return { title: 'Crew · Bestie' }
+  const title = `${crew.name} · Bestie Crew`
+  const description = crew.description || `Join ${crew.name}${crew.city ? ` in ${crew.city}` : ''} on Bestie.`
   return {
-    title: `${crew.name} · Bestie`,
-    description: crew.description || `${crew.name} crew on Bestie.`,
+    title,
+    description,
+    openGraph: { title, description, type: 'website' },
+    twitter: { card: 'summary_large_image', title, description },
   }
 }
 

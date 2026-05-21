@@ -77,11 +77,20 @@ export default function GraphPage() {
       const ids = Array.from(userIdSet)
       const { data: users } = await supabase
         .from('users')
-        .select('id, full_name, username, avatar_url, bestie_score, city')
+        .select('id, full_name, username, avatar_url, bestie_score, city, hide_from_graph')
         .in('id', ids)
+        .or(`hide_from_graph.eq.false,id.eq.${currentUserId || '00000000-0000-0000-0000-000000000000'}`)
         .limit(300)
 
       if (!users || users.length === 0) { setEmpty(true); setLoading(false); return }
+
+      const visibleIdSet = new Set(users.map(u => u.id))
+      // Drop edges that touch a hidden user
+      for (const key of Array.from(edgeMap.keys())) {
+        const [a, b] = key.split('::')
+        if (!visibleIdSet.has(a) || !visibleIdSet.has(b)) edgeMap.delete(key)
+      }
+      contactLinks = contactLinks.filter((c: any) => visibleIdSet.has(c.source) && visibleIdSet.has(c.target))
 
       const usersById = Object.fromEntries(users.map(u => [u.id, u]))
 
