@@ -1,18 +1,32 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
-import { Hand, Sparkles } from 'lucide-react'
+import { Hand, Sparkles, ArrowRight } from 'lucide-react'
 import { celebrateMatch, buzz } from '@/lib/celebrate'
-
-const iconStyle: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: '6px' }
 
 type KnockStatus = 'loading' | 'idle' | 'sent' | 'matched' | 'received'
 
-export default function KnockButton({ profileId }: { profileId: string }) {
+type Variant = 'inline' | 'card'
+
+type Props = {
+  profileId: string
+  profileUsername?: string  // needed for the "Schedule a session" follow-up after a match
+  variant?: Variant
+}
+
+const inlineRow: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: '6px' }
+const cardRow:   React.CSSProperties = { display: 'flex',        alignItems: 'center', justifyContent: 'center', gap: '6px' }
+
+export default function KnockButton({ profileId, profileUsername, variant = 'inline' }: Props) {
   const [myId, setMyId] = useState<string | null>(null)
   const [status, setStatus] = useState<KnockStatus>('loading')
   const [acting, setActing] = useState(false)
+
+  const isCard = variant === 'card'
+  const layout = isCard ? cardRow : inlineRow
+  const fullWidth: React.CSSProperties = isCard ? { flex: 1, padding: '11px 14px', fontSize: '14px' } : { padding: '8px 14px', fontSize: '13px' }
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -53,17 +67,23 @@ export default function KnockButton({ profileId }: { profileId: string }) {
     setActing(false)
   }
 
+  // After mutual match — replace the badge with a "Schedule a session →" link so
+  // the user knows what to do next. Falls back to a static badge if no username.
   if (status === 'matched') {
-    return (
-      <div style={{ padding: '8px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'rgba(57,255,20,0.1)', border: '1px solid rgba(57,255,20,0.3)', color: '#39FF14', ...iconStyle }}>
-        <Sparkles size={13} strokeWidth={2} /> Match!
+    const matchBadge = (
+      <div style={{ borderRadius: '12px', fontWeight: 700, background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.35)', color: '#34D399', ...fullWidth, ...layout }}>
+        <Sparkles size={13} strokeWidth={2} /> {profileUsername ? 'Match — schedule a session' : 'Match!'}
+        {profileUsername && <ArrowRight size={13} strokeWidth={2} />}
       </div>
     )
+    return profileUsername
+      ? <Link href={`/book/${profileUsername}`} style={{ flex: isCard ? 1 : undefined, textDecoration: 'none' }}>{matchBadge}</Link>
+      : matchBadge
   }
 
   if (status === 'sent') {
     return (
-      <div style={{ padding: '8px 14px', borderRadius: '12px', fontSize: '13px', color: '#9B93C0', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', ...iconStyle }}>
+      <div style={{ borderRadius: '12px', fontWeight: 500, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)', color: '#A99ECC', ...fullWidth, ...layout }}>
         <Hand size={13} strokeWidth={2} /> Knock sent
       </div>
     )
@@ -71,14 +91,39 @@ export default function KnockButton({ profileId }: { profileId: string }) {
 
   if (status === 'received') {
     return (
-      <button onClick={knock} disabled={acting} style={{ padding: '8px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37', cursor: 'pointer', ...iconStyle }}>
+      <button
+        onClick={knock}
+        disabled={acting}
+        aria-label="Knock back"
+        style={{ borderRadius: '12px', fontWeight: 700, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37', cursor: acting ? 'not-allowed' : 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', ...fullWidth, ...layout }}
+      >
         {acting ? '…' : (<><Hand size={13} strokeWidth={2} /> Knock back!</>)}
       </button>
     )
   }
 
+  // idle — prominent gold in card variant, muted in inline variant
+  const idleCardStyle: React.CSSProperties = {
+    background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)',
+    border: 'none',
+    color: '#09090F',
+    boxShadow: '0 4px 16px rgba(212,175,55,0.18)',
+  }
+  const idleInlineStyle: React.CSSProperties = {
+    background: 'rgba(255,255,255,0.04)',
+    border: '1px solid rgba(255,255,255,0.10)',
+    color: '#A99ECC',
+  }
+  const idleStyle = isCard ? idleCardStyle : idleInlineStyle
+
   return (
-    <button onClick={knock} disabled={acting} style={{ padding: '8px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', cursor: 'pointer', ...iconStyle }}>
+    <button
+      onClick={knock}
+      disabled={acting}
+      title="Anonymous — they only see you if they knock back"
+      aria-label="Send a knock"
+      style={{ borderRadius: '12px', fontWeight: 700, cursor: acting ? 'not-allowed' : 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', ...idleStyle, ...fullWidth, ...layout }}
+    >
       {acting ? '…' : (<><Hand size={13} strokeWidth={2} /> Knock</>)}
     </button>
   )
