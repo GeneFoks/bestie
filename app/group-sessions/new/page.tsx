@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { ImagePlus, X } from 'lucide-react'
+import LocationPicker from '@/components/LocationPicker'
 
 const ACTIVITY_GROUPS = [
   { label: '🏃 Active & Outdoors', activities: [
@@ -162,7 +163,11 @@ export default function NewGroupSessionPage() {
 
           <div>
             <label style={labelStyle}>Location</label>
-            <input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="Runyon Canyon Park, Los Angeles" style={inputStyle} />
+            <LocationPicker
+              value={form.location}
+              onChange={v => setForm(f => ({ ...f, location: v }))}
+              placeholder="Runyon Canyon Park, Los Angeles"
+            />
           </div>
 
           <div>
