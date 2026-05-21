@@ -41,11 +41,15 @@ export default async function EventPage({ params }) {
 
   const { data: attendees } = await supabase
     .from('crew_event_attendees')
-    .select('joined_at, user:users(id, username, full_name, avatar_url, bestie_score)')
+    .select('joined_at, status, user:users(id, username, full_name, avatar_url, bestie_score)')
     .eq('event_id', event.id)
     .order('joined_at', { ascending: true })
 
-  const attendeeCount = attendees?.length || 0
+  const allAttendees = attendees || []
+  const goingList = allAttendees.filter(a => (a.status || 'going') === 'going')
+  const maybeList = allAttendees.filter(a => a.status === 'maybe')
+  const cantList  = allAttendees.filter(a => a.status === 'cant_make')
+  const attendeeCount = goingList.length  // capacity counts only confirmed 'going'
   const eventDate = new Date(event.datetime)
   const isPast = eventDate < new Date()
   const spotsLeft = event.max_attendees ? event.max_attendees - attendeeCount : null
@@ -102,15 +106,21 @@ export default async function EventPage({ params }) {
           )}
 
           {/* Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: spotsLeft !== null ? '1fr 1fr' : '1fr', gap: '10px', marginBottom: '24px' }}>
-            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '14px', padding: '14px', border: '1px solid rgba(255,255,255,0.10)' }}>
-              <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#A99ECC', marginBottom: '6px' }}>GOING</p>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: '#F0EAFF', fontFamily: 'DM Serif Display, serif' }}>{attendeeCount}</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '8px', marginBottom: '24px' }}>
+            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '14px', padding: '12px 14px', border: '1px solid rgba(52,211,153,0.18)' }}>
+              <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#34D399', marginBottom: '4px' }}>GOING</p>
+              <div style={{ fontSize: '26px', fontWeight: 700, color: '#34D399', fontFamily: 'DM Serif Display, serif' }}>{goingList.length}</div>
             </div>
+            {maybeList.length > 0 && (
+              <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '14px', padding: '12px 14px', border: '1px solid rgba(212,175,55,0.18)' }}>
+                <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#D4AF37', marginBottom: '4px' }}>MAYBE</p>
+                <div style={{ fontSize: '26px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>{maybeList.length}</div>
+              </div>
+            )}
             {spotsLeft !== null && (
-              <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '14px', padding: '14px', border: '1px solid rgba(255,255,255,0.10)' }}>
-                <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#A99ECC', marginBottom: '6px' }}>SPOTS LEFT</p>
-                <div style={{ fontSize: '28px', fontWeight: 700, color: spotsLeft <= 3 ? '#FF6B35' : '#F0EAFF', fontFamily: 'DM Serif Display, serif' }}>{spotsLeft}</div>
+              <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '14px', padding: '12px 14px', border: '1px solid rgba(255,255,255,0.10)' }}>
+                <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: '#A99ECC', marginBottom: '4px' }}>SPOTS LEFT</p>
+                <div style={{ fontSize: '26px', fontWeight: 700, color: spotsLeft <= 3 ? '#FF6B35' : '#F0EAFF', fontFamily: 'DM Serif Display, serif' }}>{spotsLeft}</div>
               </div>
             )}
           </div>
@@ -132,21 +142,21 @@ export default async function EventPage({ params }) {
           />
         </div>
 
-        {/* Attendees */}
+        {/* Attendees — Going */}
         <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginBottom: '16px' }}>
-          Going · {attendeeCount}
+          Going · {goingList.length}
         </h2>
 
-        {attendeeCount === 0 ? (
+        {goingList.length === 0 ? (
           <EmptyState
             Icon={Users}
-            title="No one's joined yet"
-            description="Be the first to go — your name shows up here once you tap join."
+            title="No one's confirmed yet"
+            description="Be the first to RSVP — your name shows up here once you tap Going."
             accent="gold"
           />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {attendees.map(({ user, joined_at }) => {
+            {goingList.map(({ user }) => {
               if (!user) return null
               const sc = user.bestie_score >= 800 ? '#34D399' : user.bestie_score >= 600 ? '#D4AF37' : '#A99ECC'
               return (
@@ -166,6 +176,31 @@ export default async function EventPage({ params }) {
               )
             })}
           </div>
+        )}
+
+        {/* Maybe list — separate, lower visual weight */}
+        {maybeList.length > 0 && (
+          <>
+            <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '17px', color: '#D4AF37', marginTop: '28px', marginBottom: '12px' }}>
+              Maybe · {maybeList.length}
+            </h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {maybeList.map(({ user }) => {
+                if (!user) return null
+                return (
+                  <Link key={user.id} href={`/${user.username}`} title={user.full_name} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 10px', borderRadius: '999px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.20)', textDecoration: 'none' }}>
+                    <div style={{ width: '22px', height: '22px', borderRadius: '50%', overflow: 'hidden', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {user.avatar_url
+                        ? <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : <span style={{ fontSize: '10px', fontWeight: 700, color: '#D4AF37' }}>{user.full_name?.[0]}</span>
+                      }
+                    </div>
+                    <span style={{ fontSize: '12px', color: '#F0EAFF', fontWeight: 600 }}>{user.full_name?.split(' ')[0]}</span>
+                  </Link>
+                )
+              })}
+            </div>
+          </>
         )}
       </div>
     </div>
