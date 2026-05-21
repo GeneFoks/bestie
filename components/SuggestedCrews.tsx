@@ -78,13 +78,13 @@ export default function SuggestedCrews() {
       ;(aggregates || []).forEach((a: any) => { aggByCrew[a.crew_id] = a })
 
       // Optional: city — pull from any crew event with a location matching viewer's city
-      const cityLc = me?.city?.toLowerCase()
-      const { data: cityHints } = cityLc
+      const city = me?.city
+      const { data: cityHints } = city
         ? await supabase
             .from('crew_events')
             .select('crew_id, location')
             .in('crew_id', crewIds)
-            .ilike('location', `%${me.city}%`)
+            .ilike('location', `%${city}%`)
         : { data: [] }
       const cityCrewIds = new Set((cityHints || []).map((h: any) => h.crew_id))
 
