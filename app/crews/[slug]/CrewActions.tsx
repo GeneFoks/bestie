@@ -30,11 +30,12 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       const inviteCode = searchParams.get('invite')
+      const referrerId = searchParams.get('ref')
 
       if (!session) {
         // Save invite to localStorage so dashboard can apply it after login
         if (inviteCode) {
-          localStorage.setItem('bestie_crew_invite', JSON.stringify({ crewId, crewSlug, inviteCode }))
+          localStorage.setItem('bestie_crew_invite', JSON.stringify({ crewId, crewSlug, inviteCode, referrerId }))
         }
         setLoading(false)
         return
@@ -56,6 +57,7 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
         const { data: result } = await supabase.rpc('join_crew_via_invite', {
           p_crew_id: crewId,
           p_invite_code: inviteCode,
+          p_referrer_id: referrerId || null,
         })
         if (result === 'joined' || result === 'already_member') {
           setIsMember(true)

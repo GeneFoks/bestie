@@ -57,10 +57,11 @@ export default function DashboardPage() {
       const crewInviteRaw = typeof window !== 'undefined' ? localStorage.getItem('bestie_crew_invite') : null
       if (crewInviteRaw && !data?.crew_id) {
         try {
-          const { crewId: invCrew, crewSlug, inviteCode } = JSON.parse(crewInviteRaw)
+          const { crewId: invCrew, crewSlug, inviteCode, referrerId } = JSON.parse(crewInviteRaw)
           const { data: result } = await supabase.rpc('join_crew_via_invite', {
             p_crew_id: invCrew,
             p_invite_code: inviteCode,
+            p_referrer_id: referrerId || null,
           })
           localStorage.removeItem('bestie_crew_invite')
           if (result === 'joined') {
