@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
 import { ImagePlus, X } from 'lucide-react'
+import LocationPicker from '@/components/LocationPicker'
 
 const ACTIVITY_GROUPS = [
   { label: '🏃 Active & Outdoors', activities: [
@@ -178,7 +179,11 @@ export default function EditGroupSessionPage({ params }: { params: { id: string 
 
           <div>
             <label style={labelStyle}>Location</label>
-            <input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={inputStyle} />
+            <LocationPicker
+              value={form.location}
+              onChange={v => setForm(f => ({ ...f, location: v }))}
+              placeholder="Search for a place…"
+            />
           </div>
 
           <div>
