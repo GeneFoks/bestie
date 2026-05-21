@@ -49,6 +49,18 @@ export default function BlockReportButton({ profileUserId }: { profileUserId: st
     init()
   }, [profileUserId])
 
+  // Escape closes report modal or menu (must run before any early return — rules of hooks)
+  useEffect(() => {
+    if (!reportOpen && !menuOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      if (reportOpen) setReportOpen(false)
+      else if (menuOpen) setMenuOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [reportOpen, menuOpen])
+
   if (!myId || !hasSession) return null
 
   const handleBlock = async () => {
@@ -77,18 +89,6 @@ export default function BlockReportButton({ profileUserId }: { profileUserId: st
     setLoading(false)
     setTimeout(() => setDone(null), 3000)
   }
-
-  // Escape closes report modal or menu
-  useEffect(() => {
-    if (!reportOpen && !menuOpen) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return
-      if (reportOpen) setReportOpen(false)
-      else if (menuOpen) setMenuOpen(false)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [reportOpen, menuOpen])
 
   return (
     <>
