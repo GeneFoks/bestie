@@ -23,7 +23,7 @@ export default async function OGImage({ params }: { params: { id: string } }) {
 
   const { data: gs } = await supabase
     .from('group_sessions')
-    .select('title, description, activity_type, location, scheduled_at, max_participants, host_id')
+    .select('title, description, activity_type, location, scheduled_at, max_participants, host_id, cover_image_url')
     .eq('id', params.id)
     .single()
 
@@ -40,8 +40,18 @@ export default async function OGImage({ params }: { params: { id: string } }) {
   return new ImageResponse(
     (
       <div style={{ width: '1200px', height: '630px', display: 'flex', flexDirection: 'column', background: '#09090F', position: 'relative', overflow: 'hidden', fontFamily: 'sans-serif', padding: '64px 72px' }}>
-        <div style={{ position: 'absolute', top: '-120px', right: '-100px', width: '600px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 65%)', display: 'flex' }} />
-        <div style={{ position: 'absolute', bottom: '-120px', left: '-80px', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(155,127,255,0.14) 0%, transparent 65%)', display: 'flex' }} />
+        {gs?.cover_image_url ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={gs.cover_image_url} alt="" width={1200} height={630} style={{ position: 'absolute', inset: 0, width: '1200px', height: '630px', objectFit: 'cover', display: 'flex' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(8,8,16,0.55) 0%, rgba(8,8,16,0.85) 100%)', display: 'flex' }} />
+          </>
+        ) : (
+          <>
+            <div style={{ position: 'absolute', top: '-120px', right: '-100px', width: '600px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 65%)', display: 'flex' }} />
+            <div style={{ position: 'absolute', bottom: '-120px', left: '-80px', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(155,127,255,0.14) 0%, transparent 65%)', display: 'flex' }} />
+          </>
+        )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '36px' }}>
           <div style={{ fontSize: '15px', fontWeight: 700, color: '#D4AF37', letterSpacing: '3px', display: 'flex' }}>BESTIE</div>

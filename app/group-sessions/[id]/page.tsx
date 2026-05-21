@@ -109,7 +109,14 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
       <div style={{ maxWidth: '600px', margin: '0 auto', padding: '40px 24px' }}>
 
         {/* Header card */}
-        <div style={{ background: 'linear-gradient(135deg, #111120 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '24px', padding: '28px', marginBottom: '20px' }}>
+        <div style={{ background: 'linear-gradient(135deg, #111120 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '24px', overflow: 'hidden', marginBottom: '20px' }}>
+          {session.cover_image_url && (
+            <div style={{ width: '100%', aspectRatio: '16/9', background: '#0A0A14', position: 'relative' }}>
+              <img src={session.cover_image_url} alt={session.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 60%, rgba(17,17,32,0.85) 100%)', pointerEvents: 'none' }} />
+            </div>
+          )}
+          <div style={{ padding: '28px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
             <span style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <ActivityIcon type={session.activity_type} size={28} color="#D4AF37" strokeWidth={1.6} />
@@ -172,6 +179,11 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
                     {copied ? '✓ Copied!' : '🔗 Share link'}
                   </button>
                   {!isPast && (
+                    <Link href={`/group-sessions/${params.id}/edit`} style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: '#131323', border: '1px solid rgba(255,255,255,0.12)', color: '#A99ECC', cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+                      Edit
+                    </Link>
+                  )}
+                  {!isPast && (
                     <button onClick={handleCancel} style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.2)', color: '#FF6B6B', cursor: 'pointer' }}>
                       Cancel
                     </button>
@@ -199,6 +211,7 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
               )}
             </div>
           )}
+          </div>
         </div>
 
         {/* Participants */}
