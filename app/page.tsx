@@ -140,6 +140,11 @@ export default function HomePage() {
         .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 64px; align-items: center; }
         .groups-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
 
+        /* ── Hero video — respect reduced motion ── */
+        @media (prefers-reduced-motion: reduce) {
+          video[aria-hidden="true"] { display: none; }
+        }
+
         /* ── Mobile horizontal swipe for long card lists ── */
         @media (max-width: 768px) {
           .features-grid, .how-grid {
@@ -314,11 +319,38 @@ export default function HomePage() {
       </nav>
 
       {/* ── HERO ── */}
-      <section style={{ position: 'relative', paddingTop: '130px', paddingBottom: '60px', paddingLeft: '20px', paddingRight: '20px', overflow: 'hidden' }}>
-        {/* Background orbs */}
-        <div style={{ position: 'absolute', top: '-60px', left: '50%', width: '700px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, #D4AF37 0%, transparent 65%)', opacity: 0.07, pointerEvents: 'none', animation: 'glow-breathe 5s ease-in-out infinite', transform: 'translateX(-50%)' }} />
-        <div style={{ position: 'absolute', top: '100px', left: '20%', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, #A99ECC 0%, transparent 70%)', opacity: 0.04, pointerEvents: 'none', animation: 'glow-breathe-2 7s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', top: '80px', right: '15%', width: '260px', height: '260px', borderRadius: '50%', background: 'radial-gradient(circle, #34D399 0%, transparent 70%)', opacity: 0.03, pointerEvents: 'none', animation: 'glow-breathe-2 6s ease-in-out 1s infinite' }} />
+      <section style={{ position: 'relative', paddingTop: '130px', paddingBottom: '60px', paddingLeft: '20px', paddingRight: '20px', overflow: 'hidden', minHeight: '660px' }}>
+        {/* Hero video background — autoplay muted loop, gracefully degrades */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            zIndex: 0,
+            opacity: 0.55,
+            pointerEvents: 'none',
+          }}
+        >
+          <source src="/hero-loop.mp4" type="video/mp4" />
+        </video>
+        {/* Readability gradient: top→bottom dark vignette so headline stays crisp */}
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
+          background: 'linear-gradient(180deg, rgba(9,9,15,0.85) 0%, rgba(9,9,15,0.55) 40%, rgba(9,9,15,0.75) 80%, #09090F 100%)',
+        }} />
+
+        {/* Background orbs (kept, behave as gentle accent atop video) */}
+        <div style={{ position: 'absolute', top: '-60px', left: '50%', width: '700px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, #D4AF37 0%, transparent 65%)', opacity: 0.07, pointerEvents: 'none', animation: 'glow-breathe 5s ease-in-out infinite', transform: 'translateX(-50%)', zIndex: 0 }} />
+        <div style={{ position: 'absolute', top: '100px', left: '20%', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, #A99ECC 0%, transparent 70%)', opacity: 0.04, pointerEvents: 'none', animation: 'glow-breathe-2 7s ease-in-out infinite', zIndex: 0 }} />
+        <div style={{ position: 'absolute', top: '80px', right: '15%', width: '260px', height: '260px', borderRadius: '50%', background: 'radial-gradient(circle, #34D399 0%, transparent 70%)', opacity: 0.03, pointerEvents: 'none', animation: 'glow-breathe-2 6s ease-in-out 1s infinite', zIndex: 0 }} />
 
         <div style={{ maxWidth: '820px', margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
           {/* Live badge */}
