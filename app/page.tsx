@@ -11,7 +11,7 @@ import {
   Zap, Gamepad2, BookOpen, Palette, Heart, Moon, Coffee,
   Contact, Trophy, Flame, CalendarDays, Bell, Users, Map, Globe,
   Share2, Camera, Sparkles, ShieldCheck, Search, UserCheck,
-  Target, Star, Link2, Network, BarChart2,
+  Target, Star, Network,
 } from 'lucide-react'
 
 const ACTIVITY_GROUPS = [
@@ -139,6 +139,31 @@ export default function HomePage() {
         .how-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; }
         .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 64px; align-items: center; }
         .groups-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+
+        /* ── Hero video — respect reduced motion ── */
+        @media (prefers-reduced-motion: reduce) {
+          video[aria-hidden="true"] { display: none; }
+        }
+
+        /* ── Mobile horizontal swipe for long card lists ── */
+        @media (max-width: 768px) {
+          .features-grid, .how-grid {
+            display: flex !important;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            gap: 12px;
+            margin: 0 -20px;
+            padding: 4px 20px 12px;
+          }
+          .features-grid::-webkit-scrollbar,
+          .how-grid::-webkit-scrollbar { display: none; }
+          .features-grid > *, .how-grid > * {
+            flex: 0 0 82%;
+            scroll-snap-align: start;
+          }
+        }
 
         /* ── Skeleton pulse ── */
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
@@ -294,11 +319,38 @@ export default function HomePage() {
       </nav>
 
       {/* ── HERO ── */}
-      <section style={{ position: 'relative', paddingTop: '130px', paddingBottom: '60px', paddingLeft: '20px', paddingRight: '20px', overflow: 'hidden' }}>
-        {/* Background orbs */}
-        <div style={{ position: 'absolute', top: '-60px', left: '50%', width: '700px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, #D4AF37 0%, transparent 65%)', opacity: 0.07, pointerEvents: 'none', animation: 'glow-breathe 5s ease-in-out infinite', transform: 'translateX(-50%)' }} />
-        <div style={{ position: 'absolute', top: '100px', left: '20%', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, #A99ECC 0%, transparent 70%)', opacity: 0.04, pointerEvents: 'none', animation: 'glow-breathe-2 7s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', top: '80px', right: '15%', width: '260px', height: '260px', borderRadius: '50%', background: 'radial-gradient(circle, #34D399 0%, transparent 70%)', opacity: 0.03, pointerEvents: 'none', animation: 'glow-breathe-2 6s ease-in-out 1s infinite' }} />
+      <section style={{ position: 'relative', paddingTop: '130px', paddingBottom: '60px', paddingLeft: '20px', paddingRight: '20px', overflow: 'hidden', minHeight: '660px' }}>
+        {/* Hero video background — autoplay muted loop, gracefully degrades */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            zIndex: 0,
+            opacity: 0.55,
+            pointerEvents: 'none',
+          }}
+        >
+          <source src="/hero-loop.mp4" type="video/mp4" />
+        </video>
+        {/* Readability gradient: top→bottom dark vignette so headline stays crisp */}
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
+          background: 'linear-gradient(180deg, rgba(9,9,15,0.85) 0%, rgba(9,9,15,0.55) 40%, rgba(9,9,15,0.75) 80%, #09090F 100%)',
+        }} />
+
+        {/* Background orbs (kept, behave as gentle accent atop video) */}
+        <div style={{ position: 'absolute', top: '-60px', left: '50%', width: '700px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, #D4AF37 0%, transparent 65%)', opacity: 0.07, pointerEvents: 'none', animation: 'glow-breathe 5s ease-in-out infinite', transform: 'translateX(-50%)', zIndex: 0 }} />
+        <div style={{ position: 'absolute', top: '100px', left: '20%', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, #A99ECC 0%, transparent 70%)', opacity: 0.04, pointerEvents: 'none', animation: 'glow-breathe-2 7s ease-in-out infinite', zIndex: 0 }} />
+        <div style={{ position: 'absolute', top: '80px', right: '15%', width: '260px', height: '260px', borderRadius: '50%', background: 'radial-gradient(circle, #34D399 0%, transparent 70%)', opacity: 0.03, pointerEvents: 'none', animation: 'glow-breathe-2 6s ease-in-out 1s infinite', zIndex: 0 }} />
 
         <div style={{ maxWidth: '820px', margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
           {/* Live badge */}
@@ -581,35 +633,15 @@ export default function HomePage() {
                 </svg>
               </div>
 
-              {/* Right: explanation */}
-              <div style={{ padding: '44px 40px' }}>
+              {/* Right: explanation (compact) */}
+              <div style={{ padding: '32px 28px' }}>
                 <p className="section-label">CONNECTION GRAPH</p>
-                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 36px)', fontWeight: 700, color: '#F0EAFF', lineHeight: 1.2, marginBottom: '16px' }}>
+                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 32px)', fontWeight: 700, color: '#F0EAFF', lineHeight: 1.2, marginBottom: '12px' }}>
                   Your social web,<br /><em style={{ color: '#A99ECC', fontStyle: 'italic' }}>built automatically.</em>
                 </h2>
-                <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.8, marginBottom: '24px' }}>
-                  Every confirmed session creates a line between two people. No manual input, no tags, no followers — just real connections that happened IRL.
+                <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.7, marginBottom: '20px' }}>
+                  Every confirmed session draws a line between two people. No followers, no tags — only real IRL connections. Thicker edge = more sessions.
                 </p>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '28px' }}>
-                  {[
-                    { Icon: Link2,    title: 'Auto-built from sessions',    desc: 'As soon as both sides confirm a meetup — the edge appears on the graph. Zero clicks needed.' },
-                    { Icon: Search,   title: 'Search by name',              desc: 'Type anyone\'s name to find their node. See who they\'ve met and how you\'re connected.' },
-                    { Icon: Network,  title: 'See 2nd-degree connections',  desc: 'Friend-of-a-friend visibility. Crews form clusters. Your city becomes a real social map.' },
-                    { Icon: BarChart2,title: 'Edge thickness = trust',      desc: 'The more sessions two people have had — the thicker and brighter their connection line.' },
-                  ].map(item => (
-                    <div key={item.title} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                      <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(155,147,192,0.08)', border: '1px solid rgba(155,147,192,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>
-                        <item.Icon size={16} color="#A99ECC" strokeWidth={1.6} />
-                      </div>
-                      <div>
-                        <p style={{ fontSize: '13px', fontWeight: 700, color: '#F0EAFF', marginBottom: '2px' }}>{item.title}</p>
-                        <p style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.6 }}>{item.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
                 <Link href="/graph" className="btn-gold" style={{ fontSize: '13px', padding: '10px 22px' }}>Open Connection Graph →</Link>
               </div>
             </div>
@@ -708,31 +740,20 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── SPARKS ── */}
-      <section style={{ padding: '0 20px 72px' }}>
+      {/* ── SPARKS (compact) ── */}
+      <section style={{ padding: '0 20px 56px' }}>
         <div ref={sparksRef} className={`reveal ${sparksVisible ? 'visible' : ''}`} style={{ maxWidth: '740px', margin: '0 auto' }}>
-          <div style={{ borderRadius: '28px', background: 'linear-gradient(135deg, rgba(212,175,55,0.07) 0%, rgba(57,255,20,0.03) 100%)', border: '1px solid rgba(212,175,55,0.18)', textAlign: 'center', padding: '52px 36px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', position: 'relative', overflow: 'hidden' }}>
-            {/* Subtle inner glow */}
-            <div style={{ position: 'absolute', top: '-40px', left: '50%', transform: 'translateX(-50%)', width: '300px', height: '200px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ fontSize: '44px', marginBottom: '16px' }}>✨</div>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 34px)', fontWeight: 700, color: '#F0EAFF', marginBottom: '14px' }}>Sparks — rare tokens of real trust</h2>
-              <p style={{ fontSize: '15px', color: '#A99ECC', marginBottom: '32px', lineHeight: 1.7, maxWidth: '460px', margin: '0 auto 32px' }}>
-                Every new member gets 30 Sparks. You can give max 3 to any one person — they say "I genuinely trust this person."
-              </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginBottom: '32px' }}>
-                {[
-                  { emoji: '💛', label: 'Kind' }, { emoji: '🎉', label: 'Fun' }, { emoji: '🔒', label: 'Reliable' },
-                  { emoji: '💎', label: 'Genuine' }, { emoji: '🛡️', label: 'Safe' }, { emoji: '⚡', label: 'Energetic' },
-                  { emoji: '👂', label: 'Good listener' }, { emoji: '🌟', label: 'Social' }, { emoji: '⏰', label: 'Punctual' }, { emoji: '🌊', label: 'Open' },
-                ].map(s => (
-                  <div key={s.label} className="spark-badge">
-                    <span>{s.emoji}</span><span>{s.label}</span>
-                  </div>
-                ))}
-              </div>
-              <Link href="/signup" className="btn-gold">Get your 30 Sparks →</Link>
+          <div style={{ borderRadius: '24px', background: 'linear-gradient(135deg, rgba(212,175,55,0.07) 0%, rgba(57,255,20,0.03) 100%)', border: '1px solid rgba(212,175,55,0.18)', padding: '28px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Sparkles size={26} color="#D4AF37" strokeWidth={1.6} />
             </div>
+            <div style={{ flex: 1, minWidth: '180px' }}>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(20px, 3.5vw, 26px)', fontWeight: 700, color: '#F0EAFF', marginBottom: '6px' }}>Sparks — rare tokens of trust</h2>
+              <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.6 }}>
+                30 Sparks at signup, max 3 per person. The rarest signal of real trust on Bestie.
+              </p>
+            </div>
+            <Link href="/signup" className="btn-sm-gold" style={{ flexShrink: 0 }}>Get yours →</Link>
           </div>
         </div>
       </section>
