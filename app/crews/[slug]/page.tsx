@@ -16,6 +16,7 @@ import EventGoingButton from './EventGoingButton'
 import CrewRoleManager, { RoleBadge } from './CrewRoleManager'
 import CrewLeaderboard from './CrewLeaderboard'
 import CrewAnniversary from './CrewAnniversary'
+import CrewVibeChip from './CrewVibeChip'
 import { Search, Lock, MessageCircle, Plus, Clock, MapPin, Flame, Zap, Trophy, Medal, Award, Users } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 
@@ -121,6 +122,11 @@ export default async function CrewPage({ params }) {
 
         {/* Anniversary banner (year+, ±14 days around milestone) */}
         <CrewAnniversary createdAt={crew.created_at} crewName={crew.name} />
+
+        {/* Aggregate Bestie Type + viewer compat */}
+        <div style={{ marginBottom: '14px' }}>
+          <CrewVibeChip crewId={crew.id} />
+        </div>
 
         {/* Description + Rating */}
         {crew.description && (
