@@ -13,6 +13,8 @@ import CrewTelegramLink from './CrewTelegramLink'
 import CrewKickButton from './CrewKickButton'
 import JoinRequestsPanel from './JoinRequestsPanel'
 import EventGoingButton from './EventGoingButton'
+import CrewRoleManager, { RoleBadge } from './CrewRoleManager'
+import CrewLeaderboard from './CrewLeaderboard'
 import { Search, Lock, MessageCircle, Plus, Clock, MapPin, Flame, Zap, Trophy, Medal, Award, Users } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 
@@ -54,7 +56,7 @@ export default async function CrewPage({ params }) {
   const [{ data: members }, { data: upcomingEvents }, { data: ratings }] = await Promise.all([
     supabase
       .from('crew_members')
-      .select('joined_at, user:users(id, username, full_name, avatar_url, bestie_score, city, free_today_at)')
+      .select('joined_at, role, user:users(id, username, full_name, avatar_url, bestie_score, city, free_today_at)')
       .eq('crew_id', crew.id)
       .order('bestie_score', { ascending: false, foreignTable: 'users' }),
     supabase
@@ -292,6 +294,9 @@ export default async function CrewPage({ params }) {
           <JoinRequestsPanel crewId={crew.id} captainId={crew.captain_id} />
         )}
 
+        {/* Top contributors */}
+        <CrewLeaderboard crewId={crew.id} />
+
         {/* Members */}
         <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginBottom: '16px' }}>Members</h2>
 
@@ -305,27 +310,29 @@ export default async function CrewPage({ params }) {
           />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {members.map(({ user, joined_at }, memberIdx) => {
+            {members.map(({ user, joined_at, role }, memberIdx) => {
               if (!user) return null
               const sc = user.bestie_score >= 800 ? '#34D399' : user.bestie_score >= 600 ? '#D4AF37' : '#A99ECC'
-              const isCaptain = user.id === crew.captain_id
+              const effectiveRole = role || (user.id === crew.captain_id ? 'captain' : 'member')
+              const isCaptain = effectiveRole === 'captain'
+              const isMod = effectiveRole === 'moderator'
               return (
-                <div key={user.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', background: '#111120', border: isCaptain ? '1px solid rgba(212,175,55,0.2)' : '1px solid rgba(255,255,255,0.10)', borderRadius: '14px' }}>
+                <div key={user.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', background: '#111120', border: isCaptain ? '1px solid rgba(212,175,55,0.2)' : isMod ? '1px solid rgba(155,127,255,0.2)' : '1px solid rgba(255,255,255,0.10)', borderRadius: '14px' }}>
                   <Link href={`/${user.username}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0, textDecoration: 'none' }}>
                     {/* Rank number */}
                     <span style={{ fontSize: '12px', fontWeight: 700, color: '#A99ECC', width: '20px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {memberIdx === 0 ? <Trophy size={14} color="#FFD700" strokeWidth={2} /> : memberIdx === 1 ? <Medal size={14} color="#C0C0C0" strokeWidth={2} /> : memberIdx === 2 ? <Award size={14} color="#CD7F32" strokeWidth={2} /> : `#${memberIdx + 1}`}
                     </span>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', overflow: 'hidden', background: '#1A1A2E', flexShrink: 0, border: isCaptain ? '2px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', overflow: 'hidden', background: '#1A1A2E', flexShrink: 0, border: isCaptain ? '2px solid rgba(212,175,55,0.4)' : isMod ? '2px solid rgba(155,127,255,0.4)' : '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {user.avatar_url
                         ? <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         : <span style={{ fontSize: '16px', fontWeight: 700, color: '#D4AF37' }}>{user.full_name?.[0]}</span>
                       }
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>{user.full_name}</span>
-                        {isCaptain && <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '999px', background: 'rgba(212,175,55,0.15)', color: '#D4AF37', fontWeight: 600 }}>Captain</span>}
+                        <RoleBadge role={effectiveRole} />
                       </div>
                       <span style={{ fontSize: '12px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>{user.city ? <><MapPin size={11} strokeWidth={2} /> {user.city}</> : `@${user.username}`}</span>
                     </div>
@@ -335,6 +342,13 @@ export default async function CrewPage({ params }) {
                       <span style={{ fontSize: '7px', color: '#A99ECC', letterSpacing: '0.5px', lineHeight: 1, marginTop: '1px' }}>BS</span>
                     </div>
                   </Link>
+                  <CrewRoleManager
+                    crewId={crew.id}
+                    captainId={crew.captain_id}
+                    memberUserId={user.id}
+                    memberName={user.full_name || user.username}
+                    currentRole={effectiveRole}
+                  />
                   <CrewKickButton crewId={crew.id} captainId={crew.captain_id} memberId={user.id} />
                 </div>
               )
