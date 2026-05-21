@@ -83,7 +83,7 @@ export default function HomePage() {
       .select('*, activity_packages(*)')
       .order('bestie_score', { ascending: false })
       .gt('bestie_score', 0)
-      .limit(10)
+      .limit(5)
       .then(({ data }) => setTopProviders(data || []))
 
     return () => subscription.unsubscribe()
@@ -465,25 +465,32 @@ export default function HomePage() {
             <Link href="/browse" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none', marginBottom: '2px', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#D4AF37'} onMouseLeave={e=>e.target.style.color='#A99ECC'}>See all →</Link>
           </div>
           {topProviders.length > 0 ? (
-            <div className="providers-grid">
-              {topProviders.map((provider, i) => {
-                const badge = i === 0
-                  ? { label: '👑 #1 Top Bestie', bg: 'linear-gradient(135deg, #D4AF37, #B8960C)', color: '#09090F', border: 'none' }
-                  : i === 1
-                  ? { label: '🥈 #2', bg: 'rgba(155,147,192,0.2)', color: '#A99ECC', border: '1px solid rgba(155,147,192,0.3)' }
-                  : i === 2
-                  ? { label: '🥉 #3', bg: 'rgba(180,100,40,0.2)', color: '#CD7F32', border: '1px solid rgba(180,100,40,0.3)' }
-                  : { label: `#${i + 1}`, bg: '#131323', color: '#A99ECC', border: '1px solid rgba(255,255,255,0.12)' }
-                return (
-                  <div key={provider.id} style={{ position: 'relative', paddingTop: '16px', width: '100%', boxSizing: 'border-box' }}>
-                    <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', zIndex: 10, background: badge.bg, border: badge.border, borderRadius: '999px', padding: '4px 14px', fontSize: '11px', fontWeight: 700, color: badge.color, whiteSpace: 'nowrap', maxWidth: 'calc(100% - 24px)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {badge.label}
+            <>
+              <div className="providers-grid">
+                {topProviders.map((provider, i) => {
+                  const badge = i === 0
+                    ? { label: '👑 #1 Top Bestie', bg: 'linear-gradient(135deg, #D4AF37, #B8960C)', color: '#09090F', border: 'none' }
+                    : i === 1
+                    ? { label: '🥈 #2', bg: 'rgba(155,147,192,0.2)', color: '#A99ECC', border: '1px solid rgba(155,147,192,0.3)' }
+                    : i === 2
+                    ? { label: '🥉 #3', bg: 'rgba(180,100,40,0.2)', color: '#CD7F32', border: '1px solid rgba(180,100,40,0.3)' }
+                    : { label: `#${i + 1}`, bg: '#131323', color: '#A99ECC', border: '1px solid rgba(255,255,255,0.12)' }
+                  return (
+                    <div key={provider.id} style={{ position: 'relative', paddingTop: '16px', width: '100%', boxSizing: 'border-box' }}>
+                      <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', zIndex: 10, background: badge.bg, border: badge.border, borderRadius: '999px', padding: '4px 14px', fontSize: '11px', fontWeight: 700, color: badge.color, whiteSpace: 'nowrap', maxWidth: 'calc(100% - 24px)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {badge.label}
+                      </div>
+                      <ProviderCard provider={provider} featured={i === 0} />
                     </div>
-                    <ProviderCard provider={provider} featured={i === 0} />
-                  </div>
-                )
-              })}
-            </div>
+                  )
+                })}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '32px' }}>
+                <Link href="/browse" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '14px 28px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: 'rgba(212,175,55,0.10)', border: '1px solid rgba(212,175,55,0.35)', color: '#D4AF37', textDecoration: 'none', transition: 'all 0.2s' }} onMouseEnter={e=>{e.currentTarget.style.background='rgba(212,175,55,0.18)'; e.currentTarget.style.borderColor='rgba(212,175,55,0.6)'}} onMouseLeave={e=>{e.currentTarget.style.background='rgba(212,175,55,0.10)'; e.currentTarget.style.borderColor='rgba(212,175,55,0.35)'}}>
+                  See more Besties →
+                </Link>
+              </div>
+            </>
           ) : (
             <div style={{ textAlign: 'center', padding: '60px', background: 'rgba(15,15,30,0.7)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.10)', backdropFilter: 'blur(12px)' }}>
               <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '18px' }}>Be the first to build your Bestie Score</p>
