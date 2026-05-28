@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
@@ -7,65 +7,36 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import ProviderCard from '@/components/ProviderCard'
 import MatchModal from '@/components/MatchModal'
+import {
+  Zap, Gamepad2, BookOpen, Palette, Heart, Moon, Coffee,
+  Contact, Trophy, Flame, CalendarDays, Bell, Users, Map, Globe,
+  Share2, Camera, Sparkles, ShieldCheck, Search, UserCheck,
+  Target, Star, Network,
+} from 'lucide-react'
 
 const ACTIVITY_GROUPS = [
-  {
-    id: 'active_outdoors',
-    emoji: '🏃',
-    label: 'Active & Outdoors',
-    types: ['hiking', 'running', 'gym_partner', 'cycling', 'swimming', 'cold_plunge', 'yoga', 'martial_arts', 'climbing', 'trail_crew', 'fishing_crew', 'meet_irl'],
-  },
-  {
-    id: 'fun_social',
-    emoji: '🎮',
-    label: 'Fun & Social',
-    types: ['game_night', 'movie_night', 'night_out', 'bar_hopping', 'karaoke', 'festival_crew', 'travel_buddy', 'wing_person', 'comedy_show', 'dance_crew', 'epic_journey', 'watch_together', 'meet_irl'],
-  },
-  {
-    id: 'mind_growth',
-    emoji: '🧠',
-    label: 'Mind & Growth',
-    types: ['deep_chat', 'debate_club', 'book_club', 'language_exchange', 'career_talk', 'money_talk', 'journaling', 'accountability_partner', 'storytelling_night', 'real_talk', 'vibe_call'],
-  },
-  {
-    id: 'creative_skills',
-    emoji: '🎨',
-    label: 'Creative & Skills',
-    types: ['music_lesson', 'art_together', 'photography_walk', 'cooking_together', 'dance', 'improv_acting', 'writing_club'],
-  },
-  {
-    id: 'emotional_support',
-    emoji: '🫂',
-    label: 'Emotional & Support',
-    types: ['vent_session', '3am_talk', 'hype_person', 'sobriety_buddy', 'silence_buddy', 'grief_support', 'ugly_cry_buddy', 'deep_chat', 'real_talk'],
-  },
-  {
-    id: 'spiritual_sacred',
-    emoji: '🔮',
-    label: 'Spiritual & Sacred',
-    types: ['meditation_circle', 'breathwork', 'sound_healing', 'cacao_ceremony', 'tarot', 'retreat_buddy', 'psychedelic_integration', 'nature_ritual', 'lucid_dream_club', 'yoga'],
-  },
-  {
-    id: 'chill_everyday',
-    emoji: '☕',
-    label: 'Chill & Everyday',
-    types: ['coffee_chat', 'digital_detox_walk', 'skincare_night', 'smoke_buddy', 'astrology_session', 'coworking', 'errand_buddy', 'meet_irl', 'walk_meet', 'vibe_call'],
-  },
+  { id: 'active_outdoors', Icon: Zap, label: 'Active & Outdoors', types: ['hiking', 'running', 'gym_partner', 'cycling', 'swimming', 'cold_plunge', 'yoga', 'martial_arts', 'climbing', 'trail_crew', 'fishing_crew', 'meet_irl'] },
+  { id: 'fun_social', Icon: Gamepad2, label: 'Fun & Social', types: ['game_night', 'movie_night', 'night_out', 'bar_hopping', 'karaoke', 'festival_crew', 'travel_buddy', 'wing_person', 'comedy_show', 'dance_crew', 'epic_journey', 'watch_together', 'meet_irl'] },
+  { id: 'mind_growth', Icon: BookOpen, label: 'Mind & Growth', types: ['deep_chat', 'debate_club', 'book_club', 'language_exchange', 'career_talk', 'money_talk', 'journaling', 'accountability_partner', 'storytelling_night', 'real_talk', 'vibe_call'] },
+  { id: 'creative_skills', Icon: Palette, label: 'Creative & Skills', types: ['music_lesson', 'art_together', 'photography_walk', 'cooking_together', 'dance', 'improv_acting', 'writing_club'] },
+  { id: 'emotional_support', Icon: Heart, label: 'Emotional & Support', types: ['vent_session', '3am_talk', 'hype_person', 'sobriety_buddy', 'silence_buddy', 'grief_support', 'ugly_cry_buddy', 'deep_chat', 'real_talk'] },
+  { id: 'spiritual_sacred', Icon: Moon, label: 'Spiritual & Sacred', types: ['meditation_circle', 'breathwork', 'sound_healing', 'cacao_ceremony', 'tarot', 'retreat_buddy', 'psychedelic_integration', 'nature_ritual', 'lucid_dream_club', 'yoga'] },
+  { id: 'chill_everyday', Icon: Coffee, label: 'Chill & Everyday', types: ['coffee_chat', 'digital_detox_walk', 'skincare_night', 'smoke_buddy', 'astrology_session', 'coworking', 'errand_buddy', 'meet_irl', 'walk_meet', 'vibe_call'] },
 ]
 
 const FEATURES = [
-  { emoji: '🪪', title: 'Social Passport', desc: 'Your verified profile: Bestie Score, session count, sparks, badges, streak, availability. One link to share it all.' },
-  { emoji: '🏆', title: 'Bestie Score & Badges', desc: 'Score grows with every confirmed session, spark, and week of consistency. Earn badges — Top 1%, Session King, streak milestones, Rising Star.' },
-  { emoji: '🔥', title: 'Weekly Streak', desc: 'Meet someone every week and your streak grows. 12-week streaks unlock the rarest badges and a bonus on your score.' },
-  { emoji: '📅', title: 'Availability Calendar', desc: 'Set your available days and time slots. Visible on your passport so people know the best time to reach out — no guessing.' },
-  { emoji: '👋', title: 'Knock', desc: 'Send an anonymous signal of interest. If they knock back — you match and can connect. No awkward cold messages.' },
-  { emoji: '🎉', title: 'Group Sessions', desc: 'Host open meetups for 3–20 people. Set a date, location, and max size. Anyone can join, share, or leave.' },
-  { emoji: '🗺️', title: 'Nearby Map', desc: 'See Besties near you on a live map. Pins show their session tier — gold for veterans, white glow for the most active.' },
-  { emoji: '🌍', title: 'City Pulse', desc: 'Live feed of who\'s free today, upcoming group sessions, and what\'s happening in your city right now.' },
-  { emoji: '🕸️', title: 'Connection Graph', desc: 'A live web of every real connection made on Bestie. Clusters form naturally — your crew, your city, your world.' },
-  { emoji: '💾', title: 'Session Memories', desc: 'After every session, record your mood, what you did, and add a photo. Your passport becomes a living story of real moments.' },
-  { emoji: '✨', title: 'Sparks', desc: '30 rare tokens you earn at signup. Give up to 3 per person, 1 per type. The rarest signal of real trust.' },
-  { emoji: '🔒', title: 'Block & Report', desc: 'Session-gated safety tools — only people who\'ve actually met can block or report. Keeps the community honest.' },
+  { Icon: Contact,      title: 'Social Passport',       desc: 'Your verified profile: Bestie Score, session count, sparks, badges, streak, availability. One link to share it all.' },
+  { Icon: Trophy,      title: 'Bestie Score & Badges', desc: 'Score grows with every confirmed session, spark, and week of consistency. Earn badges — Top 1%, Session King, streak milestones, Rising Star.' },
+  { Icon: Flame,       title: 'Weekly Streak',         desc: 'Meet someone every week and your streak grows. 12-week streaks unlock the rarest badges and a bonus on your score.' },
+  { Icon: CalendarDays,title: 'Availability Calendar', desc: 'Set your available days and time slots. Visible on your passport so people know the best time to reach out — no guessing.' },
+  { Icon: Bell,        title: 'Knock',                 desc: 'Send an anonymous signal of interest. If they knock back — you match and can connect. No awkward cold messages.' },
+  { Icon: Users,       title: 'Group Sessions',        desc: 'Host open meetups for 3–20 people. Set a date, location, and max size. Anyone can join, share, or leave.' },
+  { Icon: Map,         title: 'Nearby Map',            desc: 'See Besties near you on a live map. Pins show their session tier — gold for veterans, white glow for the most active.' },
+  { Icon: Globe,       title: 'City Pulse',            desc: "Live feed of who's free today, upcoming group sessions, and what's happening in your city right now." },
+  { Icon: Network,     title: 'Connection Graph',      desc: 'A live web of every real connection made on Bestie. Clusters form naturally — your crew, your city, your world.' },
+  { Icon: Camera,      title: 'Session Memories',      desc: 'After every session, record your mood, what you did, and add a photo. Your passport becomes a living story of real moments.' },
+  { Icon: Sparkles,    title: 'Sparks',                desc: '30 rare tokens you earn at signup. Give up to 3 per person, 1 per type. The rarest signal of real trust.' },
+  { Icon: ShieldCheck, title: 'Block & Report',        desc: 'Session-gated safety tools — only people who\'ve actually met can block or report. Keeps the community honest.' },
 ]
 
 // Scroll reveal hook
@@ -112,7 +83,7 @@ export default function HomePage() {
       .select('*, activity_packages(*)')
       .order('bestie_score', { ascending: false })
       .gt('bestie_score', 0)
-      .limit(10)
+      .limit(5)
       .then(({ data }) => setTopProviders(data || []))
 
     return () => subscription.unsubscribe()
@@ -143,37 +114,62 @@ export default function HomePage() {
         .limit(6)
       setGroupProviders(data || [])
     } else {
-      // Fallback: show top providers by score when no typed packages found
-      const { data } = await supabase
-        .from('users')
-        .select('*, activity_packages(*)')
-        .not('activity_packages', 'is', null)
-        .order('bestie_score', { ascending: false })
-        .limit(6)
-      setGroupProviders((data || []).filter(p => p.activity_packages?.length > 0))
+      // Honest empty: no fallback masquerading as filtered results.
+      setGroupProviders([])
     }
     setGroupLoading(false)
   }
 
   return (
-    <div style={{ background: '#080810', minHeight: '100vh', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ background: '#09090F', minHeight: '100vh', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <style>{`
         /* ── Reset ── */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         /* ── Nav ── */
         .nav-links { display: flex; gap: 28px; font-size: 14px; }
-        .nav-link { color: #9B93C0; text-decoration: none; transition: color 0.2s; }
-        .nav-link:hover { color: #E8E0FF; }
+        .nav-link { color: #A99ECC; text-decoration: none; transition: color 0.2s; }
+        .nav-link:hover { color: #F0EAFF; }
         .mobile-menu-btn { display: none; }
         .mobile-menu { display: none; }
 
         /* ── Layout grids ── */
-        .providers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .providers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; width: 100%; max-width: 100%; }
+        .providers-grid > * { min-width: 0; max-width: 100%; }
+        /* Force single column on narrow phones where 280px min could overflow */
+        @media (max-width: 360px) {
+          .providers-grid { grid-template-columns: 1fr; }
+        }
         .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
         .how-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; }
         .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 64px; align-items: center; }
-        .groups-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+        .groups-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; width: 100%; }
+        .groups-grid > * { min-width: 0; }
+
+        /* ── Hero video — respect reduced motion ── */
+        @media (prefers-reduced-motion: reduce) {
+          video[aria-hidden="true"] { display: none; }
+        }
+
+        /* ── Mobile horizontal swipe for long card lists ── */
+        @media (max-width: 768px) {
+          .features-grid, .how-grid {
+            display: flex !important;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            gap: 12px;
+            margin: 0 -20px;
+            padding: 4px 20px 12px;
+          }
+          .features-grid::-webkit-scrollbar,
+          .how-grid::-webkit-scrollbar { display: none; }
+          .features-grid > *, .how-grid > * {
+            flex: 0 0 82%;
+            scroll-snap-align: start;
+          }
+        }
 
         /* ── Skeleton pulse ── */
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
@@ -206,7 +202,7 @@ export default function HomePage() {
           background: rgba(15,15,30,0.7);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255,255,255,0.07);
+          border: 1px solid rgba(255,255,255,0.11);
           border-radius: 20px;
           transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
         }
@@ -225,8 +221,8 @@ export default function HomePage() {
         .group-btn {
           display: flex; flex-direction: column; align-items: center; gap: 8px;
           padding: 18px 8px; border-radius: 18px; cursor: pointer;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.07);
+          background: #111120;
+          border: 1px solid rgba(255,255,255,0.11);
           transition: all 0.22s cubic-bezier(.22,1,.36,1);
           position: relative; overflow: hidden;
         }
@@ -239,15 +235,15 @@ export default function HomePage() {
         .group-btn:hover::after { opacity: 1; }
         .group-btn.active { background: rgba(212,175,55,0.1); border-color: rgba(212,175,55,0.4); box-shadow: 0 0 24px rgba(212,175,55,0.08); }
         .group-btn.active::after { opacity: 1; }
-        .group-btn .emoji { font-size: 28px; transition: transform 0.22s; }
-        .group-btn:hover .emoji { transform: scale(1.15); }
+        .group-btn .group-icon { transition: transform 0.22s; }
+        .group-btn:hover .group-icon { transform: scale(1.15); }
 
         /* ── CTA Button ── */
         .btn-gold {
           display: inline-flex; align-items: center; gap: 8px;
           padding: 13px 28px; border-radius: 14px; font-size: 14px; font-weight: 700;
           background: linear-gradient(135deg, #D4AF37 0%, #B8960C 100%);
-          color: #080810; text-decoration: none;
+          color: #09090F; text-decoration: none;
           transition: filter 0.2s, transform 0.2s, box-shadow 0.2s;
           box-shadow: 0 4px 20px rgba(212,175,55,0.25);
         }
@@ -255,8 +251,8 @@ export default function HomePage() {
         .btn-ghost {
           display: inline-flex; align-items: center; gap: 8px;
           padding: 13px 28px; border-radius: 14px; font-size: 14px; font-weight: 600;
-          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
-          color: #E8E0FF; text-decoration: none;
+          background: #161628; border: 1px solid rgba(255,255,255,0.12);
+          color: #F0EAFF; text-decoration: none;
           transition: background 0.2s, border-color 0.2s, transform 0.2s;
         }
         .btn-ghost:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.2); transform: translateY(-1px); }
@@ -264,7 +260,7 @@ export default function HomePage() {
           display: inline-flex; align-items: center;
           padding: 9px 20px; border-radius: 12px; font-size: 13px; font-weight: 700;
           background: linear-gradient(135deg, #D4AF37 0%, #B8960C 100%);
-          color: #080810; text-decoration: none;
+          color: #09090F; text-decoration: none;
           transition: filter 0.2s, transform 0.2s;
         }
         .btn-sm-gold:hover { filter: brightness(1.1); transform: translateY(-1px); }
@@ -277,7 +273,7 @@ export default function HomePage() {
         .spark-badge {
           padding: 7px 14px; border-radius: 999px;
           background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.18);
-          font-size: 12px; color: #E8E0FF; display: inline-flex; gap: 5px; align-items: center;
+          font-size: 12px; color: #F0EAFF; display: inline-flex; gap: 5px; align-items: center;
           transition: background 0.2s, border-color 0.2s, transform 0.2s;
         }
         .spark-badge:hover { background: rgba(212,175,55,0.16); border-color: rgba(212,175,55,0.35); transform: scale(1.04); }
@@ -289,9 +285,9 @@ export default function HomePage() {
         @media (max-width: 900px) { .groups-grid { grid-template-columns: repeat(4, 1fr); } }
         @media (max-width: 768px) {
           .nav-links { display: none; }
-          .mobile-menu-btn { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; color: #E8E0FF; font-size: 18px; }
-          .mobile-menu.open { display: flex; flex-direction: column; gap: 4px; position: fixed; top: 60px; left: 0; right: 0; z-index: 49; background: rgba(8,8,16,0.98); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 16px; max-height: calc(100vh - 70px); overflow-y: auto; }
-          .mobile-menu a { padding: 12px 16px; border-radius: 12px; font-size: 15px; color: #9B93C0; }
+          .mobile-menu-btn { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; color: #F0EAFF; font-size: 18px; }
+          .mobile-menu.open { display: flex; flex-direction: column; gap: 4px; position: fixed; top: 60px; left: 0; right: 0; z-index: 49; background: rgba(8,8,16,0.98); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.10); padding: 16px; max-height: calc(100vh - 70px); overflow-y: auto; }
+          .mobile-menu a { padding: 12px 16px; border-radius: 12px; font-size: 15px; color: #A99ECC; }
           .providers-grid { grid-template-columns: 1fr; }
           .features-grid { grid-template-columns: 1fr; }
           .how-grid { grid-template-columns: 1fr; gap: 24px; }
@@ -305,7 +301,7 @@ export default function HomePage() {
       `}</style>
 
       {/* ── NAV ── */}
-      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px', background: 'rgba(8,8,16,0.85)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px', background: 'rgba(8,8,16,0.85)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none', letterSpacing: '-0.3px' }}>BESTIE</Link>
         <div className="nav-links">
           <Link href="/browse" className="nav-link">Browse</Link>
@@ -321,7 +317,7 @@ export default function HomePage() {
             <Link href="/dashboard" className="btn-gold" style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '10px' }}>Dashboard →</Link>
           ) : (
             <>
-              <Link href="/login" className="desktop-nav-cta" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none' }}>Log in</Link>
+              <Link href="/login" className="desktop-nav-cta" style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none' }}>Log in</Link>
               <Link href="/signup" className="btn-gold" style={{ padding: '8px 18px', borderRadius: '10px', fontSize: '13px' }}>Join Free</Link>
             </>
           )}
@@ -329,38 +325,65 @@ export default function HomePage() {
       </nav>
 
       {/* ── HERO ── */}
-      <section style={{ position: 'relative', paddingTop: '130px', paddingBottom: '60px', paddingLeft: '20px', paddingRight: '20px', overflow: 'hidden' }}>
-        {/* Background orbs */}
-        <div style={{ position: 'absolute', top: '-60px', left: '50%', width: '700px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, #D4AF37 0%, transparent 65%)', opacity: 0.07, pointerEvents: 'none', animation: 'glow-breathe 5s ease-in-out infinite', transform: 'translateX(-50%)' }} />
-        <div style={{ position: 'absolute', top: '100px', left: '20%', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, #9B93C0 0%, transparent 70%)', opacity: 0.04, pointerEvents: 'none', animation: 'glow-breathe-2 7s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', top: '80px', right: '15%', width: '260px', height: '260px', borderRadius: '50%', background: 'radial-gradient(circle, #39FF14 0%, transparent 70%)', opacity: 0.03, pointerEvents: 'none', animation: 'glow-breathe-2 6s ease-in-out 1s infinite' }} />
+      <section style={{ position: 'relative', paddingTop: '130px', paddingBottom: '60px', paddingLeft: '20px', paddingRight: '20px', overflow: 'hidden', minHeight: '660px' }}>
+        {/* Hero video background — autoplay muted loop, gracefully degrades */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            zIndex: 0,
+            opacity: 0.55,
+            pointerEvents: 'none',
+          }}
+        >
+          <source src="/hero-loop.mp4" type="video/mp4" />
+        </video>
+        {/* Readability gradient: top→bottom dark vignette so headline stays crisp */}
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
+          background: 'linear-gradient(180deg, rgba(9,9,15,0.85) 0%, rgba(9,9,15,0.55) 40%, rgba(9,9,15,0.75) 80%, #09090F 100%)',
+        }} />
+
+        {/* Background orbs (kept, behave as gentle accent atop video) */}
+        <div style={{ position: 'absolute', top: '-60px', left: '50%', width: '700px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, #D4AF37 0%, transparent 65%)', opacity: 0.07, pointerEvents: 'none', animation: 'glow-breathe 5s ease-in-out infinite', transform: 'translateX(-50%)', zIndex: 0 }} />
+        <div style={{ position: 'absolute', top: '100px', left: '20%', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, #A99ECC 0%, transparent 70%)', opacity: 0.04, pointerEvents: 'none', animation: 'glow-breathe-2 7s ease-in-out infinite', zIndex: 0 }} />
+        <div style={{ position: 'absolute', top: '80px', right: '15%', width: '260px', height: '260px', borderRadius: '50%', background: 'radial-gradient(circle, #34D399 0%, transparent 70%)', opacity: 0.03, pointerEvents: 'none', animation: 'glow-breathe-2 6s ease-in-out 1s infinite', zIndex: 0 }} />
 
         <div style={{ maxWidth: '820px', margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
           {/* Live badge */}
           <div className="hero-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '7px 16px', borderRadius: '999px', marginBottom: '28px', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.22)', color: '#D4AF37' }}>
-            <span style={{ color: '#39FF14', fontSize: '8px', animation: 'glow-breathe 2s ease-in-out infinite' }}>●</span>
+            <span style={{ color: '#34D399', fontSize: '8px', animation: 'glow-breathe 2s ease-in-out infinite' }}>●</span>
             Your social passport — live worldwide
           </div>
 
           {/* Headline */}
-          <h1 className="hero-h1" style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(38px, 8.5vw, 78px)', fontWeight: 700, color: '#E8E0FF', lineHeight: 1.05, marginBottom: '22px', letterSpacing: '-1px' }}>
+          <h1 className="hero-h1" style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(38px, 8.5vw, 78px)', fontWeight: 700, color: '#F0EAFF', lineHeight: 1.05, marginBottom: '22px', letterSpacing: '-1px' }}>
             Real people.<br /><em style={{ color: '#D4AF37', fontStyle: 'italic' }}>Real moments.</em>
           </h1>
 
           {/* Subtitle */}
-          <p className="hero-sub" style={{ fontSize: 'clamp(15px, 2vw, 17px)', color: '#9B93C0', marginBottom: '36px', maxWidth: '460px', margin: '0 auto 36px', lineHeight: 1.65 }}>
+          <p className="hero-sub" style={{ fontSize: 'clamp(15px, 2vw, 17px)', color: '#A99ECC', marginBottom: '36px', maxWidth: '460px', margin: '0 auto 36px', lineHeight: 1.65 }}>
             Find a Bestie for any activity. Verified profiles. Bestie Score. No awkwardness.
           </p>
 
           {/* Search bar */}
           <div className="hero-search" style={{ display: 'flex', alignItems: 'center', gap: '8px', maxWidth: '540px', margin: '0 auto 14px', padding: '7px', background: 'rgba(15,15,30,0.8)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', backdropFilter: 'blur(12px)', boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }}>
-            <span style={{ paddingLeft: '10px', fontSize: '18px', flexShrink: 0 }}>🔍</span>
+            <span style={{ paddingLeft: '10px', flexShrink: 0, display: 'flex', alignItems: 'center' }}><Search size={17} color="#A99ECC" strokeWidth={2} /></span>
             <input
               type="text"
               placeholder="Search by name, activity, or city..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px', color: '#E8E0FF', padding: '8px 0' }}
+              style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px', color: '#F0EAFF', padding: '8px 0' }}
             />
             <Link href={`/browse${searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ''}`} className="btn-sm-gold">Find</Link>
           </div>
@@ -369,9 +392,9 @@ export default function HomePage() {
           <button
             className="hero-match"
             onClick={() => setShowMatchModal(true)}
-            style={{ fontSize: '13px', color: '#9B93C0', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textDecorationColor: 'rgba(155,147,192,0.4)', textUnderlineOffset: '4px', transition: 'color 0.2s' }}
+            style={{ fontSize: '13px', color: '#A99ECC', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textDecorationColor: 'rgba(155,147,192,0.4)', textUnderlineOffset: '4px', transition: 'color 0.2s' }}
             onMouseEnter={e => e.target.style.color = '#D4AF37'}
-            onMouseLeave={e => e.target.style.color = '#9B93C0'}
+            onMouseLeave={e => e.target.style.color = '#A99ECC'}
           >
             ✨ Try Smart Match — let us find your Bestie
           </button>
@@ -379,8 +402,8 @@ export default function HomePage() {
       </section>
 
       {/* ── ACTIVITY GROUPS ── */}
-      <section style={{ padding: '0 20px 56px' }}>
-        <div ref={groupsRef} className={`reveal ${groupsVisible ? 'visible' : ''}`} style={{ maxWidth: '1100px', margin: '0 auto' }}>
+      <section style={{ padding: '0 20px 56px', overflow: 'hidden' }}>
+        <div ref={groupsRef} className={`reveal ${groupsVisible ? 'visible' : ''}`} style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
           <p className="section-label" style={{ textAlign: 'center' }}>FIND BY VIBE</p>
           <div className="groups-grid">
             {ACTIVITY_GROUPS.map(group => {
@@ -391,8 +414,8 @@ export default function HomePage() {
                   className={`group-btn ${active ? 'active' : ''}`}
                   onClick={() => handleGroupClick(group)}
                 >
-                  <span className="emoji">{group.emoji}</span>
-                  <span style={{ fontSize: '11px', fontWeight: 600, color: active ? '#D4AF37' : '#9B93C0', textAlign: 'center', lineHeight: 1.3 }}>{group.label}</span>
+                  <span className="group-icon"><group.Icon size={22} color={active ? '#D4AF37' : '#A99ECC'} strokeWidth={1.8} /></span>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: active ? '#D4AF37' : '#A99ECC', textAlign: 'center', lineHeight: 1.3 }}>{group.label}</span>
                 </button>
               )
             })}
@@ -401,15 +424,16 @@ export default function HomePage() {
           {activeGroup && (
             <div style={{ marginTop: '36px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#E8E0FF' }}>
-                  {activeGroup.emoji} {activeGroup.label}
+                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <activeGroup.Icon size={20} color="#D4AF37" strokeWidth={1.8} />
+                  {activeGroup.label}
                 </h2>
                 <Link href="/browse" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none', transition: 'opacity 0.2s' }} onMouseEnter={e=>e.target.style.opacity='.7'} onMouseLeave={e=>e.target.style.opacity='1'}>See all →</Link>
               </div>
               {groupLoading ? (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
                   {[1, 2, 3].map(i => (
-                    <div key={i} style={{ height: '380px', borderRadius: '20px', background: 'linear-gradient(90deg, #0F0F1E 25%, #141424 50%, #0F0F1E 75%)', backgroundSize: '400px 100%', animation: 'shimmer 1.5s infinite' }} />
+                    <div key={i} style={{ height: '380px', borderRadius: '20px', background: 'linear-gradient(90deg, #111120 25%, #141424 50%, #111120 75%)', backgroundSize: '400px 100%', animation: 'shimmer 1.5s infinite' }} />
                   ))}
                 </div>
               ) : groupProviders.length > 0 ? (
@@ -417,9 +441,11 @@ export default function HomePage() {
                   {groupProviders.map(p => <ProviderCard key={p.id} provider={p} />)}
                 </div>
               ) : (
-                <div style={{ textAlign: 'center', padding: '48px', background: 'rgba(15,15,30,0.7)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)' }}>
-                  <p style={{ fontSize: '32px', marginBottom: '12px' }}>🔍</p>
-                  <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '18px' }}>No Besties for this vibe yet</p>
+                <div style={{ textAlign: 'center', padding: '48px', background: 'rgba(15,15,30,0.7)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.10)', backdropFilter: 'blur(12px)' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(212,175,55,0.10)', border: '1px solid rgba(212,175,55,0.18)', marginBottom: '14px' }}>
+                    <Search size={24} color="#D4AF37" strokeWidth={1.6} />
+                  </div>
+                  <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '18px' }}>No Besties for this vibe yet</p>
                   <Link href="/signup" className="btn-sm-gold">Be the first →</Link>
                 </div>
               )}
@@ -429,38 +455,45 @@ export default function HomePage() {
       </section>
 
       {/* ── TOP BESTIES ── */}
-      <section style={{ padding: '0 20px 72px' }}>
-        <div ref={leaderRef} className={`reveal ${leaderVisible ? 'visible' : ''}`} style={{ maxWidth: '1100px', margin: '0 auto' }}>
+      <section style={{ padding: '0 20px 72px', overflow: 'hidden' }}>
+        <div ref={leaderRef} className={`reveal ${leaderVisible ? 'visible' : ''}`} style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '28px' }}>
             <div>
               <p className="section-label">LEADERBOARD</p>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 700, color: '#E8E0FF' }}>Top Besties</h2>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 700, color: '#F0EAFF' }}>Top Besties</h2>
             </div>
-            <Link href="/browse" style={{ fontSize: '13px', color: '#9B93C0', textDecoration: 'none', marginBottom: '2px', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#D4AF37'} onMouseLeave={e=>e.target.style.color='#9B93C0'}>See all →</Link>
+            <Link href="/browse" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none', marginBottom: '2px', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#D4AF37'} onMouseLeave={e=>e.target.style.color='#A99ECC'}>See all →</Link>
           </div>
           {topProviders.length > 0 ? (
-            <div className="providers-grid">
-              {topProviders.map((provider, i) => {
-                const badge = i === 0
-                  ? { label: '👑 #1 Top Bestie', bg: 'linear-gradient(135deg, #D4AF37, #B8960C)', color: '#080810', border: 'none' }
-                  : i === 1
-                  ? { label: '🥈 #2', bg: 'rgba(155,147,192,0.2)', color: '#9B93C0', border: '1px solid rgba(155,147,192,0.3)' }
-                  : i === 2
-                  ? { label: '🥉 #3', bg: 'rgba(180,100,40,0.2)', color: '#CD7F32', border: '1px solid rgba(180,100,40,0.3)' }
-                  : { label: `#${i + 1}`, bg: 'rgba(255,255,255,0.04)', color: '#9B93C0', border: '1px solid rgba(255,255,255,0.08)' }
-                return (
-                  <div key={provider.id} style={{ position: 'relative', paddingTop: '16px' }}>
-                    <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', zIndex: 10, background: badge.bg, border: badge.border, borderRadius: '999px', padding: '4px 14px', fontSize: '11px', fontWeight: 700, color: badge.color, whiteSpace: 'nowrap' }}>
-                      {badge.label}
+            <>
+              <div className="providers-grid">
+                {topProviders.map((provider, i) => {
+                  const badge = i === 0
+                    ? { label: '👑 #1 Top Bestie', bg: 'linear-gradient(135deg, #D4AF37, #B8960C)', color: '#09090F', border: 'none' }
+                    : i === 1
+                    ? { label: '🥈 #2', bg: 'rgba(155,147,192,0.2)', color: '#A99ECC', border: '1px solid rgba(155,147,192,0.3)' }
+                    : i === 2
+                    ? { label: '🥉 #3', bg: 'rgba(180,100,40,0.2)', color: '#CD7F32', border: '1px solid rgba(180,100,40,0.3)' }
+                    : { label: `#${i + 1}`, bg: '#131323', color: '#A99ECC', border: '1px solid rgba(255,255,255,0.12)' }
+                  return (
+                    <div key={provider.id} style={{ position: 'relative', paddingTop: '16px', width: '100%', boxSizing: 'border-box' }}>
+                      <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', zIndex: 10, background: badge.bg, border: badge.border, borderRadius: '999px', padding: '4px 14px', fontSize: '11px', fontWeight: 700, color: badge.color, whiteSpace: 'nowrap', maxWidth: 'calc(100% - 24px)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {badge.label}
+                      </div>
+                      <ProviderCard provider={provider} featured={i === 0} />
                     </div>
-                    <ProviderCard provider={provider} featured={i === 0} />
-                  </div>
-                )
-              })}
-            </div>
+                  )
+                })}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '32px' }}>
+                <Link href="/browse" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '14px 28px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: 'rgba(212,175,55,0.10)', border: '1px solid rgba(212,175,55,0.35)', color: '#D4AF37', textDecoration: 'none', transition: 'all 0.2s' }} onMouseEnter={e=>{e.currentTarget.style.background='rgba(212,175,55,0.18)'; e.currentTarget.style.borderColor='rgba(212,175,55,0.6)'}} onMouseLeave={e=>{e.currentTarget.style.background='rgba(212,175,55,0.10)'; e.currentTarget.style.borderColor='rgba(212,175,55,0.35)'}}>
+                  See more Besties →
+                </Link>
+              </div>
+            </>
           ) : (
-            <div style={{ textAlign: 'center', padding: '60px', background: 'rgba(15,15,30,0.7)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)' }}>
-              <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '18px' }}>Be the first to build your Bestie Score</p>
+            <div style={{ textAlign: 'center', padding: '60px', background: 'rgba(15,15,30,0.7)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.10)', backdropFilter: 'blur(12px)' }}>
+              <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '18px' }}>Be the first to build your Bestie Score</p>
               <Link href="/signup" className="btn-sm-gold">Join Free →</Link>
             </div>
           )}
@@ -471,28 +504,28 @@ export default function HomePage() {
       <section id="how-it-works" style={{ padding: '72px 20px' }}>
         <div ref={howRef} className={`reveal ${howVisible ? 'visible' : ''}`} style={{ maxWidth: '980px', margin: '0 auto' }}>
           {/* Glassmorphism container */}
-          <div style={{ borderRadius: '28px', background: 'rgba(15,15,30,0.6)', border: '1px solid rgba(255,255,255,0.07)', padding: '52px 44px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 24px 80px rgba(0,0,0,0.35)' }}>
+          <div style={{ borderRadius: '28px', background: 'rgba(15,15,30,0.6)', border: '1px solid rgba(255,255,255,0.11)', padding: '52px 44px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 24px 80px rgba(0,0,0,0.35)' }}>
             <div style={{ textAlign: 'center', marginBottom: '48px' }}>
               <p className="section-label">HOW IT WORKS</p>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 42px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '12px', lineHeight: 1.15 }}>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 42px)', fontWeight: 700, color: '#F0EAFF', marginBottom: '12px', lineHeight: 1.15 }}>
                 From stranger to Bestie<br />in four steps.
               </h2>
-              <p style={{ fontSize: '15px', color: '#9B93C0' }}>Built for real human connection — not followers, not likes.</p>
+              <p style={{ fontSize: '15px', color: '#A99ECC' }}>Built for real human connection — not followers, not likes.</p>
             </div>
             <div className="how-grid">
               {[
-                { num: '01', icon: '🪪', title: 'Build your Social Passport', desc: 'Add your bio, photo, city, activities, and set your weekly availability. Take the Bestie Type quiz — your energy, mind, and vibe type appear on your passport and power the compatibility engine.' },
-                { num: '02', icon: '🔍', title: 'Discover your people', desc: 'Browse with type compatibility, explore the Nearby Map, check City Pulse for who\'s free today, or send a Knock to someone interesting — an anonymous signal that only reveals your identity on a mutual match.' },
-                { num: '03', icon: '🤝', title: 'Meet IRL', desc: 'Book a 1-on-1 session, join a Group Session hosted by someone in your city, or flip "I\'m free today" on Pulse for spontaneous meetups. Show up — that\'s all it takes.' },
-                { num: '04', icon: '📖', title: 'Build your story', desc: 'Both sides confirm the session and rate each other. Record a memory — mood, note, photo. Give Sparks. Your streak grows, badges unlock, your passport becomes proof of a life well lived.' },
+                { num: '01', Icon: Contact,    title: 'Build your Social Passport', desc: 'Add your bio, photo, city, activities, and set your weekly availability. Take the Bestie Type quiz — your energy, mind, and vibe type appear on your passport and power the compatibility engine.' },
+                { num: '02', Icon: Search,    title: 'Discover your people', desc: 'Browse with type compatibility, explore the Nearby Map, check City Pulse for who\'s free today, or send a Knock to someone interesting — an anonymous signal that only reveals your identity on a mutual match.' },
+                { num: '03', Icon: UserCheck, title: 'Meet IRL', desc: 'Book a 1-on-1 session, join a Group Session hosted by someone in your city, or flip "I\'m free today" on Pulse for spontaneous meetups. Show up — that\'s all it takes.' },
+                { num: '04', Icon: Camera,    title: 'Build your story', desc: 'Both sides confirm the session and rate each other. Record a memory — mood, note, photo. Give Sparks. Your streak grows, badges unlock, your passport becomes proof of a life well lived.' },
               ].map((step, idx) => (
                 <div key={step.num} className={`how-card reveal-delay-${idx + 1}`}>
-                  {/* Big step number */}
                   <div style={{ fontSize: '52px', fontWeight: 800, color: 'rgba(212,175,55,0.08)', fontFamily: 'DM Serif Display, serif', lineHeight: 1, marginBottom: '-8px' }}>{step.num}</div>
-                  {/* Icon with pill background */}
-                  <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)', fontSize: '24px', margin: '10px 0 14px' }}>{step.icon}</div>
-                  <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '17px', fontWeight: 700, color: '#E8E0FF', marginBottom: '10px' }}>{step.title}</h3>
-                  <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.75 }}>{step.desc}</p>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)', margin: '10px 0 14px' }}>
+                    <step.Icon size={22} color="#D4AF37" strokeWidth={1.6} />
+                  </div>
+                  <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '17px', fontWeight: 700, color: '#F0EAFF', marginBottom: '10px' }}>{step.title}</h3>
+                  <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.75 }}>{step.desc}</p>
                 </div>
               ))}
             </div>
@@ -505,14 +538,16 @@ export default function HomePage() {
         <div ref={featRef} className={`reveal ${featVisible ? 'visible' : ''}`} style={{ maxWidth: '980px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '44px' }}>
             <p className="section-label">WHAT'S INSIDE</p>
-            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 38px)', fontWeight: 700, color: '#E8E0FF' }}>A full world for real-life connection</h2>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 38px)', fontWeight: 700, color: '#F0EAFF' }}>A full world for real-life connection</h2>
           </div>
           <div className="features-grid">
             {FEATURES.map((f) => (
               <div key={f.title} className="glass-card" style={{ padding: '22px' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.12)', fontSize: '22px', marginBottom: '14px' }}>{f.emoji}</div>
-                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '16px', fontWeight: 700, color: '#E8E0FF', marginBottom: '7px' }}>{f.title}</h3>
-                <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.65 }}>{f.desc}</p>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.12)', marginBottom: '14px' }}>
+                  <f.Icon size={20} color="#D4AF37" strokeWidth={1.6} />
+                </div>
+                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '16px', fontWeight: 700, color: '#F0EAFF', marginBottom: '7px' }}>{f.title}</h3>
+                <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.65 }}>{f.desc}</p>
               </div>
             ))}
           </div>
@@ -536,12 +571,12 @@ export default function HomePage() {
                       <stop offset="100%" stopColor="#D4AF37" stopOpacity="0" />
                     </radialGradient>
                     <radialGradient id="nodePurple" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="#9B93C0" stopOpacity="0.25" />
-                      <stop offset="100%" stopColor="#9B93C0" stopOpacity="0" />
+                      <stop offset="0%" stopColor="#A99ECC" stopOpacity="0.25" />
+                      <stop offset="100%" stopColor="#A99ECC" stopOpacity="0" />
                     </radialGradient>
                     <radialGradient id="nodeGreen" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="#39FF14" stopOpacity="0.2" />
-                      <stop offset="100%" stopColor="#39FF14" stopOpacity="0" />
+                      <stop offset="0%" stopColor="#34D399" stopOpacity="0.2" />
+                      <stop offset="100%" stopColor="#34D399" stopOpacity="0" />
                     </radialGradient>
                     <filter id="glow">
                       <feGaussianBlur stdDeviation="3" result="blur" />
@@ -562,12 +597,12 @@ export default function HomePage() {
                   {/* Edges — drawn in animation order */}
                   <line className="edge e1" x1="170" y1="100" x2="90"  y2="60"  stroke="#D4AF37" strokeWidth="1.5" strokeOpacity="0.5" />
                   <line className="edge e2" x1="170" y1="100" x2="260" y2="70"  stroke="#D4AF37" strokeWidth="1.5" strokeOpacity="0.5" />
-                  <line className="edge e3" x1="170" y1="100" x2="110" y2="185" stroke="#9B93C0" strokeWidth="1.2" strokeOpacity="0.4" />
-                  <line className="edge e4" x1="170" y1="100" x2="240" y2="190" stroke="#9B93C0" strokeWidth="1.2" strokeOpacity="0.4" />
+                  <line className="edge e3" x1="170" y1="100" x2="110" y2="185" stroke="#A99ECC" strokeWidth="1.2" strokeOpacity="0.4" />
+                  <line className="edge e4" x1="170" y1="100" x2="240" y2="190" stroke="#A99ECC" strokeWidth="1.2" strokeOpacity="0.4" />
                   <line className="edge e5" x1="90"  y1="60"  x2="260" y2="70"  stroke="#D4AF37" strokeWidth="1"   strokeOpacity="0.25" />
-                  <line className="edge e6" x1="110" y1="185" x2="55"  y2="240" stroke="#9B93C0" strokeWidth="1"   strokeOpacity="0.3" />
-                  <line className="edge e7" x1="240" y1="190" x2="300" y2="245" stroke="#9B93C0" strokeWidth="1"   strokeOpacity="0.3" />
-                  <line className="edge e8" x1="110" y1="185" x2="240" y2="190" stroke="#9B93C0" strokeWidth="1"   strokeOpacity="0.2" />
+                  <line className="edge e6" x1="110" y1="185" x2="55"  y2="240" stroke="#A99ECC" strokeWidth="1"   strokeOpacity="0.3" />
+                  <line className="edge e7" x1="240" y1="190" x2="300" y2="245" stroke="#A99ECC" strokeWidth="1"   strokeOpacity="0.3" />
+                  <line className="edge e8" x1="110" y1="185" x2="240" y2="190" stroke="#A99ECC" strokeWidth="1"   strokeOpacity="0.2" />
 
                   {/* Center node — YOU (gold) */}
                   <circle cx="170" cy="100" r="26" fill="url(#nodeGold)" />
@@ -576,30 +611,30 @@ export default function HomePage() {
 
                   {/* Top-left node */}
                   <circle cx="90" cy="60" r="20" fill="url(#nodePurple)" />
-                  <circle cx="90" cy="60" r="14" fill="#1A1A35" stroke="#9B93C0" strokeWidth="1.5" />
-                  <text x="90" y="64" textAnchor="middle" fontSize="10" fontWeight="600" fill="#E8E0FF" fontFamily="Plus Jakarta Sans, sans-serif">Alex</text>
+                  <circle cx="90" cy="60" r="14" fill="#1A1A35" stroke="#A99ECC" strokeWidth="1.5" />
+                  <text x="90" y="64" textAnchor="middle" fontSize="10" fontWeight="600" fill="#F0EAFF" fontFamily="Plus Jakarta Sans, sans-serif">Alex</text>
 
                   {/* Top-right node */}
                   <circle cx="260" cy="70" r="20" fill="url(#nodePurple)" />
-                  <circle cx="260" cy="70" r="14" fill="#1A1A35" stroke="#9B93C0" strokeWidth="1.5" />
-                  <text x="260" y="74" textAnchor="middle" fontSize="10" fontWeight="600" fill="#E8E0FF" fontFamily="Plus Jakarta Sans, sans-serif">Mila</text>
+                  <circle cx="260" cy="70" r="14" fill="#1A1A35" stroke="#A99ECC" strokeWidth="1.5" />
+                  <text x="260" y="74" textAnchor="middle" fontSize="10" fontWeight="600" fill="#F0EAFF" fontFamily="Plus Jakarta Sans, sans-serif">Mila</text>
 
                   {/* Bottom-left node */}
                   <circle cx="110" cy="185" r="18" fill="url(#nodePurple)" />
-                  <circle cx="110" cy="185" r="12" fill="#1A1A35" stroke="#9B93C0" strokeWidth="1.5" />
-                  <text x="110" y="189" textAnchor="middle" fontSize="9" fontWeight="600" fill="#E8E0FF" fontFamily="Plus Jakarta Sans, sans-serif">Dan</text>
+                  <circle cx="110" cy="185" r="12" fill="#1A1A35" stroke="#A99ECC" strokeWidth="1.5" />
+                  <text x="110" y="189" textAnchor="middle" fontSize="9" fontWeight="600" fill="#F0EAFF" fontFamily="Plus Jakarta Sans, sans-serif">Dan</text>
 
                   {/* Bottom-right node */}
                   <circle cx="240" cy="190" r="18" fill="url(#nodePurple)" />
-                  <circle cx="240" cy="190" r="12" fill="#1A1A35" stroke="#9B93C0" strokeWidth="1.5" />
-                  <text x="240" y="194" textAnchor="middle" fontSize="9" fontWeight="600" fill="#E8E0FF" fontFamily="Plus Jakarta Sans, sans-serif">Kate</text>
+                  <circle cx="240" cy="190" r="12" fill="#1A1A35" stroke="#A99ECC" strokeWidth="1.5" />
+                  <text x="240" y="194" textAnchor="middle" fontSize="9" fontWeight="600" fill="#F0EAFF" fontFamily="Plus Jakarta Sans, sans-serif">Kate</text>
 
                   {/* 2nd-degree nodes (smaller, green tint) */}
                   <circle cx="55"  cy="240" r="10" fill="#1A1A35" stroke="rgba(57,255,20,0.4)" strokeWidth="1" />
-                  <text x="55"  y="244" textAnchor="middle" fontSize="8" fill="#9B93C0" fontFamily="Plus Jakarta Sans, sans-serif">Lev</text>
+                  <text x="55"  y="244" textAnchor="middle" fontSize="8" fill="#A99ECC" fontFamily="Plus Jakarta Sans, sans-serif">Lev</text>
 
                   <circle cx="300" cy="245" r="10" fill="#1A1A35" stroke="rgba(57,255,20,0.4)" strokeWidth="1" />
-                  <text x="300" y="249" textAnchor="middle" fontSize="8" fill="#9B93C0" fontFamily="Plus Jakarta Sans, sans-serif">Sam</text>
+                  <text x="300" y="249" textAnchor="middle" fontSize="8" fill="#A99ECC" fontFamily="Plus Jakarta Sans, sans-serif">Sam</text>
 
                   {/* Labels */}
                   <text x="130" y="130" fontSize="9" fill="#D4AF37" fontFamily="Plus Jakarta Sans, sans-serif" opacity="0.7">✓ 3 sessions</text>
@@ -611,33 +646,15 @@ export default function HomePage() {
                 </svg>
               </div>
 
-              {/* Right: explanation */}
-              <div style={{ padding: '44px 40px' }}>
+              {/* Right: explanation (compact) */}
+              <div style={{ padding: '32px 28px' }}>
                 <p className="section-label">CONNECTION GRAPH</p>
-                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 36px)', fontWeight: 700, color: '#E8E0FF', lineHeight: 1.2, marginBottom: '16px' }}>
-                  Your social web,<br /><em style={{ color: '#9B93C0', fontStyle: 'italic' }}>built automatically.</em>
+                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 32px)', fontWeight: 700, color: '#F0EAFF', lineHeight: 1.2, marginBottom: '12px' }}>
+                  Your social web,<br /><em style={{ color: '#A99ECC', fontStyle: 'italic' }}>built automatically.</em>
                 </h2>
-                <p style={{ fontSize: '14px', color: '#9B93C0', lineHeight: 1.8, marginBottom: '24px' }}>
-                  Every confirmed session creates a line between two people. No manual input, no tags, no followers — just real connections that happened IRL.
+                <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.7, marginBottom: '20px' }}>
+                  Every confirmed session draws a line between two people. No followers, no tags — only real IRL connections. Thicker edge = more sessions.
                 </p>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '28px' }}>
-                  {[
-                    { icon: '🔗', title: 'Auto-built from sessions', desc: 'As soon as both sides confirm a meetup — the edge appears on the graph. Zero clicks needed.' },
-                    { icon: '🔍', title: 'Search by name', desc: 'Type anyone\'s name to find their node. See who they\'ve met and how you\'re connected.' },
-                    { icon: '🕸️', title: 'See 2nd-degree connections', desc: 'Friend-of-a-friend visibility. Crews form clusters. Your city becomes a real social map.' },
-                    { icon: '📏', title: 'Edge thickness = trust', desc: 'The more sessions two people have had — the thicker and brighter their connection line.' },
-                  ].map(item => (
-                    <div key={item.title} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                      <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(155,147,192,0.08)', border: '1px solid rgba(155,147,192,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0, marginTop: '1px' }}>{item.icon}</div>
-                      <div>
-                        <p style={{ fontSize: '13px', fontWeight: 700, color: '#E8E0FF', marginBottom: '2px' }}>{item.title}</p>
-                        <p style={{ fontSize: '12px', color: '#9B93C0', lineHeight: 1.6 }}>{item.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
                 <Link href="/graph" className="btn-gold" style={{ fontSize: '13px', padding: '10px 22px' }}>Open Connection Graph →</Link>
               </div>
             </div>
@@ -650,22 +667,24 @@ export default function HomePage() {
         <div ref={crewsRef} className={`reveal ${crewsVisible ? 'visible' : ''}`} style={{ maxWidth: '980px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '44px' }}>
             <p className="section-label">CREWS</p>
-            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 38px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '14px' }}>Your people. Your group.</h2>
-            <p style={{ fontSize: '15px', color: '#9B93C0', maxWidth: '500px', margin: '0 auto', lineHeight: 1.7 }}>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 38px)', fontWeight: 700, color: '#F0EAFF', marginBottom: '14px' }}>Your people. Your group.</h2>
+            <p style={{ fontSize: '15px', color: '#A99ECC', maxWidth: '500px', margin: '0 auto', lineHeight: 1.7 }}>
               A Crew is a group of Besties who regularly show up for each other. Create one, invite friends, run events — or join an existing one.
             </p>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '36px' }}>
             {[
-              { emoji: '🎯', title: 'Create or join', desc: 'Public crews are open to anyone. Private crews require a request or a captain\'s invite link — it bypasses the queue instantly.' },
-              { emoji: '📅', title: 'Run crew events', desc: 'Captains post events visible to all members. New events show up as notifications on your dashboard.' },
-              { emoji: '⭐', title: 'Crew Rating', desc: 'Members rate their crew 1–5 stars. The average is shown on the crew card. Highly-rated crews rank higher in the public listings.' },
-              { emoji: '🏆', title: 'Crew leaderboard', desc: 'Crews are ranked by rating and size. A great vibe, active events, and happy members push your crew up the charts.' },
+              { Icon: Target,      title: 'Create or join',    desc: 'Public crews are open to anyone. Private crews require a request or a captain\'s invite link — it bypasses the queue instantly.' },
+              { Icon: CalendarDays,title: 'Run crew events',   desc: 'Captains post events visible to all members. New events show up as notifications on your dashboard.' },
+              { Icon: Star,        title: 'Crew Rating',       desc: 'Members rate their crew 1–5 stars. The average is shown on the crew card. Highly-rated crews rank higher in the public listings.' },
+              { Icon: Trophy,      title: 'Crew leaderboard',  desc: 'Crews are ranked by rating and size. A great vibe, active events, and happy members push your crew up the charts.' },
             ].map(f => (
               <div key={f.title} className="glass-card" style={{ padding: '22px' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.12)', fontSize: '22px', marginBottom: '14px' }}>{f.emoji}</div>
-                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '16px', fontWeight: 700, color: '#E8E0FF', marginBottom: '7px' }}>{f.title}</h3>
-                <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.65 }}>{f.desc}</p>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.12)', marginBottom: '14px' }}>
+                  <f.Icon size={20} color="#D4AF37" strokeWidth={1.6} />
+                </div>
+                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '16px', fontWeight: 700, color: '#F0EAFF', marginBottom: '7px' }}>{f.title}</h3>
+                <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.65 }}>{f.desc}</p>
               </div>
             ))}
           </div>
@@ -681,11 +700,11 @@ export default function HomePage() {
           <div className="score-grid">
             {/* Left: explanation */}
             <div>
-              <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2.5px', color: '#39FF14', textTransform: 'uppercase', marginBottom: '16px' }}>THE SOCIAL PASSPORT</p>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(28px, 5vw, 46px)', fontWeight: 700, color: '#E8E0FF', lineHeight: 1.15, marginBottom: '20px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2.5px', color: '#34D399', textTransform: 'uppercase', marginBottom: '16px' }}>THE SOCIAL PASSPORT</p>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(28px, 5vw, 46px)', fontWeight: 700, color: '#F0EAFF', lineHeight: 1.15, marginBottom: '20px' }}>
                 Your <em style={{ color: '#D4AF37', fontStyle: 'italic' }}>Bestie Score</em><br />says it all.
               </h2>
-              <p style={{ fontSize: '15px', color: '#9B93C0', marginBottom: '24px', lineHeight: 1.75 }}>
+              <p style={{ fontSize: '15px', color: '#A99ECC', marginBottom: '24px', lineHeight: 1.75 }}>
                 Like a credit score — but for who you are as a person. Built from real sessions, ratings, sparks, and verification.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '32px' }}>
@@ -696,9 +715,9 @@ export default function HomePage() {
                   { label: '💎 Legend', desc: '1+ year, trusted by many' },
                   { label: '👑 OG Bestie', desc: '2+ years — the real ones' },
                 ].map(b => (
-                  <div key={b.label} style={{ display: 'flex', gap: '10px', alignItems: 'center', fontSize: '13px', padding: '8px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
-                    <span style={{ color: '#E8E0FF', fontWeight: 600, minWidth: '120px' }}>{b.label}</span>
-                    <span style={{ color: '#9B93C0' }}>{b.desc}</span>
+                  <div key={b.label} style={{ display: 'flex', gap: '10px', alignItems: 'center', fontSize: '13px', padding: '8px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid #131323' }}>
+                    <span style={{ color: '#F0EAFF', fontWeight: 600, minWidth: '120px' }}>{b.label}</span>
+                    <span style={{ color: '#A99ECC' }}>{b.desc}</span>
                   </div>
                 ))}
               </div>
@@ -708,23 +727,23 @@ export default function HomePage() {
             {/* Right: score card */}
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <div className="score-card" style={{ width: '280px', padding: '32px 28px', borderRadius: '28px', textAlign: 'center', background: 'rgba(15,15,30,0.8)', border: '1px solid rgba(57,255,20,0.2)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
-                <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '2px', color: '#9B93C0', marginBottom: '8px', textTransform: 'uppercase' }}>BESTIE SCORE</p>
-                <div style={{ fontSize: '80px', fontWeight: 700, color: '#39FF14', fontFamily: 'DM Serif Display, serif', lineHeight: 1, margin: '4px 0 16px', textShadow: '0 0 40px rgba(57,255,20,0.4)' }}>874</div>
+                <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '2px', color: '#A99ECC', marginBottom: '8px', textTransform: 'uppercase' }}>BESTIE SCORE</p>
+                <div style={{ fontSize: '80px', fontWeight: 700, color: '#34D399', fontFamily: 'DM Serif Display, serif', lineHeight: 1, margin: '4px 0 16px', textShadow: '0 0 40px rgba(57,255,20,0.4)' }}>874</div>
                 {/* Progress bar */}
-                <div style={{ height: '7px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', marginBottom: '8px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: '87.4%', borderRadius: '999px', background: 'linear-gradient(90deg, #39FF14 0%, #D4AF37 100%)', boxShadow: '0 0 12px rgba(57,255,20,0.5)' }} />
+                <div style={{ height: '7px', borderRadius: '999px', background: 'rgba(255,255,255,0.10)', marginBottom: '8px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: '87.4%', borderRadius: '999px', background: 'linear-gradient(90deg, #34D399 0%, #D4AF37 100%)', boxShadow: '0 0 12px rgba(57,255,20,0.5)' }} />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#9B93C0', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#A99ECC', marginBottom: '24px' }}>
                   <span>0</span>
-                  <span style={{ color: '#39FF14', fontWeight: 700 }}>Excellent</span>
+                  <span style={{ color: '#34D399', fontWeight: 700 }}>Excellent</span>
                   <span>1000</span>
                 </div>
                 {/* Stats */}
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.10)', paddingTop: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                   {[{ label: 'Sessions', val: '43' }, { label: 'Rating', val: '4.9' }, { label: 'Sparks', val: '127' }].map((s) => (
-                    <div key={s.label} style={{ padding: '10px 4px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)' }}>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#E8E0FF', marginBottom: '2px' }}>{s.val}</div>
-                      <div style={{ fontSize: '10px', color: '#9B93C0', fontWeight: 600, letterSpacing: '0.5px' }}>{s.label}</div>
+                    <div key={s.label} style={{ padding: '10px 4px', borderRadius: '12px', background: '#111120' }}>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#F0EAFF', marginBottom: '2px' }}>{s.val}</div>
+                      <div style={{ fontSize: '10px', color: '#A99ECC', fontWeight: 600, letterSpacing: '0.5px' }}>{s.label}</div>
                     </div>
                   ))}
                 </div>
@@ -734,31 +753,20 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── SPARKS ── */}
-      <section style={{ padding: '0 20px 72px' }}>
+      {/* ── SPARKS (compact) ── */}
+      <section style={{ padding: '0 20px 56px' }}>
         <div ref={sparksRef} className={`reveal ${sparksVisible ? 'visible' : ''}`} style={{ maxWidth: '740px', margin: '0 auto' }}>
-          <div style={{ borderRadius: '28px', background: 'linear-gradient(135deg, rgba(212,175,55,0.07) 0%, rgba(57,255,20,0.03) 100%)', border: '1px solid rgba(212,175,55,0.18)', textAlign: 'center', padding: '52px 36px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', position: 'relative', overflow: 'hidden' }}>
-            {/* Subtle inner glow */}
-            <div style={{ position: 'absolute', top: '-40px', left: '50%', transform: 'translateX(-50%)', width: '300px', height: '200px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ fontSize: '44px', marginBottom: '16px' }}>✨</div>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 34px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '14px' }}>Sparks — rare tokens of real trust</h2>
-              <p style={{ fontSize: '15px', color: '#9B93C0', marginBottom: '32px', lineHeight: 1.7, maxWidth: '460px', margin: '0 auto 32px' }}>
-                Every new member gets 30 Sparks. You can give max 3 to any one person — they say "I genuinely trust this person."
-              </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginBottom: '32px' }}>
-                {[
-                  { emoji: '💛', label: 'Kind' }, { emoji: '🎉', label: 'Fun' }, { emoji: '🔒', label: 'Reliable' },
-                  { emoji: '💎', label: 'Genuine' }, { emoji: '🛡️', label: 'Safe' }, { emoji: '⚡', label: 'Energetic' },
-                  { emoji: '👂', label: 'Good listener' }, { emoji: '🌟', label: 'Social' }, { emoji: '⏰', label: 'Punctual' }, { emoji: '🌊', label: 'Open' },
-                ].map(s => (
-                  <div key={s.label} className="spark-badge">
-                    <span>{s.emoji}</span><span>{s.label}</span>
-                  </div>
-                ))}
-              </div>
-              <Link href="/signup" className="btn-gold">Get your 30 Sparks →</Link>
+          <div style={{ borderRadius: '24px', background: 'linear-gradient(135deg, rgba(212,175,55,0.07) 0%, rgba(57,255,20,0.03) 100%)', border: '1px solid rgba(212,175,55,0.18)', padding: '28px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Sparkles size={26} color="#D4AF37" strokeWidth={1.6} />
             </div>
+            <div style={{ flex: 1, minWidth: '180px' }}>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(20px, 3.5vw, 26px)', fontWeight: 700, color: '#F0EAFF', marginBottom: '6px' }}>Sparks — rare tokens of trust</h2>
+              <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.6 }}>
+                30 Sparks at signup, max 3 per person. The rarest signal of real trust on Bestie.
+              </p>
+            </div>
+            <Link href="/signup" className="btn-sm-gold" style={{ flexShrink: 0 }}>Get yours →</Link>
           </div>
         </div>
       </section>
@@ -769,8 +777,8 @@ export default function HomePage() {
           <div style={{ borderRadius: '28px', textAlign: 'center', background: 'linear-gradient(135deg, rgba(212,175,55,0.09) 0%, rgba(57,255,20,0.04) 100%)', border: '1px solid rgba(212,175,55,0.2)', padding: '56px 36px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', bottom: '-60px', right: '-60px', width: '260px', height: '260px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
             <div style={{ position: 'relative', zIndex: 1 }}>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 700, color: '#E8E0FF', marginBottom: '14px', lineHeight: 1.15 }}>Ready to meet your Bestie?</h2>
-              <p style={{ fontSize: '16px', color: '#9B93C0', marginBottom: '32px' }}>Join people building real connections in their city.</p>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 700, color: '#F0EAFF', marginBottom: '14px', lineHeight: 1.15 }}>Ready to meet your Bestie?</h2>
+              <p style={{ fontSize: '16px', color: '#A99ECC', marginBottom: '32px' }}>Join people building real connections in their city.</p>
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                 <Link href="/signup" className="btn-gold">Become a Bestie →</Link>
                 <Link href="/browse" className="btn-ghost">Browse Besties</Link>
@@ -781,7 +789,7 @@ export default function HomePage() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '32px 24px' }}>
+      <footer style={{ borderTop: '1px solid #161628', padding: '32px 24px' }}>
         <div style={{ maxWidth: '980px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
           <span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37' }}>BESTIE</span>
           <div style={{ display: 'flex', gap: '20px', fontSize: '13px', flexWrap: 'wrap' }}>
@@ -789,7 +797,7 @@ export default function HomePage() {
               { href: '/browse', label: 'Browse' }, { href: '/crews', label: 'Crews' },
               { href: '/pulse', label: 'Pulse' }, { href: '#how-it-works', label: 'How It Works' }, { href: '/score-guide', label: 'Bestie Score' }, { href: '/signup', label: 'Join' },
             ].map(l => (
-              <Link key={l.label} href={l.href} style={{ color: '#6B6490', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#9B93C0'} onMouseLeave={e=>e.target.style.color='#6B6490'}>{l.label}</Link>
+              <Link key={l.label} href={l.href} style={{ color: '#6B6490', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#A99ECC'} onMouseLeave={e=>e.target.style.color='#6B6490'}>{l.label}</Link>
             ))}
           </div>
           <p style={{ fontSize: '12px', color: '#4A4268' }}>© 2026 Bestie. Worldwide. 18+</p>

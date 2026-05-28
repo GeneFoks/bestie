@@ -1,6 +1,7 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 export const revalidate = 0
 import Link from 'next/link'
+import { MapPin, Lock, Search, Calendar, Clock } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 import ProfileNav from '@/components/ProfileNav'
 import SocialPassportCTA from '@/components/SocialPassportCTA'
@@ -9,10 +10,12 @@ import InviteToSessionButton from '@/components/InviteToSessionButton'
 import EditActivitiesLink from '@/components/EditActivitiesLink'
 import BlockReportButton from '@/components/BlockReportButton'
 import KnockButton from '@/components/KnockButton'
+import PassportScoreCard from '@/components/PassportScoreCard'
 import MutualFriends from '@/components/MutualFriends'
 import { getAvatarFrame } from '@/lib/avatarFrame'
 import CompatibilityScore from './CompatibilityScore'
 import StickyBookCTA from './StickyBookCTA'
+import { ActivityIcon } from '@/lib/activityIcons'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -44,12 +47,6 @@ const SPARK_TYPES = [
   { id: 'knowledgeable', emoji: '🎓', label: 'Knowledgeable' },
 ]
 
-const ACTIVITY_EMOJI = {
-  meet_irl: '🤝', dance_crew: '💃', trail_crew: '🥾', travel_buddy: '✈️',
-  game_night: '🎮', watch_together: '🎬', vibe_call: '📱', deep_chat: '🫂',
-  real_talk: '💬', festival_crew: '🎪', epic_journey: '🌍', fishing_crew: '🎣',
-}
-
 const ACTIVITY_DURATION = {
   meet_irl: '1–2h', dance_crew: '2h', trail_crew: '3–5h', travel_buddy: 'Multi-day',
   game_night: '3h', watch_together: '2h', vibe_call: '30–60m', deep_chat: '1h',
@@ -67,11 +64,11 @@ function getMemberBadge(createdAt: string | null) {
   if (!createdAt) return null
   const months = Math.floor((Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24 * 30))
   if (months >= 24) return { emoji: '👑', label: 'OG Bestie', color: '#D4AF37', desc: '2+ years' }
-  if (months >= 12) return { emoji: '💎', label: 'Legend', color: '#39FF14', desc: '1+ year' }
+  if (months >= 12) return { emoji: '💎', label: 'Legend', color: '#34D399', desc: '1+ year' }
   if (months >= 6) return { emoji: '🔥', label: 'Veteran', color: '#FF6B35', desc: '6+ months' }
-  if (months >= 3) return { emoji: '⭐', label: 'Regular', color: '#9B93C0', desc: '3+ months' }
-  if (months >= 1) return { emoji: '🌱', label: 'New Bestie', color: '#9B93C0', desc: '1+ month' }
-  return { emoji: '✨', label: 'Just joined', color: '#9B93C0', desc: 'New here' }
+  if (months >= 3) return { emoji: '⭐', label: 'Regular', color: '#A99ECC', desc: '3+ months' }
+  if (months >= 1) return { emoji: '🌱', label: 'New Bestie', color: '#A99ECC', desc: '1+ month' }
+  return { emoji: '✨', label: 'Just joined', color: '#A99ECC', desc: 'New here' }
 }
 
 function StarRating({ rating, count }: { rating: number; count?: number }) {
@@ -83,7 +80,7 @@ function StarRating({ rating, count }: { rating: number; count?: number }) {
           <span key={i} style={{ fontSize: '14px', lineHeight: 1, color: i <= Math.floor(r + 0.5) ? '#D4AF37' : 'rgba(212,175,55,0.25)' }}>★</span>
         ))}
       </div>
-      <span style={{ fontSize: '10px', color: '#9B93C0' }}>
+      <span style={{ fontSize: '10px', color: '#A99ECC' }}>
         {r.toFixed(1)}{count != null && count > 0 ? ` · ${count} ${count === 1 ? 'review' : 'reviews'}` : ''}
       </span>
     </div>
@@ -119,12 +116,12 @@ export default async function ProfilePage({ params }) {
 
   if (!profile) {
     return (
-      <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
         <div style={{ textAlign: 'center' }}>
-          <p style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</p>
-          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#E8E0FF', marginBottom: '8px' }}>Profile not found</h1>
-          <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '24px' }}>@{params.username} doesn't exist yet</p>
-          <Link href="/browse" style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>Browse Besties</Link>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}><Search size={48} color="#A99ECC" strokeWidth={1.8} /></div>
+          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#F0EAFF', marginBottom: '8px' }}>Profile not found</h1>
+          <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '24px' }}>@{params.username} doesn't exist yet</p>
+          <Link href="/browse" style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Browse Besties</Link>
         </div>
       </div>
     )
@@ -166,7 +163,7 @@ export default async function ProfilePage({ params }) {
     .sort((a, b) => b.count - a.count)
 
   const score = profile.bestie_score || 0
-  const scoreColor = score >= 800 ? '#39FF14' : score >= 600 ? '#D4AF37' : '#9B93C0'
+  const scoreColor = score >= 800 ? '#34D399' : score >= 600 ? '#D4AF37' : '#A99ECC'
   const scoreLabel = score >= 800 ? 'Excellent' : score >= 600 ? 'Good' : score >= 400 ? 'Fair' : 'New'
   const initials = profile.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
   const memberBadge = getMemberBadge(profile.created_at)
@@ -182,28 +179,28 @@ export default async function ProfilePage({ params }) {
   const firstName = profile.full_name?.split(' ')[0] || 'them'
 
   const BADGES = [
-    rankPct <= 0.01 && { id: 'top1', emoji: '🏆', label: 'Top 1%', desc: 'Bestie Score in the top 1%', color: '#39FF14' },
+    rankPct <= 0.01 && { id: 'top1', emoji: '🏆', label: 'Top 1%', desc: 'Bestie Score in the top 1%', color: '#34D399' },
     rankPct <= 0.10 && rankPct > 0.01 && { id: 'top10', emoji: '🥇', label: 'Top 10%', desc: 'Bestie Score in the top 10%', color: '#D4AF37' },
-    profile.is_verified && { id: 'verified', emoji: '✅', label: 'Verified', desc: 'Identity verified by Bestie', color: '#39FF14' },
+    profile.is_verified && { id: 'verified', emoji: '✅', label: 'Verified', desc: 'Identity verified by Bestie', color: '#34D399' },
     sessionCount >= 25 && { id: 'session_king', emoji: '👑', label: 'Session King', desc: '25+ confirmed sessions', color: '#D4AF37' },
-    sessionCount >= 10 && sessionCount < 25 && { id: 'pro', emoji: '💎', label: 'Pro', desc: '10+ confirmed sessions', color: '#9B8FFF' },
+    sessionCount >= 10 && sessionCount < 25 && { id: 'pro', emoji: '💎', label: 'Pro', desc: '10+ confirmed sessions', color: '#9B7FFF' },
     sessionCount >= 5 && sessionCount < 10 && { id: 'on_fire', emoji: '🔥', label: 'On Fire', desc: '5+ confirmed sessions', color: '#FF6B35' },
-    sessionCount >= 1 && sessionCount < 5 && { id: 'first_session', emoji: '🎯', label: 'First Steps', desc: 'Completed first session', color: '#9B93C0' },
+    sessionCount >= 1 && sessionCount < 5 && { id: 'first_session', emoji: '🎯', label: 'First Steps', desc: 'Completed first session', color: '#A99ECC' },
     totalSparks >= 50 && { id: 'spark_icon', emoji: '💫', label: 'Spark Icon', desc: '50+ sparks received', color: '#D4AF37' },
-    totalSparks >= 10 && totalSparks < 50 && { id: 'spark_magnet', emoji: '✨', label: 'Spark Magnet', desc: '10+ sparks received', color: '#9B93C0' },
+    totalSparks >= 10 && totalSparks < 50 && { id: 'spark_magnet', emoji: '✨', label: 'Spark Magnet', desc: '10+ sparks received', color: '#A99ECC' },
     ratingValues.length >= 3 && avgRating >= 4.8 && { id: 'five_star', emoji: '⭐', label: '5-Star', desc: 'Near-perfect average rating', color: '#D4AF37' },
-    ageDays < 30 && score > 200 && { id: 'rising_star', emoji: '🌱', label: 'Rising Star', desc: 'New member with high score', color: '#39FF14' },
-    streakWeeks >= 12 && { id: 'streak_12', emoji: '🌊', label: `${streakWeeks}w Streak`, desc: '12+ week streak', color: '#39FF14' },
+    ageDays < 30 && score > 200 && { id: 'rising_star', emoji: '🌱', label: 'Rising Star', desc: 'New member with high score', color: '#34D399' },
+    streakWeeks >= 12 && { id: 'streak_12', emoji: '🌊', label: `${streakWeeks}w Streak`, desc: '12+ week streak', color: '#34D399' },
     streakWeeks >= 8 && streakWeeks < 12 && { id: 'streak_8', emoji: '⚡', label: `${streakWeeks}w Streak`, desc: '8+ week streak', color: '#D4AF37' },
     streakWeeks >= 4 && streakWeeks < 8 && { id: 'streak_4', emoji: '💥', label: `${streakWeeks}w Streak`, desc: '4+ week streak', color: '#FF6B35' },
-    streakWeeks >= 2 && streakWeeks < 4 && { id: 'streak_2', emoji: '🔥', label: `${streakWeeks}w Streak`, desc: '2+ week streak', color: '#9B93C0' },
+    streakWeeks >= 2 && streakWeeks < 4 && { id: 'streak_2', emoji: '🔥', label: `${streakWeeks}w Streak`, desc: '2+ week streak', color: '#A99ECC' },
   ].filter(Boolean)
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif', paddingBottom: '88px' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif', paddingBottom: '88px' }}>
 
       {/* NAV */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <ProfileNav />
       </nav>
@@ -232,7 +229,7 @@ export default async function ProfilePage({ params }) {
 
         {/* AVATAR — вынесен из cover чтобы не обрезался overflow:hidden */}
         <div style={{ marginTop: '-44px', marginBottom: '0', position: 'relative', zIndex: 10 }}>
-          <div style={{ width: '88px', height: '88px', borderRadius: '50%', overflow: 'hidden', border: `3px solid ${tier.color}`, background: '#1a1a35', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 24px rgba(${tier.glow},0.4)`, ...getAvatarFrame(sessionCount) }}>
+          <div style={{ width: '88px', height: '88px', borderRadius: '50%', overflow: 'hidden', border: `3px solid ${tier.color}`, background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 24px rgba(${tier.glow},0.4)`, ...getAvatarFrame(sessionCount) }}>
             {profile.avatar_url
               ? <img src={profile.avatar_url} alt={profile.full_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : <span style={{ fontSize: '30px', fontWeight: 700, color: tier.color, fontFamily: 'DM Serif Display, serif' }}>{initials}</span>
@@ -245,30 +242,35 @@ export default async function ProfilePage({ params }) {
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: '200px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '4px' }}>
-                <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '26px', fontWeight: 700, color: '#E8E0FF', margin: 0 }}>{profile.full_name}</h1>
+                <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '26px', fontWeight: 700, color: '#F0EAFF', margin: 0 }}>{profile.full_name}</h1>
                 {profile.is_verified && (
                   <span title="Verified" style={{ fontSize: '16px' }}>✅</span>
                 )}
                 {memberBadge && (
-                  <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: memberBadge.color, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.1)', color: memberBadge.color, fontWeight: 600, whiteSpace: 'nowrap' }}>
                     {memberBadge.emoji} {memberBadge.label}
                   </span>
                 )}
               </div>
-              <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '8px' }}>
-                {profile.city && `📍 ${profile.city}${profile.country ? `, ${profile.country}` : ''} · `}@{profile.username}
-                {memberSince && ` · joined ${memberSince}`}
+              <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>
+                {profile.city && (
+                  <>
+                    <MapPin size={13} strokeWidth={2} />
+                    <span>{profile.city}{profile.country ? `, ${profile.country}` : ''} · </span>
+                  </>
+                )}
+                <span>@{profile.username}{memberSince && ` · joined ${memberSince}`}</span>
               </p>
               {crew && (
                 <Link href={`/crews/${crew.slug}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', marginBottom: '8px', padding: '3px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', textDecoration: 'none' }}>
-                  {!crew.is_public && '🔒 '}{crew.name}
+                  {!crew.is_public && <Lock size={11} strokeWidth={2.2} />}{crew.name}
                 </Link>
               )}
-              {profile.bio && <p style={{ fontSize: '14px', color: '#9B93C0', lineHeight: 1.65, maxWidth: '520px' }}>{profile.bio}</p>}
+              {profile.bio && <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.65, maxWidth: '520px' }}>{profile.bio}</p>}
             </div>
             {/* Action buttons */}
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-              <KnockButton profileId={profile.id} />
+              <KnockButton profileId={profile.id} profileUsername={profile.username} />
               <BlockReportButton profileUserId={profile.id} />
             </div>
           </div>
@@ -277,48 +279,13 @@ export default async function ProfilePage({ params }) {
           {(profile.energy_type || profile.mind_type || profile.vibe_type) && (
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
               {profile.energy_type && <span style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', fontSize: '12px', color: '#D4AF37', fontWeight: 500 }}>⚡ {profile.energy_type}</span>}
-              {profile.mind_type && <span style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(155,143,255,0.1)', border: '1px solid rgba(155,143,255,0.25)', fontSize: '12px', color: '#9B8FFF', fontWeight: 500 }}>💡 {profile.mind_type}</span>}
-              {profile.vibe_type && <span style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '12px', color: '#39FF14', fontWeight: 500 }}>🌊 {profile.vibe_type}</span>}
+              {profile.mind_type && <span style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(155,143,255,0.1)', border: '1px solid rgba(155,143,255,0.25)', fontSize: '12px', color: '#9B7FFF', fontWeight: 500 }}>💡 {profile.mind_type}</span>}
+              {profile.vibe_type && <span style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '12px', color: '#34D399', fontWeight: 500 }}>🌊 {profile.vibe_type}</span>}
             </div>
           )}
         </div>
 
-        {/* STATS ROW */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '20px' }}>
-          {/* BS Score */}
-          <div style={{ gridColumn: 'span 2', background: 'linear-gradient(135deg, rgba(15,15,30,0.9) 0%, rgba(20,20,40,0.9) 100%)', border: `1px solid ${scoreColor}25`, borderRadius: '18px', padding: '16px 20px', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '80px', height: '80px', borderRadius: '50%', background: `radial-gradient(circle, ${scoreColor}15 0%, transparent 70%)` }} />
-            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '6px' }}>BESTIE SCORE</p>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-              <span style={{ fontSize: '36px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{score}</span>
-              <span style={{ fontSize: '11px', color: '#9B93C0' }}>/ 1000</span>
-            </div>
-            <div style={{ marginTop: '8px', height: '4px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${Math.min(score / 10, 100)}%`, borderRadius: '999px', background: `linear-gradient(90deg, ${scoreColor} 0%, #D4AF37 100%)`, transition: 'width 1s ease' }} />
-            </div>
-            <p style={{ fontSize: '10px', fontWeight: 600, color: scoreColor, marginTop: '4px' }}>{scoreLabel}</p>
-          </div>
-
-          {/* Sessions */}
-          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '18px', padding: '16px', textAlign: 'center' }}>
-            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>SESSIONS</p>
-            <div style={{ fontSize: '28px', fontWeight: 700, color: '#E8E0FF', fontFamily: 'DM Serif Display, serif' }}>{sessionCount}</div>
-            <p style={{ fontSize: '10px', color: '#9B93C0', marginTop: '4px' }}>met IRL</p>
-          </div>
-
-          {/* Sparks */}
-          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '18px', padding: '16px', textAlign: 'center' }}>
-            <p style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '1px', color: '#9B93C0', marginBottom: '8px' }}>SPARKS</p>
-            <div style={{ fontSize: '26px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>✨{totalSparks}</div>
-            {avgRating > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4px' }}>
-                <StarRating rating={avgRating} count={ratingValues.length} />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* COMPATIBILITY (client — only shows if viewer logged in + not own profile) */}
+        {/* COMPATIBILITY — closest signal of "is this person for me", show first */}
         <CompatibilityScore profile={{
           id: profile.id,
           city: profile.city,
@@ -328,35 +295,39 @@ export default async function ProfilePage({ params }) {
           activity_packages: profile.activity_packages,
         }} />
 
-        {/* MUTUAL FRIENDS */}
-        <MutualFriends profileId={profile.id} />
-
-        {/* SESSIONS YOU CAN BOOK */}
+        {/* SESSIONS YOU CAN BOOK — primary meeting action above the fold */}
         {profile.activity_packages?.length > 0 && (
           <div style={{ marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#E8E0FF', margin: 0 }}>Sessions you can book</h2>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', margin: 0 }}>Sessions you can book</h2>
               <EditActivitiesLink profileUserId={profile.id} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {profile.activity_packages.map((pkg) => (
-                <div key={pkg.id} style={{ background: 'linear-gradient(135deg, #0F0F1E 0%, #131324 100%)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '18px', padding: '18px 20px', transition: 'border-color 0.2s' }}>
+                <div key={pkg.id} style={{ background: 'linear-gradient(135deg, #111120 0%, #131324 100%)', border: '1px solid rgba(255,255,255,0.11)', borderRadius: '18px', padding: '18px 20px', transition: 'border-color 0.2s' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     {/* Emoji circle */}
-                    <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', flexShrink: 0 }}>
-                      {ACTIVITY_EMOJI[pkg.activity_type] || '✨'}
+                    <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <ActivityIcon type={pkg.activity_type} size={26} color="#D4AF37" strokeWidth={1.6} />
                     </div>
                     {/* Details */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: '15px', fontWeight: 700, color: '#E8E0FF', marginBottom: '3px' }}>{pkg.title}</p>
-                      {pkg.description && <p style={{ fontSize: '12px', color: '#9B93C0', lineHeight: 1.5, marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pkg.description}</p>}
+                      <div style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF', marginBottom: '3px', display: 'inline-flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        <span>{pkg.title}</span>
+                        {pkg.crew_id && (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', padding: '1px 7px', borderRadius: '999px', background: 'rgba(155,127,255,0.12)', border: '1px solid rgba(155,127,255,0.35)', color: '#9B7FFF', fontSize: '9px', fontWeight: 700, letterSpacing: '0.5px' }}>
+                            <Lock size={9} strokeWidth={2.2} /> CREW
+                          </span>
+                        )}
+                      </div>
+                      {pkg.description && <p style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.5, marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pkg.description}</p>}
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                         {ACTIVITY_DURATION[pkg.activity_type] && (
-                          <span style={{ fontSize: '11px', color: '#9B93C0' }}>⏱ {ACTIVITY_DURATION[pkg.activity_type]}</span>
+                          <span style={{ fontSize: '11px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Clock size={11} strokeWidth={2} /> {ACTIVITY_DURATION[pkg.activity_type]}</span>
                         )}
                         {pkg.scheduled_at && (
-                          <span style={{ fontSize: '11px', color: '#D4AF37', fontWeight: 600 }}>
-                            📅 {new Date(pkg.scheduled_at).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          <span style={{ fontSize: '11px', color: '#D4AF37', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <Calendar size={11} strokeWidth={2} /> {new Date(pkg.scheduled_at).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                           </span>
                         )}
                       </div>
@@ -364,11 +335,11 @@ export default async function ProfilePage({ params }) {
                     {/* Price */}
                     <div style={{ flexShrink: 0, textAlign: 'right' }}>
                       {pkg.is_free
-                        ? <div style={{ padding: '4px 10px', borderRadius: '8px', background: 'rgba(57,255,20,0.1)', border: '1px solid rgba(57,255,20,0.25)' }}><span style={{ fontSize: '13px', fontWeight: 700, color: '#39FF14' }}>Free</span></div>
+                        ? <div style={{ padding: '4px 10px', borderRadius: '8px', background: 'rgba(57,255,20,0.1)', border: '1px solid rgba(57,255,20,0.25)' }}><span style={{ fontSize: '13px', fontWeight: 700, color: '#34D399' }}>Free</span></div>
                         : pkg.price_per_session > 0 && (
                           <div>
-                            <p style={{ fontSize: '20px', fontWeight: 700, color: '#E8E0FF', fontFamily: 'DM Serif Display, serif', margin: 0 }}>${pkg.price_per_session}</p>
-                            <p style={{ fontSize: '10px', color: '#9B93C0', textAlign: 'right' }}>/session</p>
+                            <p style={{ fontSize: '20px', fontWeight: 700, color: '#F0EAFF', fontFamily: 'DM Serif Display, serif', margin: 0 }}>${pkg.price_per_session}</p>
+                            <p style={{ fontSize: '10px', color: '#A99ECC', textAlign: 'right' }}>/session</p>
                           </div>
                         )
                       }
@@ -376,7 +347,7 @@ export default async function ProfilePage({ params }) {
                   </div>
                   {/* Actions */}
                   <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <Link href={`/book/${profile.username}`} style={{ display: 'block', padding: '12px', borderRadius: '12px', textAlign: 'center', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
+                    <Link href={`/book/${profile.username}`} style={{ display: 'block', padding: '12px', borderRadius: '12px', textAlign: 'center', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
                       Book →
                     </Link>
                     <InviteToSessionButton username={profile.username} activityType={pkg.activity_type} />
@@ -388,21 +359,49 @@ export default async function ProfilePage({ params }) {
         )}
 
         {(!profile.activity_packages || profile.activity_packages.length === 0) && (
-          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '18px', padding: '24px', marginBottom: '20px', textAlign: 'center' }}>
-            <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '12px' }}>No activities listed yet</p>
-            <EditActivitiesLink profileUserId={profile.id} />
+          <div style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(155,127,255,0.05) 100%)', border: '1px solid rgba(212,175,55,0.20)', borderRadius: '18px', padding: '22px', marginBottom: '20px', textAlign: 'center' }}>
+            <p style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF', marginBottom: '6px', fontFamily: 'DM Serif Display, serif' }}>Want to meet {firstName}?</p>
+            <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '14px', lineHeight: 1.55 }}>
+              No activities listed yet — but you can still <strong style={{ color: '#D4AF37' }}>knock</strong> to signal interest, or <strong style={{ color: '#D4AF37' }}>send a message</strong> to suggest a coffee or meetup.
+            </p>
+            <div style={{ display: 'inline-flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <KnockButton profileId={profile.id} profileUsername={profile.username} />
+              <Link href={`/messages?to=${profile.username}`} style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: '#F0EAFF', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                Send a message →
+              </Link>
+            </div>
+            <div style={{ marginTop: '12px' }}>
+              <EditActivitiesLink profileUserId={profile.id} />
+            </div>
           </div>
         )}
 
+        {/* PASSPORT SCORE CARD — credibility, below the meeting CTAs */}
+        <div style={{ marginBottom: '20px' }}>
+          <PassportScoreCard
+            score={score}
+            rating={avgRating || null}
+            sessions={sessionCount}
+            sparks={totalSparks}
+            fullName={profile.full_name}
+            username={profile.username}
+            city={profile.city}
+            avatarUrl={profile.avatar_url}
+          />
+        </div>
+
+        {/* MUTUAL FRIENDS — social proof */}
+        <MutualFriends profileId={profile.id} />
+
         {/* TOP SPARKS */}
         {topSparks.length > 0 && (
-          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '18px', padding: '20px', marginBottom: '16px' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '14px' }}>TOP SPARKS FROM THE COMMUNITY</p>
+          <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '18px', padding: '20px', marginBottom: '16px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '14px' }}>TOP SPARKS FROM THE COMMUNITY</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {topSparks.map(s => (
                 <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
                   <span style={{ fontSize: '14px' }}>{s.emoji}</span>
-                  <span style={{ fontSize: '13px', fontWeight: 500, color: '#E8E0FF' }}>{s.label}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 500, color: '#F0EAFF' }}>{s.label}</span>
                   <span style={{ fontSize: '12px', fontWeight: 700, color: '#D4AF37' }}>×{s.count}</span>
                 </div>
               ))}
@@ -411,14 +410,14 @@ export default async function ProfilePage({ params }) {
         )}
 
         {/* GIVE SPARKS */}
-        <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '18px', padding: '20px', marginBottom: '16px' }}>
-          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '17px', color: '#E8E0FF', marginBottom: '4px' }}>Give a Spark ✨</h3>
-          <p style={{ fontSize: '12px', color: '#9B93C0', marginBottom: '14px' }}>Rare tokens of respect. Max 3 per person, 1 per type.</p>
+        <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '18px', padding: '20px', marginBottom: '16px' }}>
+          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '17px', color: '#F0EAFF', marginBottom: '4px' }}>Give a Spark ✨</h3>
+          <p style={{ fontSize: '12px', color: '#A99ECC', marginBottom: '14px' }}>Rare tokens of respect. Max 3 per person, 1 per type.</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: '8px', marginBottom: '12px' }}>
             {SPARK_TYPES.slice(0, 10).map(s => (
-              <Link key={s.id} href={`/sparks/give?to=${profile.username}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 4px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', textDecoration: 'none' }}>
+              <Link key={s.id} href={`/sparks/give?to=${profile.username}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 4px', borderRadius: '12px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', textDecoration: 'none' }}>
                 <span style={{ fontSize: '20px' }}>{s.emoji}</span>
-                <span style={{ fontSize: '9px', fontWeight: 500, color: '#9B93C0', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
+                <span style={{ fontSize: '9px', fontWeight: 500, color: '#A99ECC', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
               </Link>
             ))}
           </div>
@@ -429,11 +428,11 @@ export default async function ProfilePage({ params }) {
 
         {/* BADGES */}
         {BADGES.length > 0 && (
-          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '18px', padding: '20px', marginBottom: '16px' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '14px' }}>ACHIEVEMENTS</p>
+          <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '18px', padding: '20px', marginBottom: '16px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '14px' }}>ACHIEVEMENTS</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {BADGES.map((b: any) => (
-                <div key={b.id} title={b.desc} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '999px', background: `rgba(${b.color === '#39FF14' ? '57,255,20' : b.color === '#D4AF37' ? '212,175,55' : b.color === '#FF6B35' ? '255,107,53' : b.color === '#9B8FFF' ? '155,143,255' : '155,147,192'},0.1)`, border: `1px solid ${b.color}35` }}>
+                <div key={b.id} title={b.desc} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '999px', background: `rgba(${b.color === '#34D399' ? '57,255,20' : b.color === '#D4AF37' ? '212,175,55' : b.color === '#FF6B35' ? '255,107,53' : b.color === '#9B7FFF' ? '155,143,255' : '155,147,192'},0.1)`, border: `1px solid ${b.color}35` }}>
                   <span style={{ fontSize: '14px' }}>{b.emoji}</span>
                   <span style={{ fontSize: '12px', fontWeight: 600, color: b.color }}>{b.label}</span>
                 </div>
@@ -444,11 +443,11 @@ export default async function ProfilePage({ params }) {
 
         {/* LANGUAGES */}
         {profile.languages?.length > 0 && (
-          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '18px', padding: '20px', marginBottom: '16px' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '12px' }}>LANGUAGES</p>
+          <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '18px', padding: '20px', marginBottom: '16px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '12px' }}>LANGUAGES</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {profile.languages.map(lang => (
-                <span key={lang} style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(155,143,192,0.1)', border: '1px solid rgba(155,143,192,0.2)', fontSize: '12px', color: '#9B93C0', fontWeight: 500 }}>{lang}</span>
+                <span key={lang} style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(155,143,192,0.1)', border: '1px solid rgba(155,143,192,0.2)', fontSize: '12px', color: '#A99ECC', fontWeight: 500 }}>{lang}</span>
               ))}
             </div>
           </div>
@@ -456,8 +455,8 @@ export default async function ProfilePage({ params }) {
 
         {/* AVAILABILITY */}
         {profile.availability && Object.values(profile.availability).some((s: any) => s.on) && (
-          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '18px', padding: '20px', marginBottom: '16px' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '12px' }}>AVAILABILITY</p>
+          <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '18px', padding: '20px', marginBottom: '16px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '12px' }}>AVAILABILITY</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
               {['mon','tue','wed','thu','fri','sat','sun'].map(d => {
                 const slot = (profile.availability as any)[d]
@@ -470,7 +469,7 @@ export default async function ProfilePage({ params }) {
                 return (
                   <div key={d} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
                     <span style={{ fontSize: '12px', fontWeight: 700, color: '#D4AF37', textTransform: 'capitalize' }}>{d.charAt(0).toUpperCase() + d.slice(1)}</span>
-                    <span style={{ fontSize: '11px', color: '#9B93C0' }}>{fmt(slot.from)}–{fmt(slot.to)}</span>
+                    <span style={{ fontSize: '11px', color: '#A99ECC' }}>{fmt(slot.from)}–{fmt(slot.to)}</span>
                   </div>
                 )
               })}
@@ -479,14 +478,14 @@ export default async function ProfilePage({ params }) {
         )}
 
         {/* SOCIAL PASSPORT FOOTER CARD */}
-        <div style={{ background: 'linear-gradient(135deg, #0F0F1E 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '18px', padding: '20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ background: 'linear-gradient(135deg, #111120 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '18px', padding: '20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '4px' }}>BESTIE SOCIAL PASSPORT</p>
-            <p style={{ fontSize: '13px', color: '#E8E0FF' }}>bestiehere.com/{profile.username}</p>
+            <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '4px' }}>BESTIE SOCIAL PASSPORT</p>
+            <p style={{ fontSize: '13px', color: '#F0EAFF' }}>bestiehere.com/{profile.username}</p>
           </div>
           <div style={{ textAlign: 'right' }}>
             <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', fontWeight: 700, color: '#D4AF37' }}>BESTIE</p>
-            <p style={{ fontSize: '10px', color: '#9B93C0' }}>Social Passport · 2026</p>
+            <p style={{ fontSize: '10px', color: '#A99ECC' }}>Social Passport · 2026</p>
           </div>
         </div>
 
@@ -494,7 +493,7 @@ export default async function ProfilePage({ params }) {
       </div>
 
       {/* STICKY BOOK CTA (client component — hides on own profile) */}
-      <StickyBookCTA profileId={profile.id} username={profile.username} firstName={firstName} />
+      <StickyBookCTA profileId={profile.id} username={profile.username} firstName={firstName} hasActivities={(profile.activity_packages?.length || 0) > 0} />
     </div>
   )
 }

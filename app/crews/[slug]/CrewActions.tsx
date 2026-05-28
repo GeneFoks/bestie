@@ -1,9 +1,11 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { Crown, Star } from 'lucide-react'
+import { createNotification } from '@/lib/notifications'
 
 type Props = {
   crewId: string
@@ -28,11 +30,12 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       const inviteCode = searchParams.get('invite')
+      const referrerId = searchParams.get('ref')
 
       if (!session) {
         // Save invite to localStorage so dashboard can apply it after login
         if (inviteCode) {
-          localStorage.setItem('bestie_crew_invite', JSON.stringify({ crewId, crewSlug, inviteCode }))
+          localStorage.setItem('bestie_crew_invite', JSON.stringify({ crewId, crewSlug, inviteCode, referrerId }))
         }
         setLoading(false)
         return
@@ -54,6 +57,7 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
         const { data: result } = await supabase.rpc('join_crew_via_invite', {
           p_crew_id: crewId,
           p_invite_code: inviteCode,
+          p_referrer_id: referrerId || null,
         })
         if (result === 'joined' || result === 'already_member') {
           setIsMember(true)
@@ -108,6 +112,16 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
       .from('crew_join_requests').insert({ crew_id: crewId, user_id: userId })
     if (err) { setError(err.message); setActing(false); return }
     setRequestStatus('pending')
+    // Notify the captain
+    const { data: me } = await supabase.from('users').select('full_name').eq('id', userId).single()
+    const myName = me?.full_name?.split(' ')[0] || 'Someone'
+    createNotification({
+      userId: captainId,
+      type: 'join_request',
+      title: `${myName} wants to join your crew`,
+      body: 'Tap to review the request',
+      link: `/crews/${crewSlug}`,
+    }).catch(() => {})
     setActing(false)
   }
 
@@ -122,7 +136,7 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
 
   if (!userId) {
     return (
-      <Link href="/login" style={{ display: 'block', padding: '14px', borderRadius: '14px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none' }}>
+      <Link href="/login" style={{ display: 'block', padding: '14px', borderRadius: '14px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
         Log in to join
       </Link>
     )
@@ -132,16 +146,16 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
     const isFeatured = userCrewId === crewId
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <div style={{ padding: '12px', borderRadius: '14px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37' }}>
-          👑 You are the Captain
+        <div style={{ padding: '12px', borderRadius: '14px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+          <Crown size={16} strokeWidth={2} /> You are the Captain
         </div>
         {!isFeatured ? (
-          <button onClick={setFeatured} disabled={acting} style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', cursor: acting ? 'not-allowed' : 'pointer' }}>
-            {acting ? '…' : '⭐ Set as featured on passport'}
+          <button onClick={setFeatured} disabled={acting} style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', cursor: acting ? 'not-allowed' : 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            {acting ? '…' : (<><Star size={13} fill="#D4AF37" strokeWidth={0} /> Set as featured on passport</>)}
           </button>
         ) : (
-          <div style={{ padding: '8px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '12px', color: '#D4AF37', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
-            ⭐ Featured on your passport
+          <div style={{ padding: '8px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '12px', color: '#D4AF37', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <Star size={12} fill="#D4AF37" strokeWidth={0} /> Featured on your passport
           </div>
         )}
       </div>
@@ -153,13 +167,13 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {!isFeatured && (
-          <button onClick={setFeatured} disabled={acting} style={{ display: 'block', width: '100%', padding: '10px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', cursor: acting ? 'not-allowed' : 'pointer' }}>
-            {acting ? '…' : '⭐ Set as featured on passport'}
+          <button onClick={setFeatured} disabled={acting} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', padding: '10px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', cursor: acting ? 'not-allowed' : 'pointer' }}>
+            {acting ? '…' : (<><Star size={13} fill="#D4AF37" strokeWidth={0} /> Set as featured on passport</>)}
           </button>
         )}
         {isFeatured && (
-          <div style={{ padding: '8px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '12px', color: '#D4AF37', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
-            ⭐ Featured on your passport
+          <div style={{ padding: '8px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '12px', color: '#D4AF37', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <Star size={12} fill="#D4AF37" strokeWidth={0} /> Featured on your passport
           </div>
         )}
         <button onClick={leave} disabled={acting} style={{ display: 'block', width: '100%', padding: '10px 14px', borderRadius: '12px', textAlign: 'center', fontSize: '13px', fontWeight: 600, background: 'rgba(255,107,53,0.08)', border: '1px solid rgba(255,107,53,0.2)', color: '#FF6B35', cursor: acting ? 'not-allowed' : 'pointer', opacity: acting ? 0.6 : 1 }}>
@@ -171,7 +185,7 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
 
   if (isFull) {
     return (
-      <div style={{ padding: '12px', borderRadius: '14px', textAlign: 'center', fontSize: '13px', color: '#9B93C0', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ padding: '12px', borderRadius: '14px', textAlign: 'center', fontSize: '13px', color: '#A99ECC', background: '#131323', border: '1px solid rgba(255,255,255,0.10)' }}>
         This crew is full (108/108)
       </div>
     )
@@ -185,7 +199,7 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
           <div style={{ padding: '12px 14px', borderRadius: '14px', textAlign: 'center', fontSize: '14px', color: '#D4AF37', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', marginBottom: '8px' }}>
             Request sent · Waiting for Captain
           </div>
-          <button onClick={cancelRequest} disabled={acting} style={{ display: 'block', width: '100%', padding: '10px', borderRadius: '12px', textAlign: 'center', fontSize: '13px', fontWeight: 600, background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: '#9B93C0', cursor: 'pointer' }}>
+          <button onClick={cancelRequest} disabled={acting} style={{ display: 'block', width: '100%', padding: '10px', borderRadius: '12px', textAlign: 'center', fontSize: '13px', fontWeight: 600, background: 'transparent', border: '1px solid rgba(255,255,255,0.12)', color: '#A99ECC', cursor: 'pointer' }}>
             {acting ? '…' : 'Cancel request'}
           </button>
         </div>
@@ -194,7 +208,7 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
 
     if (requestStatus === 'declined') {
       return (
-        <div style={{ padding: '12px', borderRadius: '14px', textAlign: 'center', fontSize: '13px', color: '#9B93C0', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ padding: '12px', borderRadius: '14px', textAlign: 'center', fontSize: '13px', color: '#A99ECC', background: '#131323', border: '1px solid rgba(255,255,255,0.10)' }}>
           Your request was declined
         </div>
       )
@@ -202,7 +216,7 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
 
     return (
       <div>
-        <button onClick={requestJoin} disabled={acting} style={{ display: 'block', width: '100%', padding: '14px', borderRadius: '14px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: acting ? 'not-allowed' : 'pointer', opacity: acting ? 0.7 : 1 }}>
+        <button onClick={requestJoin} disabled={acting} style={{ display: 'block', width: '100%', padding: '14px', borderRadius: '14px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: acting ? 'not-allowed' : 'pointer', opacity: acting ? 0.7 : 1 }}>
           {acting ? 'Sending…' : 'Request to Join'}
         </button>
         {error && <p style={{ fontSize: '12px', color: '#FF6B35', marginTop: '8px', textAlign: 'center' }}>{error}</p>}
@@ -213,7 +227,7 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
   // Open crew
   return (
     <div>
-      <button onClick={join} disabled={acting} style={{ display: 'block', width: '100%', padding: '14px', borderRadius: '14px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', cursor: acting ? 'not-allowed' : 'pointer', opacity: acting ? 0.7 : 1, border: 'none' }}>
+      <button onClick={join} disabled={acting} style={{ display: 'block', width: '100%', padding: '14px', borderRadius: '14px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', cursor: acting ? 'not-allowed' : 'pointer', opacity: acting ? 0.7 : 1, border: 'none' }}>
         {acting ? 'Joining…' : 'Join Crew'}
       </button>
       {error && <p style={{ fontSize: '12px', color: '#FF6B35', marginTop: '8px', textAlign: 'center' }}>{error}</p>}

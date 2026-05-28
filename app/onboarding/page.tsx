@@ -1,12 +1,15 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { ActivityIcon } from '@/lib/activityIcons'
+import { PageLoader } from '@/components/Loading'
+import { Zap, Gamepad2, BookOpen, Palette, Heart, Moon, Coffee, MapPin, Sparkles } from 'lucide-react'
 
 const ACTIVITY_GROUPS = [
-  { label: '🏃 Active', activities: [
+  { id: 'active',   label: 'Active',    Icon: Zap, activities: [
     { id: 'hiking', emoji: '🥾', label: 'Hiking' },
     { id: 'running', emoji: '🏃', label: 'Running' },
     { id: 'gym_partner', emoji: '💪', label: 'Gym' },
@@ -17,7 +20,7 @@ const ACTIVITY_GROUPS = [
     { id: 'martial_arts', emoji: '🥋', label: 'Martial Arts' },
     { id: 'climbing', emoji: '🧗', label: 'Climbing' },
   ]},
-  { label: '🎮 Social', activities: [
+  { id: 'social',   label: 'Social',    Icon: Gamepad2, activities: [
     { id: 'game_night', emoji: '🎮', label: 'Game Night' },
     { id: 'movie_night', emoji: '🎬', label: 'Movie Night' },
     { id: 'night_out', emoji: '🍸', label: 'Night Out' },
@@ -28,7 +31,7 @@ const ACTIVITY_GROUPS = [
     { id: 'wing_person', emoji: '😎', label: 'Wing Person' },
     { id: 'comedy_show', emoji: '😂', label: 'Comedy' },
   ]},
-  { label: '🧠 Mind', activities: [
+  { id: 'mind',     label: 'Mind',      Icon: BookOpen, activities: [
     { id: 'deep_chat', emoji: '🫂', label: 'Deep Chat' },
     { id: 'debate_club', emoji: '🗣️', label: 'Debate' },
     { id: 'book_club', emoji: '📚', label: 'Book Club' },
@@ -39,7 +42,7 @@ const ACTIVITY_GROUPS = [
     { id: 'accountability_partner', emoji: '🎯', label: 'Accountability' },
     { id: 'storytelling_night', emoji: '📖', label: 'Storytelling' },
   ]},
-  { label: '🎨 Creative', activities: [
+  { id: 'creative', label: 'Creative',  Icon: Palette, activities: [
     { id: 'music_lesson', emoji: '🎸', label: 'Music' },
     { id: 'art_together', emoji: '🎨', label: 'Art' },
     { id: 'photography_walk', emoji: '📸', label: 'Photography' },
@@ -48,7 +51,7 @@ const ACTIVITY_GROUPS = [
     { id: 'improv_acting', emoji: '🎭', label: 'Improv' },
     { id: 'writing_club', emoji: '✍️', label: 'Writing' },
   ]},
-  { label: '🫂 Support', activities: [
+  { id: 'support',  label: 'Support',   Icon: Heart, activities: [
     { id: 'vent_session', emoji: '💬', label: 'Vent Session' },
     { id: '3am_talk', emoji: '🌙', label: '3am Talk' },
     { id: 'hype_person', emoji: '🔥', label: 'Hype Person' },
@@ -57,7 +60,7 @@ const ACTIVITY_GROUPS = [
     { id: 'grief_support', emoji: '🤍', label: 'Grief' },
     { id: 'ugly_cry_buddy', emoji: '😭', label: 'Ugly Cry' },
   ]},
-  { label: '🔮 Spiritual', activities: [
+  { id: 'spiritual',label: 'Spiritual', Icon: Moon, activities: [
     { id: 'meditation_circle', emoji: '🧘', label: 'Meditation' },
     { id: 'breathwork', emoji: '🌬️', label: 'Breathwork' },
     { id: 'sound_healing', emoji: '🔔', label: 'Sound Healing' },
@@ -68,7 +71,7 @@ const ACTIVITY_GROUPS = [
     { id: 'nature_ritual', emoji: '🌿', label: 'Nature' },
     { id: 'lucid_dream_club', emoji: '💫', label: 'Lucid Dream' },
   ]},
-  { label: '☕ Chill', activities: [
+  { id: 'chill',    label: 'Chill',     Icon: Coffee, activities: [
     { id: 'coffee_chat', emoji: '☕', label: 'Coffee Chat' },
     { id: 'digital_detox_walk', emoji: '📵', label: 'Detox Walk' },
     { id: 'skincare_night', emoji: '✨', label: 'Skincare' },
@@ -83,16 +86,35 @@ const STEP_TITLES = ['Who are you?', 'Where are you?', 'What are you into?', 'Yo
 
 export default function OnboardingPage() {
   const router = useRouter()
-  const [step, setStep] = useState(1)
+  const [step, setStepRaw] = useState(1)
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
   const [userId, setUserId] = useState(null)
-  const [activeGroup, setActiveGroup] = useState(ACTIVITY_GROUPS[0].label)
+  const [activeGroup, setActiveGroup] = useState(ACTIVITY_GROUPS[0].id)
   const [form, setForm] = useState({
     full_name: '', bio: '', city: '', country: '',
     activities: [], activityTitle: '', activityType: '',
     activityPrice: '', activityFree: false, activityDesc: '',
   })
+
+  // Persist step + selected activities across refresh
+  const setStep = (s: any) => {
+    const next = typeof s === 'function' ? s(step) : s
+    setStepRaw(next)
+    if (typeof window !== 'undefined') localStorage.setItem('bestie_onb_step', String(next))
+  }
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const savedStep = parseInt(localStorage.getItem('bestie_onb_step') || '1', 10)
+    if (savedStep >= 1 && savedStep <= 4) setStepRaw(savedStep)
+    const savedActivities = localStorage.getItem('bestie_onb_activities')
+    if (savedActivities) {
+      try {
+        const arr = JSON.parse(savedActivities)
+        if (Array.isArray(arr)) setForm(f => ({ ...f, activities: arr }))
+      } catch {}
+    }
+  }, [])
 
   useEffect(() => {
     const getSession = async () => {
@@ -128,12 +150,15 @@ export default function OnboardingPage() {
   }, [])
 
   const toggleActivity = (id) => {
-    setForm(f => ({
-      ...f,
-      activities: f.activities.includes(id)
+    setForm(f => {
+      const next = f.activities.includes(id)
         ? f.activities.filter(a => a !== id)
         : [...f.activities, id]
-    }))
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('bestie_onb_activities', JSON.stringify(next))
+      }
+      return { ...f, activities: next }
+    })
   }
 
   const handleFinish = async () => {
@@ -160,33 +185,37 @@ export default function OnboardingPage() {
       })
     }
 
-    router.push('/dashboard')
+    // Clear persisted onboarding state
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('bestie_onb_step')
+      localStorage.removeItem('bestie_onb_activities')
+    }
+
+    // Send new users straight into the Bestie Type quiz — the quiz page itself
+    // has a "Skip for now" exit to dashboard, so this isn't a forced flow.
+    router.push('/bestie-type')
   }
 
-  const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
-  const labelStyle = { fontSize: '13px', fontWeight: 500, color: '#9B93C0', display: 'block', marginBottom: '8px' }
-  const currentGroup = ACTIVITY_GROUPS.find(g => g.label === activeGroup)
+  const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
+  const labelStyle = { fontSize: '13px', fontWeight: 500, color: '#A99ECC', display: 'block', marginBottom: '8px' }
+  const currentGroup = ACTIVITY_GROUPS.find(g => g.id === activeGroup)
 
-  if (checking) return (
-    <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <span style={{ color: '#9B93C0', fontSize: '14px' }}>Loading...</span>
-    </div>
-  )
+  if (checking) return <PageLoader />
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ width: '100%', maxWidth: '520px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: '#D4AF37' }}>BESTIE</span>
-          <p style={{ fontSize: '13px', color: '#9B93C0', marginTop: '4px' }}>Step {step} of 4</p>
+          <p style={{ fontSize: '13px', color: '#A99ECC', marginTop: '4px' }}>Step {step} of 4</p>
         </div>
         <div style={{ display: 'flex', gap: '6px', marginBottom: '32px' }}>
           {[1,2,3,4].map(s => (
-            <div key={s} style={{ flex: 1, height: '4px', borderRadius: '999px', background: s <= step ? '#D4AF37' : 'rgba(255,255,255,0.08)', transition: 'all 0.3s' }} />
+            <div key={s} style={{ flex: 1, height: '4px', borderRadius: '999px', background: s <= step ? '#D4AF37' : 'rgba(255,255,255,0.12)', transition: 'all 0.3s' }} />
           ))}
         </div>
-        <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', padding: '32px' }}>
-          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: '#E8E0FF', marginBottom: '24px' }}>
+        <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '24px', padding: '32px' }}>
+          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: '#F0EAFF', marginBottom: '24px' }}>
             {STEP_TITLES[step - 1]}
           </h2>
 
@@ -213,18 +242,20 @@ export default function OnboardingPage() {
                 <label style={labelStyle}>State / Country</label>
                 <input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} placeholder="TX" style={inputStyle} />
               </div>
-              <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
-                <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.6 }}>📍 Your city helps people find you locally. Vibe calls work anywhere.</p>
+              <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                <MapPin size={16} color="#D4AF37" strokeWidth={2} style={{ flexShrink: 0, marginTop: '2px' }} />
+                <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.6 }}>Your city helps people find you locally. Vibe calls work anywhere.</p>
               </div>
             </div>
           )}
 
           {step === 3 && (
             <div>
-              <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '12px' }}>Pick everything you're open to:</p>
+              <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '12px' }}>Pick everything you're open to:</p>
               <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '10px', marginBottom: '12px', scrollbarWidth: 'none' }}>
                 {ACTIVITY_GROUPS.map(g => (
-                  <button key={g.label} onClick={() => setActiveGroup(g.label)} style={{ padding: '6px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: activeGroup === g.label ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', border: activeGroup === g.label ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.06)', color: activeGroup === g.label ? '#D4AF37' : '#9B93C0' }}>
+                  <button key={g.id} onClick={() => setActiveGroup(g.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: activeGroup === g.id ? 'rgba(212,175,55,0.15)' : '#131323', border: activeGroup === g.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', color: activeGroup === g.id ? '#D4AF37' : '#A99ECC' }}>
+                    <g.Icon size={13} strokeWidth={1.8} />
                     {g.label}
                   </button>
                 ))}
@@ -233,9 +264,9 @@ export default function OnboardingPage() {
                 {currentGroup?.activities.map(a => {
                   const selected = form.activities.includes(a.id)
                   return (
-                    <button key={a.id} onClick={() => toggleActivity(a.id)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '12px 8px', borderRadius: '14px', border: selected ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.06)', background: selected ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.03)', cursor: 'pointer' }}>
-                      <span style={{ fontSize: '24px' }}>{a.emoji}</span>
-                      <span style={{ fontSize: '11px', fontWeight: 500, color: selected ? '#D4AF37' : '#9B93C0', textAlign: 'center' }}>{a.label}</span>
+                    <button key={a.id} onClick={() => toggleActivity(a.id)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '12px 8px', borderRadius: '14px', border: selected ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', background: selected ? 'rgba(212,175,55,0.1)' : '#111120', cursor: 'pointer' }}>
+                      <ActivityIcon type={a.id} size={22} color={selected ? '#D4AF37' : '#A99ECC'} strokeWidth={1.7} />
+                      <span style={{ fontSize: '11px', fontWeight: 500, color: selected ? '#D4AF37' : '#A99ECC', textAlign: 'center' }}>{a.label}</span>
                     </button>
                   )
                 })}
@@ -250,7 +281,7 @@ export default function OnboardingPage() {
 
           {step === 4 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <p style={{ fontSize: '14px', color: '#9B93C0' }}>Create your first offering — what people will book you for.</p>
+              <p style={{ fontSize: '14px', color: '#A99ECC' }}>Create your first offering — what people will book you for.</p>
               <div>
                 <label style={labelStyle}>Activity title</label>
                 <input value={form.activityTitle} onChange={e => setForm(f => ({ ...f, activityTitle: e.target.value }))} placeholder="Morning Trail Run in Barton Creek" style={inputStyle} />
@@ -260,9 +291,9 @@ export default function OnboardingPage() {
                 <select value={form.activityType} onChange={e => setForm(f => ({ ...f, activityType: e.target.value }))} style={{ ...inputStyle, cursor: 'pointer' }}>
                   <option value="">Select type...</option>
                   {ACTIVITY_GROUPS.map(group => (
-                    <optgroup key={group.label} label={group.label}>
+                    <optgroup key={group.id} label={group.label}>
                       {group.activities.map(a => (
-                        <option key={a.id} value={a.id}>{a.emoji} {a.label}</option>
+                        <option key={a.id} value={a.id}>{a.label}</option>
                       ))}
                     </optgroup>
                   ))}
@@ -273,10 +304,10 @@ export default function OnboardingPage() {
                 <textarea value={form.activityDesc} onChange={e => setForm(f => ({ ...f, activityDesc: e.target.value }))} placeholder="Describe what you'll do together..." rows={3} style={{ ...inputStyle, resize: 'none' }} />
               </div>
               <button onClick={() => setForm(f => ({ ...f, activityFree: !f.activityFree }))} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                <div style={{ width: '20px', height: '20px', borderRadius: '6px', border: form.activityFree ? '2px solid #D4AF37' : '2px solid rgba(255,255,255,0.2)', background: form.activityFree ? '#D4AF37' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#080810' }}>
+                <div style={{ width: '20px', height: '20px', borderRadius: '6px', border: form.activityFree ? '2px solid #D4AF37' : '2px solid rgba(255,255,255,0.2)', background: form.activityFree ? '#D4AF37' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#09090F' }}>
                   {form.activityFree ? '✓' : ''}
                 </div>
-                <span style={{ fontSize: '14px', color: '#E8E0FF' }}>This is a free match</span>
+                <span style={{ fontSize: '14px', color: '#F0EAFF' }}>This is a free match</span>
               </button>
               {!form.activityFree && (
                 <div>
@@ -284,26 +315,26 @@ export default function OnboardingPage() {
                   <input type="number" value={form.activityPrice} onChange={e => setForm(f => ({ ...f, activityPrice: e.target.value }))} placeholder="20" style={inputStyle} />
                 </div>
               )}
-              <p style={{ fontSize: '12px', color: '#9B93C0' }}>You can skip this and add activities later.</p>
+              <p style={{ fontSize: '12px', color: '#A99ECC' }}>You can skip this and add activities later.</p>
             </div>
           )}
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
           {step > 1 ? (
-            <button onClick={() => setStep(s => s - 1)} style={{ fontSize: '14px', color: '#9B93C0', background: 'none', border: 'none', cursor: 'pointer' }}>← Back</button>
+            <button onClick={() => setStep(s => s - 1)} style={{ fontSize: '14px', color: '#A99ECC', background: 'none', border: 'none', cursor: 'pointer' }}>← Back</button>
           ) : <div />}
           <div style={{ display: 'flex', gap: '10px' }}>
             {step === 4 && (
-              <button onClick={() => router.push('/dashboard')} style={{ fontSize: '14px', color: '#9B93C0', background: 'none', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer' }}>Skip</button>
+              <button onClick={() => router.push('/bestie-type')} style={{ fontSize: '14px', color: '#A99ECC', background: 'none', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Skip</button>
             )}
             {step < 4 ? (
-              <button onClick={() => setStep(s => s + 1)} disabled={step === 1 && !form.full_name} style={{ padding: '12px 28px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: 'pointer', opacity: (step === 1 && !form.full_name) ? 0.5 : 1 }}>
+              <button onClick={() => setStep(s => s + 1)} disabled={step === 1 && !form.full_name} style={{ padding: '12px 28px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer', opacity: (step === 1 && !form.full_name) ? 0.5 : 1 }}>
                 Continue →
               </button>
             ) : (
-              <button onClick={handleFinish} disabled={loading} style={{ padding: '12px 28px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
-                {loading ? 'Saving...' : 'Finish setup 🎉'}
+              <button onClick={handleFinish} disabled={loading} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 28px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+                {loading ? 'Saving…' : (<><Sparkles size={14} strokeWidth={2} /> Finish setup</>)}
               </button>
             )}
           </div>

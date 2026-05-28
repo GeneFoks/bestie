@@ -1,8 +1,9 @@
 // @ts-nocheck
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { Search, Share2, Pencil, Lock, AlertTriangle, Sprout, Check, Copy } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 interface MatchedUser {
@@ -14,35 +15,12 @@ interface MatchedUser {
   bestie_score: number
 }
 
-// ── SHA-256 in the browser ───────────────────────────────────────────────────
 async function sha256hex(text: string): Promise<string> {
   const enc = new TextEncoder()
   const buf = await crypto.subtle.digest('SHA-256', enc.encode(text))
-  return Array.from(new Uint8Array(buf))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('')
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
-// ── Parse the raw vCard blob (iOS/Android exports contacts as vCard) ──────────
-function parseVCards(raw: string): Array<{ email?: string; phone?: string; name?: string }> {
-  const cards: Array<{ email?: string; phone?: string; name?: string }> = []
-  const blocks = raw.split(/BEGIN:VCARD/i).filter(b => b.trim())
-  for (const block of blocks) {
-    const nameMatch  = block.match(/^FN[^:]*:(.+)$/m)
-    const emailMatch = block.match(/^EMAIL[^:]*:(.+)$/m)
-    const phoneMatch = block.match(/^TEL[^:]*:(.+)$/m)
-    if (emailMatch || phoneMatch) {
-      cards.push({
-        name:  nameMatch?.[1]?.trim(),
-        email: emailMatch?.[1]?.trim(),
-        phone: phoneMatch?.[1]?.trim(),
-      })
-    }
-  }
-  return cards
-}
-
-// ── Component ─────────────────────────────────────────────────────────────────
 export default function FindFriends() {
   const [phase, setPhase] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
   const [matchedUsers, setMatchedUsers] = useState<MatchedUser[]>([])
@@ -50,30 +28,59 @@ export default function FindFriends() {
   const [errorMsg, setErrorMsg] = useState('')
   const [manualText, setManualText] = useState('')
   const [showManual, setShowManual] = useState(false)
+  const [username, setUsername] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
-  // ── Core import logic ─────────────────────────────────────────────────────
-  async function runImport(contacts: Array<{ email?: string; phone?: string; name?: string }>) {
-    if (!contacts.length) { setErrorMsg('No contacts found in file.'); setPhase('error'); return }
+  useEffect(() => {
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      const { data } = await supabase.from('users').select('username').eq('id', session.user.id).single()
+      if (data?.username) setUsername(data.username)
+    })()
+  }, [])
 
+  const inviteUrl = username ? `https://bestiehere.com/invite/${username}` : ''
+
+  async function handleShare() {
+    if (!inviteUrl) return
+    const text = `Join me on Bestie — find real people for real activities.`
+    if (typeof navigator !== 'undefined' && (navigator as any).share) {
+      try {
+        await (navigator as any).share({ title: 'Join me on Bestie', text, url: inviteUrl })
+        return
+      } catch { /* user cancelled — fall through to copy */ }
+    }
+    try {
+      await navigator.clipboard.writeText(inviteUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {}
+  }
+
+  async function handleCopy() {
+    if (!inviteUrl) return
+    try {
+      await navigator.clipboard.writeText(inviteUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {}
+  }
+
+  async function runImport(contacts: Array<{ email?: string; phone?: string }>) {
+    if (!contacts.length) { setErrorMsg('Add at least one email or phone number.'); setPhase('error'); return }
     setPhase('loading')
     setErrorMsg('')
-
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { setErrorMsg('Please log in first.'); setPhase('error'); return }
-
       const res = await fetch('/api/contacts/import', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
         body: JSON.stringify({ contacts }),
       })
-
       const json = await res.json()
       if (!res.ok) { setErrorMsg(json.error || 'Something went wrong'); setPhase('error'); return }
-
       setImportedCount(json.imported)
       setMatchedUsers(json.users || [])
       setPhase('done')
@@ -83,31 +90,13 @@ export default function FindFriends() {
     }
   }
 
-  // ── File picker (vCard .vcf) ───────────────────────────────────────────────
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = async (ev) => {
-      const text = ev.target?.result as string
-      const contacts = parseVCards(text)
-      await runImport(contacts)
-    }
-    reader.readAsText(file)
-  }
-
-  // ── Manual entry ──────────────────────────────────────────────────────────
   async function handleManualSubmit() {
-    const lines = manualText.split('\n').map(l => l.trim()).filter(Boolean)
-    const contacts = lines.map(line => {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (emailRegex.test(line)) return { email: line }
-      return { phone: line }
-    })
+    const lines = manualText.split(/[\n,;]+/).map(l => l.trim()).filter(Boolean)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const contacts = lines.map(line => emailRegex.test(line) ? { email: line.toLowerCase() } : { phone: line.replace(/[\s\-()]/g, '') })
     await runImport(contacts)
   }
 
-  // ── Tier color ─────────────────────────────────────────────────────────────
   function tierColor(score: number) {
     if (score >= 800) return '#FFFFFF'
     if (score >= 600) return '#D4AF37'
@@ -115,35 +104,50 @@ export default function FindFriends() {
     return '#9B93C0'
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '18px', padding: '20px 20px', marginBottom: '24px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-        <span style={{ fontSize: '22px' }}>🔍</span>
-        <div>
-          <p style={{ fontSize: '15px', fontWeight: 700, color: '#E8E0FF', margin: 0 }}>Find friends on Bestie</p>
-          <p style={{ fontSize: '12px', color: '#9B93C0', margin: 0 }}>Import contacts · All data is hashed &amp; never stored in plain text</p>
-        </div>
+    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '18px', padding: '20px', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', color: '#D4AF37' }}><Search size={22} strokeWidth={2} /></span>
+        <p style={{ fontSize: '15px', fontWeight: 700, color: '#E8E0FF', margin: 0 }}>Bring your friends to Bestie</p>
       </div>
+      <p style={{ fontSize: '12px', color: '#9B93C0', margin: '0 0 16px 32px' }}>Share your invite link — or check who's already here.</p>
 
       {phase === 'idle' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {/* vCard upload */}
-          <label style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-            padding: '12px 20px', borderRadius: '12px', cursor: 'pointer', fontWeight: 600,
-            fontSize: '14px', color: '#080810', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)',
-          }}>
-            <span>📱</span> Import from phone contacts (.vcf)
-            <input type="file" accept=".vcf,text/vcard" onChange={handleFileChange} style={{ display: 'none' }} />
-          </label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {/* PRIMARY: Share invite link */}
+          <div style={{ padding: '14px', borderRadius: '14px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}>
+            <p style={{ fontSize: '12px', color: '#9B93C0', margin: '0 0 10px', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Your invite link</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '12px' }}>
+              <span style={{ flex: 1, fontSize: '13px', color: '#E8E0FF', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {inviteUrl || 'Loading…'}
+              </span>
+              <button
+                onClick={handleCopy}
+                disabled={!inviteUrl}
+                aria-label="Copy invite link"
+                style={{ flexShrink: 0, padding: '6px 10px', borderRadius: '8px', background: copied ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.06)', border: copied ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(255,255,255,0.1)', color: copied ? '#34D399' : '#E8E0FF', cursor: inviteUrl ? 'pointer' : 'default', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 600 }}
+              >
+                {copied ? <><Check size={12} strokeWidth={2.5} /> Copied</> : <><Copy size={12} strokeWidth={2} /> Copy</>}
+              </button>
+            </div>
+            <button
+              onClick={handleShare}
+              disabled={!inviteUrl}
+              style={{ width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px 20px', borderRadius: '12px', fontWeight: 700, fontSize: '14px', color: '#080810', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', border: 'none', cursor: inviteUrl ? 'pointer' : 'default' }}
+            >
+              <Share2 size={16} strokeWidth={2} /> Share via Telegram, WhatsApp, iMessage…
+            </button>
+            <p style={{ fontSize: '11px', color: '#9B93C0', margin: '8px 0 0', textAlign: 'center' }}>
+              Friends get a pretty card with your Bestie Score
+            </p>
+          </div>
 
-          {/* Manual entry toggle */}
+          {/* SECONDARY: Manual lookup */}
           <button
             onClick={() => setShowManual(!showManual)}
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '10px 20px', color: '#9B93C0', fontSize: '13px', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+            style={{ background: 'transparent', border: 'none', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '12px 0 0', color: '#9B93C0', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
           >
-            ✏️ Enter emails / phones manually
+            <Pencil size={12} strokeWidth={2} /> {showManual ? 'Hide' : 'Already know their email or phone? Check if they\'re on Bestie'}
           </button>
 
           {showManual && (
@@ -151,23 +155,22 @@ export default function FindFriends() {
               <textarea
                 value={manualText}
                 onChange={e => setManualText(e.target.value)}
-                placeholder={'one@email.com\n+1234567890\nanother@email.com'}
-                rows={5}
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '10px 12px', color: '#E8E0FF', fontSize: '13px', resize: 'vertical', fontFamily: 'monospace', width: '100%', boxSizing: 'border-box' }}
+                placeholder={'friend@email.com\n+1234567890\n\nOne per line — emails or phone numbers'}
+                rows={4}
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '10px 12px', color: '#E8E0FF', fontSize: '13px', resize: 'vertical', fontFamily: 'monospace', width: '100%', boxSizing: 'border-box' }}
               />
               <button
                 onClick={handleManualSubmit}
                 disabled={!manualText.trim()}
-                style={{ background: manualText.trim() ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.1)', borderRadius: '10px', padding: '10px 20px', color: '#080810', fontSize: '14px', fontWeight: 700, cursor: manualText.trim() ? 'pointer' : 'default', border: 'none', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+                style={{ background: manualText.trim() ? 'rgba(155,127,255,0.15)' : 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '10px 20px', color: manualText.trim() ? '#9B7FFF' : '#9B93C0', fontSize: '13px', fontWeight: 600, cursor: manualText.trim() ? 'pointer' : 'default', border: manualText.trim() ? '1px solid rgba(155,127,255,0.3)' : '1px solid rgba(255,255,255,0.08)' }}
               >
                 Find matches →
               </button>
+              <p style={{ fontSize: '11px', color: '#9B93C0', textAlign: 'center', marginTop: '2px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <Lock size={11} strokeWidth={2} /> Hashed with SHA-256 before leaving your device
+              </p>
             </div>
           )}
-
-          <p style={{ fontSize: '11px', color: '#9B93C0', textAlign: 'center', marginTop: '4px' }}>
-            🔒 Your contacts are hashed with SHA-256 before leaving your device
-          </p>
         </div>
       )}
 
@@ -181,8 +184,8 @@ export default function FindFriends() {
 
       {phase === 'error' && (
         <div style={{ textAlign: 'center', padding: '16px 0' }}>
-          <p style={{ fontSize: '14px', color: '#FF6B6B', marginBottom: '12px' }}>⚠️ {errorMsg}</p>
-          <button onClick={() => { setPhase('idle'); setErrorMsg('') }} style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '10px', padding: '8px 18px', color: '#E8E0FF', fontSize: '13px', border: 'none', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+          <p style={{ fontSize: '14px', color: '#FF6B6B', marginBottom: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><AlertTriangle size={14} strokeWidth={2} /> {errorMsg}</p>
+          <button onClick={() => { setPhase('idle'); setErrorMsg('') }} style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '10px', padding: '8px 18px', color: '#E8E0FF', fontSize: '13px', border: 'none', cursor: 'pointer' }}>
             Try again
           </button>
         </div>
@@ -192,29 +195,26 @@ export default function FindFriends() {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
             <p style={{ fontSize: '13px', color: '#9B93C0', margin: 0 }}>
-              Scanned <strong style={{ color: '#E8E0FF' }}>{importedCount}</strong> contacts
-              {matchedUsers.length > 0 ? ` · Found ` : ' · '}
+              Checked <strong style={{ color: '#E8E0FF' }}>{importedCount}</strong>
+              {matchedUsers.length > 0 ? ` · ` : ' · '}
               {matchedUsers.length > 0 && <strong style={{ color: '#D4AF37' }}>{matchedUsers.length}</strong>}
-              {matchedUsers.length > 0 ? ' on Bestie' : 'No matches yet'}
+              {matchedUsers.length > 0 ? ' on Bestie' : 'no matches yet'}
             </p>
-            <button onClick={() => { setPhase('idle'); setMatchedUsers([]) }} style={{ fontSize: '11px', color: '#9B93C0', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-              Import more
+            <button onClick={() => { setPhase('idle'); setMatchedUsers([]); setManualText('') }} style={{ fontSize: '11px', color: '#9B93C0', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+              Check more
             </button>
           </div>
 
           {matchedUsers.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
-              <p style={{ fontSize: '32px', marginBottom: '8px' }}>🌱</p>
-              <p style={{ fontSize: '14px', color: '#9B93C0' }}>None of your contacts are on Bestie yet.</p>
-              <p style={{ fontSize: '12px', color: '#9B93C0', marginTop: '4px' }}>
-                We'll notify you when they join!
-              </p>
+              <p style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center', color: '#9B8FFF' }}><Sprout size={32} strokeWidth={2} /></p>
+              <p style={{ fontSize: '14px', color: '#9B93C0' }}>None of them are on Bestie yet.</p>
+              <p style={{ fontSize: '12px', color: '#9B93C0', marginTop: '4px' }}>Share your invite link above — we'll notify you when they join.</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {matchedUsers.map(u => (
                 <Link key={u.id} href={`/${u.username}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', textDecoration: 'none' }}>
-                  {/* Avatar */}
                   <div style={{ width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0, overflow: 'hidden', border: `2px solid ${tierColor(u.bestie_score)}`, background: '#0F0F1E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {u.photo
                       ? <img src={u.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -223,8 +223,6 @@ export default function FindFriends() {
                         </span>
                     }
                   </div>
-
-                  {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {u.full_name || u.username}
@@ -233,8 +231,6 @@ export default function FindFriends() {
                       @{u.username}{u.city ? ` · ${u.city}` : ''}
                     </p>
                   </div>
-
-                  {/* Score badge */}
                   <div style={{ flexShrink: 0, padding: '4px 10px', borderRadius: '8px', background: `${tierColor(u.bestie_score)}18`, border: `1px solid ${tierColor(u.bestie_score)}40` }}>
                     <span style={{ fontSize: '12px', fontWeight: 700, color: tierColor(u.bestie_score) }}>BS {u.bestie_score}</span>
                   </div>

@@ -1,7 +1,8 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
+import { Users, Camera, Loader2, Plus } from 'lucide-react'
 
 type Props = {
   crewId: string
@@ -61,30 +62,30 @@ export default function CrewAvatarSection({ crewId, captainId, initialUrl, crewN
       />
       <div
         onClick={() => isCaptain && inputRef.current?.click()}
-        style={{ width: '80px', height: '80px', borderRadius: '20px', overflow: 'hidden', background: '#1a1a35', border: '2px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isCaptain ? 'pointer' : 'default', position: 'relative' }}
+        style={{ width: '80px', height: '80px', borderRadius: '20px', overflow: 'hidden', background: '#1A1A2E', border: '2px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isCaptain ? 'pointer' : 'default', position: 'relative' }}
       >
         {uploading ? (
-          <span style={{ fontSize: '20px', color: '#D4AF37' }}>⏳</span>
+          <Loader2 size={20} color="#D4AF37" strokeWidth={2} />
         ) : avatarUrl ? (
           <img src={avatarUrl} alt={crewName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
-          <span style={{ fontSize: '36px' }}>👥</span>
+          <Users size={36} color="#D4AF37" strokeWidth={1.6} />
         )}
         {isCaptain && !uploading && (
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '18px', transition: 'background 0.15s' }}
             onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.45)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,0,0,0)')}>
-            <span style={{ fontSize: '18px', opacity: 0, transition: 'opacity 0.15s' }}
+            <span style={{ opacity: 0, transition: 'opacity 0.15s', display: 'inline-flex' }}
               onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '0')}>📷</span>
+              onMouseLeave={e => (e.currentTarget.style.opacity = '0')}><Camera size={18} color="#F0EAFF" strokeWidth={2} /></span>
           </div>
         )}
       </div>
       {error && <p style={{ fontSize: '10px', color: '#FF6B35', marginTop: '4px', maxWidth: '80px' }}>{error}</p>}
       {isCaptain && (
         <button onClick={() => inputRef.current?.click()} disabled={uploading}
-          style={{ marginTop: '6px', fontSize: '10px', fontWeight: 600, padding: '3px 8px', borderRadius: '6px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer', width: '80px', textAlign: 'center' }}>
-          {uploading ? '…' : avatarUrl ? 'Change' : '+ Photo'}
+          style={{ marginTop: '6px', fontSize: '10px', fontWeight: 600, padding: '3px 8px', borderRadius: '6px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer', width: '80px', textAlign: 'center', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
+          {uploading ? '…' : avatarUrl ? 'Change' : (<><Plus size={10} strokeWidth={2.5} /> Photo</>)}
         </button>
       )}
     </div>

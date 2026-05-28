@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -38,21 +38,21 @@ export default function JoinRequestsPanel({ crewId, captainId }: Props) {
 
   return (
     <>
-      <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#E8E0FF', marginBottom: '16px' }}>
+      <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginBottom: '16px' }}>
         Join Requests <span style={{ fontSize: '16px', color: '#D4AF37' }}>· {requests.length}</span>
       </h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
         {requests.map((req: any) => (
           <div key={req.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '14px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '12px', overflow: 'hidden', background: '#1a1a35', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '12px', overflow: 'hidden', background: '#1A1A2E', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {req.user?.avatar_url
                 ? <img src={req.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : <span style={{ fontSize: '16px', fontWeight: 700, color: '#D4AF37' }}>{req.user?.full_name?.[0]}</span>
               }
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <Link href={`/${req.user?.username}`} style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF', textDecoration: 'none' }}>{req.user?.full_name}</Link>
-              <div style={{ fontSize: '12px', color: '#9B93C0' }}>@{req.user?.username} · BS {req.user?.bestie_score}</div>
+              <Link href={`/${req.user?.username}`} style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', textDecoration: 'none' }}>{req.user?.full_name}</Link>
+              <div style={{ fontSize: '12px', color: '#A99ECC' }}>@{req.user?.username} · BS {req.user?.bestie_score}</div>
             </div>
             <JoinRequestActions
               requestId={req.id}

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 // @ts-nocheck
 // Shows "You'd vibe at X% match" based on shared traits + city + activities
 
@@ -52,17 +52,17 @@ export default function CompatibilityScore({ profile }: Props) {
 
   if (pct === null) return null
 
-  const color = pct >= 80 ? '#39FF14' : pct >= 60 ? '#D4AF37' : '#9B93C0'
+  const color = pct >= 80 ? '#34D399' : pct >= 60 ? '#D4AF37' : '#A99ECC'
   const label = pct >= 80 ? 'Great match!' : pct >= 60 ? 'Good vibes' : 'Different worlds'
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '14px', background: `rgba(${color === '#39FF14' ? '57,255,20' : color === '#D4AF37' ? '212,175,55' : '155,147,192'},0.07)`, border: `1px solid ${color}25`, marginBottom: '16px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '14px', background: `rgba(${color === '#34D399' ? '57,255,20' : color === '#D4AF37' ? '212,175,55' : '155,147,192'},0.07)`, border: `1px solid ${color}25`, marginBottom: '16px' }}>
       <div style={{ width: '44px', height: '44px', borderRadius: '50%', border: `2px solid ${color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <span style={{ fontSize: '13px', fontWeight: 700, color, fontFamily: 'DM Serif Display, serif' }}>{pct}%</span>
       </div>
       <div>
         <p style={{ fontSize: '13px', fontWeight: 700, color, marginBottom: '2px' }}>You'd vibe at {pct}% · {label}</p>
-        <p style={{ fontSize: '11px', color: '#9B93C0' }}>Based on location, personality & shared activities</p>
+        <p style={{ fontSize: '11px', color: '#A99ECC' }}>Based on location, personality & shared activities</p>
       </div>
     </div>
   )

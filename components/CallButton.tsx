@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { Phone } from 'lucide-react'
 
 interface CallButtonProps {
   toUserId: string
@@ -63,7 +64,7 @@ export default function CallButton({ toUserId, toUserName, bookingId, variant = 
         {calling ? (
           <><span style={{ display: 'inline-block', width: '12px', height: '12px', border: '2px solid rgba(57,255,20,0.2)', borderTop: '2px solid #39FF14', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />Calling…</>
         ) : (
-          <>📞 Call{toUserName ? ` ${toUserName.split(' ')[0]}` : ''}</>
+          <><Phone size={14} strokeWidth={2} /> Call{toUserName ? ` ${toUserName.split(' ')[0]}` : ''}</>
         )}
         <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
       </button>
@@ -75,6 +76,7 @@ export default function CallButton({ toUserId, toUserName, bookingId, variant = 
       onClick={startCall}
       disabled={calling}
       title={toUserName ? `Call ${toUserName}` : 'Start call'}
+      aria-label={toUserName ? `Call ${toUserName}` : 'Start call'}
       style={{
         width: '36px', height: '36px', borderRadius: '10px',
         border: '1px solid rgba(57,255,20,0.25)',
@@ -86,7 +88,7 @@ export default function CallButton({ toUserId, toUserName, bookingId, variant = 
     >
       {calling
         ? <span style={{ display: 'inline-block', width: '14px', height: '14px', border: '2px solid rgba(57,255,20,0.2)', borderTop: '2px solid #39FF14', borderRadius: '50%', animation: 'cbspin 1s linear infinite' }} />
-        : '📞'
+        : <Phone size={16} strokeWidth={2} />
       }
       <style>{`@keyframes cbspin { to { transform: rotate(360deg) } }`}</style>
     </button>

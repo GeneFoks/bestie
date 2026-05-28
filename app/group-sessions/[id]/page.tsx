@@ -1,19 +1,12 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-
-const ACTIVITY_EMOJI: Record<string, string> = {
-  hiking: '🥾', running: '🏃', gym_partner: '💪', cycling: '🚴', yoga: '🧘', climbing: '🧗',
-  game_night: '🎮', movie_night: '🎬', night_out: '🍸', karaoke: '🎤', festival_crew: '🎪', travel_buddy: '✈️',
-  deep_chat: '🫂', book_club: '📚', debate_club: '🗣️', language_exchange: '🌐',
-  cooking_together: '🍳', dance: '💃', art_together: '🎨', music_lesson: '🎸',
-  meditation_circle: '🧘', breathwork: '🌬️', cacao_ceremony: '🍫', sound_healing: '🔔',
-  coffee_chat: '☕', coworking: '💻', digital_detox_walk: '📵',
-}
+import { PageLoader } from '@/components/Loading'
+import { ActivityIcon } from '@/lib/activityIcons'
 
 export default function GroupSessionPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -82,18 +75,13 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
     navigator.clipboard.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) })
   }
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: '36px', height: '36px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-    </div>
-  )
+  if (loading) return <PageLoader message="Loading…" />
 
   if (!session) return (
-    <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ textAlign: 'center' }}>
         <p style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</p>
-        <p style={{ fontSize: '18px', color: '#E8E0FF' }}>Session not found</p>
+        <p style={{ fontSize: '18px', color: '#F0EAFF' }}>Session not found</p>
         <Link href="/dashboard" style={{ fontSize: '14px', color: '#D4AF37', textDecoration: 'none', marginTop: '16px', display: 'block' }}>← Dashboard</Link>
       </div>
     </div>
@@ -108,51 +96,60 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
   const d = new Date(session.scheduled_at)
   const isPast = d < new Date()
 
-  const statusColor = isCancelled ? '#FF6B6B' : isCompleted ? '#9B93C0' : isFull ? '#FF6B35' : '#39FF14'
+  const statusColor = isCancelled ? '#FF6B6B' : isCompleted ? '#A99ECC' : isFull ? '#FF6B35' : '#34D399'
   const statusLabel = isCancelled ? 'Cancelled' : isCompleted ? 'Completed' : isFull ? 'Full' : 'Open'
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <Link href="/dashboard" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>← Dashboard</Link>
+        <Link href="/dashboard" style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>← Dashboard</Link>
       </nav>
 
       <div style={{ maxWidth: '600px', margin: '0 auto', padding: '40px 24px' }}>
 
         {/* Header card */}
-        <div style={{ background: 'linear-gradient(135deg, #0F0F1E 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '24px', padding: '28px', marginBottom: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-            <span style={{ fontSize: '32px' }}>{ACTIVITY_EMOJI[session.activity_type] || '🎉'}</span>
-            <div style={{ flex: 1 }}>
-              <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#E8E0FF', lineHeight: 1.2 }}>{session.title}</h1>
+        <div style={{ background: 'linear-gradient(135deg, #111120 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '24px', overflow: 'hidden', marginBottom: '20px' }}>
+          {session.cover_image_url && (
+            <div style={{ width: '100%', aspectRatio: '16/9', background: '#0A0A14', position: 'relative' }}>
+              <img src={session.cover_image_url} alt={session.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 60%, rgba(17,17,32,0.85) 100%)', pointerEvents: 'none' }} />
             </div>
-            <span style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px', borderRadius: '999px', background: `rgba(${statusColor === '#39FF14' ? '57,255,20' : statusColor === '#FF6B6B' ? '255,107,107' : statusColor === '#FF6B35' ? '255,107,53' : '155,147,192'},0.12)`, border: `1px solid ${statusColor}40`, color: statusColor }}>
+          )}
+          <div style={{ padding: '28px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+            <span style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <ActivityIcon type={session.activity_type} size={28} color="#D4AF37" strokeWidth={1.6} />
+            </span>
+            <div style={{ flex: 1 }}>
+              <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#F0EAFF', lineHeight: 1.2 }}>{session.title}</h1>
+            </div>
+            <span style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px', borderRadius: '999px', background: `rgba(${statusColor === '#34D399' ? '57,255,20' : statusColor === '#FF6B6B' ? '255,107,107' : statusColor === '#FF6B35' ? '255,107,53' : '155,147,192'},0.12)`, border: `1px solid ${statusColor}40`, color: statusColor }}>
               {statusLabel}
             </span>
           </div>
 
           {session.description && (
-            <p style={{ fontSize: '14px', color: '#9B93C0', lineHeight: 1.6, marginBottom: '16px' }}>{session.description}</p>
+            <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.6, marginBottom: '16px' }}>{session.description}</p>
           )}
 
           {/* Meta */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '14px' }}>📅</span>
-              <span style={{ fontSize: '14px', color: '#E8E0FF', fontWeight: 600 }}>
+              <span style={{ fontSize: '14px', color: '#F0EAFF', fontWeight: 600 }}>
                 {d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} · {d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
             {session.location && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '14px' }}>📍</span>
-                <span style={{ fontSize: '14px', color: '#9B93C0' }}>{session.location}</span>
+                <span style={{ fontSize: '14px', color: '#A99ECC' }}>{session.location}</span>
               </div>
             )}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '14px' }}>👥</span>
-              <span style={{ fontSize: '14px', color: '#9B93C0' }}>
+              <span style={{ fontSize: '14px', color: '#A99ECC' }}>
                 {participants.length} / {session.max_participants} joined
                 {!isFull && !isCancelled && !isCompleted && ` · ${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}
               </span>
@@ -161,13 +158,13 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
 
           {/* Host */}
           {host && (
-            <Link href={`/${host.username}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', textDecoration: 'none', marginBottom: '16px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', background: '#1a1a35', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Link href={`/${host.username}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', borderRadius: '14px', background: '#131323', border: '1px solid rgba(255,255,255,0.10)', textDecoration: 'none', marginBottom: '16px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', background: '#1A1A2E', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {host.avatar_url ? <img src={host.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{host.full_name?.[0]}</span>}
               </div>
               <div>
-                <p style={{ fontSize: '13px', fontWeight: 600, color: '#E8E0FF' }}>{host.full_name}</p>
-                <p style={{ fontSize: '11px', color: '#9B93C0' }}>Host · BS {host.bestie_score || 0}</p>
+                <p style={{ fontSize: '13px', fontWeight: 600, color: '#F0EAFF' }}>{host.full_name}</p>
+                <p style={{ fontSize: '11px', color: '#A99ECC' }}>Host · BS {host.bestie_score || 0}</p>
               </div>
               <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#D4AF37' }}>👑 Host</span>
             </Link>
@@ -182,6 +179,11 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
                     {copied ? '✓ Copied!' : '🔗 Share link'}
                   </button>
                   {!isPast && (
+                    <Link href={`/group-sessions/${params.id}/edit`} style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: '#131323', border: '1px solid rgba(255,255,255,0.12)', color: '#A99ECC', cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+                      Edit
+                    </Link>
+                  )}
+                  {!isPast && (
                     <button onClick={handleCancel} style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.2)', color: '#FF6B6B', cursor: 'pointer' }}>
                       Cancel
                     </button>
@@ -189,50 +191,51 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
                 </>
               ) : isParticipant ? (
                 <>
-                  <div style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', color: '#39FF14', textAlign: 'center' }}>
+                  <div style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', color: '#34D399', textAlign: 'center' }}>
                     ✓ You're in!
                   </div>
-                  <button onClick={handleLeave} style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#9B93C0', cursor: 'pointer' }}>
+                  <button onClick={handleLeave} style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: '#131323', border: '1px solid rgba(255,255,255,0.12)', color: '#A99ECC', cursor: 'pointer' }}>
                     Leave
                   </button>
                 </>
               ) : (
                 <>
                   <button onClick={handleJoin} disabled={joining || isFull}
-                    style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: isFull ? 'rgba(255,255,255,0.04)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', border: 'none', color: isFull ? '#555' : '#080810', cursor: isFull ? 'not-allowed' : 'pointer' }}>
+                    style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: isFull ? '#131323' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', border: 'none', color: isFull ? '#555' : '#09090F', cursor: isFull ? 'not-allowed' : 'pointer' }}>
                     {joining ? 'Joining...' : isFull ? 'Session full' : '🎉 Join session'}
                   </button>
-                  <button onClick={handleShare} style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#9B93C0', cursor: 'pointer' }}>
+                  <button onClick={handleShare} style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: '#131323', border: '1px solid rgba(255,255,255,0.12)', color: '#A99ECC', cursor: 'pointer' }}>
                     {copied ? '✓' : '🔗'}
                   </button>
                 </>
               )}
             </div>
           )}
+          </div>
         </div>
 
         {/* Participants */}
         {participants.length > 0 && (
-          <div style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '20px' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#9B93C0', marginBottom: '14px' }}>
+          <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '20px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '14px' }}>
               PARTICIPANTS · {participants.length}/{session.max_participants}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {participants.map(p => (
                 <Link key={p.user_id} href={`/${p.user?.username}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', background: '#1a1a35', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', background: '#1A1A2E', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {p.user?.avatar_url ? <img src={p.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{p.user?.full_name?.[0]}</span>}
                   </div>
                   <div>
-                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF' }}>{p.user?.full_name}</p>
-                    <p style={{ fontSize: '12px', color: '#9B93C0' }}>@{p.user?.username}</p>
+                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>{p.user?.full_name}</p>
+                    <p style={{ fontSize: '12px', color: '#A99ECC' }}>@{p.user?.username}</p>
                   </div>
                 </Link>
               ))}
               {/* Empty spots */}
               {spotsLeft > 0 && !isFull && Array.from({ length: Math.min(spotsLeft, 4) }).map((_, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px dashed rgba(255,255,255,0.1)', flexShrink: 0 }} />
+                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#111120', border: '1px dashed rgba(255,255,255,0.1)', flexShrink: 0 }} />
                   <p style={{ fontSize: '13px', color: '#333' }}>Open spot</p>
                 </div>
               ))}

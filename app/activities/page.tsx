@@ -1,10 +1,14 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { PageLoader } from '@/components/Loading'
+import { ActivityIcon } from '@/lib/activityIcons'
+import { EmptyState } from '@/components/EmptyState'
+import { Sparkles } from 'lucide-react'
 
 const ACTIVITY_GROUPS = [
   {
@@ -110,8 +114,8 @@ const ACTIVITY_TRENDING_ORDER = [
   'travel_buddy', 'vent_session', 'book_club', 'coworking', 'yoga',
   'running', 'night_out', 'cooking', 'meditation', 'breathwork',
 ]
-const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
-const labelStyle = { fontSize: '13px', fontWeight: 500, color: '#9B93C0', display: 'block', marginBottom: '8px' }
+const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
+const labelStyle = { fontSize: '13px', fontWeight: 500, color: '#A99ECC', display: 'block', marginBottom: '8px' }
 
 export default function ActivitiesPage() {
   const router = useRouter()
@@ -210,29 +214,24 @@ export default function ActivitiesPage() {
 
   const getActivity = (id) => ACTIVITIES.find(a => a.id === id)
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: '40px', height: '40px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-    </div>
-  )
+  if (loading) return <PageLoader message="Loading activities…" />
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <Link href="/dashboard" style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>← Dashboard</Link>
+        <Link href="/dashboard" style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>← Dashboard</Link>
       </nav>
 
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '40px 24px' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
           <div>
-            <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: '#E8E0FF', marginBottom: '4px' }}>My Activities</h1>
-            <p style={{ fontSize: '14px', color: '#9B93C0' }}>{packages.length} activities · what people can book you for</p>
+            <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: '#F0EAFF', marginBottom: '4px' }}>My Activities</h1>
+            <p style={{ fontSize: '14px', color: '#A99ECC' }}>{packages.length} activities · what people can book you for</p>
           </div>
           {!showForm && (
-            <button onClick={() => setShowForm(true)} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: 'pointer' }}>
+            <button onClick={() => setShowForm(true)} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer' }}>
               + Add activity
             </button>
           )}
@@ -243,7 +242,7 @@ export default function ActivitiesPage() {
           <div style={{ marginBottom: '28px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
               <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#FF6B35' }}>🔥 TRENDING THIS WEEK</span>
-              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.06)' }} />
+              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.10)' }} />
             </div>
             <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px', scrollbarWidth: 'none' }}>
               {ACTIVITIES
@@ -263,11 +262,11 @@ export default function ActivitiesPage() {
                           window.scrollTo({ top: 400, behavior: 'smooth' })
                         }
                       }}
-                      style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '12px 14px', borderRadius: '16px', border: alreadyHave ? '1px solid rgba(57,255,20,0.35)' : i < 3 ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(255,255,255,0.07)', background: alreadyHave ? 'rgba(57,255,20,0.06)' : i < 3 ? 'rgba(255,107,53,0.06)' : 'rgba(255,255,255,0.03)', cursor: alreadyHave ? 'default' : 'pointer', minWidth: '72px' }}
+                      style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '12px 14px', borderRadius: '16px', border: alreadyHave ? '1px solid rgba(57,255,20,0.35)' : i < 3 ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(255,255,255,0.11)', background: alreadyHave ? 'rgba(57,255,20,0.06)' : i < 3 ? 'rgba(255,107,53,0.06)' : '#111120', cursor: alreadyHave ? 'default' : 'pointer', minWidth: '72px' }}
                     >
-                      <span style={{ fontSize: '24px' }}>{a.emoji}</span>
-                      <span style={{ fontSize: '10px', fontWeight: 600, color: alreadyHave ? '#39FF14' : '#E8E0FF', textAlign: 'center', lineHeight: 1.3, whiteSpace: 'nowrap' }}>{a.label}</span>
-                      <span style={{ fontSize: '10px', color: alreadyHave ? '#39FF14' : '#9B93C0' }}>{a.count} besties{alreadyHave ? ' ✓' : ''}</span>
+                      <ActivityIcon type={a.id} size={22} color={alreadyHave ? '#34D399' : '#D4AF37'} strokeWidth={1.7} />
+                      <span style={{ fontSize: '10px', fontWeight: 600, color: alreadyHave ? '#34D399' : '#F0EAFF', textAlign: 'center', lineHeight: 1.3, whiteSpace: 'nowrap' }}>{a.label}</span>
+                      <span style={{ fontSize: '10px', color: alreadyHave ? '#34D399' : '#A99ECC' }}>{a.count} besties{alreadyHave ? ' ✓' : ''}</span>
                     </button>
                   )
                 })
@@ -277,8 +276,8 @@ export default function ActivitiesPage() {
         )}
 
         {showForm && (
-          <div style={{ background: '#0F0F1E', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '20px', padding: '28px', marginBottom: '24px' }}>
-            <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#E8E0FF', marginBottom: '24px' }}>
+          <div style={{ background: '#111120', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '20px', padding: '28px', marginBottom: '24px' }}>
+            <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', marginBottom: '24px' }}>
               {editingId ? 'Edit activity' : 'New activity'}
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -291,14 +290,14 @@ export default function ActivitiesPage() {
                 <label style={labelStyle}>Activity type</label>
                 {ACTIVITY_GROUPS.map(group => (
                   <div key={group.id} style={{ marginBottom: '16px' }}>
-                    <p style={{ fontSize: '12px', fontWeight: 600, color: '#9B93C0', marginBottom: '8px', letterSpacing: '0.5px' }}>{group.label}</p>
+                    <p style={{ fontSize: '12px', fontWeight: 600, color: '#A99ECC', marginBottom: '8px', letterSpacing: '0.5px' }}>{group.label}</p>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
                       {group.items.map(a => {
                         const selected = form.activity_type === a.id
                         return (
-                          <button key={a.id} onClick={() => setForm(f => ({ ...f, activity_type: a.id }))} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '8px 4px', borderRadius: '10px', border: selected ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.06)', background: selected ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.03)', cursor: 'pointer' }}>
-                            <span style={{ fontSize: '16px' }}>{a.emoji}</span>
-                            <span style={{ fontSize: '9px', color: selected ? '#D4AF37' : '#9B93C0', textAlign: 'center', lineHeight: 1.3 }}>{a.label}</span>
+                          <button key={a.id} onClick={() => setForm(f => ({ ...f, activity_type: a.id }))} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '8px 4px', borderRadius: '10px', border: selected ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', background: selected ? 'rgba(212,175,55,0.1)' : '#111120', cursor: 'pointer' }}>
+                            <ActivityIcon type={a.id} size={16} color={selected ? '#D4AF37' : '#A99ECC'} strokeWidth={1.8} />
+                            <span style={{ fontSize: '9px', color: selected ? '#D4AF37' : '#A99ECC', textAlign: 'center', lineHeight: 1.3 }}>{a.label}</span>
                           </button>
                         )
                       })}
@@ -314,7 +313,7 @@ export default function ActivitiesPage() {
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <input type="checkbox" id="is_free" checked={form.is_free} onChange={e => setForm(f => ({ ...f, is_free: e.target.checked }))} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
-                <label htmlFor="is_free" style={{ fontSize: '14px', color: '#E8E0FF', cursor: 'pointer' }}>This is a free match — no payment needed</label>
+                <label htmlFor="is_free" style={{ fontSize: '14px', color: '#F0EAFF', cursor: 'pointer' }}>This is a free match — no payment needed</label>
               </div>
 
               {!form.is_free && (
@@ -325,8 +324,8 @@ export default function ActivitiesPage() {
               )}
 
               <div style={{ display: 'flex', gap: '10px' }}>
-                <button onClick={handleCancel} style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', cursor: 'pointer' }}>Cancel</button>
-                <button onClick={handleSave} disabled={saving || !form.title || !form.activity_type} style={{ flex: 2, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: 'pointer', opacity: (!form.title || !form.activity_type) ? 0.5 : 1 }}>
+                <button onClick={handleCancel} style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#A99ECC', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={handleSave} disabled={saving || !form.title || !form.activity_type} style={{ flex: 2, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer', opacity: (!form.title || !form.activity_type) ? 0.5 : 1 }}>
                   {saving ? 'Saving...' : editingId ? 'Save changes' : 'Add activity'}
                 </button>
               </div>
@@ -335,35 +334,34 @@ export default function ActivitiesPage() {
         )}
 
         {packages.length === 0 && !showForm ? (
-          <div style={{ textAlign: 'center', padding: '60px 0' }}>
-            <p style={{ fontSize: '48px', marginBottom: '16px' }}>🎯</p>
-            <h3 style={{ fontSize: '20px', fontWeight: 600, color: '#E8E0FF', marginBottom: '8px' }}>No activities yet</h3>
-            <p style={{ fontSize: '14px', color: '#9B93C0', marginBottom: '24px' }}>Add your first activity so people can book you</p>
-            <button onClick={() => setShowForm(true)} style={{ padding: '12px 28px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', border: 'none', cursor: 'pointer' }}>
-              + Add first activity
-            </button>
-          </div>
+          <EmptyState
+            Icon={Sparkles}
+            title="No activities yet"
+            description="Add what you love doing — Besties will find you by activity."
+            primaryCTA={{ label: 'Add my first activity', onClick: () => setShowForm(true) }}
+            accent="gold"
+          />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {packages.map(pkg => {
               const activity = getActivity(pkg.activity_type)
               return (
-                <div key={pkg.id} style={{ background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '20px' }}>
+                <div key={pkg.id} style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', padding: '20px' }}>
                   <div style={{ marginBottom: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '20px' }}>{activity?.emoji || '✨'}</span>
-                      <h4 style={{ fontSize: '16px', fontWeight: 600, color: '#E8E0FF' }}>{pkg.title}</h4>
+                      <ActivityIcon type={pkg.activity_type} size={18} color="#D4AF37" strokeWidth={1.8} />
+                      <h4 style={{ fontSize: '16px', fontWeight: 600, color: '#F0EAFF' }}>{pkg.title}</h4>
                     </div>
                     <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '12px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(255,255,255,0.05)', color: '#9B93C0' }}>{activity?.label || pkg.activity_type}</span>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: pkg.is_free ? '#39FF14' : '#E8E0FF' }}>
+                      <span style={{ fontSize: '12px', padding: '3px 10px', borderRadius: '999px', background: '#161628', color: '#A99ECC' }}>{activity?.label || pkg.activity_type}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: pkg.is_free ? '#34D399' : '#F0EAFF' }}>
                         {pkg.is_free ? 'Free' : `$${pkg.price_per_session}/session`}
                       </span>
                     </div>
-                    {pkg.description && <p style={{ fontSize: '13px', color: '#9B93C0', lineHeight: 1.6 }}>{pkg.description}</p>}
+                    {pkg.description && <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.6 }}>{pkg.description}</p>}
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={() => handleEdit(pkg)} style={{ flex: 1, padding: '8px', borderRadius: '10px', fontSize: '13px', fontWeight: 500, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#E8E0FF', cursor: 'pointer' }}>✏️ Edit</button>
+                    <button onClick={() => handleEdit(pkg)} style={{ flex: 1, padding: '8px', borderRadius: '10px', fontSize: '13px', fontWeight: 500, background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', cursor: 'pointer' }}>✏️ Edit</button>
                     <button onClick={() => handleDelete(pkg.id)} style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '13px', background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.15)', color: '#ff6b6b', cursor: 'pointer' }}>🗑</button>
                   </div>
                 </div>
