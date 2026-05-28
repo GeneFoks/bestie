@@ -64,7 +64,7 @@ export default async function CrewPage({ params }) {
   const [{ data: rawMembers }, { data: upcomingEvents }, { data: ratings }] = await Promise.all([
     supabase
       .from('crew_members')
-      .select('user_id, joined_at, role')
+      .select('user_id, joined_at')
       .eq('crew_id', crew.id)
       .order('joined_at', { ascending: true }),
     supabase
@@ -91,6 +91,8 @@ export default async function CrewPage({ params }) {
   const userMap = Object.fromEntries(userProfiles.map((u: any) => [u.id, u]))
   const members = (rawMembers || []).map((m: any) => ({
     ...m,
+    // derive role: captain from crew data, fallback to 'member' for others
+    role: m.role ?? (m.user_id === crew.captain_id ? 'captain' : 'member'),
     user: userMap[m.user_id] || null,
   }))
 
