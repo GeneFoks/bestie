@@ -65,7 +65,7 @@ export default async function CrewPage({ params }) {
       .from('crew_members')
       .select('joined_at, role, user:users(id, username, full_name, avatar_url, bestie_score, city, free_today_at)')
       .eq('crew_id', crew.id)
-      .order('bestie_score', { ascending: false, foreignTable: 'users' }),
+      .order('joined_at', { ascending: true }),
     supabase
       .from('crew_events')
       .select('id, title, datetime, location, is_members_only, max_attendees, attendees:crew_event_attendees(status)')
@@ -76,9 +76,10 @@ export default async function CrewPage({ params }) {
     supabase.from('crew_ratings').select('rating').eq('crew_id', crew.id),
   ])
 
-  const memberCount = members?.length || 0
+  const sortedMembers = (members || []).sort((a, b) => (b.user?.bestie_score || 0) - (a.user?.bestie_score || 0))
+  const memberCount = sortedMembers.length
   const avgScore = memberCount > 0
-    ? Math.round(members.reduce((sum, m) => sum + (m.user?.bestie_score || 0), 0) / memberCount)
+    ? Math.round(sortedMembers.reduce((sum, m) => sum + (m.user?.bestie_score || 0), 0) / memberCount)
     : 0
   const ratingCount = ratings?.length || 0
   const avgRating = ratingCount > 0
@@ -328,7 +329,7 @@ export default async function CrewPage({ params }) {
           />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {members.map(({ user, joined_at, role }, memberIdx) => {
+            {sortedMembers.map(({ user, joined_at, role }, memberIdx) => {
               if (!user) return null
               const sc = user.bestie_score >= 800 ? '#34D399' : user.bestie_score >= 600 ? '#D4AF37' : '#A99ECC'
               const effectiveRole = role || (user.id === crew.captain_id ? 'captain' : 'member')
