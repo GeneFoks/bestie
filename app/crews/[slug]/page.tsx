@@ -61,10 +61,10 @@ export default async function CrewPage({ params }) {
     )
   }
 
-  const [{ data: members }, { data: upcomingEvents }, { data: ratings }] = await Promise.all([
+  const [{ data: rawMembers }, { data: upcomingEvents }, { data: ratings }] = await Promise.all([
     supabase
       .from('crew_members')
-      .select('joined_at, role, user:users(id, username, full_name, avatar_url, bestie_score, city, free_today_at)')
+      .select('user_id, joined_at, role')
       .eq('crew_id', crew.id)
       .order('joined_at', { ascending: true }),
     supabase
@@ -77,7 +77,24 @@ export default async function CrewPage({ params }) {
     supabase.from('crew_ratings').select('rating').eq('crew_id', crew.id),
   ])
 
-  const sortedMembers = (members || []).sort((a, b) => (b.user?.bestie_score || 0) - (a.user?.bestie_score || 0))
+  // Fetch user profiles separately to avoid PostgREST relationship ambiguity
+  const memberUserIds = (rawMembers || []).map((m: any) => m.user_id)
+  let userProfiles: any[] = []
+  if (memberUserIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('users')
+      .select('id, username, full_name, avatar_url, bestie_score, city, free_today_at')
+      .in('id', memberUserIds)
+    userProfiles = profiles || []
+  }
+
+  const userMap = Object.fromEntries(userProfiles.map((u: any) => [u.id, u]))
+  const members = (rawMembers || []).map((m: any) => ({
+    ...m,
+    user: userMap[m.user_id] || null,
+  }))
+
+  const sortedMembers = members.sort((a: any, b: any) => (b.user?.bestie_score || 0) - (a.user?.bestie_score || 0))
   const memberCount = sortedMembers.length
   const avgScore = memberCount > 0
     ? Math.round(sortedMembers.reduce((sum, m) => sum + (m.user?.bestie_score || 0), 0) / memberCount)
