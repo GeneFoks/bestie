@@ -191,9 +191,9 @@ export default function OnboardingPage() {
       localStorage.removeItem('bestie_onb_activities')
     }
 
-    // Send new users straight into the Bestie Type quiz — the quiz page itself
-    // has a "Skip for now" exit to dashboard, so this isn't a forced flow.
-    router.push('/bestie-type')
+    // Send new users to companion setup — they pick their AI companion first,
+    // then proceed to the Bestie Type quiz.
+    router.push('/companion/setup')
   }
 
   const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
