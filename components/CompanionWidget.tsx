@@ -34,6 +34,7 @@ export default function CompanionWidget() {
   const [tab, setTab]               = useState<'chat' | 'quests' | 'settings'>('chat')
   const [session, setSession]       = useState<any>(null)
   const [pulse, setPulse]           = useState(false)
+  const [badge, setBadge]           = useState(false)
   // Settings state
   const [editName, setEditName]     = useState('')
   const [editType, setEditType]     = useState('spark')
@@ -78,6 +79,60 @@ export default function CompanionWidget() {
 
       setTimeout(() => setPulse(true), 3000)
       setTimeout(() => setPulse(false), 6000)
+
+      // Realtime: listen for quest_completed notifications
+      const channel = supabase
+        .channel('companion-quest-notify')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${s.user.id}`,
+          },
+          (payload) => {
+            if (payload.new?.type !== 'quest_completed') return
+            const notif = payload.new as any
+
+            // Extract quest title from notification title
+            const questTitle = notif.title?.replace('🎯 Quest completed: ', '') || 'a quest'
+
+            // Congrats message from companion
+            const congrats = [
+              `🎉 You just completed "${questTitle}"! ${notif.body}`,
+              `⚡ Quest done: "${questTitle}"! ${notif.body}`,
+              `🏆 "${questTitle}" — completed! ${notif.body}`,
+            ]
+            const msg = congrats[Math.floor(Math.random() * congrats.length)]
+
+            setMessages(prev => [...prev, { role: 'assistant', content: msg }])
+
+            // Reload quests list
+            supabase
+              .from('user_quests')
+              .select('status, quest:quests(slug, title, icon, xp_reward, bs_reward, sparks_reward)')
+              .eq('user_id', s.user.id)
+              .eq('status', 'active')
+              .limit(5)
+              .then(({ data }) => setQuests(data || []))
+
+            // Pulse + badge if widget is closed
+            setPulse(true)
+            setTimeout(() => setPulse(false), 4000)
+            setBadge(true)
+          }
+        )
+        .subscribe()
+
+      // Custom event: open companion widget on quests tab (from OnboardingProgress)
+      const handleOpenQuests = () => { setOpen(true); setTab('quests') }
+      window.addEventListener('open-companion-quests', handleOpenQuests)
+
+      return () => {
+        supabase.removeChannel(channel)
+        window.removeEventListener('open-companion-quests', handleOpenQuests)
+      }
     }
     load()
   }, [])
@@ -140,17 +195,25 @@ export default function CompanionWidget() {
 
       {/* Floating button */}
       {!open && (
-        <button onClick={() => setOpen(true)} style={{
+        <button onClick={() => { setOpen(true); setBadge(false) }} style={{
           position: 'fixed', bottom: '80px', right: '16px',
           width: '56px', height: '56px', borderRadius: '18px',
           background: `radial-gradient(circle at 40% 40%, ${style.glow}, #111120)`,
           border: `1.5px solid ${style.border}`, cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '26px',
-          zIndex: 1000,
+          zIndex: 1000, position: 'relative',
           animation: pulse ? 'cwPulse 1.5s ease-in-out 3, cwFloat 3s ease-in-out infinite' : 'cwFloat 3s ease-in-out infinite',
           boxShadow: `0 4px 20px ${style.glow}`,
         }}>
           {style.emoji}
+          {badge && (
+            <span style={{
+              position: 'absolute', top: '-4px', right: '-4px',
+              width: '14px', height: '14px', borderRadius: '50%',
+              background: '#FF4560', border: '2px solid #09090F',
+              display: 'block',
+            }} />
+          )}
         </button>
       )}
 

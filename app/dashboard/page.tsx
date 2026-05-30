@@ -11,6 +11,7 @@ import FindFriends from '@/components/FindFriends'
 import { PageLoader } from '@/components/Loading'
 import StreakStrip from '@/components/StreakStrip'
 import OnboardingResumeBanner from '@/components/OnboardingResumeBanner'
+import OnboardingProgress from '@/components/OnboardingProgress'
 import SuggestedCrews from '@/components/SuggestedCrews'
 import {
   Camera, Pencil, MapPin, Sparkles, Mail, Inbox, Users, Calendar,
@@ -241,6 +242,7 @@ export default function DashboardPage() {
       <div style={{ maxWidth: '960px', margin: '0 auto', padding: '40px 24px' }}>
 
         <OnboardingResumeBanner />
+        <OnboardingProgress />
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
