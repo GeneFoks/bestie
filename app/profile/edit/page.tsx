@@ -130,6 +130,11 @@ export default function EditProfilePage() {
   const [hideFromGraph, setHideFromGraph] = useState(false)
   const [locationShared, setLocationShared] = useState(false)
   const [locating, setLocating] = useState(false)
+  const [companion, setCompanion] = useState<any>(null)
+  const [companionName, setCompanionName] = useState('Bestie')
+  const [companionType, setCompanionType] = useState('spark')
+  const [savingCompanion, setSavingCompanion] = useState(false)
+  const [companionSaved, setCompanionSaved] = useState(false)
 
   const DAYS = [
     { id: 'mon', label: 'Mon' }, { id: 'tue', label: 'Tue' }, { id: 'wed', label: 'Wed' },
@@ -158,6 +163,15 @@ export default function EditProfilePage() {
         setHideFromGraph(!!data.hide_from_graph)
       }
       setMyCrews((crews || []).map((c: any) => c.crew).filter(Boolean))
+
+      // Load companion
+      const { data: comp } = await supabase.from('companions').select('*').eq('user_id', session.user.id).single()
+      if (comp) {
+        setCompanion(comp)
+        setCompanionName(comp.name || 'Bestie')
+        setCompanionType(comp.type || 'spark')
+      }
+
       setLoading(false)
     }
     load()
@@ -260,6 +274,18 @@ export default function EditProfilePage() {
       setNewPkg({ title: '', activity_type: '', description: '', price_per_session: '', is_free: false, scheduled_at: '', crew_id: '' })
       setShowAddForm(false)
     }
+  }
+
+  const handleSaveCompanion = async () => {
+    if (!userId || savingCompanion) return
+    setSavingCompanion(true)
+    await supabase.from('companions').upsert(
+      { user_id: userId, type: companionType, name: companionName.trim() || 'Bestie' },
+      { onConflict: 'user_id' }
+    )
+    setSavingCompanion(false)
+    setCompanionSaved(true)
+    setTimeout(() => setCompanionSaved(false), 2000)
   }
 
   const startEdit = (pkg) => {
@@ -610,6 +636,52 @@ export default function EditProfilePage() {
                 </div>
               )
             })}
+          </div>
+        </div>
+
+        {/* Companion settings */}
+        <div style={{ background: '#111120', borderRadius: '20px', padding: '20px', border: '1px solid rgba(57,255,20,0.15)', marginBottom: '16px' }}>
+          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF', marginBottom: '4px' }}>AI Companion</h3>
+          <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '20px' }}>Смени тип или имя своего компаньона</p>
+
+          {/* Type selector */}
+          <p style={{ fontSize: '12px', fontWeight: 600, color: '#A99ECC', letterSpacing: '1px', marginBottom: '10px' }}>ТИП</p>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+            {[
+              { type: 'spark', emoji: '⚡', label: 'Spark', color: '#39FF14', desc: 'Дерзкий' },
+              { type: 'sage',  emoji: '🔮', label: 'Sage',  color: '#D4AF37', desc: 'Мистик' },
+              { type: 'nova',  emoji: '🌀', label: 'Nova',  color: '#7B8FF5', desc: 'Футурист' },
+            ].map(c => (
+              <button key={c.type} onClick={() => setCompanionType(c.type)} style={{
+                flex: 1, padding: '12px 8px', borderRadius: '14px', border: companionType === c.type ? `1.5px solid ${c.color}` : '1px solid rgba(255,255,255,0.1)',
+                background: companionType === c.type ? `${c.color}15` : '#0d0d1a',
+                cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', transition: 'all 0.2s',
+              }}>
+                <div style={{ fontSize: '24px', marginBottom: '4px' }}>{c.emoji}</div>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: companionType === c.type ? c.color : '#A99ECC' }}>{c.label}</div>
+                <div style={{ fontSize: '10px', color: '#5A5375' }}>{c.desc}</div>
+              </button>
+            ))}
+          </div>
+
+          {/* Name input */}
+          <p style={{ fontSize: '12px', fontWeight: 600, color: '#A99ECC', letterSpacing: '1px', marginBottom: '8px' }}>ИМЯ</p>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <input
+              value={companionName}
+              onChange={e => setCompanionName(e.target.value.slice(0, 20))}
+              placeholder="Bestie"
+              maxLength={20}
+              style={{ flex: 1, padding: '10px 14px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, outline: 'none', background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+            />
+            <button onClick={handleSaveCompanion} disabled={savingCompanion} style={{
+              padding: '10px 20px', borderRadius: '12px', fontSize: '13px', fontWeight: 600,
+              background: companionSaved ? 'rgba(57,255,20,0.15)' : 'rgba(57,255,20,0.1)',
+              border: companionSaved ? '1px solid rgba(57,255,20,0.4)' : '1px solid rgba(57,255,20,0.2)',
+              color: companionSaved ? '#34D399' : '#39FF14', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif',
+            }}>
+              {savingCompanion ? '...' : companionSaved ? '✓ Saved!' : 'Save'}
+            </button>
           </div>
         </div>
 
