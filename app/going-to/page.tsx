@@ -135,6 +135,28 @@ export default function GoingToPage() {
     }).select().single()
     setCurrent(data)
     setForm({ activity_type: '', description: '', location: '', scheduled_at: '' })
+
+    // Push notification to all mutual knock connections
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        fetch('/api/going-to/notify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            activity_type: form.activity_type,
+            location: form.location,
+          }),
+        })
+      }
+    } catch (e) {
+      // non-blocking — push failure shouldn't stop the post
+      console.warn('[going-to] push notify error:', e)
+    }
+
     setPosting(false)
   }
 

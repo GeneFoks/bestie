@@ -137,6 +137,7 @@ export default async function ProfilePage({ params }) {
     { count: usersAbove },
     { count: totalUsers },
     { data: ratedBookings },
+    { count: mutualKnocks },
   ] = await Promise.all([
     supabase.from('sparks').select('spark_type').eq('receiver_id', profile.id),
     supabase.from('bookings')
@@ -152,6 +153,10 @@ export default async function ProfilePage({ params }) {
     supabase.from('bookings')
       .select('rating_seeker, rating_provider')
       .or(`and(provider_id.eq.${profile.id},rating_seeker.not.is.null),and(seeker_id.eq.${profile.id},rating_provider.not.is.null)`),
+    supabase.from('knocks')
+      .select('id', { count: 'exact', head: true })
+      .eq('sender_id', profile.id)
+      .eq('is_mutual', true),
   ])
 
   const sparkCounts: Record<string, number> = {}
@@ -267,6 +272,14 @@ export default async function ProfilePage({ params }) {
                 </Link>
               )}
               {profile.bio && <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.65, maxWidth: '520px' }}>{profile.bio}</p>}
+
+              {/* Knock connections count */}
+              {(mutualKnocks || 0) > 0 && (
+                <p style={{ fontSize: '12px', color: '#A99ECC', margin: '6px 0 0', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <span style={{ fontSize: '14px' }}>👊</span>
+                  <span><strong style={{ color: '#F0EAFF' }}>{mutualKnocks}</strong> {mutualKnocks === 1 ? 'mutual connection' : 'mutual connections'}</span>
+                </p>
+              )}
             </div>
             {/* Action buttons */}
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
