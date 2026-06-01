@@ -33,6 +33,7 @@ export default function SwarmPage() {
 
   // Agent form
   const [upgrading, setUpgrading]         = useState<string | null>(null)
+  const [upgradeError, setUpgradeError]   = useState('')
   const [showAgentForm, setShowAgentForm] = useState(false)
   const [agentSkills, setAgentSkills]     = useState('')
   const [agentProvider, setAgentProvider] = useState('claude')
@@ -141,7 +142,7 @@ export default function SwarmPage() {
     if (data.url) {
       window.location.href = data.url
     } else {
-      alert(data.error || 'Something went wrong')
+      setUpgradeError(data.error || 'Something went wrong. Try again.')
       setUpgrading(null)
     }
   }
@@ -195,6 +196,12 @@ export default function SwarmPage() {
             AI Swarm is available on <strong style={{ color: '#D4AF37' }}>Community</strong> and <strong style={{ color: '#9B7FFF' }}>Pro</strong> plans.
             Upgrade your Crew to unlock intelligent matching across all members.
           </p>
+
+          {upgradeError && (
+            <div style={{ marginBottom: '16px', padding: '12px 16px', borderRadius: '12px', background: 'rgba(255,69,96,0.08)', border: '1px solid rgba(255,69,96,0.25)', color: '#FF4560', fontSize: '13px' }}>
+              ⚠️ {upgradeError}
+            </div>
+          )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
             {[
