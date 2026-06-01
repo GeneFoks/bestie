@@ -38,28 +38,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Only the crew captain can upgrade' }, { status: 403 })
   }
 
-  // Get captain's email
-  const { data: profile } = await admin
-    .from('users')
-    .select('email')
-    .eq('id', user.id)
-    .single()
-
   const origin = req.headers.get('origin') || 'https://bestiehere.com'
 
-  const session = await stripe.checkout.sessions.create({
+  let session: any
+  try {
+    session = await stripe.checkout.sessions.create({
     mode: 'subscription',
     line_items: [{ price: PRICE_IDS[plan], quantity: 1 }],
-    customer_email: profile?.email || undefined,
+    customer_email: user.email || undefined,
     metadata: {
       crew_id,
       crew_slug: crew.slug,
       plan,
       user_id: user.id,
     },
-    success_url: `${origin}/crews/${crew.slug}/swarm?upgraded=1`,
-    cancel_url:  `${origin}/crews/${crew.slug}/swarm`,
-  })
+      success_url: `${origin}/crews/${crew.slug}/swarm?upgraded=1`,
+      cancel_url:  `${origin}/crews/${crew.slug}/swarm`,
+    })
+  } catch (err: any) {
+    console.error('[stripe/checkout] error:', err.message)
+    return NextResponse.json({ error: err.message }, { status: 500 })
+  }
 
   return NextResponse.json({ url: session.url })
 }
