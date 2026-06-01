@@ -99,6 +99,7 @@ export default function SwarmPage() {
   const [result, setResult]       = useState<any>(null)
   const [history, setHistory]     = useState<any[]>([])
   const [deletingId, setDeletingId] = useState<any>(null)
+  const [members, setMembers]     = useState<any[]>([])
 
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -149,6 +150,43 @@ export default function SwarmPage() {
         .limit(5)
 
       setHistory(hist || [])
+
+      // Load crew directory: members + profiles + their agents
+      const { data: cm } = await supabase
+        .from('crew_members')
+        .select('user_id')
+        .eq('crew_id', c.id)
+
+      const ids = (cm || []).map((m: any) => m.user_id)
+      if (ids.length) {
+        const [{ data: profs }, { data: ags }] = await Promise.all([
+          supabase
+            .from('users')
+            .select('id, full_name, username, avatar_url, city, bestie_score')
+            .in('id', ids),
+          supabase
+            .from('crew_ai_agents')
+            .select('user_id, skills, provider, is_active')
+            .eq('crew_id', c.id)
+            .in('user_id', ids),
+        ])
+        const agentMap: Record<string, any> = {}
+        for (const ag of ags || []) agentMap[ag.user_id] = ag
+        const dir = (profs || []).map((p: any) => ({
+          ...p,
+          agent: agentMap[p.id] || null,
+          isMe: p.id === s.user.id,
+        }))
+        // People with an active agent first, then by score
+        dir.sort((a: any, b: any) => {
+          const av = a.agent?.is_active ? 1 : 0
+          const bv = b.agent?.is_active ? 1 : 0
+          if (av !== bv) return bv - av
+          return (b.bestie_score || 0) - (a.bestie_score || 0)
+        })
+        setMembers(dir)
+      }
+
       setLoading(false)
     }
     load()
@@ -665,6 +703,74 @@ export default function SwarmPage() {
                   </button>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Crew directory — everyone's skills & agents */}
+        {members.length > 0 && !result && (
+          <div style={{ marginTop: history.length > 0 ? '28px' : '0' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', color: '#5A5375', margin: 0 }}>YOUR CREW</p>
+              <p style={{ fontSize: '11px', color: '#5A5375', margin: 0 }}>
+                {members.filter(m => m.agent?.is_active).length} of {members.length} agents active
+              </p>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {members.map((m) => {
+                const active = !!m.agent?.is_active
+                return (
+                  <div key={m.id} style={{
+                    padding: '14px', borderRadius: '14px', background: '#111120',
+                    border: active ? '1px solid rgba(155,127,255,0.25)' : '1px solid rgba(255,255,255,0.06)',
+                    display: 'flex', gap: '12px', alignItems: 'flex-start',
+                  }}>
+                    <div style={{
+                      width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+                      background: m.avatar_url ? `url(${m.avatar_url}) center/cover` : 'linear-gradient(135deg, #9B7FFF44, #7B5FE544)',
+                      border: `2px solid ${active ? '#9B7FFF' : 'rgba(255,255,255,0.1)'}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px',
+                    }}>
+                      {!m.avatar_url && '👤'}
+                    </div>
+
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF' }}>
+                          {m.full_name || m.username}{m.isMe ? ' (you)' : ''}
+                        </span>
+                        {active ? (
+                          <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.4px', padding: '2px 7px', borderRadius: '999px', background: 'rgba(52,211,153,0.12)', color: '#34D399', border: '1px solid rgba(52,211,153,0.3)' }}>
+                            ● AGENT ON
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.4px', padding: '2px 7px', borderRadius: '999px', background: 'rgba(255,255,255,0.05)', color: '#5A5375', border: '1px solid rgba(255,255,255,0.08)' }}>
+                            NO AGENT
+                          </span>
+                        )}
+                      </div>
+                      <p style={{ fontSize: '12px', color: '#A99ECC', margin: '2px 0 0' }}>
+                        @{m.username}{m.city ? ` · ${m.city}` : ''}
+                      </p>
+                      {active && m.agent?.skills && (
+                        <p style={{ fontSize: '12.5px', color: '#C8BFEE', margin: '8px 0 0', lineHeight: 1.5 }}>
+                          {m.agent.skills.length > 160 ? m.agent.skills.slice(0, 160) + '…' : m.agent.skills}
+                        </p>
+                      )}
+                    </div>
+
+                    {!m.isMe && (
+                      <Link href={`/messages?to=${m.username}`} style={{
+                        flexShrink: 0, padding: '7px 12px', borderRadius: '10px', fontSize: '12px', fontWeight: 600,
+                        background: 'rgba(155,127,255,0.12)', border: '1px solid rgba(155,127,255,0.25)',
+                        color: '#9B7FFF', textDecoration: 'none', whiteSpace: 'nowrap',
+                      }}>
+                        Message
+                      </Link>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}
