@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
-import { ArrowLeft, Zap, Send, Settings, CheckCircle, AlertCircle, Loader } from 'lucide-react'
+import { ArrowLeft, Zap, Send, Settings, CheckCircle, AlertCircle, Loader, Trash2 } from 'lucide-react'
 
 // ── Original brand icons (inline SVG) ───────────────────────────────
 const ClaudeIcon = ({ size = 16 }) => (
@@ -98,6 +98,7 @@ export default function SwarmPage() {
   const [searching, setSearching] = useState(false)
   const [result, setResult]       = useState<any>(null)
   const [history, setHistory]     = useState<any[]>([])
+  const [deletingId, setDeletingId] = useState<any>(null)
 
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -152,6 +153,23 @@ export default function SwarmPage() {
     }
     load()
   }, [slug])
+
+  const deleteHistory = async (id: any) => {
+    if (deletingId) return
+    setDeletingId(id)
+    // Optimistically remove from UI
+    const prev = history
+    setHistory(h => h.filter(x => x.id !== id))
+    // Only purely-local entries have a numeric id; DB rows are UUID strings
+    if (typeof id === 'string') {
+      const { error } = await supabase.from('swarm_requests').delete().eq('id', id)
+      if (error) {
+        console.error('[swarm] delete error:', error.message)
+        setHistory(prev)   // restore on failure
+      }
+    }
+    setDeletingId(null)
+  }
 
   const saveAgent = async () => {
     if (!agentSkills.trim() || !session || savingAgent) return
@@ -617,15 +635,35 @@ export default function SwarmPage() {
             <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', color: '#5A5375', marginBottom: '12px' }}>RECENT SEARCHES</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {history.map((h, i) => (
-                <button key={h.id || i} onClick={() => runSwarm(h.query)} style={{
+                <div key={h.id || i} style={{
                   padding: '12px 14px', borderRadius: '12px', background: '#111120',
-                  border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer', textAlign: 'left',
-                  fontFamily: 'Plus Jakarta Sans, sans-serif', color: '#A99ECC', fontSize: '13px',
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px',
                 }}>
-                  <span>"{h.query}"</span>
-                  <span style={{ fontSize: '11px', color: '#5A5375' }}>↩ re-run</span>
-                </button>
+                  <span
+                    onClick={() => runSwarm(h.query)}
+                    style={{ flex: 1, cursor: 'pointer', color: '#A99ECC', fontSize: '13px', lineHeight: 1.5 }}
+                  >
+                    "{h.query}"
+                  </span>
+                  <span
+                    onClick={() => runSwarm(h.query)}
+                    style={{ fontSize: '11px', color: '#5A5375', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                  >↩ re-run</span>
+                  <button
+                    onClick={() => deleteHistory(h.id)}
+                    disabled={deletingId === h.id}
+                    aria-label="Delete search"
+                    style={{
+                      flexShrink: 0, width: '26px', height: '26px', borderRadius: '8px', padding: 0,
+                      background: 'rgba(255,69,96,0.08)', border: '1px solid rgba(255,69,96,0.2)',
+                      color: '#FF4560', cursor: deletingId === h.id ? 'wait' : 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
               ))}
             </div>
           </div>

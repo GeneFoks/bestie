@@ -78,3 +78,8 @@ CREATE POLICY "crew members insert swarm requests"
         AND cm.user_id = auth.uid()
     )
   );
+
+-- Users can delete their own swarm search history
+CREATE POLICY "users delete own swarm requests"
+  ON public.swarm_requests FOR DELETE
+  USING (auth.uid() = requester_id);
