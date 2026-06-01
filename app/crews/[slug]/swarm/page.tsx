@@ -32,6 +32,7 @@ export default function SwarmPage() {
   const [planError, setPlanError] = useState(false)
 
   // Agent form
+  const [upgrading, setUpgrading]         = useState<string | null>(null)
   const [showAgentForm, setShowAgentForm] = useState(false)
   const [agentSkills, setAgentSkills]     = useState('')
   const [agentProvider, setAgentProvider] = useState('claude')
@@ -125,6 +126,26 @@ export default function SwarmPage() {
     setTimeout(() => { setAgentSaved(false); setShowAgentForm(false) }, 1500)
   }
 
+  const startCheckout = async (plan: string) => {
+    if (!session || upgrading) return
+    setUpgrading(plan)
+    const res = await fetch('/api/stripe/checkout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ crew_id: crew.id, plan }),
+    })
+    const data = await res.json()
+    if (data.url) {
+      window.location.href = data.url
+    } else {
+      alert(data.error || 'Something went wrong')
+      setUpgrading(null)
+    }
+  }
+
   const runSwarm = async (q?: string) => {
     const queryText = q || query.trim()
     if (!queryText || searching || !session) return
@@ -177,12 +198,12 @@ export default function SwarmPage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
             {[
-              { plan: 'Community', price: '$49/mo', color: '#D4AF37', limit: 'Up to 50 members', features: ['AI Swarm matching', 'Full swarm history', 'All member agents'] },
-              { plan: 'Pro',       price: '$149/mo', color: '#9B7FFF', limit: 'Up to 200 members', features: ['Everything in Community', 'Priority AI processing', 'Custom agent personas', 'Analytics dashboard'] },
+              { id: 'community', label: 'Community', price: '$49/mo', color: '#D4AF37', limit: 'Up to 50 members', features: ['AI Swarm matching', 'Full swarm history', 'All member agents'] },
+              { id: 'pro',       label: 'Pro',       price: '$149/mo', color: '#9B7FFF', limit: 'Up to 200 members', features: ['Everything in Community', 'Priority AI processing', 'Custom agent personas', 'Analytics dashboard'] },
             ].map(tier => (
-              <div key={tier.plan} style={{ padding: '20px', borderRadius: '16px', background: '#111120', border: `1px solid ${tier.color}40`, textAlign: 'left' }}>
+              <div key={tier.id} style={{ padding: '20px', borderRadius: '16px', background: '#111120', border: `1px solid ${tier.color}40`, textAlign: 'left' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '16px', fontWeight: 700, color: tier.color }}>{tier.plan}</span>
+                  <span style={{ fontSize: '16px', fontWeight: 700, color: tier.color }}>{tier.label}</span>
                   <span style={{ fontSize: '20px', fontWeight: 800, color: '#F0EAFF' }}>{tier.price}</span>
                 </div>
                 <p style={{ fontSize: '12px', color: '#A99ECC', marginBottom: '10px' }}>{tier.limit}</p>
@@ -191,6 +212,19 @@ export default function SwarmPage() {
                     <CheckCircle size={12} color={tier.color} /> {f}
                   </div>
                 ))}
+                <button
+                  onClick={() => startCheckout(tier.id)}
+                  disabled={!!upgrading}
+                  style={{
+                    marginTop: '16px', width: '100%', padding: '12px', borderRadius: '12px',
+                    fontSize: '14px', fontWeight: 700, border: 'none', cursor: upgrading ? 'not-allowed' : 'pointer',
+                    background: upgrading === tier.id ? `${tier.color}30` : tier.color,
+                    color: upgrading === tier.id ? tier.color : '#09090F',
+                    fontFamily: 'Plus Jakarta Sans, sans-serif', transition: 'all 0.2s',
+                  }}
+                >
+                  {upgrading === tier.id ? 'Redirecting to Stripe...' : `Upgrade to ${tier.label} →`}
+                </button>
               </div>
             ))}
           </div>

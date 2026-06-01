@@ -2,11 +2,13 @@
 -- AI Swarm for Crews
 -- ══════════════════════════════════════════════════════════════════
 
--- 1. Add plan tier to crews
+-- 1. Add plan tier + Stripe fields to crews
 ALTER TABLE public.crews
   ADD COLUMN IF NOT EXISTS plan TEXT DEFAULT 'free'
     CHECK (plan IN ('free', 'community', 'pro')),
-  ADD COLUMN IF NOT EXISTS plan_expires_at TIMESTAMPTZ;
+  ADD COLUMN IF NOT EXISTS plan_expires_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT,
+  ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT;
 
 -- 2. AI agent per crew member
 --    Each member describes their skills / what they can help with.
