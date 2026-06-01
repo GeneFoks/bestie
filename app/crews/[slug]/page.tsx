@@ -207,6 +207,27 @@ export default async function CrewPage({ params }) {
             <CrewActions crewId={crew.id} captainId={crew.captain_id} isPublic={crew.is_public} isFull={spotsLeft <= 0} captainUsername={crew.captain?.username} crewSlug={params.slug} />
           </div>
         </div>
+
+        {/* AI Swarm button */}
+        <Link href={`/crews/${params.slug}/swarm`} style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+          padding: '13px', borderRadius: '14px', fontSize: '14px', fontWeight: 700,
+          marginBottom: '8px', textDecoration: 'none',
+          background: crew.plan && crew.plan !== 'free'
+            ? 'linear-gradient(135deg, rgba(155,127,255,0.15), rgba(123,95,229,0.1))'
+            : 'rgba(155,127,255,0.06)',
+          border: crew.plan && crew.plan !== 'free'
+            ? '1px solid rgba(155,127,255,0.35)'
+            : '1px solid rgba(155,127,255,0.15)',
+          color: crew.plan && crew.plan !== 'free' ? '#9B7FFF' : '#5A5375',
+        }}>
+          🐝 AI Swarm
+          {(!crew.plan || crew.plan === 'free') && (
+            <span style={{ fontSize: '10px', padding: '2px 7px', borderRadius: '999px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', marginLeft: '4px' }}>
+              Upgrade
+            </span>
+          )}
+        </Link>
         <CrewTelegramLink crewId={crew.id} captainId={crew.captain_id} initialUrl={crew.telegram_url ?? null} />
         <CrewInviteButton crewId={crew.id} captainId={crew.captain_id} crewSlug={params.slug} inviteCode={crew.invite_code || ''} />
         <CrewDeleteButton crewId={crew.id} captainId={crew.captain_id} crewName={crew.name} />
