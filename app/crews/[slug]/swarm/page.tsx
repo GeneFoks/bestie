@@ -7,10 +7,61 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, Zap, Send, Settings, CheckCircle, AlertCircle, Loader } from 'lucide-react'
 
+// ── Original brand icons (inline SVG) ───────────────────────────────
+const ClaudeIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+    stroke="#D97757" strokeWidth="2.2" strokeLinecap="round">
+    <line x1="12" y1="2.5" x2="12" y2="21.5" />
+    <line x1="2.5" y1="12" x2="21.5" y2="12" />
+    <line x1="5.3" y1="5.3" x2="18.7" y2="18.7" />
+    <line x1="18.7" y1="5.3" x2="5.3" y2="18.7" />
+  </svg>
+)
+const OpenAIIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="#10A37F">
+    <path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.872zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08L8.704 5.46a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z"/>
+  </svg>
+)
+const GrokIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="#E8E3F5">
+    <path d="M9.27 15.29l7.978-5.897c.39-.29.95-.177 1.137.272.98 2.369.542 5.215-1.41 7.169-1.951 1.953-4.667 2.382-7.149 1.406L7.116 19.5c3.889 2.66 8.611 1.96 11.562-.993 2.341-2.342 3.066-5.538 2.388-8.42l.006.006c-.983-4.232.242-5.924 2.75-9.382.06-.083.12-.165.179-.248l-3.301 3.305v-.01L9.267 15.292M7.623 16.723c-2.792-2.66-2.303-6.802.388-9.495 1.991-1.993 5.262-2.804 8.022-1.243l2.706-1.25c-.519-.394-1.205-.792-1.974-1.106-3.522-1.527-7.71-.847-10.62 2.066-2.808 2.813-3.675 7.012-1.755 10.646 1.434 2.717.768 4.732-.529 6.766-.13.205-.262.41-.392.616l3.348-3.35-.193-.617.998-2.998z"/>
+  </svg>
+)
+
 const PROVIDERS = [
-  { id: 'claude', label: 'Claude', emoji: '🟣' },
-  { id: 'openai', label: 'ChatGPT', emoji: '🟢' },
-  { id: 'grok',   label: 'Grok',   emoji: '⚡' },
+  {
+    id: 'claude', label: 'Claude', Icon: ClaudeIcon,
+    keyPrefix: 'sk-ant-…',
+    keyUrl: 'https://console.anthropic.com/settings/keys',
+    keySteps: [
+      'Open console.anthropic.com and log in',
+      'Left menu → "API Keys"',
+      'Click "Create Key", name it, then Copy',
+      'The key starts with sk-ant-…',
+    ],
+  },
+  {
+    id: 'openai', label: 'ChatGPT', Icon: OpenAIIcon,
+    keyPrefix: 'sk-…',
+    keyUrl: 'https://platform.openai.com/api-keys',
+    keySteps: [
+      'Open platform.openai.com and log in',
+      'Go to "API keys"',
+      'Click "Create new secret key" → Copy',
+      'The key starts with sk-…',
+    ],
+  },
+  {
+    id: 'grok', label: 'Grok', Icon: GrokIcon,
+    keyPrefix: 'xai-…',
+    keyUrl: 'https://console.x.ai',
+    keySteps: [
+      'Open console.x.ai and log in',
+      'Go to "API Keys"',
+      'Click "Create API Key" → Copy',
+      'The key starts with xai-…',
+    ],
+  },
 ]
 
 const EXAMPLE_QUERIES = [
@@ -38,6 +89,7 @@ export default function SwarmPage() {
   const [agentSkills, setAgentSkills]     = useState('')
   const [agentProvider, setAgentProvider] = useState('claude')
   const [agentKey, setAgentKey]           = useState('')
+  const [helpProvider, setHelpProvider]   = useState<string | null>(null)
   const [savingAgent, setSavingAgent]     = useState(false)
   const [agentSaved, setAgentSaved]       = useState(false)
 
@@ -304,24 +356,68 @@ export default function SwarmPage() {
 
             <p style={{ fontSize: '12px', fontWeight: 700, color: '#A99ECC', marginBottom: '8px', letterSpacing: '0.5px' }}>AI PROVIDER</p>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
-              {PROVIDERS.map(p => (
-                <button key={p.id} onClick={() => setAgentProvider(p.id)} style={{
-                  flex: 1, padding: '8px', borderRadius: '10px', fontSize: '12px', fontWeight: 600,
-                  background: agentProvider === p.id ? 'rgba(155,127,255,0.15)' : '#0d0d1a',
-                  border: agentProvider === p.id ? '1.5px solid #9B7FFF' : '1px solid rgba(255,255,255,0.08)',
-                  color: agentProvider === p.id ? '#9B7FFF' : '#A99ECC',
-                  cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif',
-                }}>
-                  {p.emoji} {p.label}
-                </button>
-              ))}
+              {PROVIDERS.map(p => {
+                const active = agentProvider === p.id
+                return (
+                  <div key={p.id} style={{ flex: 1, position: 'relative' }}>
+                    <button onClick={() => setAgentProvider(p.id)} style={{
+                      width: '100%', padding: '10px 8px', borderRadius: '10px', fontSize: '12px', fontWeight: 600,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                      background: active ? 'rgba(155,127,255,0.15)' : '#0d0d1a',
+                      border: active ? '1.5px solid #9B7FFF' : '1px solid rgba(255,255,255,0.08)',
+                      color: active ? '#9B7FFF' : '#A99ECC',
+                      cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif',
+                    }}>
+                      <p.Icon size={16} /> {p.label}
+                    </button>
+
+                    {/* "?" help toggle */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setHelpProvider(helpProvider === p.id ? null : p.id) }}
+                      aria-label={`How to get your ${p.label} API key`}
+                      style={{
+                        position: 'absolute', top: '-7px', right: '-7px',
+                        width: '18px', height: '18px', borderRadius: '50%', padding: 0,
+                        background: helpProvider === p.id ? '#9B7FFF' : '#1a1a2e',
+                        border: '1px solid rgba(155,127,255,0.5)',
+                        color: helpProvider === p.id ? '#fff' : '#A99ECC',
+                        fontSize: '11px', fontWeight: 700, lineHeight: 1, cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>?</button>
+
+                    {/* Help popover */}
+                    {helpProvider === p.id && (
+                      <div style={{
+                        position: 'absolute', top: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)',
+                        width: '240px', zIndex: 20, padding: '12px 14px', borderRadius: '12px',
+                        background: '#16162a', border: '1px solid rgba(155,127,255,0.3)',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.45)', textAlign: 'left',
+                      }}>
+                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#F0EAFF', margin: '0 0 8px' }}>
+                          Where to find your {p.label} key
+                        </p>
+                        <ol style={{ margin: 0, padding: '0 0 0 16px', color: '#C4BBDF', fontSize: '11.5px', lineHeight: 1.7 }}>
+                          {p.keySteps.map((s, i) => <li key={i}>{s}</li>)}
+                        </ol>
+                        <a href={p.keyUrl} target="_blank" rel="noopener noreferrer"
+                          style={{
+                            display: 'inline-block', marginTop: '10px', fontSize: '11.5px', fontWeight: 700,
+                            color: '#9B7FFF', textDecoration: 'none',
+                          }}>
+                          Open {p.label} dashboard →
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
 
             <input
               type="password"
               value={agentKey}
               onChange={e => setAgentKey(e.target.value)}
-              placeholder="API key (optional — for your personalized agent)"
+              placeholder={`${PROVIDERS.find(p => p.id === agentProvider)?.label} API key (optional) — ${PROVIDERS.find(p => p.id === agentProvider)?.keyPrefix}`}
               style={{
                 width: '100%', padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
                 background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.08)', color: '#F0EAFF',
