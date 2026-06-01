@@ -546,8 +546,8 @@ export default function SwarmPage() {
                         position: 'relative',
                       }}>
                         {i === 0 && (
-                          <span style={{ position: 'absolute', top: '12px', right: '14px', fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '999px', background: 'rgba(155,127,255,0.2)', color: '#9B7FFF', border: '1px solid rgba(155,127,255,0.3)' }}>
-                            BEST MATCH
+                          <span style={{ display: 'inline-block', marginBottom: '10px', fontSize: '10px', fontWeight: 700, letterSpacing: '0.5px', padding: '3px 9px', borderRadius: '999px', background: 'rgba(155,127,255,0.2)', color: '#9B7FFF', border: '1px solid rgba(155,127,255,0.3)' }}>
+                            ★ BEST MATCH
                           </span>
                         )}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
