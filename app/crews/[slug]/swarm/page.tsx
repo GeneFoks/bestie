@@ -502,6 +502,14 @@ export default function SwarmPage() {
                     🐝 {result.summary}
                   </p>
                 )}
+
+                {result.engine && (
+                  <p style={{ fontSize: '11px', color: result.engine.personal ? '#16A34A' : '#9A92B5', marginTop: '8px', textAlign: 'center' }}>
+                    {result.engine.personal
+                      ? `✅ Powered by your connected ${result.engine.provider} key`
+                      : '⚡ Powered by Bestie AI (connect your own key above)'}
+                  </p>
+                )}
               </>
             )}
           </div>

@@ -7,6 +7,65 @@ const admin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// ── Provider-agnostic LLM call ──────────────────────────────────────
+// claude → Anthropic | openai → OpenAI | grok → x.ai (OpenAI-compatible)
+// Returns the raw text the model produced. Throws on HTTP / API errors.
+async function callLLM({
+  provider,
+  apiKey,
+  systemPrompt,
+  userPrompt,
+}: {
+  provider: string
+  apiKey: string
+  systemPrompt: string
+  userPrompt: string
+}): Promise<string> {
+  if (provider === 'claude') {
+    const key = apiKey || process.env.ANTHROPIC_API_KEY || ''
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5',
+        max_tokens: 600,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }],
+      }),
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data?.error?.message || `Anthropic HTTP ${res.status}`)
+    return data.content?.[0]?.text || '{}'
+  }
+
+  // OpenAI + Grok share the chat-completions shape
+  const base = provider === 'grok' ? 'https://api.x.ai/v1' : 'https://api.openai.com/v1'
+  const model = provider === 'grok' ? 'grok-2-latest' : 'gpt-4o-mini'
+  const res = await fetch(`${base}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 600,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+    }),
+  })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data?.error?.message || `${provider} HTTP ${res.status}`)
+  return data.choices?.[0]?.message?.content || '{}'
+}
+
 export async function POST(req: NextRequest) {
   // ── Auth ──────────────────────────────────────────────────────────
   const bearer = req.headers.get('authorization')?.replace('Bearer ', '')
@@ -48,6 +107,14 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (!membership) return NextResponse.json({ error: 'Not a crew member' }, { status: 403 })
+
+  // ── Load the requester's OWN agent (for personal API key + provider) ─
+  const { data: ownAgent } = await admin
+    .from('crew_ai_agents')
+    .select('provider, api_key, is_active')
+    .eq('crew_id', crew_id)
+    .eq('user_id', user.id)
+    .maybeSingle()
 
   // ── Load all members with profiles + agent skills ─────────────────
   const { data: members } = await admin
@@ -125,30 +192,26 @@ ${memberContext}`
   let matches = []
   let summary = ''
 
-  try {
-    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': process.env.ANTHROPIC_API_KEY || '',
-        'anthropic-version': '2023-06-01',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5',
-        max_tokens: 600,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }],
-      }),
-    })
+  // Decide which engine powers this request.
+  // If the requester connected their OWN API key, use it (and their provider).
+  // Otherwise fall back to Bestie's central Claude key.
+  const personalKey = ownAgent?.is_active ? (ownAgent?.api_key || '').trim() : ''
+  const provider = personalKey ? (ownAgent?.provider || 'claude') : 'claude'
+  const usingPersonalKey = !!personalKey
 
-    const anthropicData = await anthropicRes.json()
-    const raw = anthropicData.content?.[0]?.text || '{}'
-    const parsed = JSON.parse(raw)
+  try {
+    const raw = await callLLM({ provider, apiKey: personalKey, systemPrompt, userPrompt })
+    // Strip ```json fences some models add
+    const cleaned = raw.replace(/^```(?:json)?/i, '').replace(/```$/, '').trim()
+    const parsed = JSON.parse(cleaned)
     matches = parsed.matches || []
     summary = parsed.summary || ''
-  } catch (e) {
-    console.error('[swarm] Claude error:', e)
-    return NextResponse.json({ error: 'AI error, try again' }, { status: 500 })
+  } catch (e: any) {
+    console.error('[swarm] LLM error:', e?.message || e)
+    return NextResponse.json(
+      { error: usingPersonalKey ? `Your ${provider} API key failed: ${e?.message || 'invalid key or quota'}` : 'AI error, try again' },
+      { status: 502 }
+    )
   }
 
   // Enrich matches with avatar_url
@@ -170,5 +233,9 @@ ${memberContext}`
     result: { matches: enriched, summary },
   })
 
-  return NextResponse.json({ matches: enriched, summary })
+  return NextResponse.json({
+    matches: enriched,
+    summary,
+    engine: { provider, personal: usingPersonalKey },
+  })
 }
