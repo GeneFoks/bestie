@@ -41,6 +41,33 @@ export async function POST(req: NextRequest) {
 
   const recentHistory = (history || []).reverse()
 
+  // Build the message list the model will see, then sanitize it so it
+  // satisfies Anthropic's rules: first message must be 'user' and roles
+  // must strictly alternate. Without this, two consecutive 'user' rows
+  // (e.g. after a failed reply) make every future request 400 and the
+  // companion goes silent forever.
+  const buildMessages = (rows: { role: string; content: string }[]) => {
+    const collapsed: { role: string; content: string }[] = []
+    for (const m of rows) {
+      if (!m?.content) continue
+      const last = collapsed[collapsed.length - 1]
+      if (last && last.role === m.role) {
+        // merge consecutive same-role turns into one
+        last.content += `\n\n${m.content}`
+      } else {
+        collapsed.push({ role: m.role, content: m.content })
+      }
+    }
+    // first message must be 'user'
+    while (collapsed.length && collapsed[0].role !== 'user') collapsed.shift()
+    return collapsed
+  }
+
+  const apiMessages = buildMessages([
+    ...recentHistory.map((m: any) => ({ role: m.role, content: m.content })),
+    { role: 'user', content: message },
+  ])
+
   // Companion personality based on type
   const companionName = companion?.name || 'Bestie'
   const companionType = companion?.type || 'spark'
@@ -95,10 +122,7 @@ Never break character. Never say you're Claude or an AI made by Anthropic.`
       model: 'claude-haiku-4-5',
       max_tokens: 300,
       system: systemPrompt,
-      messages: [
-        ...recentHistory.map((m: any) => ({ role: m.role, content: m.content })),
-        { role: 'user', content: message },
-      ],
+      messages: apiMessages,
     }),
   })
 
