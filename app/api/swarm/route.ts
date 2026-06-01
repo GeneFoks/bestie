@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { sendPushToUser } from '@/lib/push'
 
 const admin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -81,7 +82,7 @@ export async function POST(req: NextRequest) {
   // ── Check crew plan ───────────────────────────────────────────────
   const { data: crew } = await admin
     .from('crews')
-    .select('id, name, plan, plan_expires_at, captain_id')
+    .select('id, name, slug, plan, plan_expires_at, captain_id')
     .eq('id', crew_id)
     .single()
 
@@ -232,6 +233,37 @@ ${memberContext}`
     query: query.trim(),
     result: { matches: enriched, summary },
   })
+
+  // ── Notify matched members (makes the match two-sided) ────────────
+  // Each person the swarm surfaced gets an in-app notification + push so
+  // they know they were picked, instead of waiting for the requester to
+  // reach out first.
+  try {
+    const { data: requester } = await admin
+      .from('users')
+      .select('full_name, username')
+      .eq('id', user.id)
+      .single()
+    const requesterName = requester?.full_name || requester?.username || 'Someone'
+    const link = `/crews/${crew.slug}/swarm`
+    const queryShort = query.trim().length > 80 ? query.trim().slice(0, 80) + '…' : query.trim()
+
+    const targets = enriched.filter((m: any) => m.user_id)
+    await Promise.all(targets.map(async (m: any) => {
+      const title = `🐝 You're a Swarm match in ${crew.name}`
+      const body = `${requesterName} is looking for: "${queryShort}" — your agent came up as a ${m.match_score}% match.`
+      await admin.from('notifications').insert({
+        user_id: m.user_id,
+        type: 'swarm_match',
+        title,
+        body,
+        link,
+      })
+      sendPushToUser(m.user_id, { title, body, link }).catch(() => {})
+    }))
+  } catch (e: any) {
+    console.error('[swarm] notify error:', e?.message || e)
+  }
 
   return NextResponse.json({
     matches: enriched,
