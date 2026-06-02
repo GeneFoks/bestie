@@ -95,6 +95,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
     spark_received:    { Icon: Sparkles,      color: '#D4AF37', bg: 'rgba(212,175,55,0.12)' },
     join_request:      { Icon: Hand,          color: '#D4AF37', bg: 'rgba(212,175,55,0.12)' },
     join_accepted:     { Icon: Trophy,        color: '#34D399', bg: 'rgba(52,211,153,0.12)' },
+    referral_reward:   { Icon: PartyPopper,   color: '#D4AF37', bg: 'rgba(212,175,55,0.12)' },
   }
   const fallbackMeta = { Icon: Bell, color: '#A99ECC', bg: 'rgba(169,158,204,0.12)' }
 

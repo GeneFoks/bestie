@@ -51,7 +51,7 @@ function SignupForm() {
         </div>
         {refCode && (
           <div style={{ marginBottom: '20px', padding: '12px 16px', borderRadius: '12px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', textAlign: 'center', fontSize: '13px', color: '#D4AF37', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', boxSizing: 'border-box' }}>
-            <Sparkles size={14} strokeWidth={2} /> You were invited by a friend
+            <Sparkles size={14} strokeWidth={2} /> Invited by a friend — you both get +10 Sparks ⚡
           </div>
         )}
         <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '20px', padding: '32px' }}>
