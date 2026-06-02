@@ -244,6 +244,20 @@ export default function DashboardPage() {
         <OnboardingResumeBanner />
         <OnboardingProgress />
 
+        {/* Bestie Plus upsell — hidden for active Plus members */}
+        {profile && !(profile.subscription_tier === 'plus' && (!profile.plus_expires_at || new Date(profile.plus_expires_at) > new Date())) && (
+          <Link href="/plus" style={{ textDecoration: 'none', display: 'block', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '18px 20px', borderRadius: '18px', background: 'linear-gradient(135deg, rgba(155,127,255,0.16), rgba(124,92,255,0.08))', border: '1px solid rgba(155,127,255,0.35)' }}>
+              <div style={{ fontSize: '30px', lineHeight: 1 }}>✦</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF', margin: '0 0 3px' }}>Upgrade to Bestie Plus — $8/mo</p>
+                <p style={{ fontSize: '13px', color: '#C9BEEA', margin: 0, lineHeight: 1.4 }}>Premium AI companion · join the graph · charge for sessions</p>
+              </div>
+              <span style={{ flexShrink: 0, padding: '9px 16px', borderRadius: '999px', background: 'linear-gradient(135deg, #9B7FFF, #7C5CFF)', color: '#fff', fontSize: '13px', fontWeight: 700, whiteSpace: 'nowrap' }}>Get Plus →</span>
+            </div>
+          </Link>
+        )}
+
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '32px', fontWeight: 700, color: '#F0EAFF', marginBottom: '4px' }}>
