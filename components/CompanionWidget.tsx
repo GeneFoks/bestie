@@ -159,6 +159,15 @@ export default function CompanionWidget() {
         setMessages(prev => [...prev, { role: 'assistant', content: data.reply }])
         const { data: updated } = await supabase.from('companions').select('*').eq('user_id', session.user.id).single()
         if (updated) setCompanion(updated)
+      } else {
+        // Surface the failure instead of going silent — otherwise the
+        // companion just looks like it ignored the user.
+        const why = res.status === 503
+          ? "My brain's offline right now (the AI service didn't respond). Try again in a moment!"
+          : data.error
+            ? `Hmm, something's off: ${data.error}. Try again!`
+            : 'Something went wrong. Try again!'
+        setMessages(prev => [...prev, { role: 'assistant', content: why }])
       }
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Something went wrong. Try again!' }])
@@ -201,7 +210,7 @@ export default function CompanionWidget() {
           background: `radial-gradient(circle at 40% 40%, ${style.glow}, #111120)`,
           border: `1.5px solid ${style.border}`, cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '26px',
-          zIndex: 1000, position: 'relative',
+          zIndex: 1000,
           animation: pulse ? 'cwPulse 1.5s ease-in-out 3, cwFloat 3s ease-in-out infinite' : 'cwFloat 3s ease-in-out infinite',
           boxShadow: `0 4px 20px ${style.glow}`,
         }}>
