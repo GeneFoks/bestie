@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Hand, Sparkles, ArrowRight, X } from 'lucide-react'
 import { celebrateMatch, buzz } from '@/lib/celebrate'
+import MatchCelebration from '@/components/MatchCelebration'
 
 type KnockStatus = 'loading' | 'idle' | 'sent' | 'matched' | 'received'
 
@@ -23,6 +24,7 @@ export default function KnockButton({ profileId, profileUsername, variant = 'inl
   const [myId, setMyId] = useState<string | null>(null)
   const [status, setStatus] = useState<KnockStatus>('loading')
   const [acting, setActing] = useState(false)
+  const [celebrating, setCelebrating] = useState(false)
 
   const isCard = variant === 'card'
   const layout = isCard ? cardRow : inlineRow
@@ -60,6 +62,7 @@ export default function KnockButton({ profileId, profileUsername, variant = 'inl
     if (data === 'matched') {
       setStatus('matched')
       celebrateMatch()
+      setCelebrating(true)
     } else if (data === 'sent') {
       setStatus('sent')
       buzz('success')
@@ -87,9 +90,16 @@ export default function KnockButton({ profileId, profileUsername, variant = 'inl
         {profileUsername && <ArrowRight size={13} strokeWidth={2} />}
       </div>
     )
-    return profileUsername
-      ? <Link href={`/book/${profileUsername}`} style={{ flex: isCard ? 1 : undefined, textDecoration: 'none' }}>{matchBadge}</Link>
-      : matchBadge
+    return (
+      <>
+        {profileUsername
+          ? <Link href={`/book/${profileUsername}`} style={{ flex: isCard ? 1 : undefined, textDecoration: 'none' }}>{matchBadge}</Link>
+          : matchBadge}
+        {celebrating && (
+          <MatchCelebration profileUsername={profileUsername} onClose={() => setCelebrating(false)} />
+        )}
+      </>
+    )
   }
 
   if (status === 'sent') {
