@@ -1,5 +1,7 @@
 ﻿// @ts-nocheck
-export const revalidate = 0
+// ISR: cache each city hub for an hour so search-engine crawlers get a fast,
+// static response instead of a fresh DB query on every hit.
+export const revalidate = 3600
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import ProfileNav from '@/components/ProfileNav'
@@ -13,7 +15,23 @@ const supabase = createClient(
 
 export async function generateMetadata({ params }) {
   const city = decodeURIComponent(params.city)
-  return { title: `${city} · Bestie`, description: `Top Besties, crews and events in ${city}` }
+  const title = `Find Friends & Things to Do in ${city} · Bestie`
+  const description = `Meet new people in ${city}. Discover top Besties, join local crews, find activities and upcoming events near you — make real connections in ${city} on Bestie.`
+  const url = `https://bestiehere.com/cities/${encodeURIComponent(city)}`
+  return {
+    title,
+    description,
+    keywords: [`friends in ${city}`, `things to do in ${city}`, `meet people in ${city}`, `${city} crews`, `${city} events`, `social ${city}`],
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: 'website',
+      siteName: 'Bestie',
+    },
+    twitter: { card: 'summary_large_image', title, description },
+  }
 }
 
 export default async function CityHubPage({ params }) {
@@ -68,8 +86,26 @@ export default async function CityHubPage({ params }) {
 
   const scoreColor = (s: number) => s >= 800 ? '#34D399' : s >= 600 ? '#D4AF37' : '#A99ECC'
 
+  const cityUrl = `https://bestiehere.com/cities/${encodeURIComponent(city)}`
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: `Find Friends & Things to Do in ${city}`,
+    description: `Meet new people, join crews and find events in ${city} on Bestie.`,
+    url: cityUrl,
+    breadcrumb: {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Bestie', item: 'https://bestiehere.com' },
+        { '@type': 'ListItem', position: 2, name: 'Cities', item: 'https://bestiehere.com/cities' },
+        { '@type': 'ListItem', position: 3, name: city, item: cityUrl },
+      ],
+    },
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <ProfileNav />
