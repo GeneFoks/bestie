@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
-import { Hand, Sparkles, ArrowRight } from 'lucide-react'
+import { Hand, Sparkles, ArrowRight, X } from 'lucide-react'
 import { celebrateMatch, buzz } from '@/lib/celebrate'
 
 type KnockStatus = 'loading' | 'idle' | 'sent' | 'matched' | 'received'
@@ -67,6 +67,17 @@ export default function KnockButton({ profileId, profileUsername, variant = 'inl
     setActing(false)
   }
 
+  const cancelKnock = async () => {
+    if (acting) return
+    setActing(true)
+    buzz('tap')
+    const { data } = await supabase.rpc('cancel_knock', { p_receiver_id: profileId })
+    if (data === 'cancelled' || data === 'not_found') {
+      setStatus('idle')
+    }
+    setActing(false)
+  }
+
   // After mutual match — replace the badge with a "Schedule a session →" link so
   // the user knows what to do next. Falls back to a static badge if no username.
   if (status === 'matched') {
@@ -83,9 +94,28 @@ export default function KnockButton({ profileId, profileUsername, variant = 'inl
 
   if (status === 'sent') {
     return (
-      <div style={{ borderRadius: '12px', fontWeight: 500, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)', color: '#A99ECC', ...fullWidth, ...layout }}>
-        <Hand size={13} strokeWidth={2} /> Knock sent
-      </div>
+      <button
+        onClick={cancelKnock}
+        disabled={acting}
+        title="Tap to undo your knock"
+        aria-label="Cancel knock"
+        className="knock-sent-btn"
+        style={{ borderRadius: '12px', fontWeight: 500, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)', color: '#A99ECC', cursor: acting ? 'not-allowed' : 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', ...fullWidth, ...layout }}
+      >
+        {acting ? '…' : (
+          <>
+            <Hand size={13} strokeWidth={2} className="knock-sent-icon" />
+            <X size={13} strokeWidth={2.4} className="knock-cancel-icon" style={{ display: 'none' }} />
+            <span className="knock-sent-label">Knock sent</span>
+          </>
+        )}
+        <style>{`
+          .knock-sent-btn:hover .knock-sent-icon { display: none; }
+          .knock-sent-btn:hover .knock-cancel-icon { display: inline-block !important; }
+          .knock-sent-btn:hover .knock-sent-label::after { content: ' · undo'; opacity: 0.7; }
+          .knock-sent-btn:hover { border-color: rgba(255,107,53,0.4); color: #FF6B35; }
+        `}</style>
+      </button>
     )
   }
 
