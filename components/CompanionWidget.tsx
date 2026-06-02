@@ -162,11 +162,13 @@ export default function CompanionWidget() {
       } else {
         // Surface the failure instead of going silent — otherwise the
         // companion just looks like it ignored the user.
-        const why = res.status === 503
-          ? "My brain's offline right now (the AI service didn't respond). Try again in a moment!"
-          : data.error
-            ? `Hmm, something's off: ${data.error}. Try again!`
-            : 'Something went wrong. Try again!'
+        const why = data.detail
+          ? `⚠️ AI error: ${data.detail}`
+          : res.status === 503
+            ? "My brain's offline right now (the AI service didn't respond). Try again in a moment!"
+            : data.error
+              ? `Hmm, something's off: ${data.error}. Try again!`
+              : 'Something went wrong. Try again!'
         setMessages(prev => [...prev, { role: 'assistant', content: why }])
       }
     } catch {
