@@ -26,12 +26,28 @@ export async function POST(req: NextRequest) {
 
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session
-      const { crew_id, plan } = session.metadata || {}
-      if (!crew_id || !plan) break
+      const meta = session.metadata || {}
 
-      // Calculate expiry: 1 month from now
+      // Expiry: 1 month from now
       const expiresAt = new Date()
       expiresAt.setMonth(expiresAt.getMonth() + 1)
+
+      // ── Personal Bestie Plus subscription ──
+      if (meta.kind === 'personal') {
+        if (!meta.user_id) break
+        await admin.from('users').update({
+          subscription_tier: 'plus',
+          plus_expires_at: expiresAt.toISOString(),
+          stripe_subscription_id: session.subscription as string,
+          stripe_customer_id: session.customer as string,
+        }).eq('id', meta.user_id)
+        console.log(`[webhook] user ${meta.user_id} upgraded to Plus`)
+        break
+      }
+
+      // ── Crew upgrade ──
+      const { crew_id, plan } = meta
+      if (!crew_id || !plan) break
 
       await admin.from('crews').update({
         plan,
@@ -46,11 +62,17 @@ export async function POST(req: NextRequest) {
 
     case 'customer.subscription.deleted': {
       const sub = event.data.object as Stripe.Subscription
+
+      // Downgrade a personal Plus subscriber back to free (if this sub is theirs)
+      await admin.from('users')
+        .update({ subscription_tier: 'free', plus_expires_at: null, stripe_subscription_id: null })
+        .eq('stripe_subscription_id', sub.id)
+
       // Find crew by subscription ID and downgrade to free
       await admin.from('crews')
         .update({ plan: 'free', plan_expires_at: null, stripe_subscription_id: null })
         .eq('stripe_subscription_id', sub.id)
-      console.log(`[webhook] subscription ${sub.id} cancelled — crew downgraded to free`)
+      console.log(`[webhook] subscription ${sub.id} cancelled — downgraded to free`)
       break
     }
 
