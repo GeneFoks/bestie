@@ -772,6 +772,33 @@ export default function HomePage() {
           <p style={{ textAlign: 'center', fontSize: '12px', color: '#6B6490', marginTop: '20px' }}>
             Only a crew captain can upgrade. Cancel anytime — your crew stays, the swarm pauses.
           </p>
+
+          {/* Personal Bestie Plus */}
+          <div style={{ marginTop: '48px', borderRadius: '28px', background: 'linear-gradient(135deg, rgba(155,127,255,0.14) 0%, rgba(124,92,255,0.05) 100%)', border: '1px solid rgba(155,127,255,0.32)', padding: '40px 36px', textAlign: 'center', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
+            <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2.5px', color: '#9B7FFF', textTransform: 'uppercase', marginBottom: '12px' }}>JUST FOR YOU</p>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 36px)', fontWeight: 700, color: '#F0EAFF', marginBottom: '10px', lineHeight: 1.15 }}>
+              Bestie <em style={{ color: '#9B7FFF', fontStyle: 'italic' }}>Plus</em> — everything for $8<span style={{ fontSize: '0.5em', color: '#A99ECC' }}>/mo</span>
+            </h2>
+            <p style={{ fontSize: '14px', color: '#A99ECC', maxWidth: '560px', margin: '0 auto 28px', lineHeight: 1.7 }}>
+              A personal upgrade for you — not your crew. One simple plan, cancel anytime.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', textAlign: 'left', marginBottom: '30px' }}>
+              {[
+                { icon: '🤖', title: 'Premium AI companion', desc: 'Connect your own AI key (Claude, OpenAI or Grok) and chat with no limits.' },
+                { icon: '🕸️', title: 'Join the graph',        desc: "Don't just watch the connection web — appear on it and let people find you." },
+                { icon: '💰', title: 'Paid sessions',          desc: 'Offer your time and skills for money. Set a price and get booked.' },
+              ].map(b => (
+                <div key={b.title} style={{ padding: '20px', borderRadius: '16px', background: 'rgba(15,15,30,0.5)', border: '1px solid rgba(155,127,255,0.14)' }}>
+                  <div style={{ fontSize: '26px', marginBottom: '10px', lineHeight: 1 }}>{b.icon}</div>
+                  <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '15px', fontWeight: 700, color: '#F0EAFF', marginBottom: '6px' }}>{b.title}</h3>
+                  <p style={{ fontSize: '12.5px', color: '#A99ECC', lineHeight: 1.6 }}>{b.desc}</p>
+                </div>
+              ))}
+            </div>
+            <Link href="/plus" style={{ display: 'inline-block', padding: '14px 32px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, textDecoration: 'none', background: 'linear-gradient(135deg, #9B7FFF, #7C5CFF)', color: '#fff' }}>
+              Get Bestie Plus — $8/mo →
+            </Link>
+          </div>
         </div>
       </section>
 
