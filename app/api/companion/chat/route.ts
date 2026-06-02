@@ -118,6 +118,11 @@ Never break character. Never say you're Claude or an AI made by Anthropic.`
 
   // Provider-agnostic call. Plus members with a personal key run on their
   // own model; everyone else uses the built-in Bestie (Claude) key.
+  const claudeKey = personalKey || process.env.ANTHROPIC_API_KEY || ''
+  if (provider === 'claude' && !claudeKey) {
+    console.error('[companion] ANTHROPIC_API_KEY is not set')
+    return NextResponse.json({ error: 'AI key not configured on the server' }, { status: 503 })
+  }
   let reply = '...'
   try {
     if (provider === 'claude') {
@@ -125,7 +130,7 @@ Never break character. Never say you're Claude or an AI made by Anthropic.`
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': personalKey || process.env.ANTHROPIC_API_KEY || '',
+          'x-api-key': claudeKey,
           'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify({
@@ -161,8 +166,9 @@ Never break character. Never say you're Claude or an AI made by Anthropic.`
       reply = aiData.choices?.[0]?.message?.content || '...'
     }
   } catch (e: any) {
-    console.error(`[companion] ${provider} error:`, e?.message || e)
-    return NextResponse.json({ error: 'AI unavailable' }, { status: 503 })
+    const detail = (e?.message || String(e)).slice(0, 300)
+    console.error(`[companion] ${provider} error:`, detail)
+    return NextResponse.json({ error: 'AI unavailable', detail }, { status: 503 })
   }
 
   // Save assistant reply

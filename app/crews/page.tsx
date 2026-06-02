@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import ProfileNav from '@/components/ProfileNav'
-import { Users, Plus, Star, Flame, Lock, Sparkles, MapPin } from 'lucide-react'
+import { Users, Plus, Star, Flame, Lock, Sparkles, MapPin, Zap } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 import { compatPercent, compatTone } from '@/lib/crewCompat'
 
@@ -51,6 +51,21 @@ export default async function CrewsPage() {
 
   const rest = crews?.slice(1) || []
 
+  // Which crews have an active AI Swarm? (paid plan, not expired) — these
+  // get a magical glow so they stand out from the rest.
+  const swarmCrewIds = new Set<string>()
+  if (crews?.length) {
+    const { data: plans } = await supabase
+      .from('crews')
+      .select('id, plan, plan_expires_at')
+      .in('id', crews.map((c: any) => c.crew_id))
+    ;(plans || []).forEach((p: any) => {
+      const active = p.plan && p.plan !== 'free' &&
+        (!p.plan_expires_at || new Date(p.plan_expires_at) > new Date())
+      if (active) swarmCrewIds.add(p.id)
+    })
+  }
+
   // Viewer Bestie Type + aggregate type per crew → compat %
   const cookieStore = cookies()
   const auth = createServerClient(
@@ -78,8 +93,36 @@ export default async function CrewsPage() {
     return pct !== null && tone ? { pct, tone } : null
   }
 
+  const featuredHasSwarm = !!(featured && swarmCrewIds.has(featured.crew_id))
+
+  // A small "AI SWARM" glowing badge reused across cards.
+  const SwarmBadge = ({ float = false }: { float?: boolean }) => (
+    <span style={{
+      ...(float ? { position: 'absolute', top: '14px', left: '14px', backdropFilter: 'blur(8px)' } : {}),
+      display: 'inline-flex', alignItems: 'center', gap: '4px',
+      padding: float ? '5px 12px' : '1px 7px', borderRadius: '999px',
+      fontSize: float ? '11px' : '9px', fontWeight: 800, letterSpacing: float ? '1px' : '0.5px',
+      color: '#C4B5FD', background: 'rgba(124,92,255,0.18)',
+      border: '1px solid rgba(155,127,255,0.55)',
+      boxShadow: '0 0 12px rgba(124,92,255,0.45)',
+      animation: 'swarmPulse 2.4s ease-in-out infinite',
+    }}>
+      <Zap size={float ? 11 : 9} strokeWidth={2.4} /> AI SWARM
+    </span>
+  )
+
   return (
     <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif', paddingBottom: '88px' }}>
+      <style>{`
+        @keyframes swarmPulse {
+          0%, 100% { box-shadow: 0 0 10px rgba(124,92,255,0.35); }
+          50% { box-shadow: 0 0 20px rgba(124,92,255,0.7); }
+        }
+        @keyframes swarmCardGlow {
+          0%, 100% { box-shadow: 0 0 0 1px rgba(155,127,255,0.45), 0 0 22px rgba(124,92,255,0.30); }
+          50% { box-shadow: 0 0 0 1px rgba(155,127,255,0.75), 0 0 40px rgba(124,92,255,0.55); }
+        }
+      `}</style>
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <ProfileNav />
@@ -110,7 +153,7 @@ export default async function CrewsPage() {
           <>
             {/* ── FEATURED CARD ── */}
             {featured && (
-              <Link href={`/crews/${featured.slug}`} style={{ display: 'block', borderRadius: '24px', overflow: 'hidden', textDecoration: 'none', marginBottom: '28px', background: '#111120', border: '1px solid rgba(255,255,255,0.11)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}>
+              <Link href={`/crews/${featured.slug}`} style={{ display: 'block', borderRadius: '24px', overflow: 'hidden', textDecoration: 'none', marginBottom: '28px', background: '#111120', border: featuredHasSwarm ? '1px solid rgba(155,127,255,0.5)' : '1px solid rgba(255,255,255,0.11)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', ...(featuredHasSwarm ? { animation: 'swarmCardGlow 2.8s ease-in-out infinite' } : {}) }}>
 
                 {/* Cover image */}
                 <div style={{ position: 'relative', height: '200px', overflow: 'hidden', background: 'linear-gradient(135deg, #1A1A2E 0%, #0d0d22 100%)' }}>
@@ -130,6 +173,7 @@ export default async function CrewsPage() {
 
                   {/* Status badges top-right */}
                   <div style={{ position: 'absolute', top: '14px', right: '14px', display: 'flex', gap: '6px' }}>
+                    {featuredHasSwarm && <SwarmBadge />}
                     {featured.avg_bestie_score >= 700 && <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '999px', background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37', fontWeight: 700, backdropFilter: 'blur(8px)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Sparkles size={10} strokeWidth={2} /> Elite</span>}
                     {featured.member_count >= 15 && <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '999px', background: 'rgba(255,107,53,0.2)', border: '1px solid rgba(255,107,53,0.4)', color: '#FF6B35', fontWeight: 700, backdropFilter: 'blur(8px)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Flame size={10} strokeWidth={2} /> Hot</span>}
                     {!featured.is_public && <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '999px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)', color: '#A99ECC', fontWeight: 600, backdropFilter: 'blur(8px)', display: 'inline-flex', alignItems: 'center' }}><Lock size={10} strokeWidth={2} /></span>}
@@ -205,8 +249,9 @@ export default async function CrewsPage() {
                   {rest.map((crew, idx) => {
                     const scoreColor = crew.avg_bestie_score >= 800 ? '#34D399' : crew.avg_bestie_score >= 600 ? '#D4AF37' : '#A99ECC'
                     const compat = compatFor(crew.crew_id)
+                    const hasSwarm = swarmCrewIds.has(crew.crew_id)
                     return (
-                      <Link key={crew.crew_id} href={`/crews/${crew.slug}`} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', background: '#111120', border: compat && compat.pct >= 60 ? `1px solid ${compat.tone.color}40` : '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', textDecoration: 'none' }}>
+                      <Link key={crew.crew_id} href={`/crews/${crew.slug}`} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', background: hasSwarm ? 'linear-gradient(135deg, rgba(124,92,255,0.10), #111120 60%)' : '#111120', border: hasSwarm ? '1px solid rgba(155,127,255,0.45)' : compat && compat.pct >= 60 ? `1px solid ${compat.tone.color}40` : '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', textDecoration: 'none', ...(hasSwarm ? { animation: 'swarmCardGlow 2.8s ease-in-out infinite' } : {}) }}>
                         {/* Thumbnail */}
                         <div style={{ width: '64px', height: '64px', borderRadius: '14px', overflow: 'hidden', flexShrink: 0, background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {crew.avatar_url
@@ -219,6 +264,7 @@ export default async function CrewsPage() {
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px', flexWrap: 'wrap' }}>
                             <span style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF' }}>{crew.name}</span>
+                            {hasSwarm && <SwarmBadge />}
                             {!crew.is_public && <Lock size={10} color="#A99ECC" strokeWidth={2} />}
                             {crew.avg_bestie_score >= 700 && <span style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', color: '#D4AF37', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Sparkles size={9} strokeWidth={2} /> Elite</span>}
                             {crew.member_count >= 15 && <span style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '999px', background: 'rgba(255,107,53,0.1)', color: '#FF6B35', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Flame size={9} strokeWidth={2} /> Hot</span>}
