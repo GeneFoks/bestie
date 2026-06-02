@@ -636,11 +636,11 @@ export default function DashboardPage() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
               <div>
                 <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF', marginBottom: '4px' }}>Invite friends</h3>
-                <p style={{ fontSize: '13px', color: '#A99ECC' }}>+1 Bestie Score for every person who joins with your link</p>
+                <p style={{ fontSize: '13px', color: '#A99ECC' }}>You <strong style={{ color: '#D4AF37' }}>both</strong> get +10 Sparks ⚡ when a friend joins with your link</p>
               </div>
               {referredCount > 0 && (
                 <div style={{ padding: '6px 14px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', fontSize: '13px', fontWeight: 700, color: '#D4AF37' }}>
-                  {referredCount} invited · +{referredCount} BS earned
+                  {referredCount} invited · +{referredCount * 10} Sparks earned
                 </div>
               )}
             </div>
