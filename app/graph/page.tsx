@@ -50,13 +50,24 @@ export default function GraphPage() {
         }
       }
 
-      if ((!bookings || bookings.length === 0) && contactLinks.length === 0) {
+      // Plus members who opted in to appear on the graph (even with 0 sessions)
+      const { data: optIn } = await supabase
+        .from('users')
+        .select('id')
+        .eq('show_on_graph', true)
+        .limit(300)
+      const optInIds = (optIn || []).map((u: any) => u.id)
+
+      if ((!bookings || bookings.length === 0) && contactLinks.length === 0 && optInIds.length === 0) {
         setEmpty(true); setLoading(false); return
       }
 
       // Build edge map: normalised pair → weight
       const edgeMap = new Map<string, number>()
       const userIdSet = new Set<string>()
+
+      // Seed standalone opt-in members so they render even with no edges
+      optInIds.forEach(id => userIdSet.add(id))
 
       ;(bookings || []).forEach(b => {
         const [a, bb] = b.seeker_id < b.provider_id
