@@ -20,6 +20,13 @@ export default function ProfileNav() {
         // Logged in: quick Graph access + Dashboard button — visible on all screens
         <>
           <Link
+            href="/plus"
+            title="Bestie Plus"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '13px', fontWeight: 700, color: '#9B7FFF', textDecoration: 'none', padding: '8px 13px', borderRadius: '10px', border: '1px solid rgba(155,127,255,0.4)', background: 'rgba(155,127,255,0.1)', whiteSpace: 'nowrap' }}
+          >
+            ✦ Plus
+          </Link>
+          <Link
             href="/graph"
             aria-label="Connection Graph"
             title="Connection Graph"
