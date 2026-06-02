@@ -275,8 +275,9 @@ export default function EditProfilePage() {
       title: newPkg.title,
       activity_type: newPkg.activity_type,
       description: newPkg.description,
-      price_per_session: newPkg.is_free ? 0 : parseFloat(newPkg.price_per_session) || 0,
-      is_free: newPkg.is_free,
+      // Only Plus members can charge — everyone else is forced free
+      price_per_session: (!isPlus || newPkg.is_free) ? 0 : parseFloat(newPkg.price_per_session) || 0,
+      is_free: !isPlus ? true : newPkg.is_free,
       scheduled_at: newPkg.scheduled_at || null,
       crew_id: newPkg.crew_id || null,
     }).select().single()
@@ -322,8 +323,8 @@ export default function EditProfilePage() {
       title: editPkg.title,
       activity_type: editPkg.activity_type,
       description: editPkg.description,
-      price_per_session: editPkg.is_free ? 0 : parseFloat(editPkg.price_per_session) || 0,
-      is_free: editPkg.is_free,
+      price_per_session: (!isPlus || editPkg.is_free) ? 0 : parseFloat(editPkg.price_per_session) || 0,
+      is_free: !isPlus ? true : editPkg.is_free,
       scheduled_at: editPkg.scheduled_at || null,
     }).eq('id', id).select().single()
     if (data) {
@@ -521,14 +522,23 @@ export default function EditProfilePage() {
                       <label style={labelStyle}>Next session date & time (optional)</label>
                       <input type="datetime-local" value={editPkg.scheduled_at} onChange={e => setEditPkg(p => ({ ...p, scheduled_at: e.target.value }))} style={{ ...inputStyle, colorScheme: 'dark' }} />
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <input type="checkbox" checked={editPkg.is_free} onChange={e => setEditPkg(p => ({ ...p, is_free: e.target.checked }))} id={`edit_free_${pkg.id}`} />
-                      <label htmlFor={`edit_free_${pkg.id}`} style={{ fontSize: '14px', color: '#F0EAFF', cursor: 'pointer' }}>Free match</label>
-                    </div>
-                    {!editPkg.is_free && (
-                      <div>
-                        <label style={labelStyle}>Price ($)</label>
-                        <input type="number" value={editPkg.price_per_session} onChange={e => setEditPkg(p => ({ ...p, price_per_session: e.target.value }))} placeholder="20" style={inputStyle} />
+                    {isPlus ? (
+                      <>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <input type="checkbox" checked={editPkg.is_free} onChange={e => setEditPkg(p => ({ ...p, is_free: e.target.checked }))} id={`edit_free_${pkg.id}`} />
+                          <label htmlFor={`edit_free_${pkg.id}`} style={{ fontSize: '14px', color: '#F0EAFF', cursor: 'pointer' }}>Free match</label>
+                        </div>
+                        {!editPkg.is_free && (
+                          <div>
+                            <label style={labelStyle}>Price ($)</label>
+                            <input type="number" value={editPkg.price_per_session} onChange={e => setEditPkg(p => ({ ...p, price_per_session: e.target.value }))} placeholder="20" style={inputStyle} />
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '12px', borderRadius: '12px', background: 'rgba(155,127,255,0.06)', border: '1px solid rgba(155,127,255,0.2)' }}>
+                        <div style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.5 }}>💰 Paid sessions are a Plus feature.</div>
+                        <a href="/plus" style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '999px', background: 'linear-gradient(135deg, #9B7FFF, #7C5CFF)', color: '#fff', fontSize: '12px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>Plus →</a>
                       </div>
                     )}
                     <div style={{ display: 'flex', gap: '8px' }}>
@@ -588,14 +598,26 @@ export default function EditProfilePage() {
                   <label style={labelStyle}>Next session date & time (optional)</label>
                   <input type="datetime-local" value={newPkg.scheduled_at} onChange={e => setNewPkg(p => ({ ...p, scheduled_at: e.target.value }))} style={{ ...inputStyle, colorScheme: 'dark' }} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <input type="checkbox" checked={newPkg.is_free} onChange={e => setNewPkg(p => ({ ...p, is_free: e.target.checked }))} id="is_free" />
-                  <label htmlFor="is_free" style={{ fontSize: '14px', color: '#F0EAFF', cursor: 'pointer' }}>Free match</label>
-                </div>
-                {!newPkg.is_free && (
-                  <div>
-                    <label style={labelStyle}>Price ($)</label>
-                    <input type="number" value={newPkg.price_per_session} onChange={e => setNewPkg(p => ({ ...p, price_per_session: e.target.value }))} placeholder="20" style={inputStyle} />
+                {isPlus ? (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input type="checkbox" checked={newPkg.is_free} onChange={e => setNewPkg(p => ({ ...p, is_free: e.target.checked }))} id="is_free" />
+                      <label htmlFor="is_free" style={{ fontSize: '14px', color: '#F0EAFF', cursor: 'pointer' }}>Free match</label>
+                    </div>
+                    {!newPkg.is_free && (
+                      <div>
+                        <label style={labelStyle}>Price ($)</label>
+                        <input type="number" value={newPkg.price_per_session} onChange={e => setNewPkg(p => ({ ...p, price_per_session: e.target.value }))} placeholder="20" style={inputStyle} />
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '12px', borderRadius: '12px', background: 'rgba(155,127,255,0.06)', border: '1px solid rgba(155,127,255,0.2)' }}>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>💰 Charge for this session</div>
+                      <div style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.5 }}>Free members offer free matches. Get Plus to set a price.</div>
+                    </div>
+                    <a href="/plus" style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '999px', background: 'linear-gradient(135deg, #9B7FFF, #7C5CFF)', color: '#fff', fontSize: '12px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>Plus →</a>
                   </div>
                 )}
                 {myCrews.length > 0 && (
