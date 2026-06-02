@@ -24,12 +24,18 @@ export async function POST(req: NextRequest) {
     .eq('user_id', user.id)
     .single()
 
-  // Load user profile for context
+  // Load user profile for context (+ Plus status)
   const { data: profile } = await db
     .from('users')
-    .select('full_name, bio, city, bestie_score, activities')
+    .select('full_name, bio, city, bestie_score, activities, subscription_tier, plus_expires_at')
     .eq('id', user.id)
     .single()
+
+  // Plus members can run the companion on their own connected AI key.
+  const isPlus = profile?.subscription_tier === 'plus' &&
+    (!profile?.plus_expires_at || new Date(profile.plus_expires_at) > new Date())
+  const personalKey = isPlus ? (companion?.api_key || '').trim() : ''
+  const provider = personalKey ? (companion?.provider || 'claude') : 'claude'
 
   // Load last 10 messages for context
   const { data: history } = await db
@@ -110,30 +116,54 @@ Never break character. Never say you're Claude or an AI made by Anthropic.`
     content: message,
   })
 
-  // Call Claude API via fetch
-  const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': process.env.ANTHROPIC_API_KEY || '',
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5',
-      max_tokens: 300,
-      system: systemPrompt,
-      messages: apiMessages,
-    }),
-  })
-
-  if (!anthropicRes.ok) {
-    const err = await anthropicRes.text()
-    console.error('[companion] Anthropic error:', err)
+  // Provider-agnostic call. Plus members with a personal key run on their
+  // own model; everyone else uses the built-in Bestie (Claude) key.
+  let reply = '...'
+  try {
+    if (provider === 'claude') {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': personalKey || process.env.ANTHROPIC_API_KEY || '',
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5',
+          max_tokens: 300,
+          system: systemPrompt,
+          messages: apiMessages,
+        }),
+      })
+      if (!res.ok) throw new Error(await res.text())
+      const aiData = await res.json()
+      reply = aiData.content?.[0]?.text || '...'
+    } else {
+      // OpenAI-compatible (OpenAI / Grok)
+      const endpoint = provider === 'grok'
+        ? 'https://api.x.ai/v1/chat/completions'
+        : 'https://api.openai.com/v1/chat/completions'
+      const model = provider === 'grok' ? 'grok-2-latest' : 'gpt-4o-mini'
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${personalKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 300,
+          messages: [{ role: 'system', content: systemPrompt }, ...apiMessages],
+        }),
+      })
+      if (!res.ok) throw new Error(await res.text())
+      const aiData = await res.json()
+      reply = aiData.choices?.[0]?.message?.content || '...'
+    }
+  } catch (e: any) {
+    console.error(`[companion] ${provider} error:`, e?.message || e)
     return NextResponse.json({ error: 'AI unavailable' }, { status: 503 })
   }
-
-  const aiData = await anthropicRes.json()
-  const reply = aiData.content?.[0]?.text || '...'
 
   // Save assistant reply
   await db.from('companion_messages').insert({
@@ -153,5 +183,5 @@ Never break character. Never say you're Claude or an AI made by Anthropic.`
     }).eq('user_id', user.id)
   }
 
-  return NextResponse.json({ reply })
+  return NextResponse.json({ reply, engine: { provider, personal: !!personalKey } })
 }

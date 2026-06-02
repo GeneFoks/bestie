@@ -135,6 +135,9 @@ export default function EditProfilePage() {
   const [companionType, setCompanionType] = useState('spark')
   const [savingCompanion, setSavingCompanion] = useState(false)
   const [companionSaved, setCompanionSaved] = useState(false)
+  const [isPlus, setIsPlus] = useState(false)
+  const [companionProvider, setCompanionProvider] = useState('claude')
+  const [companionApiKey, setCompanionApiKey] = useState('')
 
   const DAYS = [
     { id: 'mon', label: 'Mon' }, { id: 'tue', label: 'Tue' }, { id: 'wed', label: 'Wed' },
@@ -161,6 +164,9 @@ export default function EditProfilePage() {
         if (data.lat && data.lng) setLocationShared(true)
         if (data.avatar_url) setAvatarPreview(data.avatar_url)
         setHideFromGraph(!!data.hide_from_graph)
+        const plusActive = data.subscription_tier === 'plus' &&
+          (!data.plus_expires_at || new Date(data.plus_expires_at) > new Date())
+        setIsPlus(plusActive)
       }
       setMyCrews((crews || []).map((c: any) => c.crew).filter(Boolean))
 
@@ -170,6 +176,8 @@ export default function EditProfilePage() {
         setCompanion(comp)
         setCompanionName(comp.name || 'Bestie')
         setCompanionType(comp.type || 'spark')
+        setCompanionProvider(comp.provider || 'claude')
+        setCompanionApiKey(comp.api_key || '')
       }
 
       setLoading(false)
@@ -280,7 +288,13 @@ export default function EditProfilePage() {
     if (!userId || savingCompanion) return
     setSavingCompanion(true)
     await supabase.from('companions').upsert(
-      { user_id: userId, type: companionType, name: companionName.trim() || 'Bestie' },
+      {
+        user_id: userId,
+        type: companionType,
+        name: companionName.trim() || 'Bestie',
+        // Premium fields are only meaningful for Plus members
+        ...(isPlus ? { provider: companionProvider, api_key: companionApiKey.trim() || null } : {}),
+      },
       { onConflict: 'user_id' }
     )
     setSavingCompanion(false)
@@ -682,6 +696,57 @@ export default function EditProfilePage() {
             }}>
               {savingCompanion ? '...' : companionSaved ? '✓ Saved!' : 'Save'}
             </button>
+          </div>
+
+          {/* Premium AI — connect your own key (Plus only) */}
+          <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+              <p style={{ fontSize: '12px', fontWeight: 600, color: '#9B7FFF', letterSpacing: '1px', margin: 0 }}>PREMIUM AI</p>
+              <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 7px', borderRadius: '999px', background: 'rgba(155,127,255,0.15)', border: '1px solid rgba(155,127,255,0.4)', color: '#9B7FFF' }}>PLUS</span>
+            </div>
+
+            {isPlus ? (
+              <>
+                <p style={{ fontSize: '12px', color: '#A99ECC', marginBottom: '12px', lineHeight: 1.5 }}>
+                  Подключи свой AI-ключ — компаньон будет работать на твоей модели без лимитов.
+                </p>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                  {[
+                    { id: 'claude', label: 'Claude' },
+                    { id: 'openai', label: 'OpenAI' },
+                    { id: 'grok',   label: 'Grok' },
+                  ].map(p => (
+                    <button key={p.id} onClick={() => setCompanionProvider(p.id)} style={{
+                      flex: 1, padding: '10px 8px', borderRadius: '12px',
+                      border: companionProvider === p.id ? '1.5px solid #9B7FFF' : '1px solid rgba(255,255,255,0.1)',
+                      background: companionProvider === p.id ? 'rgba(155,127,255,0.12)' : '#0d0d1a',
+                      color: companionProvider === p.id ? '#9B7FFF' : '#A99ECC',
+                      cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '13px', fontWeight: 600,
+                    }}>{p.label}</button>
+                  ))}
+                </div>
+                <input
+                  value={companionApiKey}
+                  onChange={e => setCompanionApiKey(e.target.value)}
+                  placeholder={companionProvider === 'claude' ? 'sk-ant-…' : companionProvider === 'openai' ? 'sk-…' : 'xai-…'}
+                  type="password"
+                  autoComplete="off"
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', fontSize: '13px', outline: 'none', background: '#0d0d1a', border: '1px solid rgba(155,127,255,0.25)', color: '#F0EAFF', fontFamily: 'monospace', boxSizing: 'border-box' }}
+                />
+                <p style={{ fontSize: '11px', color: '#5A5375', marginTop: '8px' }}>
+                  Ключ хранится у тебя в аккаунте. Оставь пустым — будет работать встроенный Bestie AI. Нажми «Save» выше, чтобы сохранить.
+                </p>
+              </>
+            ) : (
+              <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(155,127,255,0.06)', border: '1px solid rgba(155,127,255,0.2)' }}>
+                <p style={{ fontSize: '13px', color: '#E8E0FF', lineHeight: 1.5, marginBottom: '10px' }}>
+                  🤖 Подключи свой AI-ключ (Claude, OpenAI или Grok) и общайся с компаньоном без лимитов.
+                </p>
+                <a href="/plus" style={{ display: 'inline-block', padding: '8px 16px', borderRadius: '999px', background: 'linear-gradient(135deg, #9B7FFF, #7C5CFF)', color: '#fff', fontSize: '13px', fontWeight: 700, textDecoration: 'none' }}>
+                  Get Bestie Plus — $8/mo →
+                </a>
+              </div>
+            )}
           </div>
         </div>
 
