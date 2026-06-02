@@ -101,6 +101,12 @@ export default function SwarmPage() {
   const [deletingId, setDeletingId] = useState<any>(null)
   const [members, setMembers]     = useState<any[]>([])
 
+  // Swarm board (shared needs & offers)
+  const [board, setBoard]         = useState<any[]>([])
+  const [boardKind, setBoardKind] = useState<'need' | 'offer'>('need')
+  const [boardText, setBoardText] = useState('')
+  const [posting, setPosting]     = useState(false)
+
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -185,12 +191,60 @@ export default function SwarmPage() {
           return (b.bestie_score || 0) - (a.bestie_score || 0)
         })
         setMembers(dir)
+
+        // Load shared board + attach author profiles
+        const { data: posts } = await supabase
+          .from('swarm_board')
+          .select('id, author_id, kind, body, status, created_at')
+          .eq('crew_id', c.id)
+          .order('created_at', { ascending: false })
+          .limit(30)
+
+        const pMap: Record<string, any> = {}
+        for (const p of profs || []) pMap[p.id] = p
+        setBoard((posts || []).map((post: any) => ({
+          ...post,
+          author: pMap[post.author_id] || null,
+          isMine: post.author_id === s.user.id,
+        })))
       }
 
       setLoading(false)
     }
     load()
   }, [slug])
+
+  const postToBoard = async () => {
+    if (!boardText.trim() || !crew || !session || posting) return
+    setPosting(true)
+    const { data, error } = await supabase
+      .from('swarm_board')
+      .insert({ crew_id: crew.id, author_id: session.user.id, kind: boardKind, body: boardText.trim() })
+      .select('id, author_id, kind, body, status, created_at')
+      .single()
+    if (!error && data) {
+      const me = members.find(m => m.isMe) || null
+      setBoard(prev => [{ ...data, author: me, isMine: true }, ...prev])
+      setBoardText('')
+    } else if (error) {
+      console.error('[board] post error:', error.message)
+    }
+    setPosting(false)
+  }
+
+  const deleteBoardPost = async (id: string) => {
+    const prev = board
+    setBoard(b => b.filter(x => x.id !== id))
+    const { error } = await supabase.from('swarm_board').delete().eq('id', id)
+    if (error) { console.error('[board] delete error:', error.message); setBoard(prev) }
+  }
+
+  const toggleBoardStatus = async (post: any) => {
+    const next = post.status === 'open' ? 'closed' : 'open'
+    setBoard(b => b.map(x => x.id === post.id ? { ...x, status: next } : x))
+    const { error } = await supabase.from('swarm_board').update({ status: next }).eq('id', post.id)
+    if (error) { console.error('[board] status error:', error.message) }
+  }
 
   const deleteHistory = async (id: any) => {
     if (deletingId) return
@@ -663,6 +717,111 @@ export default function SwarmPage() {
                   </p>
                 )}
               </>
+            )}
+          </div>
+        )}
+
+        {/* Shared board — needs & offers for the whole crew */}
+        {!result && (
+          <div style={{ marginBottom: '28px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', color: '#5A5375', marginBottom: '12px' }}>CREW BOARD</p>
+
+            {/* Composer */}
+            <div style={{ padding: '14px', borderRadius: '14px', background: '#111120', border: '1px solid rgba(155,127,255,0.18)', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                {(['need', 'offer'] as const).map(k => (
+                  <button key={k} onClick={() => setBoardKind(k)} style={{
+                    flex: 1, padding: '8px', borderRadius: '10px', fontSize: '12px', fontWeight: 700,
+                    background: boardKind === k ? (k === 'need' ? 'rgba(155,127,255,0.18)' : 'rgba(52,211,153,0.15)') : '#0d0d1a',
+                    border: boardKind === k ? `1.5px solid ${k === 'need' ? '#9B7FFF' : '#34D399'}` : '1px solid rgba(255,255,255,0.08)',
+                    color: boardKind === k ? (k === 'need' ? '#9B7FFF' : '#34D399') : '#A99ECC',
+                    cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif',
+                  }}>
+                    {k === 'need' ? '🙋 I need…' : '✋ I can help…'}
+                  </button>
+                ))}
+              </div>
+              <textarea
+                value={boardText}
+                onChange={e => setBoardText(e.target.value)}
+                placeholder={boardKind === 'need' ? 'What are you looking for? e.g. a designer to redo our pitch deck' : 'What can you offer the crew? e.g. free 30-min marketing audits'}
+                rows={2}
+                style={{
+                  width: '100%', padding: '10px 12px', borderRadius: '10px', fontSize: '13px',
+                  background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.08)', color: '#F0EAFF',
+                  fontFamily: 'Plus Jakarta Sans, sans-serif', resize: 'vertical', boxSizing: 'border-box',
+                  marginBottom: '10px', outline: 'none', lineHeight: 1.5,
+                }}
+              />
+              <button onClick={postToBoard} disabled={!boardText.trim() || posting} style={{
+                width: '100%', padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 700,
+                background: !boardText.trim() ? 'rgba(255,255,255,0.06)' : 'linear-gradient(135deg, #9B7FFF, #7B5FE5)',
+                border: 'none', color: !boardText.trim() ? '#5A5375' : '#fff',
+                cursor: !boardText.trim() || posting ? 'not-allowed' : 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif',
+              }}>
+                {posting ? 'Posting…' : 'Post to crew'}
+              </button>
+            </div>
+
+            {/* Feed */}
+            {board.length === 0 ? (
+              <p style={{ fontSize: '12px', color: '#5A5375', textAlign: 'center', padding: '12px' }}>
+                No posts yet — be the first to share what you need or offer.
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {board.map(post => {
+                  const isNeed = post.kind === 'need'
+                  const closed = post.status === 'closed'
+                  return (
+                    <div key={post.id} style={{
+                      padding: '12px 14px', borderRadius: '12px', background: '#111120',
+                      border: `1px solid ${isNeed ? 'rgba(155,127,255,0.18)' : 'rgba(52,211,153,0.18)'}`,
+                      opacity: closed ? 0.5 : 1,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                        <span style={{
+                          fontSize: '9px', fontWeight: 700, letterSpacing: '0.4px', padding: '2px 7px', borderRadius: '999px',
+                          background: isNeed ? 'rgba(155,127,255,0.15)' : 'rgba(52,211,153,0.15)',
+                          color: isNeed ? '#9B7FFF' : '#34D399',
+                        }}>
+                          {isNeed ? 'NEEDS' : 'OFFERS'}
+                        </span>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#F0EAFF' }}>
+                          {post.author?.full_name || post.author?.username || 'Member'}
+                        </span>
+                        {closed && <span style={{ fontSize: '10px', color: '#5A5375' }}>· closed</span>}
+                      </div>
+                      <p style={{ fontSize: '13px', color: '#C8BFEE', margin: '0 0 8px', lineHeight: 1.5, textDecoration: closed ? 'line-through' : 'none' }}>
+                        {post.body}
+                      </p>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        {!post.isMine && post.author?.username && (
+                          <Link href={`/messages?to=${post.author.username}`} style={{
+                            fontSize: '12px', fontWeight: 600, color: isNeed ? '#9B7FFF' : '#34D399', textDecoration: 'none',
+                          }}>
+                            {isNeed ? 'I can help →' : 'Reach out →'}
+                          </Link>
+                        )}
+                        {post.isMine && (
+                          <>
+                            <button onClick={() => toggleBoardStatus(post)} style={{
+                              background: 'none', border: 'none', color: '#A99ECC', fontSize: '12px', cursor: 'pointer', padding: 0, fontFamily: 'Plus Jakarta Sans, sans-serif',
+                            }}>
+                              {closed ? 'Reopen' : 'Mark resolved'}
+                            </button>
+                            <button onClick={() => deleteBoardPost(post.id)} style={{
+                              background: 'none', border: 'none', color: '#FF4560', fontSize: '12px', cursor: 'pointer', padding: 0, fontFamily: 'Plus Jakarta Sans, sans-serif',
+                            }}>
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             )}
           </div>
         )}
