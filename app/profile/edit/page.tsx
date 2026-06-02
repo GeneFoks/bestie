@@ -128,6 +128,7 @@ export default function EditProfilePage() {
   const [selectedLanguages, setSelectedLanguages] = useState([])
   const [form, setForm] = useState({ full_name: '', username: '', bio: '', city: '', country: '', avatar_url: '' })
   const [hideFromGraph, setHideFromGraph] = useState(false)
+  const [showOnGraph, setShowOnGraph] = useState(false)
   const [locationShared, setLocationShared] = useState(false)
   const [locating, setLocating] = useState(false)
   const [companion, setCompanion] = useState<any>(null)
@@ -164,6 +165,7 @@ export default function EditProfilePage() {
         if (data.lat && data.lng) setLocationShared(true)
         if (data.avatar_url) setAvatarPreview(data.avatar_url)
         setHideFromGraph(!!data.hide_from_graph)
+        setShowOnGraph(!!data.show_on_graph)
         const plusActive = data.subscription_tier === 'plus' &&
           (!data.plus_expires_at || new Date(data.plus_expires_at) > new Date())
         setIsPlus(plusActive)
@@ -249,6 +251,7 @@ export default function EditProfilePage() {
       languages: selectedLanguages,
       availability,
       hide_from_graph: hideFromGraph,
+      show_on_graph: showOnGraph,
     }).eq('id', uid)
 
     setSaving(false)
@@ -434,6 +437,35 @@ export default function EditProfilePage() {
               <div style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.5 }}>Other people won't see who you've met or had sessions with. Your profile and bookings still work as usual.</div>
             </div>
           </label>
+
+          {/* Join the graph — Plus only */}
+          <div style={{ marginTop: '12px' }}>
+            {isPlus ? (
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '12px', borderRadius: '12px', background: showOnGraph ? 'rgba(155,127,255,0.08)' : 'transparent', border: showOnGraph ? '1px solid rgba(155,127,255,0.35)' : '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', transition: 'all 0.15s' }}>
+                <input
+                  type="checkbox"
+                  checked={showOnGraph}
+                  onChange={e => setShowOnGraph(e.target.checked)}
+                  style={{ marginTop: '2px', accentColor: '#9B7FFF', cursor: 'pointer' }}
+                />
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>🕸️ Show me on the Connection Graph</span>
+                    <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 7px', borderRadius: '999px', background: 'rgba(155,127,255,0.15)', border: '1px solid rgba(155,127,255,0.4)', color: '#9B7FFF' }}>PLUS</span>
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.5 }}>Appear on the graph even before your first session, so people can discover you.</div>
+                </div>
+              </label>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '12px', borderRadius: '12px', background: 'rgba(155,127,255,0.06)', border: '1px solid rgba(155,127,255,0.2)' }}>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>🕸️ Show me on the Connection Graph</div>
+                  <div style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.5 }}>Appear on the graph and let people discover you — a Plus feature.</div>
+                </div>
+                <a href="/plus" style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '999px', background: 'linear-gradient(135deg, #9B7FFF, #7C5CFF)', color: '#fff', fontSize: '12px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>Plus →</a>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Languages */}
