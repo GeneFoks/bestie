@@ -94,17 +94,18 @@ export async function generateMetadata({ params }) {
   return {
     title: `${profile.full_name} — BS ${profile.bestie_score || 0} · Bestie`,
     description: `${profile.bio || 'Check my Social Passport on Bestie.'} · Bestie Score: ${profile.bestie_score || 0}`,
+    // NOTE: we intentionally do NOT set `images` here. The file-based
+    // `opengraph-image.tsx` in this folder generates a branded 1200×630 card
+    // that Next.js wires into both OpenGraph and Twitter automatically.
     openGraph: {
       title: `${profile.full_name} — Bestie Score ${profile.bestie_score || 0}`,
       description: profile.bio || 'Check my Social Passport on Bestie.',
-      images: profile.avatar_url ? [{ url: profile.avatar_url, width: 400, height: 400 }] : [],
       url: `https://bestiehere.com/${profile.username}`,
     },
     twitter: {
-      card: 'summary',
+      card: 'summary_large_image',
       title: `${profile.full_name} — BS ${profile.bestie_score || 0}`,
       description: profile.bio || 'Check my Social Passport on Bestie.',
-      images: profile.avatar_url ? [profile.avatar_url] : [],
     },
   }
 }

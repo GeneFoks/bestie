@@ -1,5 +1,5 @@
 ﻿// @ts-nocheck
-export const revalidate = 0
+export const revalidate = 3600
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import ProfileNav from '@/components/ProfileNav'
