@@ -22,6 +22,8 @@ const cardRow:   React.CSSProperties = { display: 'flex',        alignItems: 'ce
 
 export default function KnockButton({ profileId, profileUsername, variant = 'inline' }: Props) {
   const [myId, setMyId] = useState<string | null>(null)
+  const [myName, setMyName] = useState<string | null>(null)
+  const [myUsername, setMyUsername] = useState<string | null>(null)
   const [status, setStatus] = useState<KnockStatus>('loading')
   const [acting, setActing] = useState(false)
   const [celebrating, setCelebrating] = useState(false)
@@ -35,6 +37,12 @@ export default function KnockButton({ profileId, profileUsername, variant = 'inl
       if (!session) { setStatus('idle'); return }
       const uid = session.user.id
       setMyId(uid)
+
+      // Grab my name/username for the "It's a match" email shown to the other side.
+      supabase.from('users').select('full_name, username').eq('id', uid).single()
+        .then(({ data: me }) => {
+          if (me) { setMyName(me.full_name || null); setMyUsername(me.username || null) }
+        })
 
       const { data } = await supabase
         .from('knocks')
@@ -63,11 +71,32 @@ export default function KnockButton({ profileId, profileUsername, variant = 'inl
       setStatus('matched')
       celebrateMatch()
       setCelebrating(true)
+      // Email the OTHER person (they knocked earlier and are likely not in-app
+      // right now) that it's a match. Fire-and-forget — never block the UI.
+      notifyByEmail('new_match')
     } else if (data === 'sent') {
       setStatus('sent')
       buzz('success')
+      // Anonymous "someone knocked" teaser pulls the receiver back into the app.
+      notifyByEmail('new_knock')
     }
     setActing(false)
+  }
+
+  // Best-effort email so a knock/match reaches people who aren't currently in
+  // the app — this is the core re-engagement loop. The route resolves the
+  // recipient's address server-side from receiverId (keeps knocks anonymous).
+  const notifyByEmail = (type: 'new_knock' | 'new_match') => {
+    const data: Record<string, unknown> = { receiverId: profileId }
+    if (type === 'new_match') {
+      data.matcherName = myName || undefined
+      data.matcherUsername = myUsername || undefined
+    }
+    fetch('/api/email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, data }),
+    }).catch(() => {})
   }
 
   const cancelKnock = async () => {
