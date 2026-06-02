@@ -70,6 +70,7 @@ export default function HomePage() {
   const [howRef, howVisible] = useReveal()
   const [featRef, featVisible] = useReveal()
   const [crewsRef, crewsVisible] = useReveal()
+  const [plansRef, plansVisible] = useReveal()
   const [scoreRef, scoreVisible] = useReveal()
   const [sparksRef, sparksVisible] = useReveal()
   const [graphRef, graphVisible] = useReveal()
@@ -304,6 +305,7 @@ export default function HomePage() {
           <Link href="/crews" className="nav-link">Crews</Link>
 <Link href="/pulse" className="nav-link">Pulse</Link>
           <Link href="/graph" className="nav-link">Graph</Link>
+          <Link href="#plans" className="nav-link">Plans</Link>
           <Link href="#how-it-works" className="nav-link">How It Works</Link>
           <Link href="#score" className="nav-link">Bestie Score</Link>
         </div>
@@ -664,6 +666,115 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── AI SWARM + PLANS ── */}
+      <section id="plans" style={{ padding: '0 20px 80px' }}>
+        <div ref={plansRef} className={`reveal ${plansVisible ? 'visible' : ''}`} style={{ maxWidth: '1040px', margin: '0 auto' }}>
+
+          {/* Intro: the problem AI Swarm solves */}
+          <div style={{ borderRadius: '28px', background: 'linear-gradient(135deg, rgba(155,127,255,0.10) 0%, rgba(123,95,229,0.04) 100%)', border: '1px solid rgba(155,127,255,0.22)', padding: '44px 36px', marginBottom: '40px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', textAlign: 'center' }}>
+            <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2.5px', color: '#9B7FFF', textTransform: 'uppercase', marginBottom: '12px' }}>AI SWARM FOR CREWS</p>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 700, color: '#F0EAFF', marginBottom: '16px', lineHeight: 1.15 }}>
+              Your community's <em style={{ color: '#9B7FFF', fontStyle: 'italic' }}>collective brain.</em>
+            </h2>
+            <p style={{ fontSize: '15px', color: '#A99ECC', maxWidth: '620px', margin: '0 auto 28px', lineHeight: 1.75 }}>
+              In big groups the right person is always there — you just can't find them. Each member connects their AI agent and describes what they do. Ask the swarm for anything — <em>“who can help me launch a podcast?”</em> — and it instantly finds your best matches inside the crew.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', textAlign: 'left' }}>
+              {[
+                { Icon: Search,  title: 'Find anyone instantly', desc: 'No more scrolling member lists or asking in chat. Describe the need — the swarm surfaces the right people.' },
+                { Icon: Network, title: 'Two-sided matches',     desc: 'When the swarm picks someone, they get notified too. Connections happen both ways, not one cold DM.' },
+                { Icon: Sparkles,title: 'It works for you',       desc: 'A shared board of needs & offers plus weekly auto-suggestions — the swarm connects people on its own.' },
+              ].map(b => (
+                <div key={b.title} style={{ padding: '18px', borderRadius: '16px', background: 'rgba(15,15,30,0.5)', border: '1px solid rgba(155,127,255,0.14)' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(155,127,255,0.12)', border: '1px solid rgba(155,127,255,0.2)', marginBottom: '12px' }}>
+                    <b.Icon size={19} color="#9B7FFF" strokeWidth={1.7} />
+                  </div>
+                  <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '15px', fontWeight: 700, color: '#F0EAFF', marginBottom: '6px' }}>{b.title}</h3>
+                  <p style={{ fontSize: '12.5px', color: '#A99ECC', lineHeight: 1.6 }}>{b.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Pricing tiers */}
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <p className="section-label">PLANS</p>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 36px)', fontWeight: 700, color: '#F0EAFF', marginBottom: '10px' }}>Pick your crew's size</h2>
+            <p style={{ fontSize: '14px', color: '#A99ECC' }}>Start free. Unlock the AI Swarm as your community grows.</p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '18px', alignItems: 'stretch' }}>
+            {[
+              {
+                name: 'Free', price: '$0', period: '', accent: '#A99ECC', highlight: false,
+                tagline: 'For small circles getting started.',
+                features: ['Up to 10 members', 'Crew events & ratings', 'Crew leaderboard', 'AI Swarm not included'],
+                solves: 'Perfect to gather your first friends in one place.',
+              },
+              {
+                name: 'Community', price: '$49', period: '/mo', accent: '#9B7FFF', highlight: true,
+                tagline: 'For active communities that collaborate.',
+                features: ['Up to 50 members', 'Full AI Swarm access', 'Shared needs & offers board', 'Weekly auto-matching', 'Connect your own AI key'],
+                solves: 'Turns a group chat into a real network where people find and help each other.',
+              },
+              {
+                name: 'Pro', price: '$149', period: '/mo', accent: '#D4AF37', highlight: false,
+                tagline: 'For large, serious communities.',
+                features: ['Up to 200 members', 'Everything in Community', 'Priority swarm matching', 'Advanced agent insights'],
+                solves: 'Scales matchmaking across hundreds of people without losing the personal touch.',
+              },
+            ].map(plan => (
+              <div key={plan.name} style={{
+                position: 'relative', display: 'flex', flexDirection: 'column',
+                padding: '28px 24px', borderRadius: '22px',
+                background: plan.highlight ? 'linear-gradient(160deg, rgba(155,127,255,0.12) 0%, rgba(15,15,30,0.8) 60%)' : 'rgba(15,15,30,0.7)',
+                border: plan.highlight ? '1.5px solid rgba(155,127,255,0.45)' : '1px solid rgba(255,255,255,0.10)',
+                boxShadow: plan.highlight ? '0 16px 50px rgba(155,127,255,0.18)' : '0 8px 32px rgba(0,0,0,0.3)',
+                backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+              }}>
+                {plan.highlight && (
+                  <span style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', padding: '4px 14px', borderRadius: '999px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px', background: 'linear-gradient(135deg, #9B7FFF, #7B5FE5)', color: '#fff', whiteSpace: 'nowrap' }}>
+                    MOST POPULAR
+                  </span>
+                )}
+                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: plan.accent, marginBottom: '4px' }}>{plan.name}</h3>
+                <p style={{ fontSize: '12.5px', color: '#A99ECC', marginBottom: '14px', lineHeight: 1.5, minHeight: '36px' }}>{plan.tagline}</p>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '18px' }}>
+                  <span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '40px', fontWeight: 700, color: '#F0EAFF', lineHeight: 1 }}>{plan.price}</span>
+                  <span style={{ fontSize: '14px', color: '#A99ECC' }}>{plan.period}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '9px', marginBottom: '18px', flex: 1 }}>
+                  {plan.features.map(f => {
+                    const off = f.includes('not included')
+                    return (
+                      <div key={f} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', fontSize: '13px', color: off ? '#6B6490' : '#D6CFEC', lineHeight: 1.5 }}>
+                        <span style={{ color: off ? '#6B6490' : plan.accent, flexShrink: 0, fontWeight: 700 }}>{off ? '–' : '✓'}</span>
+                        <span style={{ textDecoration: off ? 'line-through' : 'none' }}>{f}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+                <p style={{ fontSize: '12px', color: '#8B83A8', fontStyle: 'italic', lineHeight: 1.5, marginBottom: '18px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+                  {plan.solves}
+                </p>
+                <Link href="/crews" style={{
+                  display: 'block', textAlign: 'center', padding: '12px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, textDecoration: 'none',
+                  background: plan.highlight ? 'linear-gradient(135deg, #9B7FFF, #7B5FE5)' : 'rgba(255,255,255,0.06)',
+                  color: plan.highlight ? '#fff' : '#F0EAFF',
+                  border: plan.highlight ? 'none' : '1px solid rgba(255,255,255,0.12)',
+                }}>
+                  {plan.name === 'Free' ? 'Start free →' : `Choose ${plan.name} →`}
+                </Link>
+              </div>
+            ))}
+          </div>
+
+          <p style={{ textAlign: 'center', fontSize: '12px', color: '#6B6490', marginTop: '20px' }}>
+            Only a crew captain can upgrade. Cancel anytime — your crew stays, the swarm pauses.
+          </p>
+        </div>
+      </section>
+
       {/* ── BESTIE SCORE ── */}
       <section id="score" style={{ padding: '72px 20px' }}>
         <div ref={scoreRef} className={`reveal ${scoreVisible ? 'visible' : ''}`} style={{ maxWidth: '980px', margin: '0 auto' }}>
@@ -765,7 +876,7 @@ export default function HomePage() {
           <div style={{ display: 'flex', gap: '20px', fontSize: '13px', flexWrap: 'wrap' }}>
             {[
               { href: '/browse', label: 'Browse' }, { href: '/crews', label: 'Crews' },
-              { href: '/pulse', label: 'Pulse' }, { href: '#how-it-works', label: 'How It Works' }, { href: '/score-guide', label: 'Bestie Score' }, { href: '/signup', label: 'Join' },
+              { href: '/pulse', label: 'Pulse' }, { href: '#plans', label: 'Plans' }, { href: '#how-it-works', label: 'How It Works' }, { href: '/score-guide', label: 'Bestie Score' }, { href: '/signup', label: 'Join' },
             ].map(l => (
               <Link key={l.label} href={l.href} style={{ color: '#6B6490', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#A99ECC'} onMouseLeave={e=>e.target.style.color='#6B6490'}>{l.label}</Link>
             ))}
