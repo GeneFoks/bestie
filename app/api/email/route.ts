@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
+
+// Knock / match emails are privacy-sensitive: the client must NOT know the
+// recipient's email address (knocks are anonymous). For these types the client
+// passes only `data.receiverId`, and we resolve the email server-side with the
+// service-role key. Other transactional types keep passing `to` directly.
+function serviceClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 async function sendEmail(to: string, subject: string, html: string) {
   const res = await fetch('https://api.resend.com/emails', {
@@ -40,6 +52,43 @@ export async function POST(req: NextRequest) {
     const { type, to, data } = await req.json()
     let subject = ''
     let html = ''
+
+    // Privacy-sensitive types resolve the recipient server-side from receiverId.
+    let recipient = to
+    if ((type === 'new_knock' || type === 'new_match') && data?.receiverId) {
+      const { data: receiver } = await serviceClient()
+        .from('users')
+        .select('email')
+        .eq('id', data.receiverId)
+        .single()
+      recipient = receiver?.email || null
+    }
+
+    if (type === 'new_knock') {
+      // Anonymous teaser — never reveal who knocked. Curiosity is the hook.
+      subject = `Someone knocked on Bestie 👀`
+      html = emailTemplate(
+        `You've got a knock 👋`,
+        `Someone’s interested in connecting with you on Bestie. It’s completely private — <strong style="color:#E8E0FF">knock back to reveal who</strong> you matched with. If you both knock, you’re a match.`,
+        'See who knocked →',
+        'https://bestiehere.com/dashboard'
+      )
+    }
+
+    if (type === 'new_match') {
+      // Both sides have knocked — safe to reveal the match.
+      const name = data?.matcherName || 'Someone'
+      const url = data?.matcherUsername
+        ? `https://bestiehere.com/book/${data.matcherUsername}`
+        : 'https://bestiehere.com/dashboard'
+      subject = `It's a match! 🎉 You and ${name} both knocked`
+      html = emailTemplate(
+        `It's a match! 🎉`,
+        `You and <strong style="color:#E8E0FF">${name}</strong> both knocked — you’re connected on Bestie. Say hi and schedule your first session while the spark is fresh.`,
+        'Schedule a session →',
+        url
+      )
+    }
 
     if (type === 'new_booking') {
       subject = `New booking request from ${data.seekerName}`
@@ -114,8 +163,13 @@ export async function POST(req: NextRequest) {
     if (!subject) {
       return NextResponse.json({ error: 'Unknown type' }, { status: 400 })
     }
+    if (!recipient) {
+      // No address (e.g. receiver has no email on file) — succeed silently so
+      // the knock/match flow is never blocked on email delivery.
+      return NextResponse.json({ ok: true, skipped: 'no-recipient' })
+    }
 
-    await sendEmail(to, subject, html)
+    await sendEmail(recipient, subject, html)
     return NextResponse.json({ ok: true })
   } catch (e) {
     return NextResponse.json({ error: 'Failed' }, { status: 500 })
