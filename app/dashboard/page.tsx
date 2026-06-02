@@ -183,6 +183,26 @@ export default function DashboardPage() {
     setTimeout(() => setRefCopied(false), 2000)
   }
 
+  // Native share sheet (Telegram / WhatsApp / Stories in one tap on mobile).
+  // Falls back to copying the link on desktop browsers without navigator.share.
+  const handleShareRef = async () => {
+    const url = `https://bestiehere.com/signup?ref=${profile?.referral_code}`
+    const text = `Join me on Bestie — real people, real moments. Sign up with my link and we both get +10 Sparks ⚡`
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({ title: 'Join me on Bestie', text, url })
+        return
+      } catch {
+        // user dismissed the sheet — do nothing
+        return
+      }
+    }
+    // Fallback: copy a message + link
+    navigator.clipboard.writeText(`${text}\n${url}`)
+    setRefCopied(true)
+    setTimeout(() => setRefCopied(false), 2000)
+  }
+
   const toggleFree = async () => {
     if (!user) return
     setTogglingFree(true)
@@ -648,8 +668,11 @@ export default function DashboardPage() {
               <div style={{ flex: 1, minWidth: '200px', padding: '10px 16px', borderRadius: '12px', background: '#131323', border: '1px solid rgba(255,255,255,0.12)', fontSize: '13px', color: '#A99ECC', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 bestiehere.com/signup?ref={profile.referral_code}
               </div>
-              <button onClick={handleCopyRef} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: refCopied ? 'rgba(57,255,20,0.15)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', border: refCopied ? '1px solid rgba(57,255,20,0.3)' : 'none', color: refCopied ? '#34D399' : '#09090F', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                {refCopied ? '✓ Copied!' : 'Copy link'}
+              <button onClick={handleShareRef} style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', border: 'none', color: '#09090F', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                <Share2 size={15} strokeWidth={2.2} /> Share
+              </button>
+              <button onClick={handleCopyRef} style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: refCopied ? 'rgba(57,255,20,0.15)' : 'rgba(255,255,255,0.05)', border: refCopied ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(255,255,255,0.12)', color: refCopied ? '#34D399' : '#A99ECC', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                {refCopied ? '✓ Copied!' : 'Copy'}
               </button>
             </div>
           </div>
