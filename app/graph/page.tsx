@@ -50,6 +50,24 @@ export default function GraphPage() {
         }
       }
 
+      // Fetch mutual-knock edges (RLS only returns the current user's knocks).
+      // These connect two people who "knocked" each other even with no session.
+      let knockLinks: any[] = []
+      if (currentUserId) {
+        const { data: knocks } = await supabase
+          .from('knocks')
+          .select('sender_id, receiver_id')
+          .eq('is_mutual', true)
+          .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
+        const seen = new Set<string>()
+        ;(knocks || []).forEach((k: any) => {
+          const other = k.sender_id === currentUserId ? k.receiver_id : k.sender_id
+          if (!other || other === currentUserId || seen.has(other)) return
+          seen.add(other)
+          knockLinks.push({ source: currentUserId, target: other, weight: 0, type: 'knock' })
+        })
+      }
+
       // Plus members who opted in to appear on the graph (even with 0 sessions)
       const { data: optIn } = await supabase
         .from('users')
@@ -58,7 +76,7 @@ export default function GraphPage() {
         .limit(300)
       const optInIds = (optIn || []).map((u: any) => u.id)
 
-      if ((!bookings || bookings.length === 0) && contactLinks.length === 0 && optInIds.length === 0) {
+      if ((!bookings || bookings.length === 0) && contactLinks.length === 0 && knockLinks.length === 0 && optInIds.length === 0) {
         setEmpty(true); setLoading(false); return
       }
 
@@ -79,10 +97,11 @@ export default function GraphPage() {
         userIdSet.add(b.provider_id)
       })
 
-      // Add contact node ids
+      // Add contact + knock node ids
       if (currentUserId) {
         userIdSet.add(currentUserId)
         contactLinks.forEach((c: any) => userIdSet.add(c.target))
+        knockLinks.forEach((c: any) => userIdSet.add(c.target))
       }
 
       const ids = Array.from(userIdSet)
@@ -102,6 +121,7 @@ export default function GraphPage() {
         if (!visibleIdSet.has(a) || !visibleIdSet.has(b)) edgeMap.delete(key)
       }
       contactLinks = contactLinks.filter((c: any) => visibleIdSet.has(c.source) && visibleIdSet.has(c.target))
+      knockLinks = knockLinks.filter((c: any) => visibleIdSet.has(c.source) && visibleIdSet.has(c.target))
 
       const usersById = Object.fromEntries(users.map(u => [u.id, u]))
 
@@ -140,6 +160,22 @@ export default function GraphPage() {
           const key2 = `${c.target}::${c.source}`
           if (!edgeMap.has(key1) && !edgeMap.has(key2)) {
             links.push({ source: c.source, target: c.target, weight: 0, type: 'contact' })
+          }
+        }
+      })
+
+      // Add mutual-knock links (skip if a session or contact edge already exists)
+      const existingPairs = new Set(links.map((l: any) => {
+        const s = typeof l.source === 'object' ? l.source.id : l.source
+        const t = typeof l.target === 'object' ? l.target.id : l.target
+        return s < t ? `${s}::${t}` : `${t}::${s}`
+      }))
+      knockLinks.forEach((c: any) => {
+        if (usersById[c.source] && usersById[c.target]) {
+          const pair = c.source < c.target ? `${c.source}::${c.target}` : `${c.target}::${c.source}`
+          if (!existingPairs.has(pair)) {
+            existingPairs.add(pair)
+            links.push({ source: c.source, target: c.target, weight: 0, type: 'knock' })
           }
         }
       })
@@ -235,8 +271,8 @@ export default function GraphPage() {
     // Force simulation
     const simulation = d3.forceSimulation(nodes)
       .force('link', d3.forceLink(links).id((d: any) => d.id)
-        .distance((d: any) => d.type === 'contact' ? 120 : 60 + 40 / Math.sqrt(Math.max(d.weight, 0.1)))
-        .strength((d: any) => d.type === 'contact' ? 0.08 : 0.25))
+        .distance((d: any) => (d.type === 'contact' || d.type === 'knock') ? 120 : 60 + 40 / Math.sqrt(Math.max(d.weight, 0.1)))
+        .strength((d: any) => (d.type === 'contact' || d.type === 'knock') ? 0.08 : 0.25))
       .force('charge', d3.forceManyBody().strength((d: any) => -80 - d.score * 0.05))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force('collision', d3.forceCollide().radius((d: any) => nodeRadius(d) + 10))
@@ -250,6 +286,7 @@ export default function GraphPage() {
       .data(links)
       .join('line')
       .attr('stroke', (d: any) => {
+        if (d.type === 'knock') return '#FF6B9D'
         if (d.type === 'contact') return '#A99ECC'
         const w = d.weight
         if (w >= 5) return '#D4AF37'
@@ -257,6 +294,7 @@ export default function GraphPage() {
         return '#A99ECC'
       })
       .attr('stroke-opacity', (d: any) => {
+        if (d.type === 'knock') return 0.5
         if (d.type === 'contact') return 0.35
         const w = d.weight
         if (w >= 5) return 0.8
@@ -264,10 +302,11 @@ export default function GraphPage() {
         return 0.55
       })
       .attr('stroke-width', (d: any) => {
+        if (d.type === 'knock') return 1.2
         if (d.type === 'contact') return 1
         return Math.max(1.5, Math.min(1.5 + d.weight, 6))
       })
-      .attr('stroke-dasharray', (d: any) => d.type === 'contact' ? '4,4' : null)
+      .attr('stroke-dasharray', (d: any) => d.type === 'knock' ? '2,4' : d.type === 'contact' ? '4,4' : null)
       .attr('stroke-linecap', 'round')
       .attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 0)
 
@@ -434,6 +473,10 @@ export default function GraphPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: '22px', height: '0px', borderBottom: '1px dashed rgba(155,147,192,0.45)', flexShrink: 0 }} />
               <span style={{ fontSize: '11px', color: '#F0EAFF' }}>contact</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '22px', height: '0px', borderBottom: '1px dotted #FF6B9D', flexShrink: 0 }} />
+              <span style={{ fontSize: '11px', color: '#F0EAFF' }}>mutual knock</span>
             </div>
           </div>
           <p className="graph-legend-hint" style={{ fontSize: '10px', color: '#A99ECC', marginTop: '8px' }}>Size = Score · Drag · Pinch to zoom</p>
