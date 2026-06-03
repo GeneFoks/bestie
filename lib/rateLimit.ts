@@ -18,9 +18,9 @@ let lastSweep = 0
 function sweep(now: number) {
   if (now - lastSweep < 60_000) return
   lastSweep = now
-  for (const [key, hit] of store) {
+  store.forEach((hit, key) => {
     if (hit.resetAt <= now) store.delete(key)
-  }
+  })
 }
 
 export function clientIp(req: NextRequest): string {
