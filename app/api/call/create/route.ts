@@ -2,8 +2,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendPushToUser } from '@/lib/push'
+import { rateLimit } from '@/lib/rateLimit'
 
 export async function POST(req: NextRequest) {
+  // Each call fires a push → cap to stop call-spam / push-spam.
+  const limited = rateLimit(req, 'call-create', { limit: 15, windowMs: 60_000 })
+  if (limited) return limited
+
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!

@@ -47,7 +47,7 @@ export default function StickyBookCTA({ profileId, username, firstName, hasActiv
   // PRIMARY: if user is bookable → Book. Otherwise → Send a message (the
   // friendliest path for unbookable profiles, no dead end).
   const primary = hasActivities
-    ? { href: `/book/${username}`, label: `Book a session with ${firstName} →` }
+    ? { href: `/book/${username}`, label: `Meet up with ${firstName} →` }
     : { href: `/messages?to=${username}`, label: `Message ${firstName} →` }
 
   return (

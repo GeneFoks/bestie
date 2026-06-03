@@ -171,6 +171,10 @@ export default function FindFriends() {
               </p>
             </div>
           )}
+
+          <p style={{ fontSize: '11px', color: '#9B93C0', textAlign: 'center', marginTop: '4px' }}>
+            🔒 We match contacts as hashed fingerprints — your raw emails & phone numbers are never saved or shared
+          </p>
         </div>
       )}
 

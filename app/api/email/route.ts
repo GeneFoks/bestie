@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { rateLimit } from '@/lib/rateLimit'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 
@@ -48,6 +49,10 @@ function emailTemplate(title: string, body: string, ctaText: string, ctaUrl: str
 }
 
 export async function POST(req: NextRequest) {
+  // Unauthenticated endpoint → hard cap to stop email-spam abuse.
+  const limited = rateLimit(req, 'email', { limit: 10, windowMs: 60_000 })
+  if (limited) return limited
+
   try {
     const { type, to, data } = await req.json()
     let subject = ''

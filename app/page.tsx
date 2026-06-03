@@ -13,6 +13,7 @@ import {
   Share2, Camera, Sparkles, ShieldCheck, Search, UserCheck,
   Target, Star, Network,
 } from 'lucide-react'
+import { LAUNCH_CITY, CITY_FOCUS } from '@/lib/launchCity'
 
 const ACTIVITY_GROUPS = [
   { id: 'active_outdoors', Icon: Zap, label: 'Active & Outdoors', types: ['hiking', 'running', 'gym_partner', 'cycling', 'swimming', 'cold_plunge', 'yoga', 'martial_arts', 'climbing', 'trail_crew', 'fishing_crew', 'meet_irl'] },
@@ -334,7 +335,7 @@ export default function HomePage() {
           {/* Live badge */}
           <div className="hero-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '7px 16px', borderRadius: '999px', marginBottom: '28px', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.22)', color: '#D4AF37' }}>
             <span style={{ color: '#34D399', fontSize: '8px', animation: 'glow-breathe 2s ease-in-out infinite' }}>●</span>
-            Your social passport — live worldwide
+            {CITY_FOCUS ? `${LAUNCH_CITY.possessive} social passport · live now` : 'Your social passport — live worldwide'}
           </div>
 
           {/* Headline */}
@@ -344,7 +345,9 @@ export default function HomePage() {
 
           {/* Subtitle */}
           <p className="hero-sub" style={{ fontSize: 'clamp(15px, 2vw, 17px)', color: '#A99ECC', marginBottom: '36px', maxWidth: '460px', margin: '0 auto 36px', lineHeight: 1.65 }}>
-            Find a Bestie for any activity. Verified profiles. Bestie Score. No awkwardness.
+            {CITY_FOCUS
+              ? `Find a Bestie for any activity in ${LAUNCH_CITY.name}. Verified profiles. Bestie Score. No awkwardness.`
+              : 'Find a Bestie for any activity. Verified profiles. Bestie Score. No awkwardness.'}
           </p>
 
           {/* Search bar */}
@@ -432,7 +435,7 @@ export default function HomePage() {
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '28px' }}>
             <div>
               <p className="section-label">LEADERBOARD</p>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 700, color: '#F0EAFF' }}>Top Besties</h2>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 700, color: '#F0EAFF' }}>{CITY_FOCUS ? `Top Besties in ${LAUNCH_CITY.name}` : 'Top Besties'}</h2>
             </div>
             <Link href="/browse" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none', marginBottom: '2px', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#D4AF37'} onMouseLeave={e=>e.target.style.color='#A99ECC'}>See all →</Link>
           </div>
@@ -488,7 +491,7 @@ export default function HomePage() {
               {[
                 { num: '01', Icon: Contact,    title: 'Build your Social Passport', desc: 'Add your bio, photo, city, activities, and set your weekly availability. Take the Bestie Type quiz — your energy, mind, and vibe type appear on your passport and power the compatibility engine.' },
                 { num: '02', Icon: Search,    title: 'Discover your people', desc: 'Browse with type compatibility, explore the Nearby Map, check City Pulse for who\'s free today, or send a Knock to someone interesting — an anonymous signal that only reveals your identity on a mutual match.' },
-                { num: '03', Icon: UserCheck, title: 'Meet IRL', desc: 'Book a 1-on-1 session, join a Group Session hosted by someone in your city, or flip "I\'m free today" on Pulse for spontaneous meetups. Show up — that\'s all it takes.' },
+                { num: '03', Icon: UserCheck, title: 'Meet IRL', desc: 'Meet up 1-on-1, join a Group Session hosted by someone in your city, or flip "I\'m free today" on Pulse for spontaneous hangouts. Show up — that\'s all it takes.' },
                 { num: '04', Icon: Camera,    title: 'Build your story', desc: 'Both sides confirm the session and rate each other. Record a memory — mood, note, photo. Give Sparks. Your streak grows, badges unlock, your passport becomes proof of a life well lived.' },
               ].map((step, idx) => (
                 <div key={step.num} className={`how-card reveal-delay-${idx + 1}`}>
@@ -886,7 +889,7 @@ export default function HomePage() {
             <div style={{ position: 'absolute', bottom: '-60px', right: '-60px', width: '260px', height: '260px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
             <div style={{ position: 'relative', zIndex: 1 }}>
               <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 700, color: '#F0EAFF', marginBottom: '14px', lineHeight: 1.15 }}>Ready to meet your Bestie?</h2>
-              <p style={{ fontSize: '16px', color: '#A99ECC', marginBottom: '32px' }}>Join people building real connections in their city.</p>
+              <p style={{ fontSize: '16px', color: '#A99ECC', marginBottom: '32px' }}>{CITY_FOCUS ? `Be early — help build ${LAUNCH_CITY.possessive} social scene.` : 'Join people building real connections in their city.'}</p>
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                 <Link href="/signup" className="btn-gold">Become a Bestie →</Link>
                 <Link href="/browse" className="btn-ghost">Browse Besties</Link>
@@ -908,7 +911,7 @@ export default function HomePage() {
               <Link key={l.label} href={l.href} style={{ color: '#6B6490', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#A99ECC'} onMouseLeave={e=>e.target.style.color='#6B6490'}>{l.label}</Link>
             ))}
           </div>
-          <p style={{ fontSize: '12px', color: '#4A4268' }}>© 2026 Bestie. Worldwide. 18+</p>
+          <p style={{ fontSize: '12px', color: '#4A4268' }}>© 2026 Bestie. {CITY_FOCUS ? LAUNCH_CITY.full : 'Worldwide'}. 18+</p>
         </div>
       </footer>
 

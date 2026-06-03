@@ -166,8 +166,8 @@ export default function BookingsPage() {
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '32px 20px 0' }}>
 
         {/* Header */}
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '26px', fontWeight: 700, color: '#F0EAFF', marginBottom: '4px' }}>My Bookings</h1>
-        <p style={{ fontSize: '13px', color: '#6B6490', marginBottom: '24px' }}>Sessions, plans & moments scheduled with besties</p>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '26px', fontWeight: 700, color: '#F0EAFF', marginBottom: '4px' }}>My Plans</h1>
+        <p style={{ fontSize: '13px', color: '#6B6490', marginBottom: '24px' }}>Hangouts, plans & moments with your besties</p>
 
         {/* Stats row */}
         <div style={{ display: 'flex', gap: '10px', marginBottom: '24px' }}>
@@ -337,7 +337,7 @@ export default function BookingsPage() {
                 {booking.status === 'completed' && (
                   <>
                     <Link href={other?.username ? `/${other.username}?sparks=true` : '#'} className="btn-spark">✨ Send a Spark</Link>
-                    <Link href={other?.username ? `/${other.username}` : '#'} className="btn-ghost">↺ Book again</Link>
+                    <Link href={other?.username ? `/${other.username}` : '#'} className="btn-ghost">↺ Meet again</Link>
                   </>
                 )}
 
