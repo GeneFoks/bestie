@@ -81,7 +81,7 @@ export default function BookPage({ params }) {
     await createNotification({
       userId: provider.id,
       type: 'booking_request',
-      title: `${myProfile?.full_name || 'Someone'} wants to book you`,
+      title: `${myProfile?.full_name || 'Someone'} wants to hang out`,
       body: selectedPackage.title,
       link: '/bookings',
     })
@@ -100,9 +100,9 @@ export default function BookPage({ params }) {
         <div style={{ fontSize: '64px', marginBottom: '24px' }}>🎉</div>
         <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#F0EAFF', marginBottom: '12px' }}>Request sent!</h2>
         <p style={{ fontSize: '15px', color: '#A99ECC', marginBottom: '8px' }}>
-          Your booking request has been sent to <strong style={{ color: '#F0EAFF' }}>{provider.full_name}</strong>.
+          Your request has been sent to <strong style={{ color: '#F0EAFF' }}>{provider.full_name}</strong>.
         </p>
-        <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '32px' }}>They'll respond soon. You'll see updates in your bookings.</p>
+        <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '32px' }}>They'll respond soon. You'll see updates in your plans.</p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           <Link href="/bookings" style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>View bookings</Link>
           <Link href="/browse" style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '14px', color: '#A99ECC', border: '1px solid rgba(255,255,255,0.1)', textDecoration: 'none' }}>Browse more</Link>
@@ -119,7 +119,7 @@ export default function BookPage({ params }) {
       </nav>
 
       <div style={{ maxWidth: '600px', margin: '0 auto', padding: '40px 24px' }}>
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: '#F0EAFF', marginBottom: '8px' }}>Book a session</h1>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: '#F0EAFF', marginBottom: '8px' }}>Plan a hangout</h1>
         <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '32px' }}>with {provider.full_name}</p>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', marginBottom: '24px' }}>
@@ -170,7 +170,7 @@ export default function BookPage({ params }) {
             </div>
             <div>
               <label style={{ fontSize: '13px', fontWeight: 500, color: '#A99ECC', display: 'block', marginBottom: '8px' }}>Message to {provider.full_name?.split(' ')[0]}</label>
-              <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder={`Hi ${provider.full_name?.split(' ')[0]}! I'd love to book a session...`} rows={4} style={{ ...inputStyle, resize: 'none', lineHeight: 1.6 }} />
+              <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder={`Hi ${provider.full_name?.split(' ')[0]}! I'd love to hang out...`} rows={4} style={{ ...inputStyle, resize: 'none', lineHeight: 1.6 }} />
             </div>
           </div>
         </div>
@@ -179,7 +179,7 @@ export default function BookPage({ params }) {
           <div style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '16px', padding: '16px', marginBottom: '16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '4px' }}>You're booking</p>
+                <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '4px' }}>You're planning</p>
                 <p style={{ fontSize: '15px', fontWeight: 600, color: '#F0EAFF' }}>{selectedPackage.title}</p>
               </div>
               <div style={{ textAlign: 'right' }}>
@@ -193,7 +193,7 @@ export default function BookPage({ params }) {
         )}
 
         <button onClick={handleBook} disabled={sending || !selectedPackage} style={{ width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: sending || !selectedPackage ? 'not-allowed' : 'pointer', opacity: !selectedPackage ? 0.5 : 1 }}>
-          {sending ? 'Sending request...' : 'Send booking request →'}
+          {sending ? 'Sending request...' : 'Send request →'}
         </button>
       </div>
     </div>

@@ -136,6 +136,17 @@ async function handleVerify(message: any) {
 
 export async function POST(req: NextRequest) {
   try {
+    // ── Verify the request really came from Telegram ──────────────────────────
+    // Telegram echoes the secret we registered via setWebhook(secret_token=…)
+    // in this header on every update. Reject anything that doesn't match.
+    const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET
+    if (expectedSecret) {
+      const got = req.headers.get('x-telegram-bot-api-secret-token')
+      if (got !== expectedSecret) {
+        return NextResponse.json({ ok: false }, { status: 401 })
+      }
+    }
+
     const update = await req.json()
 
     if (update.chat_join_request) {

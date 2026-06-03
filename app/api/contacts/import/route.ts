@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { rateLimit } from '@/lib/rateLimit'
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -24,6 +25,10 @@ function normalisePhone(phone: string): string {
 // ── route ────────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
+  // Expensive (hashing + bulk match) → cap per IP.
+  const limited = rateLimit(req, 'contacts-import', { limit: 5, windowMs: 60_000 })
+  if (limited) return limited
+
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
