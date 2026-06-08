@@ -43,7 +43,6 @@ export default function GiveSparkContent() {
   const [me, setMe] = useState(null)
   const [myProfile, setMyProfile] = useState(null)
   const [recipient, setRecipient] = useState(null)
-  const [isMatched, setIsMatched] = useState(false)
   const [selectedTypes, setSelectedTypes] = useState(preselectedType ? [preselectedType] : [])
   const [alreadyGiven, setAlreadyGiven] = useState([])
   const [loading, setLoading] = useState(true)
@@ -68,21 +67,13 @@ export default function GiveSparkContent() {
         setRecipient(recipientData)
 
         if (recipientData) {
-          const [{ data: given }, { data: knock }] = await Promise.all([
-            supabase
-              .from('sparks').select('spark_type')
-              .eq('giver_id', session.user.id)
-              .eq('receiver_id', recipientData.id),
-            // Sparks require a mutual knock (match). A match is a knocks row
-            // between the two users with is_mutual = true (either direction).
-            supabase
-              .from('knocks').select('id')
-              .eq('is_mutual', true)
-              .or(`and(sender_id.eq.${session.user.id},receiver_id.eq.${recipientData.id}),and(sender_id.eq.${recipientData.id},receiver_id.eq.${session.user.id})`)
-              .limit(1),
-          ])
+          // Sparks are open — you can vouch for anyone (no match/session
+          // required). We only need which types were already given.
+          const { data: given } = await supabase
+            .from('sparks').select('spark_type')
+            .eq('giver_id', session.user.id)
+            .eq('receiver_id', recipientData.id)
           setAlreadyGiven(given?.map(s => s.spark_type) || [])
-          setIsMatched((knock?.length ?? 0) > 0)
         }
       } catch (e) {
         console.error(e)
@@ -180,23 +171,6 @@ export default function GiveSparkContent() {
         </p>
         <Link href={`/${recipient.username}`} style={{ display: 'inline-block', padding: '12px 28px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
           Back to profile →
-        </Link>
-      </div>
-    </div>
-  )
-
-  // Sparks are gated behind a mutual knock — show a clear locked screen
-  // instead of letting the user pick Sparks and then hit a DB rejection.
-  if (!isMatched) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <div style={{ textAlign: 'center', maxWidth: '360px', padding: '0 24px' }}>
-        <p style={{ fontSize: '48px', marginBottom: '16px' }}>🔒</p>
-        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#F0EAFF', marginBottom: '8px' }}>Match first to send Sparks</h2>
-        <p style={{ fontSize: '15px', color: '#A99ECC', marginBottom: '28px', lineHeight: 1.5 }}>
-          Sparks are a trust signal — you can give them to <span style={{ color: '#F0EAFF', fontWeight: 500 }}>{recipient.full_name}</span> once you’ve both knocked and matched.
-        </p>
-        <Link href={`/${recipient.username}`} style={{ display: 'inline-block', padding: '12px 28px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
-          Go to {recipient.full_name?.split(' ')[0]}’s profile →
         </Link>
       </div>
     </div>
