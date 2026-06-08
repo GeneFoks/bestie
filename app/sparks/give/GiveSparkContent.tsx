@@ -117,10 +117,14 @@ export default function GiveSparkContent() {
     const { error: err } = await supabase.from('sparks').insert(inserts)
 
     if (err) {
+      // Log the full error so we can see exactly what the DB rejected.
+      console.error('Spark insert failed:', { code: err.code, message: err.message, details: err.details, hint: err.hint })
       const msg =
         err.code === '23505' ? 'You already gave one of these Sparks.'
         : err.code === '42501' ? 'You can give Sparks only after you both knock (match).'
-        : 'Something went wrong. Try again.'
+        : err.code === '23514' ? 'One of these Spark types isn’t enabled yet. Try a different one.'
+        // Surface the real reason while we debug this.
+        : `Couldn’t send: ${err.message || 'unknown error'}${err.code ? ` (${err.code})` : ''}`
       setError(msg)
       setSending(false)
       return
