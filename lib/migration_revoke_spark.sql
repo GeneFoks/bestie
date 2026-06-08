@@ -35,12 +35,18 @@ BEGIN
     RETURN 'not_found';
   END IF;
 
-  -- Refund the wallet (mirror of the deduction on give) and decrement
-  -- the lifetime "given" counter, never below zero.
+  -- Mirror deduct_spark() exactly:
+  --   giver    → refund wallet (+1), decrement lifetime "given" counter
+  --   receiver → decrement lifetime "received" counter
+  -- (all counters clamped so they never go below zero)
   UPDATE public.users
      SET sparks_balance = COALESCE(sparks_balance, 0) + v_deleted,
          sparks_given   = GREATEST(0, COALESCE(sparks_given, 0) - v_deleted)
    WHERE id = v_giver;
+
+  UPDATE public.users
+     SET sparks_received = GREATEST(0, COALESCE(sparks_received, 0) - v_deleted)
+   WHERE id = p_receiver_id;
 
   -- Receiver's score no longer reflects this spark — recompute it.
   PERFORM public.recalculate_bestie_score(p_receiver_id);
