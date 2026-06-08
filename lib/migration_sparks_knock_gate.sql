@@ -1,17 +1,17 @@
 -- ══════════════════════════════════════════════════════════════════
--- Sparks gate → removed. Sparks can be given freely.
+-- Sparks gate → require a minimum Bestie Score from the GIVER
 --
--- require_confirmed_session() guards sparks, reviews and lights. It used
--- to require a fully-confirmed booking, which blocked Sparks entirely.
--- Product decision: Sparks are a recommendation you can give to anyone —
--- e.g. vouch for a close friend — so they no longer require a session
--- OR a knock. Abuse is still bounded by the existing limits (max 3
--- Sparks per person + the giver's wallet balance).
+-- require_confirmed_session() guards sparks, reviews and lights.
 --
--- Unchanged: reviews and lights still require a confirmed session,
--- since those are post-meetup endorsements.
+-- New rule:
+--   • sparks           → the giver must have bestie_score >= 150
+--                        (≈ a fully filled-out profile). No session or
+--                        knock needed — you can vouch for anyone — but
+--                        empty / fake accounts can't hand out Sparks.
+--   • reviews / lights → confirmed session only (unchanged).
 --
--- Safe to re-run (CREATE OR REPLACE).
+-- Keep this in sync with MIN_SPARK_SCORE in
+-- app/sparks/give/GiveSparkContent.tsx. Safe to re-run.
 -- ══════════════════════════════════════════════════════════════════
 
 CREATE OR REPLACE FUNCTION public.require_confirmed_session()
@@ -22,6 +22,7 @@ AS $function$
 DECLARE
   v_giver    UUID;
   v_receiver UUID;
+  v_giver_bs INTEGER;
 BEGIN
   IF TG_TABLE_NAME = 'sparks' THEN
     v_giver := NEW.giver_id; v_receiver := NEW.receiver_id;
@@ -35,8 +36,14 @@ BEGIN
     RAISE EXCEPTION 'Invalid endorsement pair';
   END IF;
 
-  -- Sparks: no session/knock requirement — you can vouch for anyone.
+  -- Sparks: require a minimum Bestie Score from the giver.
   IF TG_TABLE_NAME = 'sparks' THEN
+    SELECT COALESCE(bestie_score, 0) INTO v_giver_bs
+      FROM public.users WHERE id = v_giver;
+    IF v_giver_bs < 150 THEN
+      RAISE EXCEPTION 'spark_score_too_low'
+        USING HINT = 'Reach a Bestie Score of 150 (complete your profile) to give Sparks.';
+    END IF;
     RETURN NEW;
   END IF;
 
