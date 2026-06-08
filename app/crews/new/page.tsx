@@ -16,6 +16,7 @@ export default function NewCrewPage() {
   const router = useRouter()
   const [userId, setUserId] = useState<string | null>(null)
   const [myScore, setMyScore] = useState(0)
+  const [isPlus, setIsPlus] = useState(false)
   const [captainedCount, setCaptainedCount] = useState(0)
   const [authLoading, setAuthLoading] = useState(true)
 
@@ -33,10 +34,13 @@ export default function NewCrewPage() {
       const uid = session.user.id
       setUserId(uid)
       const [{ data: profile }, { count }] = await Promise.all([
-        supabase.from('users').select('bestie_score').eq('id', uid).single(),
+        supabase.from('users').select('bestie_score, subscription_tier, plus_expires_at').eq('id', uid).single(),
         supabase.from('crews').select('id', { count: 'exact', head: true }).eq('captain_id', uid),
       ])
       setMyScore(profile?.bestie_score || 0)
+      const plusActive = profile?.subscription_tier === 'plus' &&
+        (!profile?.plus_expires_at || new Date(profile.plus_expires_at) > new Date())
+      setIsPlus(!!plusActive)
       setCaptainedCount(count || 0)
       setAuthLoading(false)
     })
@@ -60,7 +64,13 @@ export default function NewCrewPage() {
       .single()
 
     if (crewErr) {
-      setError(crewErr.message.includes('unique') ? 'This slug is already taken. Try another.' : crewErr.message)
+      const m = crewErr.message || ''
+      setError(
+        m.includes('crew_limit_free') ? 'Free members can lead one crew. Upgrade to Bestie Plus to create more.'
+        : m.includes('crew_limit_reached') ? 'You’ve used all your crew slots. Raise your Bestie Score to unlock more.'
+        : m.includes('unique') ? 'This slug is already taken. Try another.'
+        : m
+      )
       setSubmitting(false)
       return
     }
@@ -74,10 +84,17 @@ export default function NewCrewPage() {
   if (authLoading) return <PageLoader />
 
 
-  const maxCrews = myScore >= 1000 ? 5 : myScore >= 800 ? 4 : myScore >= 600 ? 3 : myScore >= 400 ? 2 : 1
+  // Free members are capped at a single crew. Bestie Plus unlocks the
+  // score-based slots (always at least 2, scaling up to 5).
+  const scoreSlots = myScore >= 1000 ? 5 : myScore >= 800 ? 4 : myScore >= 600 ? 3 : myScore >= 400 ? 2 : 1
+  const maxCrews = isPlus ? Math.max(2, scoreSlots) : 1
   const atLimit = captainedCount >= maxCrews
-  const nextThreshold = myScore < 400 ? 400 : myScore < 600 ? 600 : myScore < 800 ? 800 : myScore < 1000 ? 1000 : null
-  const nextMax = nextThreshold ? (nextThreshold >= 1000 ? 5 : nextThreshold >= 800 ? 4 : nextThreshold >= 600 ? 3 : 2) : null
+  // For Plus members, what score unlocks the next slot?
+  const nextThreshold = !isPlus ? null
+    : myScore < 600 ? 600 : myScore < 800 ? 800 : myScore < 1000 ? 1000 : null
+  const nextMax = nextThreshold ? (nextThreshold >= 1000 ? 5 : nextThreshold >= 800 ? 4 : 3) : null
+  // A free user is blocked purely because they don't have Plus.
+  const blockedByPlan = !isPlus && atLimit
 
   const inputStyle = { width: '100%', padding: '13px 16px', borderRadius: '12px', fontSize: '15px', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', outline: 'none', boxSizing: 'border-box' }
   const labelStyle = { fontSize: '12px', fontWeight: 600, letterSpacing: '1px', color: '#A99ECC', marginBottom: '8px', display: 'block' }
@@ -99,19 +116,19 @@ export default function NewCrewPage() {
             <p style={{ fontSize: '13px', fontWeight: 600, color: atLimit ? '#FF6B35' : '#D4AF37' }}>
               {atLimit ? 'Crew limit reached' : `Crew slots: ${captainedCount} / ${maxCrews}`}
             </p>
-            <span style={{ fontSize: '12px', color: '#A99ECC' }}>BS {myScore}</span>
+            <span style={{ fontSize: '12px', color: '#A99ECC' }}>{isPlus ? `BS ${myScore} · Plus` : `BS ${myScore}`}</span>
           </div>
           <div style={{ display: 'flex', gap: '6px' }}>
             {[1,2,3,4,5].map(i => (
               <div key={i} style={{ flex: 1, height: '4px', borderRadius: '999px', background: i <= captainedCount ? '#D4AF37' : i <= maxCrews ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.10)' }} />
             ))}
           </div>
-          {atLimit && nextThreshold && (
+          {blockedByPlan && (
             <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '10px' }}>
-              Reach <span style={{ color: '#D4AF37', fontWeight: 700 }}>BS {nextThreshold}</span> to unlock {nextMax} crew slots
+              Free members can lead one crew. <Link href="/plus" style={{ color: '#D4AF37', fontWeight: 700, textDecoration: 'none' }}>Upgrade to Bestie Plus</Link> to create more.
             </p>
           )}
-          {!atLimit && nextThreshold && (
+          {isPlus && nextThreshold && (
             <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '10px' }}>
               Reach <span style={{ color: '#D4AF37', fontWeight: 700 }}>BS {nextThreshold}</span> to unlock {nextMax} crew slots
             </p>
@@ -183,13 +200,22 @@ export default function NewCrewPage() {
             <p style={{ fontSize: '13px', color: '#FF6B35', padding: '12px', background: 'rgba(255,107,53,0.08)', borderRadius: '10px', border: '1px solid rgba(255,107,53,0.2)' }}>{error}</p>
           )}
 
-          <button
-            type="submit"
-            disabled={submitting || atLimit}
-            style={{ padding: '16px', borderRadius: '14px', fontSize: '16px', fontWeight: 700, background: atLimit ? 'rgba(255,255,255,0.10)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: atLimit ? '#A99ECC' : '#09090F', border: atLimit ? '1px solid rgba(255,255,255,0.1)' : 'none', cursor: submitting || atLimit ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1 }}
-          >
-            {submitting ? 'Creating…' : atLimit ? `Limit reached · BS ${nextThreshold} to unlock` : (<span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}><Swords size={18} strokeWidth={2} /> Create Crew</span>)}
-          </button>
+          {blockedByPlan ? (
+            <Link
+              href="/plus"
+              style={{ padding: '16px', borderRadius: '14px', fontSize: '16px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none', textAlign: 'center' }}
+            >
+              ✨ Upgrade to Bestie Plus to create more crews
+            </Link>
+          ) : (
+            <button
+              type="submit"
+              disabled={submitting || atLimit}
+              style={{ padding: '16px', borderRadius: '14px', fontSize: '16px', fontWeight: 700, background: atLimit ? 'rgba(255,255,255,0.10)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: atLimit ? '#A99ECC' : '#09090F', border: atLimit ? '1px solid rgba(255,255,255,0.1)' : 'none', cursor: submitting || atLimit ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1 }}
+            >
+              {submitting ? 'Creating…' : atLimit ? `Limit reached · BS ${nextThreshold} to unlock` : (<span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}><Swords size={18} strokeWidth={2} /> Create Crew</span>)}
+            </button>
+          )}
         </form>
       </div>
     </div>
