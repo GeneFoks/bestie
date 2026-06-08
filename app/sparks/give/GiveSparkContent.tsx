@@ -56,6 +56,10 @@ export default function GiveSparkContent() {
   const [sentTypes, setSentTypes] = useState([])
   const [error, setError] = useState(null)
   const [revoking, setRevoking] = useState(null)
+  // You can only Spark people you matched with (mutual knock) or had a
+  // session with. Defaults to true so a transient query error fails open —
+  // the DB gate (require_confirmed_session) is the real enforcement.
+  const [hasRelationship, setHasRelationship] = useState(true)
 
   useEffect(() => {
     const init = async () => {
@@ -73,13 +77,33 @@ export default function GiveSparkContent() {
         setRecipient(recipientData)
 
         if (recipientData) {
-          // Sparks are open — you can vouch for anyone (no match/session
-          // required). We only need which types were already given.
+          // Which Spark types were already given to this person.
           const { data: given } = await supabase
             .from('sparks').select('spark_type')
             .eq('giver_id', session.user.id)
             .eq('receiver_id', recipientData.id)
           setAlreadyGiven(given?.map(s => s.spark_type) || [])
+
+          // Relationship gate: a mutual knock (match) OR a real session
+          // (booking accepted/completed). Mirrors can_message in the DB.
+          const uid = session.user.id
+          const rid = recipientData.id
+          try {
+            const [{ data: knock }, { data: sess }] = await Promise.all([
+              supabase.from('knocks').select('id')
+                .eq('is_mutual', true)
+                .or(`and(sender_id.eq.${uid},receiver_id.eq.${rid}),and(sender_id.eq.${rid},receiver_id.eq.${uid})`)
+                .limit(1),
+              supabase.from('bookings').select('id')
+                .in('status', ['accepted', 'completed'])
+                .or(`and(seeker_id.eq.${uid},provider_id.eq.${rid}),and(seeker_id.eq.${rid},provider_id.eq.${uid})`)
+                .limit(1),
+            ])
+            setHasRelationship((knock?.length || 0) > 0 || (sess?.length || 0) > 0)
+          } catch {
+            // Fail open — the DB still enforces the rule on insert.
+            setHasRelationship(true)
+          }
         }
       } catch (e) {
         console.error(e)
@@ -119,6 +143,7 @@ export default function GiveSparkContent() {
       const msg =
         err.code === '23505' ? 'You already gave one of these Sparks.'
         : (err.message || '').includes('spark_score_too_low') ? `Reach a Bestie Score of ${MIN_SPARK_SCORE} (complete your profile) to give Sparks.`
+        : (err.message || '').includes('spark_no_relationship') ? 'You can only Spark someone you matched with (mutual knock) or had a session with.'
         : err.code === '23514' ? 'One of these Spark types isn’t enabled yet. Try a different one.'
         // Surface the real reason while we debug this.
         : `Couldn’t send: ${err.message || 'unknown error'}${err.code ? ` (${err.code})` : ''}`
@@ -199,6 +224,22 @@ export default function GiveSparkContent() {
         </p>
         <Link href="/profile/edit" style={{ display: 'inline-block', padding: '12px 28px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
           Complete your profile →
+        </Link>
+      </div>
+    </div>
+  )
+
+  // You can only Spark people you have a real connection with.
+  if (!hasRelationship) return (
+    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <div style={{ textAlign: 'center', maxWidth: '380px', padding: '0 24px' }}>
+        <p style={{ fontSize: '48px', marginBottom: '16px' }}>🤝</p>
+        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#F0EAFF', marginBottom: '8px' }}>Connect first to give Sparks</h2>
+        <p style={{ fontSize: '15px', color: '#A99ECC', marginBottom: '24px', lineHeight: 1.5 }}>
+          Sparks are a personal endorsement. You can Spark <span style={{ color: '#F0EAFF', fontWeight: 500 }}>{recipient.full_name}</span> once you’ve matched (you both knocked) or had a session together.
+        </p>
+        <Link href={`/${recipient.username}`} style={{ display: 'inline-block', padding: '12px 28px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
+          Go to their profile to knock →
         </Link>
       </div>
     </div>
