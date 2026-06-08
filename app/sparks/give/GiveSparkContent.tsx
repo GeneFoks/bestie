@@ -34,6 +34,11 @@ const SPARK_TYPES = [
   { id: 'knowledgeable', emoji: '🎓', label: 'Knowledgeable' },
 ]
 
+// Minimum Bestie Score required to give Sparks (≈ a fully completed
+// profile). Keep in sync with require_confirmed_session() in
+// lib/migration_sparks_knock_gate.sql.
+const MIN_SPARK_SCORE = 150
+
 export default function GiveSparkContent() {
   const params = useSearchParams()
   const router = useRouter()
@@ -50,6 +55,7 @@ export default function GiveSparkContent() {
   const [done, setDone] = useState(false)
   const [sentTypes, setSentTypes] = useState([])
   const [error, setError] = useState(null)
+  const [revoking, setRevoking] = useState(null)
 
   useEffect(() => {
     const init = async () => {
@@ -59,7 +65,7 @@ export default function GiveSparkContent() {
         setMe(session.user)
 
         const [{ data: myData }, { data: recipientData }] = await Promise.all([
-          supabase.from('users').select('sparks_balance, full_name, username').eq('id', session.user.id).single(),
+          supabase.from('users').select('sparks_balance, full_name, username, bestie_score').eq('id', session.user.id).single(),
           supabase.from('users').select('id, full_name, username, avatar_url, bestie_score').eq('username', toUsername).single(),
         ])
 
@@ -112,7 +118,7 @@ export default function GiveSparkContent() {
       console.error('Spark insert failed:', { code: err.code, message: err.message, details: err.details, hint: err.hint })
       const msg =
         err.code === '23505' ? 'You already gave one of these Sparks.'
-        : err.code === '42501' ? 'You can give Sparks only after you both knock (match).'
+        : (err.message || '').includes('spark_score_too_low') ? `Reach a Bestie Score of ${MIN_SPARK_SCORE} (complete your profile) to give Sparks.`
         : err.code === '23514' ? 'One of these Spark types isn’t enabled yet. Try a different one.'
         // Surface the real reason while we debug this.
         : `Couldn’t send: ${err.message || 'unknown error'}${err.code ? ` (${err.code})` : ''}`
@@ -143,6 +149,30 @@ export default function GiveSparkContent() {
     setSending(false)
   }
 
+  // Take back a Spark you already gave. Refunds +1 to your wallet and
+  // recomputes the recipient's score (handled in the revoke_spark RPC).
+  const revokeSpark = async (type) => {
+    if (!recipient || revoking) return
+    const label = SPARK_TYPES.find(s => s.id === type)?.label || 'this Spark'
+    if (!window.confirm(`Take back “${label}”? It returns to your balance.`)) return
+    setRevoking(type)
+    setError(null)
+    const { data, error: err } = await supabase.rpc('revoke_spark', {
+      p_receiver_id: recipient.id,
+      p_spark_type: type,
+    })
+    if (err || (data && data !== 'revoked' && data !== 'not_found')) {
+      console.error('Revoke failed:', err)
+      setError('Couldn’t take back that Spark. Try again.')
+      setRevoking(null)
+      return
+    }
+    // Reflect locally: drop from given list, refund the wallet.
+    setAlreadyGiven(prev => prev.filter(t => t !== type))
+    setMyProfile(p => p ? { ...p, sparks_balance: (p.sparks_balance ?? 0) + 1 } : p)
+    setRevoking(null)
+  }
+
   if (loading) return <PageLoader fullscreen={false} message="Loading…" />
 
   if (!recipient) return (
@@ -151,6 +181,25 @@ export default function GiveSparkContent() {
         <p style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</p>
         <p style={{ color: '#A99ECC' }}>User not found</p>
         <Link href="/browse" style={{ color: '#D4AF37', fontSize: '14px' }}>Browse Besties</Link>
+      </div>
+    </div>
+  )
+
+  // You need a minimum Bestie Score to give Sparks (≈ a complete profile).
+  if ((myProfile?.bestie_score ?? 0) < MIN_SPARK_SCORE) return (
+    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <div style={{ textAlign: 'center', maxWidth: '380px', padding: '0 24px' }}>
+        <p style={{ fontSize: '48px', marginBottom: '16px' }}>🔒</p>
+        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#F0EAFF', marginBottom: '8px' }}>Reach Bestie Score {MIN_SPARK_SCORE} to give Sparks</h2>
+        <p style={{ fontSize: '15px', color: '#A99ECC', marginBottom: '12px', lineHeight: 1.5 }}>
+          Sparks are a trust signal, so only members with an established profile can give them. Complete your profile — photo, bio, city and your Bestie Type — to get there.
+        </p>
+        <p style={{ fontSize: '13px', color: '#6B6490', marginBottom: '28px' }}>
+          Your Bestie Score: <span style={{ color: '#D4AF37', fontWeight: 700 }}>{myProfile?.bestie_score ?? 0}</span> / {MIN_SPARK_SCORE}
+        </p>
+        <Link href="/profile/edit" style={{ display: 'inline-block', padding: '12px 28px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
+          Complete your profile →
+        </Link>
       </div>
     </div>
   )
@@ -237,25 +286,28 @@ export default function GiveSparkContent() {
           {SPARK_TYPES.map(s => {
             const given = alreadyGiven.includes(s.id)
             const selected = selectedTypes.includes(s.id)
-            const disabled = given || sparksLeft <= 0 || canGiveMore === 0 || (!selected && canSelect === 0)
+            const isRevoking = revoking === s.id
+            // Given sparks are clickable to take back; others follow the select rules.
+            const disabled = given ? isRevoking : (sparksLeft <= 0 || canGiveMore === 0 || (!selected && canSelect === 0))
             return (
               <button
                 key={s.id}
-                onClick={() => !given && toggleType(s.id)}
+                onClick={() => given ? revokeSpark(s.id) : toggleType(s.id)}
                 disabled={disabled}
+                title={given ? 'Tap to take this Spark back' : undefined}
                 style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
                   padding: '12px 6px', borderRadius: '12px',
                   cursor: disabled ? 'not-allowed' : 'pointer',
-                  background: selected ? 'rgba(212,175,55,0.15)' : given ? 'rgba(255,255,255,0.02)' : '#131323',
-                  border: selected ? '1px solid rgba(212,175,55,0.5)' : given ? '1px solid #131323' : '1px solid rgba(255,255,255,0.12)',
-                  opacity: disabled && !selected ? 0.4 : 1,
+                  background: selected ? 'rgba(212,175,55,0.15)' : given ? 'rgba(52,211,153,0.06)' : '#131323',
+                  border: selected ? '1px solid rgba(212,175,55,0.5)' : given ? '1px solid rgba(52,211,153,0.25)' : '1px solid rgba(255,255,255,0.12)',
+                  opacity: disabled && !selected && !given ? 0.4 : 1,
                   transition: 'all 0.15s',
                 }}
               >
                 <span style={{ fontSize: '20px' }}>{s.emoji}</span>
-                <span style={{ fontSize: '10px', fontWeight: 500, color: selected ? '#D4AF37' : '#A99ECC', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
-                {given && <span style={{ fontSize: '9px', color: '#A99ECC' }}>✓ given</span>}
+                <span style={{ fontSize: '10px', fontWeight: 500, color: selected ? '#D4AF37' : given ? '#34D399' : '#A99ECC', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
+                {given && <span style={{ fontSize: '9px', color: '#34D399' }}>{isRevoking ? '…' : '✓ tap to undo'}</span>}
                 {selected && !given && <span style={{ fontSize: '9px', color: '#D4AF37' }}>✓</span>}
               </button>
             )
