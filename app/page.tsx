@@ -504,6 +504,35 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
+
+            {/* ── KNOCKS EXPLAINER ── */}
+            <div style={{ marginTop: '40px', borderRadius: '20px', background: 'rgba(255,107,53,0.06)', border: '1px solid rgba(255,107,53,0.18)', padding: '28px 26px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '13px', background: 'rgba(255,107,53,0.12)', border: '1px solid rgba(255,107,53,0.22)', flexShrink: 0 }}>
+                  <Bell size={20} color="#FF6B35" strokeWidth={1.8} />
+                </div>
+                <div>
+                  <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', color: '#FF6B35', marginBottom: '2px' }}>WHAT'S A KNOCK?</p>
+                  <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '19px', fontWeight: 700, color: '#F0EAFF' }}>An anonymous “I’d like to meet you.”</h3>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '18px' }}>
+                {[
+                  { step: '1', title: 'You knock', body: 'Tap Knock on someone’s passport. It’s a quiet signal — no message needed, no pressure.' },
+                  { step: '2', title: 'They get a nudge — not your name', body: 'They see “Someone knocked 👀” on their bell. Knocks stay anonymous, so there’s zero awkwardness if it’s not mutual.' },
+                  { step: '3', title: 'Knock back = a match', body: 'If they knock you too, it’s mutual. Both names are revealed and you both get the good news.' },
+                  { step: '4', title: 'Now you can talk', body: 'Messaging and Sparks unlock only after a match (or a real session together) — so every chat starts with mutual interest.' },
+                ].map(k => (
+                  <div key={k.step} style={{ display: 'flex', gap: '12px' }}>
+                    <div style={{ flexShrink: 0, width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(255,107,53,0.15)', border: '1px solid rgba(255,107,53,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, color: '#FF6B35' }}>{k.step}</div>
+                    <div>
+                      <p style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF', marginBottom: '4px' }}>{k.title}</p>
+                      <p style={{ fontSize: '12.5px', color: '#A99ECC', lineHeight: 1.6 }}>{k.body}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>

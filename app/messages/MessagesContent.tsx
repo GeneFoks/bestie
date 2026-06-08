@@ -22,6 +22,8 @@ export default function MessagesPage() {
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [canDM, setCanDM] = useState(true)
+  const [checkingGate, setCheckingGate] = useState(false)
   const messagesEndRef = useRef(null)
   const activeConvRef = useRef(null)
   const userIdRef = useRef(null)
@@ -102,7 +104,22 @@ export default function MessagesPage() {
     if (!userId || !activeConv) return
     activeConvRef.current = activeConv
     loadMessages(activeConv.user.id)
+    checkGate(activeConv.user.id)
   }, [activeConv, userId])
+
+  // Can I message this person? Mirror the DB gate (mutual knock OR session).
+  const checkGate = async (partnerId) => {
+    setCheckingGate(true)
+    try {
+      const { data, error } = await supabase.rpc('can_message', { p_other: partnerId })
+      // If the RPC isn't deployed yet, fail open so existing chats keep working.
+      setCanDM(error ? true : !!data)
+    } catch {
+      setCanDM(true)
+    } finally {
+      setCheckingGate(false)
+    }
+  }
 
   useEffect(() => { scrollToBottom() }, [messages])
 
@@ -307,12 +324,25 @@ export default function MessagesPage() {
                 <div ref={messagesEndRef} />
               </div>
 
-              <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.10)', display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
-                <textarea value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }} placeholder={`Message ${activeConv.user.full_name?.split(' ')[0]}...`} aria-label={`Message ${activeConv.user.full_name || ''}`} rows={1} style={{ flex: 1, padding: '12px 16px', borderRadius: '14px', fontSize: '14px', outline: 'none', background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', resize: 'none', fontFamily: 'Plus Jakarta Sans, sans-serif', lineHeight: 1.5 }} />
-                <button onClick={sendMessage} disabled={sending || !newMessage.trim()} style={{ padding: '12px 20px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: newMessage.trim() ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.10)', color: newMessage.trim() ? '#09090F' : '#A99ECC', border: 'none', cursor: newMessage.trim() ? 'pointer' : 'not-allowed', flexShrink: 0 }}>
-                  {sending ? '...' : 'Send'}
-                </button>
-              </div>
+              {canDM ? (
+                <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.10)', display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+                  <textarea value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }} placeholder={`Message ${activeConv.user.full_name?.split(' ')[0]}...`} aria-label={`Message ${activeConv.user.full_name || ''}`} rows={1} style={{ flex: 1, padding: '12px 16px', borderRadius: '14px', fontSize: '14px', outline: 'none', background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', resize: 'none', fontFamily: 'Plus Jakarta Sans, sans-serif', lineHeight: 1.5 }} />
+                  <button onClick={sendMessage} disabled={sending || !newMessage.trim()} style={{ padding: '12px 20px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: newMessage.trim() ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.10)', color: newMessage.trim() ? '#09090F' : '#A99ECC', border: 'none', cursor: newMessage.trim() ? 'pointer' : 'not-allowed', flexShrink: 0 }}>
+                    {sending ? '...' : 'Send'}
+                  </button>
+                </div>
+              ) : (
+                <div style={{ padding: '20px', borderTop: '1px solid rgba(255,255,255,0.10)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', textAlign: 'center' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>🔒</div>
+                  <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>Match first to start chatting</p>
+                  <p style={{ fontSize: '13px', color: '#A99ECC', maxWidth: '320px', lineHeight: 1.5 }}>
+                    You can message {activeConv.user.full_name?.split(' ')[0]} once you both knock, or after a session together.
+                  </p>
+                  <Link href={`/${activeConv.user.username}`} style={{ marginTop: '4px', fontSize: '13px', fontWeight: 600, padding: '10px 20px', borderRadius: '12px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
+                    Knock on {activeConv.user.full_name?.split(' ')[0]}
+                  </Link>
+                </div>
+              )}
             </>
           )}
         </div>
