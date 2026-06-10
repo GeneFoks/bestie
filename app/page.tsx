@@ -85,7 +85,7 @@ export default function HomePage() {
       .select('*, activity_packages(*)')
       .order('bestie_score', { ascending: false })
       .gt('bestie_score', 0)
-      .limit(5)
+      .limit(6)
       .then(({ data }) => setTopProviders(data || []))
 
     return () => subscription.unsubscribe()
