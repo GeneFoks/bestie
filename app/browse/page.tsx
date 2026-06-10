@@ -147,7 +147,7 @@ export default function BrowsePage() {
         }
       }
 
-      const { data } = await query.limit(48)
+      const { data } = await query.limit(200)
       let result = (data || []).filter(p => !blockedIds.includes(p.id))
 
       if (result.length > 0) {
@@ -184,7 +184,7 @@ export default function BrowsePage() {
         result = result.filter(p => p.id !== myProfile?.id)
       }
 
-      setProviders(result.slice(0, 24))
+      setProviders(result.slice(0, 200))
       setLoading(false)
     }
     fetchProviders()
