@@ -18,13 +18,17 @@
 -- Safe to re-run.
 -- ══════════════════════════════════════════════════════════════════
 
--- Diagnostic / maintenance — service role only.
-REVOKE ALL ON FUNCTION public.explain_bestie_score(TEXT)          FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.recalculate_all_bestie_scores()     FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.recalculate_bestie_score(UUID)      FROM PUBLIC;
+-- NOTE: Supabase explicitly grants EXECUTE to the anon and authenticated
+-- roles on public functions (not via PUBLIC), so we must revoke from those
+-- roles by name — REVOKE ... FROM PUBLIC alone does nothing here.
 
--- Admin dashboards — only authenticated (function still checks is_admin).
-REVOKE ALL ON FUNCTION public.admin_dashboard(INTEGER)  FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.admin_analytics(INTEGER)  FROM PUBLIC;
+-- Diagnostic / maintenance — service role + triggers only.
+REVOKE ALL ON FUNCTION public.explain_bestie_score(TEXT)          FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.recalculate_all_bestie_scores()     FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.recalculate_bestie_score(UUID)      FROM PUBLIC, anon, authenticated;
+
+-- Admin dashboards — drop anon, keep authenticated (function checks is_admin).
+REVOKE ALL ON FUNCTION public.admin_dashboard(INTEGER)  FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.admin_analytics(INTEGER)  FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.admin_dashboard(INTEGER) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.admin_analytics(INTEGER) TO authenticated;
