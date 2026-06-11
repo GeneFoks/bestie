@@ -30,10 +30,47 @@ async function approveJoinRequest(chatId: number, userId: number) {
   return tg('approveChatJoinRequest', { chat_id: chatId, user_id: userId })
 }
 
-async function declineJoinRequest(chatId: number, userId: number) {
-  return tg('declineChatJoinRequest', { chat_id: chatId, user_id: userId })
+// ── /link <invite code> — bind THIS Telegram group to a crew ────────────────
+// Sent inside the crew's Telegram group. The invite code (shown on the crew
+// page) acts as the shared secret proving the sender belongs to the crew.
+async function handleLink(message: any) {
+  const supabase = getSupabase()
+  const chat = message.chat
+  const fromId = message.from.id
+
+  if (!chat || (chat.type !== 'group' && chat.type !== 'supergroup')) {
+    await sendMessage(fromId, '❌ Отправь <code>/link КОД</code> внутри Telegram-группы своего крю.')
+    return
+  }
+
+  const parts = (message.text || '').trim().split(/\s+/)
+  const code = (parts[1] || '').replace(/^@/, '').toUpperCase()
+  if (!code) {
+    await sendMessage(chat.id, '❌ Использование: <code>/link КОД</code> — код приглашения со страницы крю на Bestie.')
+    return
+  }
+
+  const { data: crew } = await supabase
+    .from('crews')
+    .select('id, name')
+    .eq('invite_code', code)
+    .single()
+
+  if (!crew) {
+    await sendMessage(chat.id, '❌ Крю с таким кодом приглашения не найден.')
+    return
+  }
+
+  await supabase.from('crews').update({ telegram_chat_id: chat.id }).eq('id', crew.id)
+
+  await sendMessage(
+    chat.id,
+    `✅ Группа привязана к крю <b>${crew.name}</b>.\n` +
+    `Теперь заявки на вступление будут автоматически проверяться по членству на Bestie.`
+  )
 }
 
+// ── chat_join_request — someone asked to join the group ─────────────────────
 async function handleJoinRequest(update: any) {
   const supabase = getSupabase()
   const { chat, from } = update.chat_join_request
@@ -41,24 +78,33 @@ async function handleJoinRequest(update: any) {
   const chatId = chat.id
   const firstName = from.first_name || 'Hey'
 
-  // Save pending request
+  // Which crew owns this Telegram group?
+  const { data: crew } = await supabase
+    .from('crews')
+    .select('id, name')
+    .eq('telegram_chat_id', chatId)
+    .single()
+
+  // Remember the pending request so /verify can approve it later.
   await supabase.from('telegram_pending_joins').upsert(
     { telegram_user_id: userId, telegram_username: from.username || null, chat_id: chatId },
     { onConflict: 'telegram_user_id' }
   )
 
+  const crewName = crew?.name || chat.title || 'этот крю'
   await sendMessage(
     userId,
     `👋 <b>${firstName}!</b>\n\n` +
-    `Чтобы вступить в группу <b>${chat.title}</b>, нужно зарегистрироваться на Bestie и вступить в крю.\n\n` +
+    `Чтобы вступить в группу <b>${chat.title}</b>, нужно быть в крю <b>${crewName}</b> на Bestie.\n\n` +
     `<b>Шаги:</b>\n` +
     `1️⃣ Зарегистрируйся на <b>bestiehere.com</b>\n` +
-    `2️⃣ Найди крю <b>Вышки</b> и вступи\n` +
+    `2️⃣ Вступи в крю <b>${crewName}</b>\n` +
     `3️⃣ Напиши мне: <code>/verify @твой_username</code>\n\n` +
-    `После проверки я одобрю твою заявку автоматически 🚀`
+    `После проверки я одобрю заявку автоматически 🚀`
   )
 }
 
+// ── /verify @username — approve the pending join if they're a crew member ───
 async function handleVerify(message: any) {
   const supabase = getSupabase()
   const userId = message.from.id
@@ -73,7 +119,7 @@ async function handleVerify(message: any) {
 
   const bestieUsername = rawUsername.replace(/^@/, '').toLowerCase()
 
-  // Look up pending request
+  // Look up the pending request (gives us which group/chat they want to join).
   const { data: pending } = await supabase
     .from('telegram_pending_joins')
     .select('chat_id')
@@ -85,7 +131,19 @@ async function handleVerify(message: any) {
     return
   }
 
-  // Check user exists on Bestie
+  // Which crew is this group linked to?
+  const { data: crew } = await supabase
+    .from('crews')
+    .select('id, name')
+    .eq('telegram_chat_id', pending.chat_id)
+    .single()
+
+  if (!crew) {
+    await sendMessage(userId, '❌ Эта группа ещё не привязана к крю. Капитан должен отправить <code>/link КОД</code> в группе.')
+    return
+  }
+
+  // Check the Bestie user exists.
   const { data: user } = await supabase
     .from('users')
     .select('id')
@@ -99,18 +157,7 @@ async function handleVerify(message: any) {
     return
   }
 
-  // Check crew membership
-  const { data: crew } = await supabase
-    .from('crews')
-    .select('id')
-    .eq('slug', process.env.TELEGRAM_CREW_SLUG!)
-    .single()
-
-  if (!crew) {
-    await sendMessage(userId, '❌ Крю не найден. Обратись к администратору.')
-    return
-  }
-
+  // Check they're actually a member of THIS crew.
   const { data: member } = await supabase
     .from('crew_members')
     .select('id')
@@ -120,17 +167,17 @@ async function handleVerify(message: any) {
 
   if (!member) {
     await sendMessage(userId,
-      `❌ Ты ещё не в крю <b>Вышки</b> на Bestie.\n\nЗайди на <b>bestiehere.com</b>, найди крю и вступи, затем попробуй снова.`
+      `❌ Ты ещё не в крю <b>${crew.name}</b> на Bestie.\n\nЗайди на <b>bestiehere.com</b>, вступи в крю и попробуй снова.`
     )
     return
   }
 
-  // All good — approve
+  // All good — approve.
   await approveJoinRequest(pending.chat_id, userId)
   await supabase.from('telegram_pending_joins').delete().eq('telegram_user_id', userId)
 
   await sendMessage(userId,
-    `✅ <b>Готово!</b> Твоя заявка одобрена.\n\nДобро пожаловать в группу! Увидимся на вышках 🏙`
+    `✅ <b>Готово!</b> Твоя заявка в <b>${crew.name}</b> одобрена.\n\nДобро пожаловать! 🎉`
   )
 }
 
@@ -153,7 +200,10 @@ export async function POST(req: NextRequest) {
       await handleJoinRequest(update)
     }
 
-    if (update.message?.text?.startsWith('/verify')) {
+    const msgText: string = update.message?.text || ''
+    if (msgText.startsWith('/link')) {
+      await handleLink(update.message)
+    } else if (msgText.startsWith('/verify')) {
       await handleVerify(update.message)
     }
 
