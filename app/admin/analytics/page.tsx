@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
 
 const GOLD = '#D4AF37'
+const GREEN = '#34D399'
 const RANGES = [
   { days: 7, label: '7d' },
   { days: 30, label: '30d' },
@@ -18,28 +19,51 @@ function fmtDuration(seconds) {
   const s = Math.max(0, Math.round(seconds || 0))
   if (s < 60) return `${s}s`
   const m = Math.floor(s / 60)
-  const r = s % 60
-  if (m < 60) return `${m}m ${r}s`
-  const h = Math.floor(m / 60)
-  return `${h}h ${m % 60}m`
+  if (m < 60) return `${m}m ${s % 60}s`
+  return `${Math.floor(m / 60)}h ${m % 60}m`
 }
 
-// Horizontal bar list — a tiny dependency-free chart.
+function Section({ title, children }) {
+  return (
+    <div style={{ marginBottom: '32px' }}>
+      <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', marginBottom: '14px' }}>{title}</h2>
+      {children}
+    </div>
+  )
+}
+
+function StatCard({ label, value, accent }) {
+  return (
+    <div style={{ flex: 1, minWidth: '130px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', padding: '16px 18px' }}>
+      <div style={{ fontSize: '24px', fontWeight: 700, color: accent || GOLD, fontFamily: 'DM Serif Display, serif' }}>{value}</div>
+      <div style={{ fontSize: '12px', color: '#A99ECC', marginTop: '4px' }}>{label}</div>
+    </div>
+  )
+}
+
+function Cards({ items }) {
+  return (
+    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
+      {items.map((it, i) => <StatCard key={i} {...it} />)}
+    </div>
+  )
+}
+
 function BarList({ title, rows, valueKey, fmt }) {
-  const max = Math.max(1, ...rows.map(r => Number(r[valueKey]) || 0))
+  const max = Math.max(1, ...(rows || []).map(r => Number(r[valueKey]) || 0))
   return (
     <div style={{ background: '#131323', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', padding: '20px' }}>
-      <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '16px', color: '#F0EAFF', marginBottom: '16px' }}>{title}</h3>
-      {rows.length === 0 ? (
+      <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '15px', color: '#F0EAFF', marginBottom: '14px' }}>{title}</h3>
+      {(!rows || rows.length === 0) ? (
         <p style={{ fontSize: '13px', color: '#6B6490' }}>No data yet</p>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
           {rows.map((r, i) => {
             const v = Number(r[valueKey]) || 0
             return (
               <div key={i}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '12px', color: '#C9BFE8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '78%' }}>{r.label || '—'}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '3px' }}>
+                  <span style={{ fontSize: '12px', color: '#C9BFE8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '76%' }}>{r.label || '—'}</span>
                   <span style={{ fontSize: '12px', color: GOLD, fontWeight: 700, flexShrink: 0 }}>{fmt ? fmt(v) : v}</span>
                 </div>
                 <div style={{ height: '6px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
@@ -54,19 +78,61 @@ function BarList({ title, rows, valueKey, fmt }) {
   )
 }
 
-function StatCard({ label, value }) {
+// Vertical mini bar chart for daily trends.
+function TrendChart({ title, rows, valueKey }) {
+  const max = Math.max(1, ...(rows || []).map(r => Number(r[valueKey]) || 0))
   return (
-    <div style={{ flex: 1, minWidth: '120px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', padding: '18px' }}>
-      <div style={{ fontSize: '26px', fontWeight: 700, color: GOLD, fontFamily: 'DM Serif Display, serif' }}>{value}</div>
-      <div style={{ fontSize: '12px', color: '#A99ECC', marginTop: '4px' }}>{label}</div>
+    <div style={{ background: '#131323', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', padding: '20px' }}>
+      <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '15px', color: '#F0EAFF', marginBottom: '14px' }}>{title}</h3>
+      {(!rows || rows.length === 0) ? (
+        <p style={{ fontSize: '13px', color: '#6B6490' }}>No data yet</p>
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: '120px' }}>
+          {rows.map((r, i) => {
+            const v = Number(r[valueKey]) || 0
+            return (
+              <div key={i} title={`${r.label}: ${v}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '100%' }}>
+                <div style={{ height: `${(v / max) * 100}%`, minHeight: v > 0 ? '3px' : '0', borderRadius: '3px 3px 0 0', background: 'linear-gradient(180deg, #D4AF37, #B8960C)' }} />
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
 
+// Funnel: stacked steps with conversion % vs the first step.
+function Funnel({ steps }) {
+  const base = Math.max(1, steps[0]?.value || 0)
+  return (
+    <div style={{ background: '#131323', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', padding: '20px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {steps.map((s, i) => {
+          const pct = Math.round((100 * (s.value || 0)) / base)
+          return (
+            <div key={i}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <span style={{ fontSize: '13px', color: '#C9BFE8' }}>{s.label}</span>
+                <span style={{ fontSize: '13px', color: GOLD, fontWeight: 700 }}>{s.value} <span style={{ color: '#6B6490', fontWeight: 400 }}>· {pct}%</span></span>
+              </div>
+              <div style={{ height: '10px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${pct}%`, borderRadius: '999px', background: i === 0 ? GREEN : 'linear-gradient(90deg, #D4AF37, #B8960C)' }} />
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+const grid2 = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }
+
 export default function AdminAnalyticsPage() {
   const router = useRouter()
   const [days, setDays] = useState(30)
-  const [data, setData] = useState(null)
+  const [d, setD] = useState(null)
   const [loading, setLoading] = useState(true)
   const [denied, setDenied] = useState(false)
 
@@ -75,16 +141,9 @@ export default function AdminAnalyticsPage() {
       setLoading(true)
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.push('/login'); return }
-      const { data: res, error } = await supabase.rpc('admin_analytics', { p_days: days })
-      if (error) {
-        // not_authorized (or anything else) → show the locked screen
-        setDenied(true)
-        setLoading(false)
-        return
-      }
-      setData(res)
-      setDenied(false)
-      setLoading(false)
+      const { data: res, error } = await supabase.rpc('admin_dashboard', { p_days: days })
+      if (error) { setDenied(true); setLoading(false); return }
+      setD(res); setDenied(false); setLoading(false)
     }
     load()
   }, [days])
@@ -102,7 +161,13 @@ export default function AdminAnalyticsPage() {
     </div>
   )
 
-  const t = data?.totals || {}
+  const o = d?.overview || {}
+  const f = d?.funnel || {}
+  const c = d?.community || {}
+  const m = d?.monetization || {}
+  const t = d?.traffic || {}
+  const s = d?.safety || {}
+  const pb = d?.profile_breakdown || {}
 
   return (
     <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
@@ -126,52 +191,116 @@ export default function AdminAnalyticsPage() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '20px' }}>
-          <StatCard label="Sessions" value={t.sessions ?? 0} />
-          <StatCard label="Page views" value={t.pageviews ?? 0} />
-          <StatCard label="Clicks" value={t.clicks ?? 0} />
-          <StatCard label="Avg time on site" value={fmtDuration(t.avg_seconds)} />
-        </div>
+        {/* 1. OVERVIEW */}
+        <Section title="Overview">
+          <Cards items={[
+            { label: 'Total users', value: o.total_users ?? 0 },
+            { label: 'New today', value: o.new_today ?? 0, accent: GREEN },
+            { label: 'New · 7d', value: o.new_7d ?? 0 },
+            { label: 'New · 30d', value: o.new_30d ?? 0 },
+            { label: 'Plus members', value: o.plus_active ?? 0 },
+            { label: 'Verified', value: o.verified ?? 0 },
+          ]} />
+          <Cards items={[
+            { label: 'DAU (active today)', value: o.dau ?? 0, accent: GREEN },
+            { label: 'WAU (7d)', value: o.wau ?? 0 },
+            { label: 'MAU (30d)', value: o.mau ?? 0 },
+            { label: 'Stickiness DAU/WAU', value: o.wau ? `${Math.round(100 * (o.dau || 0) / o.wau)}%` : '—' },
+          ]} />
+        </Section>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px', marginBottom: '16px' }}>
-          <BarList title="Devices" rows={data?.devices || []} valueKey="sessions" />
-          <BarList title="Browsers" rows={data?.browsers || []} valueKey="sessions" />
-        </div>
+        {/* 2. GROWTH */}
+        <Section title="Growth & activity (last 30 days)">
+          <div style={grid2}>
+            <TrendChart title="Sign-ups per day" rows={d?.signups_by_day || []} valueKey="count" />
+            <TrendChart title="Active users per day" rows={d?.active_by_day || []} valueKey="count" />
+          </div>
+        </Section>
 
-        {/* Avg time by device */}
-        <div style={{ background: '#131323', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', padding: '20px', marginBottom: '16px' }}>
-          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '16px', color: '#F0EAFF', marginBottom: '16px' }}>Time on site by device</h3>
-          {(data?.by_device_time || []).length === 0 ? (
-            <p style={{ fontSize: '13px', color: '#6B6490' }}>No data yet</p>
-          ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-              <thead>
-                <tr style={{ color: '#A99ECC', textAlign: 'left' }}>
-                  <th style={{ padding: '6px 0', fontWeight: 500 }}>Device</th>
-                  <th style={{ padding: '6px 0', fontWeight: 500 }}>Sessions</th>
-                  <th style={{ padding: '6px 0', fontWeight: 500 }}>Avg time</th>
-                  <th style={{ padding: '6px 0', fontWeight: 500 }}>Avg pages</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(data?.by_device_time || []).map((r, i) => (
-                  <tr key={i} style={{ borderTop: '1px solid rgba(255,255,255,0.06)', color: '#C9BFE8' }}>
-                    <td style={{ padding: '8px 0' }}>{r.label}</td>
-                    <td style={{ padding: '8px 0' }}>{r.sessions}</td>
-                    <td style={{ padding: '8px 0', color: GOLD }}>{fmtDuration(r.avg_seconds)}</td>
-                    <td style={{ padding: '8px 0' }}>{r.avg_pageviews}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+        {/* 3. FUNNEL */}
+        <Section title="Activation funnel">
+          <Funnel steps={[
+            { label: '1 · Signed up', value: f.signed_up ?? 0 },
+            { label: '2 · Completed profile', value: f.profile_complete ?? 0 },
+            { label: '3 · Verified', value: f.verified ?? 0 },
+            { label: '4 · Sent a knock', value: f.did_knock ?? 0 },
+            { label: '5 · Got a match', value: f.matched ?? 0 },
+            { label: '6 · Had a session', value: f.had_session ?? 0 },
+          ]} />
+          <div style={{ marginTop: '16px' }}>
+            <BarList title="Profile completeness (users with…)" valueKey="count" rows={[
+              { label: 'Avatar', count: pb.has_avatar ?? 0 },
+              { label: 'Bio', count: pb.has_bio ?? 0 },
+              { label: 'City', count: pb.has_city ?? 0 },
+              { label: 'Bestie Type', count: pb.has_type ?? 0 },
+              { label: 'Verified', count: pb.verified ?? 0 },
+            ]} />
+          </div>
+        </Section>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
-          <BarList title="Most visited pages" rows={data?.top_pages || []} valueKey="views" />
-          <BarList title="Exit pages (where people leave)" rows={data?.exit_pages || []} valueKey="sessions" />
-          <BarList title="Most clicked" rows={data?.top_clicks || []} valueKey="clicks" />
-        </div>
+        {/* 4. COMMUNITY */}
+        <Section title="Community (all-time)">
+          <Cards items={[
+            { label: 'Knocks sent', value: c.knocks_sent ?? 0 },
+            { label: 'Matches', value: c.matches ?? 0, accent: GREEN },
+            { label: 'Sparks given', value: c.sparks_total ?? 0 },
+            { label: 'Sessions done', value: c.sessions_done ?? 0 },
+            { label: 'Bookings', value: c.bookings_total ?? 0 },
+            { label: 'Pending bookings', value: c.bookings_pending ?? 0 },
+          ]} />
+          <Cards items={[
+            { label: 'Messages', value: c.messages_total ?? 0 },
+            { label: 'Conversations', value: c.conversations ?? 0 },
+            { label: 'Crews', value: c.crews_total ?? 0 },
+            { label: 'Crew members', value: c.crew_members ?? 0 },
+            { label: 'Avg crew size', value: c.avg_crew_size ?? 0 },
+          ]} />
+          <div style={{ marginTop: '4px' }}>
+            <BarList title="Bestie Score distribution" rows={d?.score_distribution || []} valueKey="count" />
+          </div>
+        </Section>
+
+        {/* 5. MONETIZATION */}
+        <Section title="Monetization">
+          <Cards items={[
+            { label: 'Plus (active)', value: m.plus_active ?? 0, accent: GREEN },
+            { label: 'Free', value: m.free ?? 0 },
+            { label: 'Free → Plus', value: `${m.conversion_pct ?? 0}%` },
+          ]} />
+        </Section>
+
+        {/* 6. GEOGRAPHY */}
+        <Section title="Cities">
+          <BarList title="Users by city" rows={d?.cities || []} valueKey="count" />
+        </Section>
+
+        {/* 7. TRUST & SAFETY */}
+        <Section title="Trust & safety">
+          <Cards items={[
+            { label: 'Reports', value: s.reports ?? 0, accent: '#FF6B6B' },
+            { label: 'Blocks', value: s.blocks ?? 0, accent: '#FF6B6B' },
+            { label: 'Avg rating', value: s.avg_rating ?? 0 },
+          ]} />
+        </Section>
+
+        {/* 8. TRAFFIC */}
+        <Section title={`Behaviour on site (last ${days}d)`}>
+          <Cards items={[
+            { label: 'Sessions', value: t.sessions ?? 0 },
+            { label: 'Page views', value: t.pageviews ?? 0 },
+            { label: 'Clicks', value: t.clicks ?? 0 },
+            { label: 'Avg time on site', value: fmtDuration(t.avg_seconds) },
+          ]} />
+          <div style={{ ...grid2, marginBottom: '16px' }}>
+            <BarList title="Devices" rows={d?.devices || []} valueKey="sessions" />
+            <BarList title="Browsers" rows={d?.browsers || []} valueKey="sessions" />
+          </div>
+          <div style={grid2}>
+            <BarList title="Most visited pages" rows={d?.top_pages || []} valueKey="views" />
+            <BarList title="Exit pages (where people leave)" rows={d?.exit_pages || []} valueKey="sessions" />
+            <BarList title="Most clicked" rows={d?.top_clicks || []} valueKey="clicks" />
+          </div>
+        </Section>
       </div>
     </div>
   )
