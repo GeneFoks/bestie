@@ -129,7 +129,13 @@ export default function BrowsePage() {
         .order('bestie_score', { ascending: false })
 
       if (search) {
-        query = query.or(`full_name.ilike.%${search}%,city.ilike.%${search}%,bio.ilike.%${search}%`)
+        // Strip characters that have meaning in the PostgREST or() filter
+        // grammar — commas/parentheses separate & group conditions, and %/*
+        // are ilike wildcards — so a crafted term can't inject extra filters.
+        const safe = search.replace(/[,()%*\\:"']/g, ' ').trim()
+        if (safe) {
+          query = query.or(`full_name.ilike.%${safe}%,city.ilike.%${safe}%,bio.ilike.%${safe}%`)
+        }
       }
 
       if (filter !== 'all') {
