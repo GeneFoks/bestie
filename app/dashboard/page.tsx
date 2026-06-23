@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { Button, ButtonLink } from '@/components/ui/Button'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import NotificationBell from '@/components/NotificationBell'
@@ -545,7 +546,7 @@ export default function DashboardPage() {
               <div style={{ textAlign: 'center', padding: '24px 0' }}>
                 <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(155,127,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}><Users size={26} color="#9B7FFF" strokeWidth={1.6} /></div>
                 <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '16px', maxWidth: '280px', margin: '0 auto 16px', lineHeight: 1.5 }}>You're not in any crew yet — crews are little communities for shared vibes, meetups, and events.</p>
-                <Link href="/crews" style={{ fontSize: '13px', fontWeight: 600, padding: '8px 20px', borderRadius: '10px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Find a Crew</Link>
+                <ButtonLink href="/crews" variant="primary" size="sm">Find a Crew</ButtonLink>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -668,9 +669,9 @@ export default function DashboardPage() {
               <div style={{ flex: 1, minWidth: '200px', padding: '10px 16px', borderRadius: '12px', background: '#131323', border: '1px solid rgba(255,255,255,0.12)', fontSize: '13px', color: '#A99ECC', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 bestiehere.com/signup?ref={profile.referral_code}
               </div>
-              <button onClick={handleShareRef} style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', border: 'none', color: '#09090F', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+              <Button onClick={handleShareRef} variant="primary" size="sm" style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
                 <Share2 size={15} strokeWidth={2.2} /> Share
-              </button>
+              </Button>
               <button onClick={handleCopyRef} style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: refCopied ? 'rgba(57,255,20,0.15)' : 'rgba(255,255,255,0.05)', border: refCopied ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(255,255,255,0.12)', color: refCopied ? '#34D399' : '#A99ECC', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
                 {refCopied ? '✓ Copied!' : 'Copy'}
               </button>
