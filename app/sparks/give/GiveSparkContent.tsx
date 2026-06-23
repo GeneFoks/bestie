@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
 import { createNotification } from '@/lib/notifications'
 import { celebrate, buzz } from '@/lib/celebrate'
+import { ButtonLink } from '@/components/ui/Button'
 
 const SPARK_TYPES = [
   { id: 'kind', emoji: '💛', label: 'Kind' },
@@ -222,9 +223,9 @@ export default function GiveSparkContent() {
         <p style={{ fontSize: '13px', color: '#6B6490', marginBottom: '28px' }}>
           Your Bestie Score: <span style={{ color: '#D4AF37', fontWeight: 700 }}>{myProfile?.bestie_score ?? 0}</span> / {MIN_SPARK_SCORE}
         </p>
-        <Link href="/profile/edit" style={{ display: 'inline-block', padding: '12px 28px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
+        <ButtonLink href="/profile/edit" variant="primary">
           Complete your profile →
-        </Link>
+        </ButtonLink>
       </div>
     </div>
   )
@@ -238,9 +239,9 @@ export default function GiveSparkContent() {
         <p style={{ fontSize: '15px', color: '#A99ECC', marginBottom: '24px', lineHeight: 1.5 }}>
           Sparks are a personal endorsement. You can Spark <span style={{ color: '#F0EAFF', fontWeight: 500 }}>{recipient.full_name}</span> once you’ve matched (you both knocked) or had a session together.
         </p>
-        <Link href={`/${recipient.username}`} style={{ display: 'inline-block', padding: '12px 28px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
+        <ButtonLink href={`/${recipient.username}`} variant="primary">
           Go to their profile to knock →
-        </Link>
+        </ButtonLink>
       </div>
     </div>
   )
@@ -259,9 +260,9 @@ export default function GiveSparkContent() {
             {sentTypes.map(t => SPARK_TYPES.find(s => s.id === t)?.label).join(', ')}
           </span> to {recipient.full_name}.
         </p>
-        <Link href={`/${recipient.username}`} style={{ display: 'inline-block', padding: '12px 28px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
+        <ButtonLink href={`/${recipient.username}`} variant="primary">
           Back to profile →
-        </Link>
+        </ButtonLink>
       </div>
     </div>
   )
