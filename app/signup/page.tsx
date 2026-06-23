@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Sparkles } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 
 function SignupForm() {
   const router = useRouter()
@@ -70,9 +71,9 @@ function SignupForm() {
             </div>
             {error && <div style={{ padding: '12px', borderRadius: '10px', background: 'rgba(255,80,80,0.1)', border: '1px solid rgba(255,80,80,0.2)', fontSize: '13px', color: '#ff6b6b' }}>{error}</div>}
             <p style={{ fontSize: '12px', color: '#A99ECC', textAlign: 'center' }}>By joining you agree to our terms. 18+ only.</p>
-            <button type="submit" disabled={loading} style={{ padding: '14px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none' }}>
+            <Button type="submit" variant="primary" disabled={loading} style={{ width: '100%', opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>
               {loading ? 'Creating account...' : 'Create Account →'}
-            </button>
+            </Button>
           </form>
           <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#A99ECC' }}>
             Already have an account? <Link href="/login" style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>Log in</Link>
