@@ -1,11 +1,12 @@
 'use client'
 
-import Link from 'next/link'
 import { useState } from 'react'
 import { MapPin, Users, Sparkles } from 'lucide-react'
 import { getFrameColor } from '@/lib/avatarFrame'
 import { ActivityIcon } from '@/lib/activityIcons'
 import KnockButton from '@/components/KnockButton'
+import { ButtonLink } from '@/components/ui/Button'
+import { colors } from '@/lib/tokens'
 
 interface ActivityPackage {
   title: string
@@ -49,7 +50,7 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
   const [imgError, setImgError] = useState(false)
   const mainPackage = provider.activity_packages?.[0]
   const score = provider.bestie_score || 0
-  const scoreColor = score >= 800 ? '#39FF14' : score >= 600 ? '#D4AF37' : '#9B93C0'
+  const scoreColor = score >= 800 ? colors.green : score >= 600 ? '#D4AF37' : colors.textMuted
   const initials = provider.full_name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || '??'
   const totalSessions = provider.total_sessions ?? 0
   const sparksReceived = provider.sparks_received ?? 0
@@ -96,7 +97,7 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
 
         <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
           {mainPackage && (
-            <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: 'rgba(8,8,16,0.75)', backdropFilter: 'blur(8px)', color: '#E8E0FF', border: '1px solid rgba(232,224,255,0.12)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: 'rgba(8,8,16,0.75)', backdropFilter: 'blur(8px)', color: colors.textPrimary, border: '1px solid rgba(232,224,255,0.12)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
               <ActivityIcon type={mainPackage.activity_type} size={12} color="#D4AF37" strokeWidth={1.8} /> {mainPackage.activity_type.replace(/_/g, ' ')}
             </span>
           )}
@@ -110,11 +111,11 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
         <div className="absolute bottom-0 left-0 right-0 px-4 pb-3 pt-6">
           <div className="flex items-end justify-between">
             <div>
-              <h3 className="text-base font-semibold leading-tight" style={{ color: '#E8E0FF', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+              <h3 className="text-base font-semibold leading-tight" style={{ color: colors.textPrimary, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
                 {provider.full_name}
               </h3>
               {provider.city && (
-                <p className="text-xs mt-0.5" style={{ color: '#9B93C0', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <p className="text-xs mt-0.5" style={{ color: colors.textMuted, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                   <MapPin size={11} strokeWidth={2} /> {provider.city}{provider.country ? `, ${provider.country}` : ''}
                 </p>
               )}
@@ -134,10 +135,10 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '11px', fontWeight: 700, color: scoreColor }}>BS {score}</span>
           {totalSessions > 0 && (
-            <span style={{ fontSize: '11px', color: '#9B93C0', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>· <Users size={11} strokeWidth={2} /> {totalSessions} met</span>
+            <span style={{ fontSize: '11px', color: colors.textMuted, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>· <Users size={11} strokeWidth={2} /> {totalSessions} met</span>
           )}
           {sparksReceived > 0 && (
-            <span style={{ fontSize: '11px', color: '#9B93C0', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>· <Sparkles size={11} strokeWidth={2} /> {sparksReceived}</span>
+            <span style={{ fontSize: '11px', color: colors.textMuted, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>· <Sparkles size={11} strokeWidth={2} /> {sparksReceived}</span>
           )}
           {(() => {
             const rating = provider.avg_rating ?? provider.average_rating ?? 0
@@ -145,7 +146,7 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
             return rating > 0 ? (
               <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                 <span style={{ fontSize: '10px', color: '#D4AF37' }}>★</span>
-                <span style={{ fontSize: '11px', color: '#9B93C0' }}>
+                <span style={{ fontSize: '11px', color: colors.textMuted }}>
                   {Number(rating).toFixed(1)}
                   {count > 0 && <span style={{ color: 'rgba(155,147,192,0.6)' }}> ({count})</span>}
                 </span>
@@ -155,7 +156,7 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
         </div>
 
         {provider.bio && (
-          <p className="text-xs leading-relaxed line-clamp-2" style={{ color: '#9B93C0', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+          <p className="text-xs leading-relaxed line-clamp-2" style={{ color: colors.textMuted, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
             {provider.bio}
           </p>
         )}
@@ -173,13 +174,13 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
 
         {mainPackage && (
           <div className="flex items-center justify-between py-2.5 px-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <p className="text-xs font-medium truncate pr-2" style={{ color: '#E8E0FF' }}>{mainPackage.title}</p>
+            <p className="text-xs font-medium truncate pr-2" style={{ color: colors.textPrimary }}>{mainPackage.title}</p>
             {mainPackage.is_free ? (
-              <span className="text-xs font-bold flex-shrink-0" style={{ color: '#39FF14' }}>Free</span>
+              <span className="text-xs font-bold flex-shrink-0" style={{ color: colors.green }}>Free</span>
             ) : mainPackage.price_per_session ? (
-              <span className="text-xs flex-shrink-0" style={{ color: '#E8E0FF' }}>
+              <span className="text-xs flex-shrink-0" style={{ color: colors.textPrimary }}>
                 <strong>${mainPackage.price_per_session}</strong>
-                <span style={{ color: '#9B93C0' }}>/session</span>
+                <span style={{ color: colors.textMuted }}>/session</span>
               </span>
             ) : null}
           </div>
@@ -189,13 +190,9 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
           <div style={{ flex: 1.5, display: 'flex' }}>
             <KnockButton profileId={provider.id} profileUsername={provider.username} variant="card" />
           </div>
-          <Link
-            href={`/${provider.username}`}
-            className="text-sm font-semibold rounded-xl transition-all duration-200 hover:opacity-90 active:scale-95"
-            style={{ flex: 1, textAlign: 'center', padding: '11px 14px', fontSize: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', color: '#F0EAFF', fontFamily: 'Plus Jakarta Sans, sans-serif', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >
+          <ButtonLink href={`/${provider.username}`} variant="ghost" size="sm" style={{ flex: 1 }}>
             View →
-          </Link>
+          </ButtonLink>
         </div>
       </div>
     </div>
