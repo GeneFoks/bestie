@@ -13,6 +13,7 @@ import StreakStrip from '@/components/StreakStrip'
 import OnboardingResumeBanner from '@/components/OnboardingResumeBanner'
 import OnboardingProgress from '@/components/OnboardingProgress'
 import SuggestedCrews from '@/components/SuggestedCrews'
+import CreateEventButton from '@/components/CreateEventButton'
 import {
   Camera, Pencil, MapPin, Sparkles, Mail, Inbox, Users, Calendar,
   UsersRound, Globe, Network, Search, Zap, Settings, Share2,
@@ -239,8 +240,7 @@ export default function DashboardPage() {
     { Icon: Mail,        label: 'Messages',         sub: 'Check your conversations',            href: '/messages',           badge: unreadMessages },
     { Icon: Inbox,       label: 'Bookings',         sub: 'Incoming booking requests',           href: '/bookings',           badge: pendingBookings },
     { Icon: Users,       label: 'My Crews',         sub: myCrews.length ? `${myCrews.length} crew${myCrews.length > 1 ? 's' : ''}` : 'Find or create a crew', href: '/crews', badge: totalNewCrewEvents },
-    { Icon: Calendar,    label: 'My Sessions',      sub: 'Upcoming accepted sessions',          href: '/sessions' },
-    { Icon: UsersRound,  label: 'Group Sessions',   sub: 'Host or join group meetups',          href: '/group-sessions/new', badge: upcomingGroupSessions.length || 0 },
+    { Icon: Calendar,    label: 'My Events',        sub: 'Birthdays, group sessions & meetups',  href: '/events',             badge: upcomingGroupSessions.length || 0 },
     { Icon: Globe,       label: 'City Pulse',       sub: "What's happening near you today",     href: '/pulse',              badge: pendingKnocks.length },
     { Icon: Network,     label: 'Connection Graph', sub: 'See how everyone is connected',       href: '/graph' },
     { Icon: Search,      label: 'Browse Besties',   sub: 'Find someone for your activity',      href: '/browse' },
@@ -285,7 +285,8 @@ export default function DashboardPage() {
             </h1>
             <p style={{ fontSize: '14px', color: '#A99ECC' }}>@{profile?.username || user?.email?.split('@')[0]}</p>
           </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <CreateEventButton variant="compact" />
             <button onClick={handleShare} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: copied ? 'rgba(57,255,20,0.15)' : 'linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0.08) 100%)', border: copied ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(212,175,55,0.3)', color: copied ? '#34D399' : '#D4AF37', cursor: 'pointer' }}>
               {copied ? '✓ Copied!' : (<><Share2 size={14} strokeWidth={2} style={{ verticalAlign: 'middle', marginRight: '6px' }} />Share my Passport</>)}
             </button>

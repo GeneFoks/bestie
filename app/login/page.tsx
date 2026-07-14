@@ -21,7 +21,8 @@ export default function LoginPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      router.push('/dashboard')
+      const next = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('next') : null
+      router.push(next && next.startsWith('/') ? next : '/dashboard')
     }
   }
 
