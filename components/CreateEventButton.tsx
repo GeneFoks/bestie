@@ -2,7 +2,7 @@
 
 import { useState, type CSSProperties } from 'react'
 import Link from 'next/link'
-import { Plus, UsersRound, Cake, X } from 'lucide-react'
+import { Plus, UsersRound, Cake, Users, X } from 'lucide-react'
 
 // One easy-to-reach entry point for creating any kind of event.
 // `variant`:
@@ -93,6 +93,15 @@ export default function CreateEventButton({
                 <span style={{ flex: 1 }}>
                   <span style={optTitle}>Birthday</span>
                   <span style={optSub}>Shareable page — RSVP, photo wall, gift wishlist & guest chat</span>
+                </span>
+                <span style={{ color: '#A99ECC' }}>→</span>
+              </Link>
+
+              <Link href="/crews" onClick={() => setOpen(false)} style={optionStyle}>
+                <span style={{ ...iconWrap, background: 'rgba(155,127,255,0.14)' }}><Users size={22} color="#9B7FFF" strokeWidth={1.8} /></span>
+                <span style={{ flex: 1 }}>
+                  <span style={optTitle}>Crew event</span>
+                  <span style={optSub}>Create an event inside your crew — open your crew page to add it</span>
                 </span>
                 <span style={{ color: '#A99ECC' }}>→</span>
               </Link>
