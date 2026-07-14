@@ -7,10 +7,11 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import ProfileNav from '@/components/ProfileNav'
 import BottomNav from '@/components/BottomNav'
-import { Users, UsersRound, Calendar, MapPin, Plus, ArrowUp, Sparkles } from 'lucide-react'
+import { Users, UsersRound, Calendar, MapPin, Plus, ArrowUp, Sparkles, Cake, Zap } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 import { PageLoader } from '@/components/Loading'
 import { ActivityIcon } from '@/lib/activityIcons'
+import CreateEventButton from '@/components/CreateEventButton'
 
 function isToday(ts: string | null): boolean {
   if (!ts) return false
@@ -25,7 +26,7 @@ function formatDate(dt: string) {
   return { month, day, time }
 }
 
-type Tab = 'all' | 'crew' | 'group' | 'free'
+type Tab = 'all' | 'birthday' | 'crew' | 'group' | 'free'
 
 export default function EventsPage() {
   const [myId, setMyId] = useState<string | null>(null)
@@ -35,6 +36,7 @@ export default function EventsPage() {
 
   const [crewEvents, setCrewEvents] = useState<any[]>([])
   const [groupSessions, setGroupSessions] = useState<any[]>([])
+  const [birthdays, setBirthdays] = useState<any[]>([])
   const [freeToday, setFreeToday] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>('all')
@@ -53,7 +55,7 @@ export default function EventsPage() {
       const now = new Date().toISOString()
       const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
 
-      const [{ data: ce }, { data: gs }, { data: fp }] = await Promise.all([
+      const [{ data: ce }, { data: gs }, { data: fp }, { data: bd }] = await Promise.all([
         supabase.from('crew_events')
           .select('id, title, description, datetime, location, max_attendees, crew:crews(id, name, slug, avatar_url), attendees:crew_event_attendees(count)')
           .gte('datetime', now)
@@ -72,11 +74,18 @@ export default function EventsPage() {
           .gte('free_today_at', todayStart.toISOString())
           .order('bestie_score', { ascending: false })
           .limit(24),
+
+        supabase.from('birthday_events')
+          .select('id, celebrant, title, event_date, location, cover_image, share_slug, guests:birthday_guests(count)')
+          .gte('event_date', new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString())
+          .order('event_date')
+          .limit(20),
       ])
 
       setCrewEvents(ce || [])
       setGroupSessions(gs || [])
       setFreeToday(fp || [])
+      setBirthdays(bd || [])
       setLoading(false)
     }
     init()
@@ -99,13 +108,14 @@ export default function EventsPage() {
   const cityFree = myCity ? freePeople.filter(u => u.city?.toLowerCase().includes(myCity.toLowerCase())) : []
   const otherFree = myCity ? freePeople.filter(u => !u.city?.toLowerCase().includes(myCity.toLowerCase())) : freePeople
 
-  const totalEvents = crewEvents.length + groupSessions.length
+  const totalEvents = crewEvents.length + groupSessions.length + birthdays.length
 
   const TABS: { id: Tab; label: string; Icon?: any; count?: number }[] = [
-    { id: 'all',   label: 'All',                            count: totalEvents },
-    { id: 'crew',  label: 'Crew Events',     Icon: Users,   count: crewEvents.length },
-    { id: 'group', label: 'Group Sessions',  Icon: UsersRound, count: groupSessions.length },
-    { id: 'free',  label: 'Free Today',                     count: freePeople.length },
+    { id: 'all',      label: 'All',                              count: totalEvents },
+    { id: 'birthday', label: 'Birthdays',      Icon: Cake,       count: birthdays.length },
+    { id: 'crew',     label: 'Crew Events',    Icon: Users,      count: crewEvents.length },
+    { id: 'group',    label: 'Group Sessions', Icon: UsersRound, count: groupSessions.length },
+    { id: 'free',     label: 'Free Today',                       count: freePeople.length },
   ]
 
   return (
@@ -129,12 +139,7 @@ export default function EventsPage() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-            <Link
-              href="/group-sessions/new"
-              style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '9px 16px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none', whiteSpace: 'nowrap' }}
-            >
-              <Plus size={14} strokeWidth={2.5} /> Host
-            </Link>
+            <CreateEventButton variant="compact" />
           </div>
         </div>
 
@@ -159,6 +164,16 @@ export default function EventsPage() {
             </button>
           </div>
         )}
+
+        {/* Going to — quick entry into "what I'm up to" */}
+        <Link href="/going-to" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', borderRadius: '14px', background: '#111120', border: '1px solid rgba(255,255,255,0.11)', textDecoration: 'none', marginBottom: '20px' }}>
+          <span style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(155,127,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Zap size={17} color="#9B7FFF" strokeWidth={1.9} /></span>
+          <span style={{ flex: 1 }}>
+            <span style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>Going to…</span>
+            <span style={{ display: 'block', fontSize: '12px', color: '#A99ECC' }}>Share what you're up to & see who's out</span>
+          </span>
+          <span style={{ color: '#A99ECC' }}>→</span>
+        </Link>
 
         {/* Tabs */}
         <div className="filters-scroll" style={{ display: 'flex', gap: '8px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '4px' }}>
@@ -238,6 +253,27 @@ export default function EventsPage() {
               </section>
             )}
 
+            {/* BIRTHDAYS section */}
+            {(tab === 'all' || tab === 'birthday') && (
+              <section>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', display: 'flex', alignItems: 'center', gap: '8px' }}><Cake size={13} strokeWidth={2} /> BIRTHDAYS</p>
+                  <Link href="/birthday/new" style={{ fontSize: '12px', color: '#FF6B35', textDecoration: 'none' }}>+ Create one →</Link>
+                </div>
+
+                {birthdays.length === 0 ? (
+                  <div style={{ padding: '24px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.10)', textAlign: 'center' }}>
+                    <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '10px' }}>No birthdays coming up</p>
+                    <Link href="/birthday/new" style={{ fontSize: '13px', color: '#FF6B35', textDecoration: 'none', fontWeight: 600 }}>🎂 Create a birthday page →</Link>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {birthdays.map(b => <BirthdayCard key={b.id} bday={b} />)}
+                  </div>
+                )}
+              </section>
+            )}
+
             {/* CREW EVENTS section */}
             {(tab === 'all' || tab === 'crew') && (
               <section>
@@ -284,6 +320,7 @@ export default function EventsPage() {
         )}
       </div>
 
+      <CreateEventButton variant="fab" />
       <BottomNav />
     </div>
   )
@@ -308,6 +345,33 @@ function FreePill({ user }: { user: any }) {
       <div>
         <p style={{ fontSize: '12px', fontWeight: 600, color: '#F0EAFF', margin: 0 }}>{user.full_name?.split(' ')[0]}</p>
         {user.city && <p style={{ fontSize: '10px', color: '#A99ECC', margin: 0 }}>{user.city}</p>}
+      </div>
+    </Link>
+  )
+}
+
+function BirthdayCard({ bday }: { bday: any }) {
+  const { month, day, time } = formatDate(bday.event_date)
+  const guestCount = bday.guests?.[0]?.count || 0
+  const title = bday.title || `${bday.celebrant}'s Birthday 🎉`
+  return (
+    <Link href={`/birthday/${bday.share_slug}`} style={{ display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: '#111120', border: '1px solid rgba(255,107,53,0.22)', textDecoration: 'none' }}>
+      <div style={{ flexShrink: 0, width: '44px', textAlign: 'center', paddingTop: '2px' }}>
+        <p style={{ fontSize: '10px', fontWeight: 700, color: '#FF6B35', letterSpacing: '1px' }}>{month}</p>
+        <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: '#F0EAFF', lineHeight: 1 }}>{day}</p>
+        <p style={{ fontSize: '10px', color: '#A99ECC' }}>{time}</p>
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+          <span style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(255,107,53,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Cake size={15} color="#FF6B35" strokeWidth={1.8} />
+          </span>
+          <p style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{title}</p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          {bday.location && <span style={{ fontSize: '11px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={11} strokeWidth={2} /> {bday.location}</span>}
+          <span style={{ fontSize: '11px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Users size={11} strokeWidth={2} /> {guestCount} going</span>
+        </div>
       </div>
     </Link>
   )
