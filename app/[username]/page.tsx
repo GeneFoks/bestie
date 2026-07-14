@@ -289,12 +289,12 @@ export default async function ProfilePage({ params }) {
             </div>
           </div>
 
-          {/* Bestie type pills */}
-          {(profile.energy_type || profile.mind_type || profile.vibe_type) && (
+          {/* Eterotype pills */}
+          {profile.eterotype && (
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
-              {profile.energy_type && <span style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', fontSize: '12px', color: '#D4AF37', fontWeight: 500 }}>⚡ {profile.energy_type}</span>}
-              {profile.mind_type && <span style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(155,143,255,0.1)', border: '1px solid rgba(155,143,255,0.25)', fontSize: '12px', color: '#9B7FFF', fontWeight: 500 }}>💡 {profile.mind_type}</span>}
-              {profile.vibe_type && <span style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '12px', color: '#34D399', fontWeight: 500 }}>🌊 {profile.vibe_type}</span>}
+              <span style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', fontSize: '12px', color: '#D4AF37', fontWeight: 600 }}>🧭 {profile.eterotype_name || profile.eterotype}</span>
+              {profile.eterotype_family && <span style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(155,143,255,0.1)', border: '1px solid rgba(155,143,255,0.25)', fontSize: '12px', color: '#9B7FFF', fontWeight: 500, textTransform: 'capitalize' }}>{profile.eterotype_family}</span>}
+              {profile.eterotype_collective && <span style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '12px', color: '#34D399', fontWeight: 500, textTransform: 'capitalize' }}>{profile.eterotype_collective}</span>}
             </div>
           )}
         </div>
@@ -303,9 +303,7 @@ export default async function ProfilePage({ params }) {
         <CompatibilityScore profile={{
           id: profile.id,
           city: profile.city,
-          energy_type: profile.energy_type,
-          mind_type: profile.mind_type,
-          vibe_type: profile.vibe_type,
+          eterotype: profile.eterotype,
           activity_packages: profile.activity_packages,
         }} />
 
