@@ -177,7 +177,7 @@ export default function NewGroupSessionPage() {
           <div>
             <label style={labelStyle}>Max participants</label>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {[3, 5, 6, 8, 10, 15, 20].map(n => (
+              {[3, 5, 6, 8, 10, 15, 20, 30, 50, 100].map(n => (
                 <button key={n} onClick={() => setForm(f => ({ ...f, max_participants: n }))}
                   style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '14px', fontWeight: 600, background: form.max_participants === n ? 'rgba(212,175,55,0.2)' : '#131323', border: form.max_participants === n ? '1px solid rgba(212,175,55,0.5)' : '1px solid rgba(255,255,255,0.12)', color: form.max_participants === n ? '#D4AF37' : '#A99ECC', cursor: 'pointer' }}>
                   {n}
