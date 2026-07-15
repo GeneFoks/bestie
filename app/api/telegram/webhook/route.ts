@@ -5,6 +5,10 @@ export const dynamic = 'force-dynamic'
 
 const BASE_URL = 'https://api.telegram.org/bot'
 
+// Fast-path dedupe for retries that hit the same warm instance.
+// The durable cross-instance guard is the telegram_updates table below.
+const seenUpdates = new Set<number>()
+
 function getSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -195,6 +199,20 @@ export async function POST(req: NextRequest) {
     }
 
     const update = await req.json()
+
+    // ── Dedupe: Telegram sometimes delivers the same update to several
+    // serverless instances, producing 3–4 identical bot replies. Claim the
+    // update_id in the DB (primary key); if it's already claimed, skip.
+    if (typeof update.update_id === 'number') {
+      if (seenUpdates.has(update.update_id)) return NextResponse.json({ ok: true })
+      seenUpdates.add(update.update_id)
+      const { error: dupErr } = await getSupabase()
+        .from('telegram_updates')
+        .insert({ update_id: update.update_id })
+      // 23505 = duplicate key → another instance already handled this update
+      if (dupErr && dupErr.code === '23505') return NextResponse.json({ ok: true })
+      // any other error (e.g. table missing) → proceed; in-memory set still helps
+    }
 
     if (update.chat_join_request) {
       await handleJoinRequest(update)
