@@ -8,22 +8,11 @@ import { supabase } from '@/lib/supabase'
 import ProviderCard from '@/components/ProviderCard'
 import MatchModal from '@/components/MatchModal'
 import {
-  Zap, Gamepad2, BookOpen, Palette, Heart, Moon, Coffee,
   Contact, Trophy, Flame, CalendarDays, Bell, Users, Map, Globe,
   Share2, Camera, Sparkles, ShieldCheck, Search, UserCheck,
   Target, Star, Network,
 } from 'lucide-react'
 import { LAUNCH_CITY, CITY_FOCUS } from '@/lib/launchCity'
-
-const ACTIVITY_GROUPS = [
-  { id: 'active_outdoors', Icon: Zap, label: 'Active & Outdoors', types: ['hiking', 'running', 'gym_partner', 'cycling', 'swimming', 'cold_plunge', 'yoga', 'martial_arts', 'climbing', 'trail_crew', 'fishing_crew', 'meet_irl'] },
-  { id: 'fun_social', Icon: Gamepad2, label: 'Fun & Social', types: ['game_night', 'movie_night', 'night_out', 'bar_hopping', 'karaoke', 'festival_crew', 'travel_buddy', 'wing_person', 'comedy_show', 'dance_crew', 'epic_journey', 'watch_together', 'meet_irl'] },
-  { id: 'mind_growth', Icon: BookOpen, label: 'Mind & Growth', types: ['deep_chat', 'debate_club', 'book_club', 'language_exchange', 'career_talk', 'money_talk', 'journaling', 'accountability_partner', 'storytelling_night', 'real_talk', 'vibe_call'] },
-  { id: 'creative_skills', Icon: Palette, label: 'Creative & Skills', types: ['music_lesson', 'art_together', 'photography_walk', 'cooking_together', 'dance', 'improv_acting', 'writing_club'] },
-  { id: 'emotional_support', Icon: Heart, label: 'Emotional & Support', types: ['vent_session', '3am_talk', 'hype_person', 'sobriety_buddy', 'silence_buddy', 'grief_support', 'ugly_cry_buddy', 'deep_chat', 'real_talk'] },
-  { id: 'spiritual_sacred', Icon: Moon, label: 'Spiritual & Sacred', types: ['meditation_circle', 'breathwork', 'sound_healing', 'cacao_ceremony', 'tarot', 'retreat_buddy', 'psychedelic_integration', 'nature_ritual', 'lucid_dream_club', 'yoga'] },
-  { id: 'chill_everyday', Icon: Coffee, label: 'Chill & Everyday', types: ['coffee_chat', 'digital_detox_walk', 'skincare_night', 'smoke_buddy', 'astrology_session', 'coworking', 'errand_buddy', 'meet_irl', 'walk_meet', 'vibe_call'] },
-]
 
 const FEATURES = [
   { Icon: Contact,      title: 'Social Passport',       desc: 'Your verified profile: Bestie Score, session count, sparks, badges, streak, availability. One link to share it all.' },
@@ -61,12 +50,8 @@ export default function HomePage() {
   const [showMatchModal, setShowMatchModal] = useState(false)
   const [loggedIn, setLoggedIn] = useState(false)
   const [topProviders, setTopProviders] = useState([])
-  const [activeGroup, setActiveGroup] = useState(null)
-  const [groupProviders, setGroupProviders] = useState([])
-  const [groupLoading, setGroupLoading] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
-  const [groupsRef, groupsVisible] = useReveal()
   const [leaderRef, leaderVisible] = useReveal()
   const [howRef, howVisible] = useReveal()
   const [featRef, featVisible] = useReveal()
@@ -90,37 +75,6 @@ export default function HomePage() {
 
     return () => subscription.unsubscribe()
   }, [])
-
-  const handleGroupClick = async (group) => {
-    if (activeGroup?.id === group.id) {
-      setActiveGroup(null)
-      setGroupProviders([])
-      return
-    }
-    setActiveGroup(group)
-    setGroupLoading(true)
-
-    const { data: pkgs } = await supabase
-      .from('activity_packages')
-      .select('provider_id')
-      .in('activity_type', group.types)
-
-    const userIds = [...new Set(pkgs?.map(p => p.provider_id) || [])]
-
-    if (userIds.length > 0) {
-      const { data } = await supabase
-        .from('users')
-        .select('*, activity_packages(*)')
-        .in('id', userIds)
-        .order('bestie_score', { ascending: false })
-        .limit(6)
-      setGroupProviders(data || [])
-    } else {
-      // Honest empty: no fallback masquerading as filtered results.
-      setGroupProviders([])
-    }
-    setGroupLoading(false)
-  }
 
   return (
     <div style={{ background: '#09090F', minHeight: '100vh', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
@@ -373,59 +327,6 @@ export default function HomePage() {
           >
             ✨ Try Smart Match — let us find your Bestie
           </button>
-        </div>
-      </section>
-
-      {/* ── ACTIVITY GROUPS ── */}
-      <section style={{ padding: '0 20px 56px', overflow: 'hidden' }}>
-        <div ref={groupsRef} className={`reveal ${groupsVisible ? 'visible' : ''}`} style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
-          <p className="section-label" style={{ textAlign: 'center' }}>FIND BY VIBE</p>
-          <div className="groups-grid">
-            {ACTIVITY_GROUPS.map(group => {
-              const active = activeGroup?.id === group.id
-              return (
-                <button
-                  key={group.id}
-                  className={`group-btn ${active ? 'active' : ''}`}
-                  onClick={() => handleGroupClick(group)}
-                >
-                  <span className="group-icon"><group.Icon size={22} color={active ? '#D4AF37' : '#A99ECC'} strokeWidth={1.8} /></span>
-                  <span style={{ fontSize: '11px', fontWeight: 600, color: active ? '#D4AF37' : '#A99ECC', textAlign: 'center', lineHeight: 1.3 }}>{group.label}</span>
-                </button>
-              )
-            })}
-          </div>
-
-          {activeGroup && (
-            <div style={{ marginTop: '36px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <activeGroup.Icon size={20} color="#D4AF37" strokeWidth={1.8} />
-                  {activeGroup.label}
-                </h2>
-                <Link href="/browse" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none', transition: 'opacity 0.2s' }} onMouseEnter={e=>e.target.style.opacity='.7'} onMouseLeave={e=>e.target.style.opacity='1'}>See all →</Link>
-              </div>
-              {groupLoading ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-                  {[1, 2, 3].map(i => (
-                    <div key={i} style={{ height: '380px', borderRadius: '20px', background: 'linear-gradient(90deg, #111120 25%, #141424 50%, #111120 75%)', backgroundSize: '400px 100%', animation: 'shimmer 1.5s infinite' }} />
-                  ))}
-                </div>
-              ) : groupProviders.length > 0 ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-                  {groupProviders.map(p => <ProviderCard key={p.id} provider={p} />)}
-                </div>
-              ) : (
-                <div style={{ textAlign: 'center', padding: '48px', background: 'rgba(15,15,30,0.7)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.10)', backdropFilter: 'blur(12px)' }}>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(212,175,55,0.10)', border: '1px solid rgba(212,175,55,0.18)', marginBottom: '14px' }}>
-                    <Search size={24} color="#D4AF37" strokeWidth={1.6} />
-                  </div>
-                  <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '18px' }}>No Besties for this vibe yet</p>
-                  <Link href="/signup" className="btn-sm-gold">Be the first →</Link>
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </section>
 
