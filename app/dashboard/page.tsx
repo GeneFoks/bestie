@@ -11,7 +11,6 @@ import { usePushNotifications } from '@/lib/usePushNotifications'
 import FindFriends from '@/components/FindFriends'
 import { PageLoader } from '@/components/Loading'
 import StreakStrip from '@/components/StreakStrip'
-import OnboardingResumeBanner from '@/components/OnboardingResumeBanner'
 import OnboardingProgress from '@/components/OnboardingProgress'
 import SuggestedCrews from '@/components/SuggestedCrews'
 import CreateEventButton from '@/components/CreateEventButton'
@@ -262,7 +261,6 @@ export default function DashboardPage() {
 
       <div style={{ maxWidth: '960px', margin: '0 auto', padding: '40px 24px' }}>
 
-        <OnboardingResumeBanner />
         <OnboardingProgress />
 
         {/* Bestie Plus upsell — hidden for active Plus members */}

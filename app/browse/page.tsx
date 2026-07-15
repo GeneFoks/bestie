@@ -10,7 +10,6 @@ import { ActivityIcon } from '@/lib/activityIcons'
 import { EmptyState } from '@/components/EmptyState'
 import { CardSkeleton } from '@/components/Loading'
 import { Search, Sparkles, Flame, X, Zap, Gamepad2, BookOpen, Palette, Heart, Moon, Coffee, Users } from 'lucide-react'
-import OnboardingResumeBanner from '@/components/OnboardingResumeBanner'
 
 const FILTER_GROUPS = [
   { id: 'active',    label: 'Active & Outdoors',  Icon: Zap,       filters: [
@@ -218,7 +217,6 @@ export default function BrowsePage() {
       </nav>
 
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 24px' }}>
-        <OnboardingResumeBanner />
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', fontWeight: 700, color: '#F0EAFF', marginBottom: '8px' }}>Browse Besties</h1>
