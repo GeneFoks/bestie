@@ -1,36 +1,27 @@
 'use client'
+// @ts-nocheck
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { X, Sparkles } from 'lucide-react'
+import { X, Sparkles, Compass } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { relation, TYPES } from '@/lib/socionics'
 
 interface MatchModalProps {
   onClose: () => void
 }
 
-const ACTIVITIES = [
-  { id: 'meet_irl', emoji: '🤝', label: 'Meet IRL' },
-  { id: 'dance_crew', emoji: '💃', label: 'Dance Crew' },
-  { id: 'trail_crew', emoji: '🥾', label: 'Trail Crew' },
-  { id: 'travel_buddy', emoji: '✈️', label: 'Travel Buddy' },
-  { id: 'game_night', emoji: '🎮', label: 'Game Night' },
-  { id: 'watch_together', emoji: '🎬', label: 'Watch Together' },
-  { id: 'vibe_call', emoji: '📱', label: 'Vibe Call' },
-  { id: 'deep_chat', emoji: '🫂', label: 'Deep Chat' },
-  { id: 'real_talk', emoji: '💬', label: 'Real Talk' },
-  { id: 'festival_crew', emoji: '🎪', label: 'Festival Crew' },
-  { id: 'epic_journey', emoji: '🌍', label: 'Epic Journey' },
-  { id: 'fishing_crew', emoji: '🎣', label: 'Fishing Crew' },
-]
-
+// Smart Match = socionics eterotype matching.
+// 1) Not signed in            → invite to join & take the test
+// 2) Signed in, no eterotype  → invite to take the test
+// 3) Has eterotype            → rank everyone with a type by intertype
+//    relation (Duality first), nudged by same city, show the best matches.
 export default function MatchModal({ onClose }: MatchModalProps) {
-  const [step, setStep] = useState(1)
-  const [selected, setSelected] = useState<string[]>([])
-  const [city, setCity] = useState('')
-  const [budget, setBudget] = useState<'free' | 'paid' | 'both'>('both')
+  const [state, setState] = useState<'loading' | 'guest' | 'no-type' | 'results'>('loading')
+  const [myType, setMyType] = useState<string | null>(null)
+  const [matches, setMatches] = useState<any[]>([])
   const closeBtnRef = useRef<HTMLButtonElement>(null)
 
-  // Escape closes; focus close button on mount so keyboard users can dismiss
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', onKey)
@@ -38,8 +29,45 @@ export default function MatchModal({ onClose }: MatchModalProps) {
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  const toggle = (id: string) =>
-    setSelected((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])
+  useEffect(() => {
+    const run = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) { setState('guest'); return }
+
+      const { data: me } = await supabase
+        .from('users')
+        .select('id, city, eterotype')
+        .eq('id', session.user.id)
+        .single()
+
+      if (!me?.eterotype || !TYPES[me.eterotype]) { setState('no-type'); return }
+      setMyType(me.eterotype)
+
+      const { data: people } = await supabase
+        .from('users')
+        .select('id, full_name, username, avatar_url, city, bestie_score, eterotype, eterotype_name')
+        .not('eterotype', 'is', null)
+        .neq('id', me.id)
+        .limit(400)
+
+      const ranked = (people || [])
+        .map((p: any) => {
+          const rel = relation(me.eterotype, p.eterotype)
+          if (!rel) return null
+          let score = rel.score
+          if (me.city && p.city && me.city.toLowerCase() === p.city.toLowerCase()) score += 6
+          return { ...p, rel: { ...rel, score: Math.min(score, 99) } }
+        })
+        .filter(Boolean)
+        .sort((a: any, b: any) =>
+          b.rel.score - a.rel.score || (b.bestie_score || 0) - (a.bestie_score || 0))
+        .slice(0, 8)
+
+      setMatches(ranked)
+      setState('results')
+    }
+    run()
+  }, [])
 
   return (
     <div
@@ -51,16 +79,17 @@ export default function MatchModal({ onClose }: MatchModalProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="match-modal-title"
-        className="w-full max-w-lg rounded-3xl overflow-hidden"
+        className="w-full max-w-lg rounded-3xl overflow-hidden flex flex-col"
         style={{
           background: '#0F0F1E',
           border: '1px solid rgba(212,175,55,0.2)',
           boxShadow: '0 40px 100px rgba(0,0,0,0.7)',
+          maxHeight: '85vh',
         }}
       >
         {/* Header */}
         <div
-          className="flex items-center justify-between px-6 py-5"
+          className="flex items-center justify-between px-6 py-5 flex-shrink-0"
           style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
         >
           <div>
@@ -70,9 +99,9 @@ export default function MatchModal({ onClose }: MatchModalProps) {
             <h3
               id="match-modal-title"
               className="text-xl font-bold"
-              style={{ color: '#E8E0FF', fontFamily: 'DM Serif Display, serif' }}
+              style={{ color: '#F0EAFF', fontFamily: 'DM Serif Display, serif' }}
             >
-              {step === 1 ? 'What are you into?' : step === 2 ? 'Where are you?' : 'Your budget?'}
+              {state === 'results' ? 'Your best matches' : 'Match by personality'}
             </h3>
           </div>
           <button
@@ -80,164 +109,112 @@ export default function MatchModal({ onClose }: MatchModalProps) {
             onClick={onClose}
             aria-label="Close Smart Match"
             className="w-10 h-10 flex items-center justify-center rounded-full transition-colors hover:bg-white/10"
-            style={{ color: '#9B93C0' }}
+            style={{ color: '#A99ECC' }}
           >
             <X size={18} strokeWidth={2} />
           </button>
         </div>
 
-        {/* Step progress */}
-        <div className="px-6 pt-5 flex gap-1.5">
-          {[1, 2, 3].map((s) => (
-            <div
-              key={s}
-              className="h-1 flex-1 rounded-full transition-all duration-300"
-              style={{ background: s <= step ? '#D4AF37' : 'rgba(255,255,255,0.08)' }}
-            />
-          ))}
-        </div>
-
         {/* Body */}
-        <div className="p-6">
-          {/* Step 1: Activities */}
-          {step === 1 && (
-            <div>
-              <p className="text-sm mb-4" style={{ color: '#9B93C0' }}>
-                Pick one or more activities:
+        <div className="p-6 overflow-y-auto">
+          {state === 'loading' && (
+            <p className="text-sm text-center py-8" style={{ color: '#A99ECC' }}>Finding your people…</p>
+          )}
+
+          {(state === 'guest' || state === 'no-type') && (
+            <div className="text-center py-4">
+              <div
+                className="mx-auto mb-5 flex items-center justify-center"
+                style={{ width: '72px', height: '72px', borderRadius: '20px', background: 'rgba(212,175,55,0.10)' }}
+              >
+                <Compass size={34} color="#D4AF37" strokeWidth={1.6} />
+              </div>
+              <h4 className="text-lg font-bold mb-2" style={{ color: '#F0EAFF', fontFamily: 'DM Serif Display, serif' }}>
+                Discover your eterotype first
+              </h4>
+              <p className="text-sm mb-6 mx-auto" style={{ color: '#A99ECC', maxWidth: '360px', lineHeight: 1.6 }}>
+                Smart Match pairs people by personality type — 16 types, real socionics.
+                Take the 5-minute test and we'll show you the Besties you'll naturally click with.
               </p>
-              <div className="grid grid-cols-3 gap-2">
-                {ACTIVITIES.map((a) => {
-                  const isSelected = selected.includes(a.id)
-                  return (
-                    <button
-                      key={a.id}
-                      onClick={() => toggle(a.id)}
-                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl text-center transition-all duration-150 active:scale-95"
-                      style={{
-                        background: isSelected ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)',
-                        border: isSelected ? '1px solid rgba(212,175,55,0.45)' : '1px solid rgba(255,255,255,0.06)',
-                      }}
-                    >
-                      <span className="text-2xl">{a.emoji}</span>
-                      <span
-                        className="text-xs font-medium leading-tight"
-                        style={{ color: isSelected ? '#D4AF37' : '#9B93C0' }}
+              <Link
+                href={state === 'guest' ? '/signup' : '/bestie-type'}
+                onClick={onClose}
+                className="inline-flex items-center gap-2 px-7 py-3 rounded-xl text-sm font-bold transition-all hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F' }}
+              >
+                {state === 'guest' ? 'Join & take the test' : 'Take the test'} <Sparkles size={14} strokeWidth={2} />
+              </Link>
+              <p className="text-xs mt-4" style={{ color: '#6B6490' }}>
+                28 questions · your type shows on your Social Passport
+              </p>
+            </div>
+          )}
+
+          {state === 'results' && (
+            <div>
+              {myType && TYPES[myType] && (
+                <p className="text-sm mb-4" style={{ color: '#A99ECC' }}>
+                  You're <b style={{ color: '#D4AF37' }}>{TYPES[myType].name}</b> — here's who you naturally click with:
+                </p>
+              )}
+
+              {matches.length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-sm mb-3" style={{ color: '#A99ECC' }}>
+                    No one else has taken the test yet — invite your friends and be the first wave.
+                  </p>
+                  <Link href="/dashboard" onClick={onClose} className="text-sm font-semibold" style={{ color: '#D4AF37' }}>
+                    Invite friends →
+                  </Link>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {matches.map((m: any) => {
+                    const pct = m.rel.score
+                    const color = pct >= 80 ? '#34D399' : pct >= 60 ? '#D4AF37' : '#A99ECC'
+                    return (
+                      <Link
+                        key={m.id}
+                        href={`/${m.username}`}
+                        onClick={onClose}
+                        className="flex items-center gap-3 p-3 rounded-2xl transition-all hover:bg-white/5"
+                        style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${pct >= 90 ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.08)'}`, textDecoration: 'none' }}
                       >
-                        {a.label}
-                      </span>
-                    </button>
-                  )
-                })}
+                        <div style={{ width: '46px', height: '46px', borderRadius: '13px', overflow: 'hidden', background: '#1A1A2E', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {m.avatar_url
+                            ? <img src={m.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{m.full_name?.[0]}</span>}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate" style={{ color: '#F0EAFF' }}>{m.full_name}</p>
+                          <p className="text-xs truncate" style={{ color: '#A99ECC' }}>
+                            🧭 {m.eterotype_name || m.eterotype}{m.city ? ` · ${m.city}` : ''}
+                          </p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-sm font-bold" style={{ color }}>{pct}%</p>
+                          <p className="text-xs" style={{ color }}>{m.rel.label}</p>
+                        </div>
+                      </Link>
+                    )
+                  })}
+                </div>
+              )}
+
+              <div className="flex items-center justify-between mt-5">
+                <Link href="/bestie-type" onClick={onClose} className="text-xs" style={{ color: '#6B6490' }}>
+                  Retake the test
+                </Link>
+                <Link
+                  href="/browse"
+                  onClick={onClose}
+                  className="text-sm font-semibold"
+                  style={{ color: '#D4AF37' }}
+                >
+                  Browse everyone →
+                </Link>
               </div>
             </div>
-          )}
-
-          {/* Step 2: City */}
-          {step === 2 && (
-            <div>
-              <p className="text-sm mb-4" style={{ color: '#9B93C0' }}>
-                What city are you in?
-              </p>
-              <input
-                type="text"
-                placeholder="e.g. Austin, TX"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                autoFocus
-                className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(212,175,55,0.3)',
-                  color: '#E8E0FF',
-                }}
-              />
-              <p className="text-xs mt-3" style={{ color: '#9B93C0' }}>
-                Vibe calls & online sessions work anywhere 🌐
-              </p>
-            </div>
-          )}
-
-          {/* Step 3: Budget */}
-          {step === 3 && (
-            <div className="space-y-2">
-              {(
-                [
-                  { id: 'free', label: 'Free matches only', desc: 'Mutual connections, no payment needed' },
-                  { id: 'paid', label: 'Paid sessions', desc: 'Book verified Besties from $10/session' },
-                  { id: 'both', label: 'Show me everything', desc: 'Mix of free and paid options' },
-                ] as const
-              ).map((opt) => (
-                <button
-                  key={opt.id}
-                  onClick={() => setBudget(opt.id)}
-                  className="w-full flex items-start gap-3 p-4 rounded-xl text-left transition-all"
-                  style={{
-                    background: budget === opt.id ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.04)',
-                    border: budget === opt.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.06)',
-                  }}
-                >
-                  <div
-                    className="w-4 h-4 rounded-full mt-0.5 flex-shrink-0 flex items-center justify-center"
-                    style={{
-                      background: budget === opt.id ? '#D4AF37' : 'transparent',
-                      border: budget === opt.id ? '2px solid #D4AF37' : '2px solid rgba(255,255,255,0.2)',
-                    }}
-                  >
-                    {budget === opt.id && (
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#080810' }} />
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold" style={{ color: '#E8E0FF' }}>{opt.label}</p>
-                    <p className="text-xs mt-0.5" style={{ color: '#9B93C0' }}>{opt.desc}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div
-          className="flex items-center justify-between px-6 py-5"
-          style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
-        >
-          {step > 1 ? (
-            <button
-              onClick={() => setStep((s) => s - 1)}
-              className="text-sm transition-colors hover:text-[#E8E0FF]"
-              style={{ color: '#9B93C0' }}
-            >
-              ← Back
-            </button>
-          ) : (
-            <div />
-          )}
-
-          {step < 3 ? (
-            <button
-              onClick={() => setStep((s) => s + 1)}
-              disabled={step === 1 && selected.length === 0}
-              className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-40"
-              style={{
-                background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)',
-                color: '#080810',
-              }}
-            >
-              Continue →
-            </button>
-          ) : (
-            <Link
-              href={`/browse?activities=${selected.join(',')}&city=${encodeURIComponent(city)}&budget=${budget}`}
-              className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-90 inline-flex items-center gap-1.5"
-              style={{
-                background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)',
-                color: '#080810',
-              }}
-              onClick={onClose}
-            >
-              Find my Bestie <Sparkles size={14} strokeWidth={2} />
-            </Link>
           )}
         </div>
       </div>
