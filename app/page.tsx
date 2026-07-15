@@ -300,8 +300,8 @@ export default function HomePage() {
           {/* Subtitle */}
           <p className="hero-sub" style={{ fontSize: 'clamp(15px, 2vw, 17px)', color: '#A99ECC', marginBottom: '36px', maxWidth: '460px', margin: '0 auto 36px', lineHeight: 1.65 }}>
             {CITY_FOCUS
-              ? `Find a Bestie for any activity in ${LAUNCH_CITY.name}. Verified profiles. Bestie Score. No awkwardness.`
-              : 'Find a Bestie for any activity. Verified profiles. Bestie Score. No awkwardness.'}
+              ? `Find a Bestie for any activity in ${LAUNCH_CITY.name}. Real people. Bestie Score. No awkwardness.`
+              : 'Find a Bestie for any activity. Real people. Bestie Score. No awkwardness.'}
           </p>
 
           {/* Search bar */}
@@ -836,7 +836,7 @@ export default function HomePage() {
           <div style={{ display: 'flex', gap: '20px', fontSize: '13px', flexWrap: 'wrap' }}>
             {[
               { href: '/browse', label: 'Browse' }, { href: '/crews', label: 'Crews' },
-              { href: '/pulse', label: 'Pulse' }, { href: '#plans', label: 'Plans' }, { href: '#how-it-works', label: 'How It Works' }, { href: '/score-guide', label: 'Bestie Score' }, { href: '/signup', label: 'Join' },
+              { href: '/pulse', label: 'Pulse' }, { href: '#plans', label: 'Plans' }, { href: '#how-it-works', label: 'How It Works' }, { href: '/score-guide', label: 'Bestie Score' }, { href: '/terms', label: 'Terms' }, { href: '/privacy', label: 'Privacy' }, { href: '/signup', label: 'Join' },
             ].map(l => (
               <Link key={l.label} href={l.href} style={{ color: '#6B6490', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#A99ECC'} onMouseLeave={e=>e.target.style.color='#6B6490'}>{l.label}</Link>
             ))}

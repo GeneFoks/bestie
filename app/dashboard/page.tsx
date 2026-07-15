@@ -263,8 +263,9 @@ export default function DashboardPage() {
 
         <OnboardingProgress />
 
-        {/* Bestie Plus upsell — hidden for active Plus members */}
-        {profile && !(profile.subscription_tier === 'plus' && (!profile.plus_expires_at || new Date(profile.plus_expires_at) > new Date())) && (
+        {/* Bestie Plus upsell — hidden for active Plus members and for brand-new
+            users (no confirmed meetup yet): don't sell before they've felt value */}
+        {profile && (profile.total_sessions || 0) > 0 && !(profile.subscription_tier === 'plus' && (!profile.plus_expires_at || new Date(profile.plus_expires_at) > new Date())) && (
           <Link href="/plus" style={{ textDecoration: 'none', display: 'block', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '18px 20px', borderRadius: '18px', background: 'linear-gradient(135deg, rgba(155,127,255,0.16), rgba(124,92,255,0.08))', border: '1px solid rgba(155,127,255,0.35)' }}>
               <div style={{ fontSize: '30px', lineHeight: 1 }}>✦</div>

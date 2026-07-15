@@ -70,7 +70,7 @@ function SignupForm() {
               <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Min 6 characters" required minLength={6} style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', boxSizing: 'border-box' }} />
             </div>
             {error && <div style={{ padding: '12px', borderRadius: '10px', background: 'rgba(255,80,80,0.1)', border: '1px solid rgba(255,80,80,0.2)', fontSize: '13px', color: '#ff6b6b' }}>{error}</div>}
-            <p style={{ fontSize: '12px', color: '#A99ECC', textAlign: 'center' }}>By joining you agree to our terms. 18+ only.</p>
+            <p style={{ fontSize: '12px', color: '#A99ECC', textAlign: 'center' }}>By joining you agree to the <Link href="/terms" style={{ color: '#D4AF37', textDecoration: 'none' }}>Terms of Service</Link> and <Link href="/privacy" style={{ color: '#D4AF37', textDecoration: 'none' }}>Privacy Policy</Link>. 18+ only.</p>
             <Button type="submit" variant="primary" disabled={loading} style={{ width: '100%', opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>
               {loading ? 'Creating account...' : 'Create Account →'}
             </Button>
