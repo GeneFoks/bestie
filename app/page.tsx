@@ -836,7 +836,7 @@ export default function HomePage() {
           <div style={{ display: 'flex', gap: '20px', fontSize: '13px', flexWrap: 'wrap' }}>
             {[
               { href: '/browse', label: 'Browse' }, { href: '/crews', label: 'Crews' },
-              { href: '/pulse', label: 'Pulse' }, { href: '#plans', label: 'Plans' }, { href: '#how-it-works', label: 'How It Works' }, { href: '/score-guide', label: 'Bestie Score' }, { href: '/signup', label: 'Join' },
+              { href: '/pulse', label: 'Pulse' }, { href: '#plans', label: 'Plans' }, { href: '#how-it-works', label: 'How It Works' }, { href: '/score-guide', label: 'Bestie Score' }, { href: '/terms', label: 'Terms' }, { href: '/privacy', label: 'Privacy' }, { href: '/signup', label: 'Join' },
             ].map(l => (
               <Link key={l.label} href={l.href} style={{ color: '#6B6490', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#A99ECC'} onMouseLeave={e=>e.target.style.color='#6B6490'}>{l.label}</Link>
             ))}
