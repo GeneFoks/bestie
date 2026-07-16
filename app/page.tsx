@@ -50,6 +50,7 @@ export default function HomePage() {
   const [showMatchModal, setShowMatchModal] = useState(false)
   const [loggedIn, setLoggedIn] = useState(false)
   const [topProviders, setTopProviders] = useState([])
+  const [upcomingEvents, setUpcomingEvents] = useState([])
   const [menuOpen, setMenuOpen] = useState(false)
 
   const [leaderRef, leaderVisible] = useReveal()
@@ -72,6 +73,23 @@ export default function HomePage() {
       .gt('bestie_score', 0)
       .limit(6)
       .then(({ data }) => setTopProviders(data || []))
+
+    // Upcoming events (group sessions + birthdays), merged & sorted by date.
+    // The section renders only when there's something real to show.
+    const now = new Date().toISOString()
+    Promise.all([
+      supabase.from('group_sessions')
+        .select('id, title, activity_type, scheduled_at, location, host:users!host_id(full_name)')
+        .in('status', ['open', 'full']).gte('scheduled_at', now)
+        .order('scheduled_at').limit(6),
+      supabase.from('birthday_events')
+        .select('id, celebrant, title, event_date, location, share_slug')
+        .gte('event_date', now).order('event_date').limit(6),
+    ]).then(([gs, bd]) => {
+      const a = (gs.data || []).map(e => ({ kind: 'session', id: e.id, title: e.title, when: e.scheduled_at, location: e.location, sub: e.host?.full_name ? `by ${e.host.full_name.split(' ')[0]}` : '', href: `/group-sessions/${e.id}` }))
+      const b = (bd.data || []).map(e => ({ kind: 'birthday', id: e.id, title: e.title || `${e.celebrant}'s Birthday 🎂`, when: e.event_date, location: e.location, sub: 'Birthday', href: `/birthday/${e.share_slug}` }))
+      setUpcomingEvents([...a, ...b].sort((x, y) => new Date(x.when) - new Date(y.when)).slice(0, 6))
+    })
 
     return () => subscription.unsubscribe()
   }, [])
@@ -257,9 +275,8 @@ export default function HomePage() {
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none', letterSpacing: '-0.3px' }}>BESTIE</Link>
         <div className="nav-links">
           <Link href="/browse" className="nav-link">Browse</Link>
+          <Link href="/events" className="nav-link">Events</Link>
           <Link href="/crews" className="nav-link">Crews</Link>
-<Link href="/pulse" className="nav-link">Pulse</Link>
-          <Link href="/graph" className="nav-link">Graph</Link>
           <Link href="#plans" className="nav-link">Plans</Link>
           <Link href="#how-it-works" className="nav-link">How It Works</Link>
           <Link href="#score" className="nav-link">Bestie Score</Link>
@@ -347,6 +364,41 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+
+      {/* ── UPCOMING EVENTS (only when there are real events) ── */}
+      {upcomingEvents.length > 0 && (
+        <section style={{ padding: '0 20px 56px', overflow: 'hidden' }}>
+          <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div>
+                <p className="section-label">HAPPENING SOON</p>
+                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 700, color: '#F0EAFF' }}>{CITY_FOCUS ? `Upcoming in ${LAUNCH_CITY.name}` : 'Upcoming events'}</h2>
+              </div>
+              <Link href="/events" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none', marginBottom: '2px' }}>See all →</Link>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px' }}>
+              {upcomingEvents.map(ev => {
+                const d = new Date(ev.when)
+                return (
+                  <Link key={`${ev.kind}-${ev.id}`} href={ev.href} style={{ display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: '#111120', border: ev.kind === 'birthday' ? '1px solid rgba(255,107,53,0.22)' : '1px solid rgba(255,255,255,0.11)', textDecoration: 'none' }}>
+                    <div style={{ flexShrink: 0, width: '44px', textAlign: 'center' }}>
+                      <p style={{ fontSize: '10px', fontWeight: 700, color: ev.kind === 'birthday' ? '#FF6B35' : '#D4AF37', letterSpacing: '1px' }}>{d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}</p>
+                      <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: '#F0EAFF', lineHeight: 1 }}>{d.getDate()}</p>
+                      <p style={{ fontSize: '10px', color: '#A99ECC' }}>{d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.title}</p>
+                      <p style={{ fontSize: '12px', color: '#A99ECC', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {ev.sub}{ev.location ? ` · ${ev.location}` : ''}
+                      </p>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── TOP BESTIES ── */}
       <section style={{ padding: '0 20px 72px', overflow: 'hidden' }}>
