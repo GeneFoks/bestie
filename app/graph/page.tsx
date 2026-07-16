@@ -501,7 +501,7 @@ export default function GraphPage() {
           <p style={{ fontSize: '11px', color: '#A99ECC', marginBottom: '4px' }}>@{hovered.username}{hovered.city ? ` · ${hovered.city}` : ''}</p>
           <div style={{ display: 'flex', gap: '10px' }}>
             <span style={{ fontSize: '11px', color: scoreColor(hovered.score), fontWeight: 700 }}>BS {hovered.score}</span>
-            <span style={{ fontSize: '11px', color: '#A99ECC' }}>{hovered.sessions} sessions</span>
+            <span style={{ fontSize: '11px', color: '#A99ECC' }}>{hovered.sessions} meetups</span>
           </div>
         </div>
       )}
@@ -514,7 +514,7 @@ export default function GraphPage() {
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
             <EmptyState
               Icon={Network}
-              title="Your graph is empty"
+              title="Your circle is empty"
               description="Every confirmed session draws a line. Book your first to start building."
               primaryCTA={{ label: 'Browse Besties', href: '/browse' }}
               accent="purple"

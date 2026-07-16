@@ -434,7 +434,7 @@ export default function EditProfilePage() {
               style={{ marginTop: '2px', accentColor: '#D4AF37', cursor: 'pointer' }}
             />
             <div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>Hide me from the Connection Graph</div>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>Hide me from My Circle</div>
               <div style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.5 }}>Other people won't see who you've met or had sessions with. Your profile and bookings still work as usual.</div>
             </div>
           </label>
@@ -451,7 +451,7 @@ export default function EditProfilePage() {
                 />
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>🕸️ Show me on the Connection Graph</span>
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>🕸️ Show me in My Circle</span>
                     <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 7px', borderRadius: '999px', background: 'rgba(155,127,255,0.15)', border: '1px solid rgba(155,127,255,0.4)', color: '#9B7FFF' }}>PLUS</span>
                   </div>
                   <div style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.5 }}>Appear on the graph even before your first session, so people can discover you.</div>
@@ -460,7 +460,7 @@ export default function EditProfilePage() {
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '12px', borderRadius: '12px', background: 'rgba(155,127,255,0.06)', border: '1px solid rgba(155,127,255,0.2)' }}>
                 <div>
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>🕸️ Show me on the Connection Graph</div>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>🕸️ Show me in My Circle</div>
                   <div style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.5 }}>Appear on the graph and let people discover you — a Plus feature.</div>
                 </div>
                 <a href="/plus" style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '999px', background: 'linear-gradient(135deg, #9B7FFF, #7C5CFF)', color: '#fff', fontSize: '12px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>Plus →</a>
