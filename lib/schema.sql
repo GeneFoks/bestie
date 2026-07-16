@@ -1,3 +1,6 @@
+-- ⚠️ STALE — original bootstrap only. The real production schema lives in
+-- lib/SCHEMA_SNAPSHOT.md (+ lib/migration_*.sql applied after it). Do not run.
+
 -- BESTIE — Supabase Schema
 -- Run this in Supabase SQL editor
 
