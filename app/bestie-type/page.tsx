@@ -22,11 +22,24 @@ export default function BestieTypePage() {
   const [result, setResult] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [userId, setUserId] = useState(null)
+  const [shared, setShared] = useState(false)
 
+  // The test is public — guests can take it. Their result is kept in
+  // localStorage so it survives the signup detour and can be saved later.
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) router.push('/login')
-      else setUserId(user.id)
+      if (user) setUserId(user.id)
+      try {
+        const pending = localStorage.getItem('bestie_pending_type')
+        if (pending) {
+          const p = JSON.parse(pending)
+          if (p?.key && TYPES[p.key]) {
+            setResult(p.key)
+            if (p.birthDate) setBirthDate(p.birthDate)
+            setStep('result')
+          }
+        }
+      } catch {}
     })
   }, [])
 
@@ -35,7 +48,24 @@ export default function BestieTypePage() {
   const handleAnswer = (pole: number) => {
     const next = [...answers]; next[currentQ] = pole; setAnswers(next)
     if (currentQ < QUESTIONS.length - 1) setCurrentQ(currentQ + 1)
-    else { setResult(computeKey(next)); setStep('result') }
+    else {
+      const key = computeKey(next)
+      setResult(key)
+      try { localStorage.setItem('bestie_pending_type', JSON.stringify({ key, birthDate })) } catch {}
+      setStep('result')
+    }
+  }
+
+  const handleShare = async () => {
+    if (!result) return
+    const t = TYPES[result]
+    const text = `My eterotype: ${t.name} 🧭 ${ELEMENTS[t.fam].name} family · ${ELEMENTS[t.col].name} collective. What's yours?`
+    const url = 'https://bestiehere.com/bestie-type'
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try { await navigator.share({ title: 'My eterotype', text, url }); return } catch { return }
+    }
+    navigator.clipboard.writeText(`${text}\n${url}`)
+    setShared(true); setTimeout(() => setShared(false), 2000)
   }
 
   const handleSave = async () => {
@@ -50,6 +80,7 @@ export default function BestieTypePage() {
       bestie_type_completed: true,
       ...(birthDate ? { birth_date: birthDate } : {}),
     }).eq('id', userId)
+    try { localStorage.removeItem('bestie_pending_type') } catch {}
     setSaving(false)
     router.push('/dashboard')
   }
@@ -159,8 +190,22 @@ export default function BestieTypePage() {
             </ul>
           </div>
 
-          <button onClick={handleSave} disabled={saving} style={{ width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: `linear-gradient(135deg, ${GOLD} 0%, #B8960C 100%)`, color: BG, border: 'none', cursor: 'pointer' }}>
-            {saving ? 'Saving…' : 'Save to my passport →'}
+          {userId ? (
+            <button onClick={handleSave} disabled={saving} style={{ width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: `linear-gradient(135deg, ${GOLD} 0%, #B8960C 100%)`, color: BG, border: 'none', cursor: 'pointer' }}>
+              {saving ? 'Saving…' : 'Save to my passport →'}
+            </button>
+          ) : (
+            <>
+              <Link href="/signup" style={{ display: 'block', textAlign: 'center', width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: `linear-gradient(135deg, ${GOLD} 0%, #B8960C 100%)`, color: BG, textDecoration: 'none', boxSizing: 'border-box' }}>
+                Join Bestie — save it & meet your matches →
+              </Link>
+              <p style={{ fontSize: '12px', color: MUT, textAlign: 'center', marginTop: '10px' }}>
+                Your result is kept — it saves to your passport automatically after you sign up.
+              </p>
+            </>
+          )}
+          <button onClick={handleShare} style={{ width: '100%', marginTop: '12px', padding: '14px', borderRadius: '14px', fontSize: '14px', fontWeight: 700, background: shared ? 'rgba(52,211,153,0.12)' : '#131323', border: shared ? '1px solid rgba(52,211,153,0.35)' : '1px solid rgba(255,255,255,0.12)', color: shared ? '#34D399' : TXT, cursor: 'pointer' }}>
+            {shared ? '✓ Copied — send it to a friend' : '↗ Share my type'}
           </button>
           <button onClick={start} style={{ width: '100%', marginTop: '12px', padding: '14px', borderRadius: '14px', fontSize: '14px', background: '#131323', border: '1px solid rgba(255,255,255,0.12)', color: MUT, cursor: 'pointer' }}>
             Retake

@@ -50,6 +50,7 @@ export default function HomePage() {
   const [showMatchModal, setShowMatchModal] = useState(false)
   const [loggedIn, setLoggedIn] = useState(false)
   const [topProviders, setTopProviders] = useState([])
+  const [upcomingEvents, setUpcomingEvents] = useState([])
   const [menuOpen, setMenuOpen] = useState(false)
 
   const [leaderRef, leaderVisible] = useReveal()
@@ -72,6 +73,23 @@ export default function HomePage() {
       .gt('bestie_score', 0)
       .limit(6)
       .then(({ data }) => setTopProviders(data || []))
+
+    // Upcoming events (group sessions + birthdays), merged & sorted by date.
+    // The section renders only when there's something real to show.
+    const now = new Date().toISOString()
+    Promise.all([
+      supabase.from('group_sessions')
+        .select('id, title, activity_type, scheduled_at, location, host:users!host_id(full_name)')
+        .in('status', ['open', 'full']).gte('scheduled_at', now)
+        .order('scheduled_at').limit(6),
+      supabase.from('birthday_events')
+        .select('id, celebrant, title, event_date, location, share_slug')
+        .gte('event_date', now).order('event_date').limit(6),
+    ]).then(([gs, bd]) => {
+      const a = (gs.data || []).map(e => ({ kind: 'session', id: e.id, title: e.title, when: e.scheduled_at, location: e.location, sub: e.host?.full_name ? `by ${e.host.full_name.split(' ')[0]}` : '', href: `/group-sessions/${e.id}` }))
+      const b = (bd.data || []).map(e => ({ kind: 'birthday', id: e.id, title: e.title || `${e.celebrant}'s Birthday 🎂`, when: e.event_date, location: e.location, sub: 'Birthday', href: `/birthday/${e.share_slug}` }))
+      setUpcomingEvents([...a, ...b].sort((x, y) => new Date(x.when) - new Date(y.when)).slice(0, 6))
+    })
 
     return () => subscription.unsubscribe()
   }, [])
@@ -257,9 +275,8 @@ export default function HomePage() {
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none', letterSpacing: '-0.3px' }}>BESTIE</Link>
         <div className="nav-links">
           <Link href="/browse" className="nav-link">Browse</Link>
+          <Link href="/events" className="nav-link">Events</Link>
           <Link href="/crews" className="nav-link">Crews</Link>
-<Link href="/pulse" className="nav-link">Pulse</Link>
-          <Link href="/graph" className="nav-link">Graph</Link>
           <Link href="#plans" className="nav-link">Plans</Link>
           <Link href="#how-it-works" className="nav-link">How It Works</Link>
           <Link href="#score" className="nav-link">Bestie Score</Link>
@@ -329,6 +346,59 @@ export default function HomePage() {
           </button>
         </div>
       </section>
+
+      {/* ── ETEROTYPE TEST (public, no signup needed) ── */}
+      <section style={{ padding: '0 20px 56px', overflow: 'hidden' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <Link href="/bestie-type" style={{ display: 'block', textDecoration: 'none', borderRadius: '24px', padding: 'clamp(24px, 4vw, 40px)', background: 'linear-gradient(135deg, rgba(212,175,55,0.10) 0%, rgba(155,127,255,0.08) 100%)', border: '1px solid rgba(212,175,55,0.25)', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '220px', height: '220px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '52px', flexShrink: 0 }}>🧭</span>
+              <div style={{ flex: 1, minWidth: '220px' }}>
+                <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#D4AF37', marginBottom: '6px' }}>FREE · 5 MINUTES · NO SIGNUP</p>
+                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(20px, 4vw, 28px)', color: '#F0EAFF', marginBottom: '6px', lineHeight: 1.2 }}>What's your eterotype?</h2>
+                <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.6, maxWidth: '540px' }}>28 questions reveal your personality type — one of 16. It powers who you'll naturally click with on Bestie.</p>
+              </div>
+              <span style={{ flexShrink: 0, padding: '14px 26px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', whiteSpace: 'nowrap' }}>Take the test →</span>
+            </div>
+          </Link>
+        </div>
+      </section>
+
+      {/* ── UPCOMING EVENTS (only when there are real events) ── */}
+      {upcomingEvents.length > 0 && (
+        <section style={{ padding: '0 20px 56px', overflow: 'hidden' }}>
+          <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div>
+                <p className="section-label">HAPPENING SOON</p>
+                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 700, color: '#F0EAFF' }}>{CITY_FOCUS ? `Upcoming in ${LAUNCH_CITY.name}` : 'Upcoming events'}</h2>
+              </div>
+              <Link href="/events" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none', marginBottom: '2px' }}>See all →</Link>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px' }}>
+              {upcomingEvents.map(ev => {
+                const d = new Date(ev.when)
+                return (
+                  <Link key={`${ev.kind}-${ev.id}`} href={ev.href} style={{ display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: '#111120', border: ev.kind === 'birthday' ? '1px solid rgba(255,107,53,0.22)' : '1px solid rgba(255,255,255,0.11)', textDecoration: 'none' }}>
+                    <div style={{ flexShrink: 0, width: '44px', textAlign: 'center' }}>
+                      <p style={{ fontSize: '10px', fontWeight: 700, color: ev.kind === 'birthday' ? '#FF6B35' : '#D4AF37', letterSpacing: '1px' }}>{d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}</p>
+                      <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: '#F0EAFF', lineHeight: 1 }}>{d.getDate()}</p>
+                      <p style={{ fontSize: '10px', color: '#A99ECC' }}>{d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.title}</p>
+                      <p style={{ fontSize: '12px', color: '#A99ECC', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {ev.sub}{ev.location ? ` · ${ev.location}` : ''}
+                      </p>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── TOP BESTIES ── */}
       <section style={{ padding: '0 20px 72px', overflow: 'hidden' }}>

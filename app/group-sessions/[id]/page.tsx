@@ -70,6 +70,13 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
     load()
   }
 
+  const handleDelete = async () => {
+    if (!confirm('Delete this event permanently? This cannot be undone.')) return
+    const { error } = await supabase.from('group_sessions').delete().eq('id', params.id)
+    if (error) { alert(`Could not delete: ${error.message}`); return }
+    router.push('/events')
+  }
+
   const handleShare = () => {
     const url = `https://bestiehere.com/group-sessions/${params.id}`
     navigator.clipboard.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) })
@@ -188,6 +195,9 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
                       Cancel
                     </button>
                   )}
+                  <button onClick={handleDelete} style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.2)', color: '#FF6B6B', cursor: 'pointer' }}>
+                    🗑 Delete
+                  </button>
                 </>
               ) : isParticipant ? (
                 <>

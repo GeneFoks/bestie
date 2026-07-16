@@ -219,7 +219,20 @@ export default function BirthdayPage() {
         )}
 
         {isHost && (
-          <p style={{ textAlign: 'center', fontSize: '12px', color: '#6B6490', marginTop: '24px' }}>You're the host · share the link above to invite guests</p>
+          <div style={{ textAlign: 'center', marginTop: '24px' }}>
+            <p style={{ fontSize: '12px', color: '#6B6490', marginBottom: '10px' }}>You're the host · share the link above to invite guests</p>
+            <button
+              onClick={async () => {
+                if (!confirm('Delete this birthday page permanently? Guests, photos, wishlist and chat will be removed.')) return
+                const { error } = await supabase.from('birthday_events').delete().eq('id', event.id)
+                if (error) { alert(`Could not delete: ${error.message}`); return }
+                router.push('/events')
+              }}
+              style={{ fontSize: '12px', color: '#FF6B6B', background: 'none', border: '1px solid rgba(255,80,80,0.25)', borderRadius: '10px', padding: '8px 16px', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+            >
+              🗑 Delete event
+            </button>
+          </div>
         )}
       </div>
     </div>
