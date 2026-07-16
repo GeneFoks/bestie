@@ -330,6 +330,24 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── ETEROTYPE TEST (public, no signup needed) ── */}
+      <section style={{ padding: '0 20px 56px', overflow: 'hidden' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <Link href="/bestie-type" style={{ display: 'block', textDecoration: 'none', borderRadius: '24px', padding: 'clamp(24px, 4vw, 40px)', background: 'linear-gradient(135deg, rgba(212,175,55,0.10) 0%, rgba(155,127,255,0.08) 100%)', border: '1px solid rgba(212,175,55,0.25)', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '220px', height: '220px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '52px', flexShrink: 0 }}>🧭</span>
+              <div style={{ flex: 1, minWidth: '220px' }}>
+                <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#D4AF37', marginBottom: '6px' }}>FREE · 5 MINUTES · NO SIGNUP</p>
+                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(20px, 4vw, 28px)', color: '#F0EAFF', marginBottom: '6px', lineHeight: 1.2 }}>What's your eterotype?</h2>
+                <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.6, maxWidth: '540px' }}>28 questions reveal your personality type — one of 16. It powers who you'll naturally click with on Bestie.</p>
+              </div>
+              <span style={{ flexShrink: 0, padding: '14px 26px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', whiteSpace: 'nowrap' }}>Take the test →</span>
+            </div>
+          </Link>
+        </div>
+      </section>
+
       {/* ── TOP BESTIES ── */}
       <section style={{ padding: '0 20px 72px', overflow: 'hidden' }}>
         <div ref={leaderRef} className={`reveal ${leaderVisible ? 'visible' : ''}`} style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
