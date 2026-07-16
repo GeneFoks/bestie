@@ -51,6 +51,7 @@ export default function HomePage() {
   const [loggedIn, setLoggedIn] = useState(false)
   const [topProviders, setTopProviders] = useState([])
   const [upcomingEvents, setUpcomingEvents] = useState([])
+  const [hasType, setHasType] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
   const [leaderRef, leaderVisible] = useReveal()
@@ -63,7 +64,14 @@ export default function HomePage() {
   const [graphRef, graphVisible] = useReveal()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setLoggedIn(!!session))
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setLoggedIn(!!session)
+      // Hide the test promo for people who already took it
+      if (session) {
+        supabase.from('users').select('bestie_type_completed, eterotype').eq('id', session.user.id).single()
+          .then(({ data }) => setHasType(!!(data?.bestie_type_completed || data?.eterotype)))
+      }
+    })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setLoggedIn(!!session))
 
     supabase
@@ -347,7 +355,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── ETEROTYPE TEST (public, no signup needed) ── */}
+      {/* ── ETEROTYPE TEST (public, no signup needed; hidden once taken) ── */}
+      {!hasType && (
       <section style={{ padding: '0 20px 56px', overflow: 'hidden' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <Link href="/bestie-type" style={{ display: 'block', textDecoration: 'none', borderRadius: '24px', padding: 'clamp(24px, 4vw, 40px)', background: 'linear-gradient(135deg, rgba(212,175,55,0.10) 0%, rgba(155,127,255,0.08) 100%)', border: '1px solid rgba(212,175,55,0.25)', position: 'relative', overflow: 'hidden' }}>
@@ -364,6 +373,7 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+      )}
 
       {/* ── UPCOMING EVENTS (only when there are real events) ── */}
       {upcomingEvents.length > 0 && (
@@ -612,8 +622,8 @@ export default function HomePage() {
                   <text x="300" y="249" textAnchor="middle" fontSize="8" fill="#A99ECC" fontFamily="Plus Jakarta Sans, sans-serif">Sam</text>
 
                   {/* Labels */}
-                  <text x="130" y="130" fontSize="9" fill="#D4AF37" fontFamily="Plus Jakarta Sans, sans-serif" opacity="0.7">✓ 3 sessions</text>
-                  <text x="170" y="145" fontSize="9" fill="#D4AF37" fontFamily="Plus Jakarta Sans, sans-serif" opacity="0.5">✓ 1 session</text>
+                  <text x="130" y="130" fontSize="9" fill="#D4AF37" fontFamily="Plus Jakarta Sans, sans-serif" opacity="0.7">✓ 3 meetups</text>
+                  <text x="170" y="145" fontSize="9" fill="#D4AF37" fontFamily="Plus Jakarta Sans, sans-serif" opacity="0.5">✓ 1 meetup</text>
 
                   {/* "2nd degree" hint */}
                   <text x="30"  y="262" fontSize="8" fill="#6B6490" fontFamily="Plus Jakarta Sans, sans-serif">2nd degree</text>
@@ -628,7 +638,7 @@ export default function HomePage() {
                   Your social web,<br /><em style={{ color: '#A99ECC', fontStyle: 'italic' }}>built automatically.</em>
                 </h2>
                 <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.7, marginBottom: '20px' }}>
-                  Every confirmed session draws a line between two people. No followers, no tags — only real IRL connections. Thicker edge = more sessions.
+                  Every confirmed meetup draws a line between two people. No followers, no tags — only real IRL connections. Thicker edge = more meetups.
                 </p>
                 <Link href="/graph" className="btn-gold" style={{ fontSize: '13px', padding: '10px 22px' }}>Open Connection Graph →</Link>
               </div>
