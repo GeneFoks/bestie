@@ -1,4 +1,4 @@
-// Socionics ("Socionics of the Elements") — the eterotype system
+// Classical socionics (16 types) — the eterotype system
 // used across Bestie: the test, the Social Passport, and compatibility.
 //
 // Key = 4 letters in order [E/I][S/N][L/F][R/X].

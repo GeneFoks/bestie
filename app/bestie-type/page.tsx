@@ -19,10 +19,10 @@ const MUT = '#A99ECC'
 const UI = {
   en: {
     title: 'Discover your eterotype',
-    lead: '28 questions · about 5 minutes. You’ll learn your personality type in the «Socionics of the Elements» system — your family (core values) and collective (how you act). It appears on your Social Passport and powers your matches.',
+    lead: '28 questions · about 5 minutes. You’ll learn your eterotype — one of 16 personality types: your family (core values) and collective (how you act). It appears on your Social Passport and powers your matches.',
     honest: 'Choose not «what’s right» but how it most often happens by itself. There are no wrong answers.',
     birth: 'Date of birth', optional: '(optional)', start: 'Start →', skip: 'Skip for now',
-    credit: 'Based on the «Socionics of the Elements» system.',
+    credit: 'The Eterotype test is built on classical socionics — a 16-type personality typology.',
     yourType: 'YOUR ETEROTYPE', proto: 'prototype in classic socionics',
     family: 'Family', collective: 'Collective',
     values: 'YOUR VALUES · FAMILY', mode: 'YOUR MODE OF ACTION · COLLECTIVE', strengths: 'YOUR STRENGTHS',
@@ -34,10 +34,10 @@ const UI = {
   },
   ru: {
     title: 'Узнай свой этеротип',
-    lead: '28 вопросов · около 5 минут. Ты узнаешь свой тип по системе «Соционика стихий»: семью — твои глубинные ценности, и коллектив — твою природную форму деятельности. Тип появится в твоём социальном паспорте и будет влиять на подбор людей.',
+    lead: '28 вопросов · около 5 минут. Ты узнаешь свой этеротип — один из 16 типов личности: семью — твои глубинные ценности, и коллектив — твою природную форму деятельности. Тип появится в твоём социальном паспорте и будет влиять на подбор людей.',
     honest: 'Выбирай не «как правильно», а как чаще всего происходит само. Здесь нет неправильных ответов.',
     birth: 'Дата рождения', optional: '(необязательно)', start: 'Начать →', skip: 'Пропустить',
-    credit: 'В основе — система «Соционика стихий».',
+    credit: 'Тест «Этеротип» построен на классической соционике — типологии из 16 типов личности.',
     yourType: 'ТВОЙ ЭТЕРОТИП', proto: 'прототип в классической соционике',
     family: 'Семья', collective: 'Коллектив',
     values: 'ТВОИ ЦЕННОСТИ · СЕМЬЯ', mode: 'ТВОЯ ФОРМА ДЕЯТЕЛЬНОСТИ · КОЛЛЕКТИВ', strengths: 'ТВОЯ СИЛА',
