@@ -65,11 +65,6 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
     load()
   }
 
-  const handleCancel = async () => {
-    await supabase.from('group_sessions').update({ status: 'cancelled' }).eq('id', params.id)
-    load()
-  }
-
   const handleDelete = async () => {
     if (!confirm('Delete this event permanently? This cannot be undone.')) return
     const { error } = await supabase.from('group_sessions').delete().eq('id', params.id)
@@ -189,11 +184,6 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
                     <Link href={`/group-sessions/${params.id}/edit`} style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: '#131323', border: '1px solid rgba(255,255,255,0.12)', color: '#A99ECC', cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
                       Edit
                     </Link>
-                  )}
-                  {!isPast && (
-                    <button onClick={handleCancel} style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.2)', color: '#FF6B6B', cursor: 'pointer' }}>
-                      Cancel
-                    </button>
                   )}
                   <button onClick={handleDelete} style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.2)', color: '#FF6B6B', cursor: 'pointer' }}>
                     🗑 Delete
