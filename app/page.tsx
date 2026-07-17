@@ -23,7 +23,7 @@ const FEATURES = [
   { Icon: Users,       title: 'Group Sessions',        desc: 'Host open meetups for 3–20 people. Set a date, location, and max size. Anyone can join, share, or leave.' },
   { Icon: Map,         title: 'Nearby Map',            desc: 'See Besties near you on a live map. Pins show their session tier — gold for veterans, white glow for the most active.' },
   { Icon: Globe,       title: 'City Pulse',            desc: "Live feed of who's free today, upcoming group sessions, and what's happening in your city right now." },
-  { Icon: Network,     title: 'Connection Graph',      desc: 'A live web of every real connection made on Bestie. Clusters form naturally — your crew, your city, your world.' },
+  { Icon: Network,     title: 'My Circle',      desc: 'A live web of every real connection made on Bestie. Clusters form naturally — your crew, your city, your world.' },
   { Icon: Camera,      title: 'Session Memories',      desc: 'After every session, record your mood, what you did, and add a photo. Your passport becomes a living story of real moments.' },
   { Icon: Sparkles,    title: 'Sparks',                desc: '30 rare tokens you earn at signup. Give up to 3 per person, 1 per type. The rarest signal of real trust.' },
   { Icon: ShieldCheck, title: 'Block & Report',        desc: 'Session-gated safety tools — only people who\'ve actually met can block or report. Keeps the community honest.' },
@@ -51,6 +51,7 @@ export default function HomePage() {
   const [loggedIn, setLoggedIn] = useState(false)
   const [topProviders, setTopProviders] = useState([])
   const [upcomingEvents, setUpcomingEvents] = useState([])
+  const [hasType, setHasType] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
   const [leaderRef, leaderVisible] = useReveal()
@@ -63,7 +64,14 @@ export default function HomePage() {
   const [graphRef, graphVisible] = useReveal()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setLoggedIn(!!session))
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setLoggedIn(!!session)
+      // Hide the test promo for people who already took it
+      if (session) {
+        supabase.from('users').select('bestie_type_completed, eterotype').eq('id', session.user.id).single()
+          .then(({ data }) => setHasType(!!(data?.bestie_type_completed || data?.eterotype)))
+      }
+    })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setLoggedIn(!!session))
 
     supabase
@@ -347,7 +355,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── ETEROTYPE TEST (public, no signup needed) ── */}
+      {/* ── ETEROTYPE TEST (public, no signup needed; hidden once taken) ── */}
+      {!hasType && (
       <section style={{ padding: '0 20px 56px', overflow: 'hidden' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <Link href="/bestie-type" style={{ display: 'block', textDecoration: 'none', borderRadius: '24px', padding: 'clamp(24px, 4vw, 40px)', background: 'linear-gradient(135deg, rgba(212,175,55,0.10) 0%, rgba(155,127,255,0.08) 100%)', border: '1px solid rgba(212,175,55,0.25)', position: 'relative', overflow: 'hidden' }}>
@@ -364,6 +373,7 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+      )}
 
       {/* ── UPCOMING EVENTS (only when there are real events) ── */}
       {upcomingEvents.length > 0 && (
@@ -529,7 +539,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── CONNECTION GRAPH ── */}
+      {/* ── MY CIRCLE ── */}
       <section id="graph" style={{ padding: '0 20px 80px' }}>
         <div ref={graphRef} className={`reveal ${graphVisible ? 'visible' : ''}`} style={{ maxWidth: '980px', margin: '0 auto' }}>
           <div style={{ borderRadius: '28px', background: 'rgba(15,15,30,0.6)', border: '1px solid rgba(155,147,192,0.12)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', overflow: 'hidden' }}>
@@ -612,8 +622,8 @@ export default function HomePage() {
                   <text x="300" y="249" textAnchor="middle" fontSize="8" fill="#A99ECC" fontFamily="Plus Jakarta Sans, sans-serif">Sam</text>
 
                   {/* Labels */}
-                  <text x="130" y="130" fontSize="9" fill="#D4AF37" fontFamily="Plus Jakarta Sans, sans-serif" opacity="0.7">✓ 3 sessions</text>
-                  <text x="170" y="145" fontSize="9" fill="#D4AF37" fontFamily="Plus Jakarta Sans, sans-serif" opacity="0.5">✓ 1 session</text>
+                  <text x="130" y="130" fontSize="9" fill="#D4AF37" fontFamily="Plus Jakarta Sans, sans-serif" opacity="0.7">✓ 3 meetups</text>
+                  <text x="170" y="145" fontSize="9" fill="#D4AF37" fontFamily="Plus Jakarta Sans, sans-serif" opacity="0.5">✓ 1 meetup</text>
 
                   {/* "2nd degree" hint */}
                   <text x="30"  y="262" fontSize="8" fill="#6B6490" fontFamily="Plus Jakarta Sans, sans-serif">2nd degree</text>
@@ -623,14 +633,14 @@ export default function HomePage() {
 
               {/* Right: explanation (compact) */}
               <div style={{ padding: '32px 28px' }}>
-                <p className="section-label">CONNECTION GRAPH</p>
+                <p className="section-label">MY CIRCLE</p>
                 <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 32px)', fontWeight: 700, color: '#F0EAFF', lineHeight: 1.2, marginBottom: '12px' }}>
                   Your social web,<br /><em style={{ color: '#A99ECC', fontStyle: 'italic' }}>built automatically.</em>
                 </h2>
                 <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.7, marginBottom: '20px' }}>
-                  Every confirmed session draws a line between two people. No followers, no tags — only real IRL connections. Thicker edge = more sessions.
+                  Every confirmed meetup draws a line between two people. No followers, no tags — only real IRL connections. Thicker edge = more meetups.
                 </p>
-                <Link href="/graph" className="btn-gold" style={{ fontSize: '13px', padding: '10px 22px' }}>Open Connection Graph →</Link>
+                <Link href="/graph" className="btn-gold" style={{ fontSize: '13px', padding: '10px 22px' }}>Open My Circle →</Link>
               </div>
             </div>
           </div>

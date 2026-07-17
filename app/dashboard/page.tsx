@@ -242,7 +242,7 @@ export default function DashboardPage() {
     { Icon: Users,       label: 'My Crews',         sub: myCrews.length ? `${myCrews.length} crew${myCrews.length > 1 ? 's' : ''}` : 'Find or create a crew', href: '/crews', badge: totalNewCrewEvents },
     { Icon: Calendar,    label: 'My Events',        sub: 'Birthdays, group sessions & meetups',  href: '/events',             badge: upcomingGroupSessions.length || 0 },
     { Icon: Globe,       label: 'City Pulse',       sub: "What's happening near you today",     href: '/pulse',              badge: pendingKnocks.length },
-    { Icon: Network,     label: 'Connection Graph', sub: 'See how everyone is connected',       href: '/graph' },
+    { Icon: Network,     label: 'My Circle', sub: 'See how everyone is connected',       href: '/graph' },
     { Icon: Search,      label: 'Browse Besties',   sub: 'Find someone for your activity',      href: '/browse' },
     { Icon: Zap,         label: 'Going to',         sub: "Share what you're up to today",       href: '/going-to' },
     { Icon: Settings,    label: 'Edit profile',     sub: 'Bio, photo, city, activities',        href: '/profile/edit' },
