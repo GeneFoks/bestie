@@ -50,7 +50,9 @@ export default function NewGroupSessionPage() {
     scheduled_at: '',
     location: '',
     max_participants: 6,
+    ticket_price: '',
   })
+  const [isAmbassador, setIsAmbassador] = useState(false)
   const [coverFile, setCoverFile] = useState<File | null>(null)
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -67,9 +69,11 @@ export default function NewGroupSessionPage() {
   }
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) router.push('/login')
-      else setUserId(user.id)
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) { router.push('/login'); return }
+      setUserId(user.id)
+      const { data } = await supabase.from('users').select('is_ambassador, is_admin').eq('id', user.id).single()
+      setIsAmbassador(!!(data?.is_ambassador || data?.is_admin))
     })
   }, [])
 
@@ -98,6 +102,7 @@ export default function NewGroupSessionPage() {
       scheduled_at: new Date(form.scheduled_at).toISOString(),
       location: form.location || null,
       max_participants: parseInt(form.max_participants) || 6,
+      ticket_price: isAmbassador && form.ticket_price ? Math.max(0, parseFloat(form.ticket_price) || 0) : 0,
       cover_image_url,
     }).select().single()
     setSaving(false)
@@ -200,6 +205,31 @@ export default function NewGroupSessionPage() {
                 style={{ flexShrink: 0, width: '72px', textAlign: 'center', padding: '8px 6px', borderRadius: '10px', fontSize: '16px', fontWeight: 700, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37', outline: 'none' }}
               />
             </div>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Ticket price</label>
+            {isAmbassador ? (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '18px', fontWeight: 700, color: '#D4AF37' }}>$</span>
+                  <input
+                    type="number" min={0} step="0.5" placeholder="0 = free event"
+                    value={form.ticket_price}
+                    onChange={e => setForm(f => ({ ...f, ticket_price: e.target.value }))}
+                    style={{ ...inputStyle, maxWidth: '160px' }}
+                  />
+                </div>
+                <p style={{ fontSize: '11px', color: '#A99ECC', marginTop: '6px' }}>
+                  Guests pay when they join. Platform fee 10% · payouts weekly.
+                </p>
+              </div>
+            ) : (
+              <div style={{ padding: '14px 16px', borderRadius: '14px', background: 'rgba(212,175,55,0.05)', border: '1px dashed rgba(212,175,55,0.3)' }}>
+                <p style={{ fontSize: '13px', color: '#F0EAFF', marginBottom: '4px' }}>👑 Paid events with ticket sales are available to <b style={{ color: '#D4AF37' }}>Bestie Ambassadors</b>.</p>
+                <Link href="/ambassador" style={{ fontSize: '13px', fontWeight: 600, color: '#D4AF37', textDecoration: 'none' }}>Become an ambassador →</Link>
+              </div>
+            )}
           </div>
 
           <button onClick={handleCreate} disabled={saving || !form.title || !form.scheduled_at}
