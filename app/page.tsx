@@ -382,7 +382,7 @@ export default function HomePage() {
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '20px' }}>
               <div>
                 <p className="section-label">HAPPENING SOON</p>
-                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 700, color: '#F0EAFF' }}>{CITY_FOCUS ? `Upcoming in ${LAUNCH_CITY.name}` : 'Upcoming events'}</h2>
+                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 700, color: '#F0EAFF' }}>Upcoming events</h2>
               </div>
               <Link href="/events" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none', marginBottom: '2px' }}>See all →</Link>
             </div>
