@@ -65,6 +65,17 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
     load()
   }
 
+  const handleTransferHost = async (p: any) => {
+    const name = p.user?.full_name?.split(' ')[0] || 'this participant'
+    if (!confirm(`Make ${name} the host? You'll stay in the event as a participant, but they'll get full control (edit, delete, hosting).`)) return
+    const { error } = await supabase.rpc('transfer_group_session_host', {
+      p_session_id: params.id,
+      p_new_host_id: p.user_id,
+    })
+    if (error) { alert(`Could not transfer: ${error.message}`); return }
+    load()
+  }
+
   const handleDelete = async () => {
     if (!confirm('Delete this event permanently? This cannot be undone.')) return
     const { error } = await supabase.from('group_sessions').delete().eq('id', params.id)
@@ -222,15 +233,25 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {participants.map(p => (
-                <Link key={p.user_id} href={`/${p.user?.username}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', background: '#1A1A2E', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {p.user?.avatar_url ? <img src={p.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{p.user?.full_name?.[0]}</span>}
-                  </div>
-                  <div>
-                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>{p.user?.full_name}</p>
-                    <p style={{ fontSize: '12px', color: '#A99ECC' }}>@{p.user?.username}</p>
-                  </div>
-                </Link>
+                <div key={p.user_id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <Link href={`/${p.user?.username}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none', flex: 1, minWidth: 0 }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', background: '#1A1A2E', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {p.user?.avatar_url ? <img src={p.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{p.user?.full_name?.[0]}</span>}
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.user?.full_name}</p>
+                      <p style={{ fontSize: '12px', color: '#A99ECC' }}>@{p.user?.username}</p>
+                    </div>
+                  </Link>
+                  {isHost && !isPast && (
+                    <button
+                      onClick={() => handleTransferHost(p)}
+                      style={{ flexShrink: 0, padding: '6px 12px', borderRadius: '9px', fontSize: '11px', fontWeight: 700, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', whiteSpace: 'nowrap' }}
+                    >
+                      👑 Make host
+                    </button>
+                  )}
+                </div>
               ))}
               {/* Empty spots */}
               {spotsLeft > 0 && !isFull && Array.from({ length: Math.min(spotsLeft, 4) }).map((_, i) => (
