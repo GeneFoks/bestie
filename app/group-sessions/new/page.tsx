@@ -93,7 +93,7 @@ export default function NewGroupSessionPage() {
       title: form.title,
       activity_type: form.activity_type || null,
       description: form.description || null,
-      scheduled_at: form.scheduled_at,
+      scheduled_at: new Date(form.scheduled_at).toISOString(),
       location: form.location || null,
       max_participants: parseInt(form.max_participants) || 6,
       cover_image_url,

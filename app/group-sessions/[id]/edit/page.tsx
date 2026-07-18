@@ -38,6 +38,13 @@ const ACTIVITY_GROUPS = [
   ]},
 ]
 
+// UTC ISO from the DB → "YYYY-MM-DDTHH:mm" in the viewer's timezone
+function toLocalInput(iso: string): string {
+  const d = new Date(iso)
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
+  return d.toISOString().slice(0, 16)
+}
+
 export default function EditGroupSessionPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -61,7 +68,8 @@ export default function EditGroupSessionPage({ params }: { params: { id: string 
         title: gs.title || '',
         activity_type: gs.activity_type || '',
         description: gs.description || '',
-        scheduled_at: gs.scheduled_at ? gs.scheduled_at.slice(0, 16) : '',
+        // DB stores UTC; datetime-local wants local wall-clock time
+        scheduled_at: gs.scheduled_at ? toLocalInput(gs.scheduled_at) : '',
         location: gs.location || '',
         max_participants: gs.max_participants || 6,
         cover_image_url: gs.cover_image_url || null,
@@ -105,7 +113,7 @@ export default function EditGroupSessionPage({ params }: { params: { id: string 
       title: form.title,
       activity_type: form.activity_type || null,
       description: form.description || null,
-      scheduled_at: form.scheduled_at,
+      scheduled_at: new Date(form.scheduled_at).toISOString(),
       location: form.location || null,
       max_participants: parseInt(form.max_participants) || 6,
       cover_image_url,

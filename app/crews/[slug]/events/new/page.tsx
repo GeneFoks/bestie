@@ -75,7 +75,7 @@ export default function NewEventPage() {
         title: title.trim(),
         description: description.trim() || null,
         location: location.trim() || null,
-        datetime,
+        datetime: new Date(datetime).toISOString(),
         max_attendees: maxAttendees ? parseInt(maxAttendees) : null,
         is_members_only: isMembersOnly,
       })

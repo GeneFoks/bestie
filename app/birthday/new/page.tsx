@@ -73,7 +73,7 @@ export default function NewBirthdayPage() {
       celebrant: form.celebrant,
       title: form.title || null,
       description: form.description || null,
-      event_date: form.event_date,
+      event_date: new Date(form.event_date).toISOString(),
       location: form.location || null,
       location_url: form.location_url || null,
       cover_image,
