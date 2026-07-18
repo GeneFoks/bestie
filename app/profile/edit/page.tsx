@@ -278,7 +278,7 @@ export default function EditProfilePage() {
       // Only Plus members can charge — everyone else is forced free
       price_per_session: (!isPlus || newPkg.is_free) ? 0 : parseFloat(newPkg.price_per_session) || 0,
       is_free: !isPlus ? true : newPkg.is_free,
-      scheduled_at: newPkg.scheduled_at || null,
+      scheduled_at: newPkg.scheduled_at ? new Date(newPkg.scheduled_at).toISOString() : null,
       crew_id: newPkg.crew_id || null,
     }).select().single()
     if (data) {
@@ -314,7 +314,10 @@ export default function EditProfilePage() {
       description: pkg.description || '',
       price_per_session: pkg.price_per_session?.toString() || '',
       is_free: pkg.is_free || false,
-      scheduled_at: pkg.scheduled_at ? new Date(pkg.scheduled_at).toISOString().slice(0, 16) : '',
+      // DB stores UTC; shift so the datetime-local input shows local wall-clock time
+      scheduled_at: pkg.scheduled_at
+        ? (() => { const d = new Date(pkg.scheduled_at); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16) })()
+        : '',
     })
   }
 
@@ -325,7 +328,7 @@ export default function EditProfilePage() {
       description: editPkg.description,
       price_per_session: (!isPlus || editPkg.is_free) ? 0 : parseFloat(editPkg.price_per_session) || 0,
       is_free: !isPlus ? true : editPkg.is_free,
-      scheduled_at: editPkg.scheduled_at || null,
+      scheduled_at: editPkg.scheduled_at ? new Date(editPkg.scheduled_at).toISOString() : null,
     }).eq('id', id).select().single()
     if (data) {
       setPackages(p => p.map(pkg => pkg.id === id ? data : pkg))
