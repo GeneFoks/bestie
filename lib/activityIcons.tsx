@@ -34,6 +34,7 @@ export const ACTIVITY_ICONS: Record<string, LucideIcon> = {
   yoga:             Sun,
   martial_arts:     Shield,
   climbing:         Mountain,
+  pickleball:       Activity,
   trail_crew:       Footprints,
   fishing_crew:     Fish,
 
@@ -76,6 +77,8 @@ export const ACTIVITY_ICONS: Record<string, LucideIcon> = {
   breathwork:       Wind,
   cacao_ceremony:   HeartIcon,
   sound_healing:    BellIcon,
+  girls_circle:     HeartIcon,
+  mens_circle:      Flame,
   tarot:            MoonStar,
   retreat_buddy:    Tent,
   psychedelic_integration: Brain,

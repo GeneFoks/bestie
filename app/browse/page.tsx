@@ -13,7 +13,7 @@ import { Search, Sparkles, Flame, X, Zap, Gamepad2, BookOpen, Palette, Heart, Mo
 
 const FILTER_GROUPS = [
   { id: 'active',    label: 'Active & Outdoors',  Icon: Zap,       filters: [
-    { id: 'hiking', label: 'Hiking' },{ id: 'running', label: 'Running' },{ id: 'gym_partner', label: 'Gym Partner' },{ id: 'cycling', label: 'Cycling' },{ id: 'swimming', label: 'Swimming' },{ id: 'cold_plunge', label: 'Cold Plunge' },{ id: 'yoga', label: 'Yoga' },{ id: 'martial_arts', label: 'Martial Arts' },{ id: 'climbing', label: 'Climbing' },
+    { id: 'hiking', label: 'Hiking' },{ id: 'running', label: 'Running' },{ id: 'gym_partner', label: 'Gym Partner' },{ id: 'cycling', label: 'Cycling' },{ id: 'swimming', label: 'Swimming' },{ id: 'cold_plunge', label: 'Cold Plunge' },{ id: 'yoga', label: 'Yoga' },{ id: 'martial_arts', label: 'Martial Arts' },{ id: 'climbing', label: 'Climbing' },{ id: 'pickleball', label: 'Pickleball' },
   ] },
   { id: 'social',    label: 'Fun & Social',       Icon: Gamepad2,  filters: [
     { id: 'game_night', label: 'Game Night' },{ id: 'movie_night', label: 'Movie Night' },{ id: 'night_out', label: 'Night Out' },{ id: 'bar_hopping', label: 'Bar Hopping' },{ id: 'karaoke', label: 'Karaoke' },{ id: 'festival_crew', label: 'Festival Crew' },{ id: 'travel_buddy', label: 'Travel Buddy' },{ id: 'wing_person', label: 'Wing Person' },{ id: 'comedy_show', label: 'Comedy Show' },
@@ -28,7 +28,7 @@ const FILTER_GROUPS = [
     { id: 'vent_session', label: 'Vent Session' },{ id: '3am_talk', label: '3am Talk' },{ id: 'hype_person', label: 'Hype Person' },{ id: 'sobriety_buddy', label: 'Sobriety Buddy' },{ id: 'silence_buddy', label: 'Silence Buddy' },{ id: 'grief_support', label: 'Grief Support' },{ id: 'ugly_cry_buddy', label: 'Ugly Cry Buddy' },
   ] },
   { id: 'spiritual', label: 'Spiritual & Sacred', Icon: Moon,      filters: [
-    { id: 'meditation_circle', label: 'Meditation' },{ id: 'breathwork', label: 'Breathwork' },{ id: 'sound_healing', label: 'Sound Healing' },{ id: 'cacao_ceremony', label: 'Cacao Ceremony' },{ id: 'tarot', label: 'Tarot' },{ id: 'retreat_buddy', label: 'Retreat Buddy' },{ id: 'psychedelic_integration', label: 'Psychedelic' },{ id: 'nature_ritual', label: 'Nature Ritual' },{ id: 'lucid_dream_club', label: 'Lucid Dream' },
+    { id: 'meditation_circle', label: 'Meditation' },{ id: 'breathwork', label: 'Breathwork' },{ id: 'sound_healing', label: 'Sound Healing' },{ id: 'cacao_ceremony', label: 'Cacao Ceremony' },{ id: 'tarot', label: 'Tarot' },{ id: 'retreat_buddy', label: 'Retreat Buddy' },{ id: 'psychedelic_integration', label: 'Psychedelic' },{ id: 'nature_ritual', label: 'Nature Ritual' },{ id: 'lucid_dream_club', label: 'Lucid Dream' },{ id: 'girls_circle', label: 'Girls Circle' },{ id: 'mens_circle', label: "Men's Circle" },
   ] },
   { id: 'chill',     label: 'Chill & Everyday',   Icon: Coffee,    filters: [
     { id: 'coffee_chat', label: 'Coffee Chat' },{ id: 'digital_detox_walk', label: 'Digital Detox' },{ id: 'skincare_night', label: 'Skincare Night' },{ id: 'smoke_buddy', label: 'Smoke Buddy' },{ id: 'astrology_session', label: 'Astrology' },{ id: 'coworking', label: 'Coworking' },{ id: 'errand_buddy', label: 'Errand Buddy' },
