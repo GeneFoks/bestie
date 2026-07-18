@@ -202,13 +202,16 @@ export default function EditGroupSessionPage({ params }: { params: { id: string 
 
           <div>
             <label style={labelStyle}>Max participants</label>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {[3, 5, 6, 8, 10, 15, 20, 30, 50, 100].map(n => (
-                <button key={n} onClick={() => setForm(f => ({ ...f, max_participants: n }))}
-                  style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '14px', fontWeight: 600, background: form.max_participants === n ? 'rgba(212,175,55,0.2)' : '#131323', border: form.max_participants === n ? '1px solid rgba(212,175,55,0.5)' : '1px solid rgba(255,255,255,0.12)', color: form.max_participants === n ? '#D4AF37' : '#A99ECC', cursor: 'pointer' }}>
-                  {n}
-                </button>
-              ))}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <input
+                type="range" min={1} max={100} step={1}
+                value={form.max_participants}
+                onChange={e => setForm(f => ({ ...f, max_participants: parseInt(e.target.value) }))}
+                style={{ flex: 1, accentColor: '#D4AF37', cursor: 'pointer' }}
+              />
+              <span style={{ flexShrink: 0, minWidth: '58px', textAlign: 'center', padding: '8px 12px', borderRadius: '10px', fontSize: '16px', fontWeight: 700, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37' }}>
+                {form.max_participants}
+              </span>
             </div>
           </div>
 
