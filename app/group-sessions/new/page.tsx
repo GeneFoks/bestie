@@ -189,9 +189,16 @@ export default function NewGroupSessionPage() {
                 onChange={e => setForm(f => ({ ...f, max_participants: parseInt(e.target.value) }))}
                 style={{ flex: 1, accentColor: '#D4AF37', cursor: 'pointer' }}
               />
-              <span style={{ flexShrink: 0, minWidth: '58px', textAlign: 'center', padding: '8px 12px', borderRadius: '10px', fontSize: '16px', fontWeight: 700, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37' }}>
-                {form.max_participants}
-              </span>
+              <input
+                type="number" min={1} max={100}
+                value={form.max_participants}
+                onChange={e => {
+                  const n = parseInt(e.target.value)
+                  setForm(f => ({ ...f, max_participants: isNaN(n) ? '' : Math.max(1, Math.min(100, n)) }))
+                }}
+                onBlur={() => setForm(f => ({ ...f, max_participants: f.max_participants || 6 }))}
+                style={{ flexShrink: 0, width: '72px', textAlign: 'center', padding: '8px 6px', borderRadius: '10px', fontSize: '16px', fontWeight: 700, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37', outline: 'none' }}
+              />
             </div>
           </div>
 
