@@ -54,6 +54,22 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
   const handleJoin = async () => {
     if (!myId) { router.push('/login'); return }
     setJoining(true)
+
+    // Paid event → Stripe Checkout; the webhook adds the participant.
+    if (Number(session?.ticket_price || 0) > 0) {
+      const { data: { session: auth } } = await supabase.auth.getSession()
+      const res = await fetch('/api/stripe/checkout-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth?.access_token}` },
+        body: JSON.stringify({ sessionId: params.id }),
+      })
+      const data = await res.json()
+      setJoining(false)
+      if (data.url) window.location.href = data.url
+      else alert(data.error || 'Could not start checkout')
+      return
+    }
+
     const { data } = await supabase.rpc('join_group_session', { p_session_id: params.id, p_user_id: myId })
     setJoining(false)
     if (data === 'joined') load()
@@ -137,8 +153,15 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
             <div style={{ flex: 1 }}>
               <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#F0EAFF', lineHeight: 1.2 }}>{session.title}</h1>
             </div>
-            <span style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px', borderRadius: '999px', background: `rgba(${statusColor === '#34D399' ? '57,255,20' : statusColor === '#FF6B6B' ? '255,107,107' : statusColor === '#FF6B35' ? '255,107,53' : '155,147,192'},0.12)`, border: `1px solid ${statusColor}40`, color: statusColor }}>
-              {statusLabel}
+            <span style={{ display: 'inline-flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
+              {Number(session.ticket_price || 0) > 0 && (
+                <span style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37' }}>
+                  🎟 ${Number(session.ticket_price)}
+                </span>
+              )}
+              <span style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px', borderRadius: '999px', background: `rgba(${statusColor === '#34D399' ? '57,255,20' : statusColor === '#FF6B6B' ? '255,107,107' : statusColor === '#FF6B35' ? '255,107,53' : '155,147,192'},0.12)`, border: `1px solid ${statusColor}40`, color: statusColor }}>
+                {statusLabel}
+              </span>
             </span>
           </div>
 
@@ -213,7 +236,7 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
                 <>
                   <button onClick={handleJoin} disabled={joining || isFull}
                     style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: isFull ? '#131323' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', border: 'none', color: isFull ? '#555' : '#09090F', cursor: isFull ? 'not-allowed' : 'pointer' }}>
-                    {joining ? 'Joining...' : isFull ? 'Session full' : '🎉 Join session'}
+                    {joining ? 'Joining...' : isFull ? 'Session full' : Number(session.ticket_price || 0) > 0 ? `🎟 Get a ticket — $${Number(session.ticket_price)}` : '🎉 Join session'}
                   </button>
                   <button onClick={handleShare} style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: '#131323', border: '1px solid rgba(255,255,255,0.12)', color: '#A99ECC', cursor: 'pointer' }}>
                     {copied ? '✓' : '🔗'}

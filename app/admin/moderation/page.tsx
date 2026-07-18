@@ -75,6 +75,7 @@ export default function AdminModerationPage() {
         <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
           <Link href="/admin/analytics" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none' }}>Analytics</Link>
           <span style={{ fontSize: '13px', color: GOLD }}>Moderation</span>
+          <Link href="/admin/ambassadors" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none' }}>Ambassadors</Link>
         </div>
       </nav>
 

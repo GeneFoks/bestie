@@ -45,6 +45,31 @@ export async function POST(req: NextRequest) {
         break
       }
 
+      // ── Event ticket (one-time payment) ──
+      if (meta.kind === 'event_ticket') {
+        const { session_id, user_id, amount } = meta
+        if (!session_id || !user_id) break
+
+        await admin.from('event_tickets').insert({
+          session_id,
+          user_id,
+          amount: Number(amount || 0),
+          stripe_session_id: session.id,
+          status: 'paid',
+        })
+
+        // Add the buyer to the participant list (idempotent-ish: skip if present)
+        const { data: already } = await admin
+          .from('group_session_participants')
+          .select('id').eq('session_id', session_id).eq('user_id', user_id).maybeSingle()
+        if (!already) {
+          await admin.from('group_session_participants').insert({ session_id, user_id })
+        }
+
+        console.log(`[webhook] ticket: user ${user_id} paid $${amount} for session ${session_id}`)
+        break
+      }
+
       // ── Crew upgrade ──
       const { crew_id, plan } = meta
       if (!crew_id || !plan) break
