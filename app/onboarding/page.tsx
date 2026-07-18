@@ -19,6 +19,7 @@ const ACTIVITY_GROUPS = [
     { id: 'yoga', emoji: '🧘', label: 'Yoga' },
     { id: 'martial_arts', emoji: '🥋', label: 'Martial Arts' },
     { id: 'climbing', emoji: '🧗', label: 'Climbing' },
+    { id: 'pickleball', emoji: '🏓', label: 'Pickleball' },
   ]},
   { id: 'social',   label: 'Social',    Icon: Gamepad2, activities: [
     { id: 'game_night', emoji: '🎮', label: 'Game Night' },
@@ -65,6 +66,8 @@ const ACTIVITY_GROUPS = [
     { id: 'breathwork', emoji: '🌬️', label: 'Breathwork' },
     { id: 'sound_healing', emoji: '🔔', label: 'Sound Healing' },
     { id: 'cacao_ceremony', emoji: '🍫', label: 'Cacao' },
+    { id: 'girls_circle', emoji: '🌸', label: 'Girls Circle' },
+    { id: 'mens_circle', emoji: '🔥', label: "Men's Circle" },
     { id: 'tarot', emoji: '🔮', label: 'Tarot' },
     { id: 'retreat_buddy', emoji: '🏕️', label: 'Retreat' },
     { id: 'psychedelic_integration', emoji: '🌀', label: 'Integration' },
