@@ -290,6 +290,10 @@ export default function HomePage() {
           <Link href="#score" className="nav-link">Bestie Score</Link>
         </div>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          {/* My Circle — always visible, desktop & mobile */}
+          <Link href="/graph" aria-label="My Circle" title="My Circle" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#A99ECC', flexShrink: 0 }}>
+            <Network size={17} strokeWidth={1.8} />
+          </Link>
           {/* Desktop: full buttons. Mobile: only Join Free for logged-out */}
           {loggedIn ? (
             <Link href="/dashboard" className="btn-gold" style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '10px' }}>Dashboard →</Link>
