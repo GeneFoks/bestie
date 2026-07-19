@@ -50,6 +50,11 @@ BEGIN
   SELECT * INTO v_user FROM public.users WHERE id = p_user_id;
   IF NOT FOUND THEN RETURN; END IF;
 
+  -- ── 0. Welcome base (150) — so a brand-new account starts at 150 and every
+  --      spark/session visibly moves the number instead of hiding under the
+  --      50-floor clamp. The 1000 ceiling still makes the top genuinely hard.
+  v_score := 150;
+
   -- ── 1. Profile completeness (max 140) ─────────────────────────────────────
   IF v_user.avatar_url IS NOT NULL AND length(trim(v_user.avatar_url)) > 0
     THEN v_score := v_score + 30; END IF;
