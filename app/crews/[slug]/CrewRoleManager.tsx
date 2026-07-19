@@ -46,13 +46,14 @@ export default function CrewRoleManager({ crewId, captainId, memberUserId, membe
 
   const setRole = async (nextRole: Role) => {
     setActing(true)
-    await supabase
+    const { error } = await supabase
       .from('crew_members')
       .update({ role: nextRole })
       .eq('crew_id', crewId)
       .eq('user_id', memberUserId)
     setActing(false)
     setOpen(false)
+    if (error) { alert(`Could not change role: ${error.message}`); return }
     router.refresh()
   }
 
