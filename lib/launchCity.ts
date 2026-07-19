@@ -20,4 +20,4 @@ export const LAUNCH_CITY = {
 }
 
 // When false, the landing falls back to global ("worldwide") positioning.
-export const CITY_FOCUS = true as boolean
+export const CITY_FOCUS = false as boolean

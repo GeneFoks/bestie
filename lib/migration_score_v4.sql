@@ -36,6 +36,7 @@ DECLARE
   v_avg         NUMERIC;
   v_rating_n    INTEGER := 0;
   v_sparks      INTEGER := 0;
+  v_matches     INTEGER := 0;
   v_referrals   INTEGER := 0;
   v_reports     INTEGER := 0;
   v_months      NUMERIC := 0;
@@ -49,6 +50,11 @@ DECLARE
 BEGIN
   SELECT * INTO v_user FROM public.users WHERE id = p_user_id;
   IF NOT FOUND THEN RETURN; END IF;
+
+  -- ── 0. Welcome base (150) — so a brand-new account starts at 150 and every
+  --      spark/session visibly moves the number instead of hiding under the
+  --      50-floor clamp. The 1000 ceiling still makes the top genuinely hard.
+  v_score := 150;
 
   -- ── 1. Profile completeness (max 140) ─────────────────────────────────────
   IF v_user.avatar_url IS NOT NULL AND length(trim(v_user.avatar_url)) > 0
@@ -91,6 +97,21 @@ BEGIN
   -- ── 4. Sparks received (max 150, saturating) ──────────────────────────────
   SELECT COUNT(*) INTO v_sparks FROM public.sparks WHERE receiver_id = p_user_id;
   v_score := v_score + 150 * (1 - exp(-(v_sparks::NUMERIC) / 10));
+
+  -- ── 4b. Mutual knocks / matches (max 100) ─────────────────────────────────
+  -- First match +10, then decreasing (9, 8, …), from the 10th on +1 each.
+  -- Unique partners only; both sides earn. Keeps knocking incentivised
+  -- while staying much cheaper than a real confirmed meetup.
+  SELECT COUNT(DISTINCT CASE WHEN sender_id = p_user_id THEN receiver_id ELSE sender_id END)
+  INTO v_matches
+  FROM public.knocks
+  WHERE is_mutual = TRUE AND (sender_id = p_user_id OR receiver_id = p_user_id);
+
+  v_score := v_score + LEAST(
+    CASE WHEN v_matches <= 10
+         THEN v_matches * (21 - v_matches) / 2.0   -- 10+9+…: n-th match is worth 11-n
+         ELSE 55 + (v_matches - 10)                -- +1 per match after the tenth
+    END, 100);
 
   -- ── 5. Weekly streak (max 150) — consecutive ISO weeks with a session ─────
   v_cont := TRUE; v_prev := NULL; v_streak := 0;
@@ -181,6 +202,23 @@ DROP TRIGGER IF EXISTS on_spark_score ON public.sparks;
 CREATE TRIGGER on_spark_score
   AFTER INSERT OR DELETE ON public.sparks
   FOR EACH ROW EXECUTE FUNCTION public.trg_recalc_spark();
+
+-- Recalc both sides when a knock becomes mutual
+CREATE OR REPLACE FUNCTION public.trg_recalc_knock()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.is_mutual = TRUE AND COALESCE(OLD.is_mutual, FALSE) = FALSE THEN
+    PERFORM public.recalculate_bestie_score(NEW.sender_id);
+    PERFORM public.recalculate_bestie_score(NEW.receiver_id);
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_knock_match_score ON public.knocks;
+CREATE TRIGGER on_knock_match_score
+  AFTER INSERT OR UPDATE OF is_mutual ON public.knocks
+  FOR EACH ROW EXECUTE FUNCTION public.trg_recalc_knock();
 
 CREATE OR REPLACE FUNCTION public.trg_recalc_report()
 RETURNS TRIGGER AS $$

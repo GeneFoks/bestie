@@ -42,7 +42,7 @@ function emailTemplate(title: string, body: string, ctaText: string, ctaUrl: str
           <p style="font-size:15px;color:#9B93C0;line-height:1.7;margin:0 0 24px;">${body}</p>
           <a href="${ctaUrl}" style="display:inline-block;padding:12px 28px;border-radius:12px;background:#D4AF37;color:#080810;font-weight:700;font-size:14px;text-decoration:none;">${ctaText}</a>
         </div>
-        <p style="font-size:12px;color:#6B5EA8;margin:24px 0 0;text-align:center;">bestiehere.com · Austin, TX</p>
+        <p style="font-size:12px;color:#6B5EA8;margin:24px 0 0;text-align:center;">bestiehere.com · Real people. Real moments.</p>
       </div>
     </div>
   `
