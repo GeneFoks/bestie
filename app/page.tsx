@@ -413,6 +413,113 @@ export default function HomePage() {
           </div>
         </section>
       )}
+      {/* ── MY CIRCLE ── */}
+      <section id="graph" style={{ padding: '0 20px 80px' }}>
+        <div ref={graphRef} className={`reveal ${graphVisible ? 'visible' : ''}`} style={{ maxWidth: '980px', margin: '0 auto' }}>
+          <div style={{ borderRadius: '28px', background: 'rgba(15,15,30,0.6)', border: '1px solid rgba(155,147,192,0.12)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', overflow: 'hidden' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', alignItems: 'center' }}>
+
+              {/* Left: SVG graph mockup */}
+              <div style={{ padding: '40px 32px', display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'rgba(8,8,16,0.5)', minHeight: '360px', position: 'relative' }}>
+                {/* Ambient glow behind graph */}
+                <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, rgba(155,147,192,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
+                <svg viewBox="0 0 340 300" style={{ width: '100%', maxWidth: '340px', height: 'auto', position: 'relative', zIndex: 1 }}>
+                  <defs>
+                    <radialGradient id="nodeGold" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stopColor="#D4AF37" stopOpacity="0.3" />
+                      <stop offset="100%" stopColor="#D4AF37" stopOpacity="0" />
+                    </radialGradient>
+                    <radialGradient id="nodePurple" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stopColor="#A99ECC" stopOpacity="0.25" />
+                      <stop offset="100%" stopColor="#A99ECC" stopOpacity="0" />
+                    </radialGradient>
+                    <radialGradient id="nodeGreen" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stopColor="#34D399" stopOpacity="0.2" />
+                      <stop offset="100%" stopColor="#34D399" stopOpacity="0" />
+                    </radialGradient>
+                    <filter id="glow">
+                      <feGaussianBlur stdDeviation="3" result="blur" />
+                      <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                    </filter>
+                    <style>{`
+                      @keyframes edge-draw { from { stroke-dashoffset: 200 } to { stroke-dashoffset: 0 } }
+                      @keyframes node-pop { 0%{transform:scale(0)} 70%{transform:scale(1.1)} 100%{transform:scale(1)} }
+                      @keyframes pulse-ring { 0%,100%{r:18px;opacity:0.3} 50%{r:22px;opacity:0} }
+                      .edge { stroke-dasharray: 200; animation: edge-draw 1.2s ease forwards; }
+                      .e1{animation-delay:0.1s} .e2{animation-delay:0.3s} .e3{animation-delay:0.5s}
+                      .e4{animation-delay:0.7s} .e5{animation-delay:0.9s} .e6{animation-delay:1.1s}
+                      .e7{animation-delay:1.3s} .e8{animation-delay:1.5s}
+                      .node-g { transform-origin: center center; }
+                    `}</style>
+                  </defs>
+
+                  {/* Edges — drawn in animation order */}
+                  <line className="edge e1" x1="170" y1="100" x2="90"  y2="60"  stroke="#D4AF37" strokeWidth="1.5" strokeOpacity="0.5" />
+                  <line className="edge e2" x1="170" y1="100" x2="260" y2="70"  stroke="#D4AF37" strokeWidth="1.5" strokeOpacity="0.5" />
+                  <line className="edge e3" x1="170" y1="100" x2="110" y2="185" stroke="#A99ECC" strokeWidth="1.2" strokeOpacity="0.4" />
+                  <line className="edge e4" x1="170" y1="100" x2="240" y2="190" stroke="#A99ECC" strokeWidth="1.2" strokeOpacity="0.4" />
+                  <line className="edge e5" x1="90"  y1="60"  x2="260" y2="70"  stroke="#D4AF37" strokeWidth="1"   strokeOpacity="0.25" />
+                  <line className="edge e6" x1="110" y1="185" x2="55"  y2="240" stroke="#A99ECC" strokeWidth="1"   strokeOpacity="0.3" />
+                  <line className="edge e7" x1="240" y1="190" x2="300" y2="245" stroke="#A99ECC" strokeWidth="1"   strokeOpacity="0.3" />
+                  <line className="edge e8" x1="110" y1="185" x2="240" y2="190" stroke="#A99ECC" strokeWidth="1"   strokeOpacity="0.2" />
+
+                  {/* Center node — YOU (gold) */}
+                  <circle cx="170" cy="100" r="26" fill="url(#nodeGold)" />
+                  <circle cx="170" cy="100" r="18" fill="#1A1A35" stroke="#D4AF37" strokeWidth="2" filter="url(#glow)" />
+                  <text x="170" y="105" textAnchor="middle" fontSize="11" fontWeight="700" fill="#D4AF37" fontFamily="Plus Jakarta Sans, sans-serif">YOU</text>
+
+                  {/* Top-left node */}
+                  <circle cx="90" cy="60" r="20" fill="url(#nodePurple)" />
+                  <circle cx="90" cy="60" r="14" fill="#1A1A35" stroke="#A99ECC" strokeWidth="1.5" />
+                  <text x="90" y="64" textAnchor="middle" fontSize="10" fontWeight="600" fill="#F0EAFF" fontFamily="Plus Jakarta Sans, sans-serif">Alex</text>
+
+                  {/* Top-right node */}
+                  <circle cx="260" cy="70" r="20" fill="url(#nodePurple)" />
+                  <circle cx="260" cy="70" r="14" fill="#1A1A35" stroke="#A99ECC" strokeWidth="1.5" />
+                  <text x="260" y="74" textAnchor="middle" fontSize="10" fontWeight="600" fill="#F0EAFF" fontFamily="Plus Jakarta Sans, sans-serif">Mila</text>
+
+                  {/* Bottom-left node */}
+                  <circle cx="110" cy="185" r="18" fill="url(#nodePurple)" />
+                  <circle cx="110" cy="185" r="12" fill="#1A1A35" stroke="#A99ECC" strokeWidth="1.5" />
+                  <text x="110" y="189" textAnchor="middle" fontSize="9" fontWeight="600" fill="#F0EAFF" fontFamily="Plus Jakarta Sans, sans-serif">Dan</text>
+
+                  {/* Bottom-right node */}
+                  <circle cx="240" cy="190" r="18" fill="url(#nodePurple)" />
+                  <circle cx="240" cy="190" r="12" fill="#1A1A35" stroke="#A99ECC" strokeWidth="1.5" />
+                  <text x="240" y="194" textAnchor="middle" fontSize="9" fontWeight="600" fill="#F0EAFF" fontFamily="Plus Jakarta Sans, sans-serif">Kate</text>
+
+                  {/* 2nd-degree nodes (smaller, green tint) */}
+                  <circle cx="55"  cy="240" r="10" fill="#1A1A35" stroke="rgba(57,255,20,0.4)" strokeWidth="1" />
+                  <text x="55"  y="244" textAnchor="middle" fontSize="8" fill="#A99ECC" fontFamily="Plus Jakarta Sans, sans-serif">Lev</text>
+
+                  <circle cx="300" cy="245" r="10" fill="#1A1A35" stroke="rgba(57,255,20,0.4)" strokeWidth="1" />
+                  <text x="300" y="249" textAnchor="middle" fontSize="8" fill="#A99ECC" fontFamily="Plus Jakarta Sans, sans-serif">Sam</text>
+
+                  {/* Labels */}
+                  <text x="130" y="130" fontSize="9" fill="#D4AF37" fontFamily="Plus Jakarta Sans, sans-serif" opacity="0.7">✓ 3 meetups</text>
+                  <text x="170" y="145" fontSize="9" fill="#D4AF37" fontFamily="Plus Jakarta Sans, sans-serif" opacity="0.5">✓ 1 meetup</text>
+
+                  {/* "2nd degree" hint */}
+                  <text x="30"  y="262" fontSize="8" fill="#6B6490" fontFamily="Plus Jakarta Sans, sans-serif">2nd degree</text>
+                  <text x="268" y="262" fontSize="8" fill="#6B6490" fontFamily="Plus Jakarta Sans, sans-serif">2nd degree</text>
+                </svg>
+              </div>
+
+              {/* Right: explanation (compact) */}
+              <div style={{ padding: '32px 28px' }}>
+                <p className="section-label">MY CIRCLE</p>
+                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 32px)', fontWeight: 700, color: '#F0EAFF', lineHeight: 1.2, marginBottom: '12px' }}>
+                  Your social web,<br /><em style={{ color: '#A99ECC', fontStyle: 'italic' }}>built automatically.</em>
+                </h2>
+                <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.7, marginBottom: '20px' }}>
+                  Every confirmed meetup draws a line between two people. No followers, no tags — only real IRL connections. Thicker edge = more meetups.
+                </p>
+                <Link href="/graph" className="btn-gold" style={{ fontSize: '13px', padding: '10px 22px' }}>Open My Circle →</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ── TOP BESTIES ── */}
       <section style={{ padding: '0 20px 72px', overflow: 'hidden' }}>
@@ -543,113 +650,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── MY CIRCLE ── */}
-      <section id="graph" style={{ padding: '0 20px 80px' }}>
-        <div ref={graphRef} className={`reveal ${graphVisible ? 'visible' : ''}`} style={{ maxWidth: '980px', margin: '0 auto' }}>
-          <div style={{ borderRadius: '28px', background: 'rgba(15,15,30,0.6)', border: '1px solid rgba(155,147,192,0.12)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', overflow: 'hidden' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', alignItems: 'center' }}>
-
-              {/* Left: SVG graph mockup */}
-              <div style={{ padding: '40px 32px', display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'rgba(8,8,16,0.5)', minHeight: '360px', position: 'relative' }}>
-                {/* Ambient glow behind graph */}
-                <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, rgba(155,147,192,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
-                <svg viewBox="0 0 340 300" style={{ width: '100%', maxWidth: '340px', height: 'auto', position: 'relative', zIndex: 1 }}>
-                  <defs>
-                    <radialGradient id="nodeGold" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="#D4AF37" stopOpacity="0.3" />
-                      <stop offset="100%" stopColor="#D4AF37" stopOpacity="0" />
-                    </radialGradient>
-                    <radialGradient id="nodePurple" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="#A99ECC" stopOpacity="0.25" />
-                      <stop offset="100%" stopColor="#A99ECC" stopOpacity="0" />
-                    </radialGradient>
-                    <radialGradient id="nodeGreen" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="#34D399" stopOpacity="0.2" />
-                      <stop offset="100%" stopColor="#34D399" stopOpacity="0" />
-                    </radialGradient>
-                    <filter id="glow">
-                      <feGaussianBlur stdDeviation="3" result="blur" />
-                      <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-                    </filter>
-                    <style>{`
-                      @keyframes edge-draw { from { stroke-dashoffset: 200 } to { stroke-dashoffset: 0 } }
-                      @keyframes node-pop { 0%{transform:scale(0)} 70%{transform:scale(1.1)} 100%{transform:scale(1)} }
-                      @keyframes pulse-ring { 0%,100%{r:18px;opacity:0.3} 50%{r:22px;opacity:0} }
-                      .edge { stroke-dasharray: 200; animation: edge-draw 1.2s ease forwards; }
-                      .e1{animation-delay:0.1s} .e2{animation-delay:0.3s} .e3{animation-delay:0.5s}
-                      .e4{animation-delay:0.7s} .e5{animation-delay:0.9s} .e6{animation-delay:1.1s}
-                      .e7{animation-delay:1.3s} .e8{animation-delay:1.5s}
-                      .node-g { transform-origin: center center; }
-                    `}</style>
-                  </defs>
-
-                  {/* Edges — drawn in animation order */}
-                  <line className="edge e1" x1="170" y1="100" x2="90"  y2="60"  stroke="#D4AF37" strokeWidth="1.5" strokeOpacity="0.5" />
-                  <line className="edge e2" x1="170" y1="100" x2="260" y2="70"  stroke="#D4AF37" strokeWidth="1.5" strokeOpacity="0.5" />
-                  <line className="edge e3" x1="170" y1="100" x2="110" y2="185" stroke="#A99ECC" strokeWidth="1.2" strokeOpacity="0.4" />
-                  <line className="edge e4" x1="170" y1="100" x2="240" y2="190" stroke="#A99ECC" strokeWidth="1.2" strokeOpacity="0.4" />
-                  <line className="edge e5" x1="90"  y1="60"  x2="260" y2="70"  stroke="#D4AF37" strokeWidth="1"   strokeOpacity="0.25" />
-                  <line className="edge e6" x1="110" y1="185" x2="55"  y2="240" stroke="#A99ECC" strokeWidth="1"   strokeOpacity="0.3" />
-                  <line className="edge e7" x1="240" y1="190" x2="300" y2="245" stroke="#A99ECC" strokeWidth="1"   strokeOpacity="0.3" />
-                  <line className="edge e8" x1="110" y1="185" x2="240" y2="190" stroke="#A99ECC" strokeWidth="1"   strokeOpacity="0.2" />
-
-                  {/* Center node — YOU (gold) */}
-                  <circle cx="170" cy="100" r="26" fill="url(#nodeGold)" />
-                  <circle cx="170" cy="100" r="18" fill="#1A1A35" stroke="#D4AF37" strokeWidth="2" filter="url(#glow)" />
-                  <text x="170" y="105" textAnchor="middle" fontSize="11" fontWeight="700" fill="#D4AF37" fontFamily="Plus Jakarta Sans, sans-serif">YOU</text>
-
-                  {/* Top-left node */}
-                  <circle cx="90" cy="60" r="20" fill="url(#nodePurple)" />
-                  <circle cx="90" cy="60" r="14" fill="#1A1A35" stroke="#A99ECC" strokeWidth="1.5" />
-                  <text x="90" y="64" textAnchor="middle" fontSize="10" fontWeight="600" fill="#F0EAFF" fontFamily="Plus Jakarta Sans, sans-serif">Alex</text>
-
-                  {/* Top-right node */}
-                  <circle cx="260" cy="70" r="20" fill="url(#nodePurple)" />
-                  <circle cx="260" cy="70" r="14" fill="#1A1A35" stroke="#A99ECC" strokeWidth="1.5" />
-                  <text x="260" y="74" textAnchor="middle" fontSize="10" fontWeight="600" fill="#F0EAFF" fontFamily="Plus Jakarta Sans, sans-serif">Mila</text>
-
-                  {/* Bottom-left node */}
-                  <circle cx="110" cy="185" r="18" fill="url(#nodePurple)" />
-                  <circle cx="110" cy="185" r="12" fill="#1A1A35" stroke="#A99ECC" strokeWidth="1.5" />
-                  <text x="110" y="189" textAnchor="middle" fontSize="9" fontWeight="600" fill="#F0EAFF" fontFamily="Plus Jakarta Sans, sans-serif">Dan</text>
-
-                  {/* Bottom-right node */}
-                  <circle cx="240" cy="190" r="18" fill="url(#nodePurple)" />
-                  <circle cx="240" cy="190" r="12" fill="#1A1A35" stroke="#A99ECC" strokeWidth="1.5" />
-                  <text x="240" y="194" textAnchor="middle" fontSize="9" fontWeight="600" fill="#F0EAFF" fontFamily="Plus Jakarta Sans, sans-serif">Kate</text>
-
-                  {/* 2nd-degree nodes (smaller, green tint) */}
-                  <circle cx="55"  cy="240" r="10" fill="#1A1A35" stroke="rgba(57,255,20,0.4)" strokeWidth="1" />
-                  <text x="55"  y="244" textAnchor="middle" fontSize="8" fill="#A99ECC" fontFamily="Plus Jakarta Sans, sans-serif">Lev</text>
-
-                  <circle cx="300" cy="245" r="10" fill="#1A1A35" stroke="rgba(57,255,20,0.4)" strokeWidth="1" />
-                  <text x="300" y="249" textAnchor="middle" fontSize="8" fill="#A99ECC" fontFamily="Plus Jakarta Sans, sans-serif">Sam</text>
-
-                  {/* Labels */}
-                  <text x="130" y="130" fontSize="9" fill="#D4AF37" fontFamily="Plus Jakarta Sans, sans-serif" opacity="0.7">✓ 3 meetups</text>
-                  <text x="170" y="145" fontSize="9" fill="#D4AF37" fontFamily="Plus Jakarta Sans, sans-serif" opacity="0.5">✓ 1 meetup</text>
-
-                  {/* "2nd degree" hint */}
-                  <text x="30"  y="262" fontSize="8" fill="#6B6490" fontFamily="Plus Jakarta Sans, sans-serif">2nd degree</text>
-                  <text x="268" y="262" fontSize="8" fill="#6B6490" fontFamily="Plus Jakarta Sans, sans-serif">2nd degree</text>
-                </svg>
-              </div>
-
-              {/* Right: explanation (compact) */}
-              <div style={{ padding: '32px 28px' }}>
-                <p className="section-label">MY CIRCLE</p>
-                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 32px)', fontWeight: 700, color: '#F0EAFF', lineHeight: 1.2, marginBottom: '12px' }}>
-                  Your social web,<br /><em style={{ color: '#A99ECC', fontStyle: 'italic' }}>built automatically.</em>
-                </h2>
-                <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.7, marginBottom: '20px' }}>
-                  Every confirmed meetup draws a line between two people. No followers, no tags — only real IRL connections. Thicker edge = more meetups.
-                </p>
-                <Link href="/graph" className="btn-gold" style={{ fontSize: '13px', padding: '10px 22px' }}>Open My Circle →</Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ── CREWS ── */}
       <section style={{ padding: '0 20px 72px' }}>
