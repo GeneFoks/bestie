@@ -8,7 +8,9 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/dashboard'
+  // New sign-ups land in onboarding; the page itself bounces already-onboarded
+  // users straight to the dashboard, so this is safe for returning links too.
+  const next = searchParams.get('next') ?? '/onboarding'
 
   if (code) {
     const supabase = createClient(

@@ -47,6 +47,9 @@ export default function DashboardPage() {
       if (!session) { router.push('/login'); return }
       setUser(session.user)
       const { data } = await supabase.from('users').select('*, activity_packages(*)').eq('id', session.user.id).single()
+      // Guide un-onboarded users (incl. everyone who signed up before onboarding
+      // was wired in) through the setup wizard first.
+      if (data && !data.onboarding_completed) { router.push('/onboarding'); return }
       setProfile(data)
 
       // Apply referral if present in localStorage
