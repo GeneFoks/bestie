@@ -346,16 +346,29 @@ export default function HomePage() {
             <Link href={`/browse${searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ''}`} className="btn-sm-gold">Find</Link>
           </div>
 
-          {/* Smart match */}
-          <button
-            className="hero-match"
-            onClick={() => setShowMatchModal(true)}
-            style={{ fontSize: '13px', color: '#A99ECC', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textDecorationColor: 'rgba(155,147,192,0.4)', textUnderlineOffset: '4px', transition: 'color 0.2s' }}
-            onMouseEnter={e => e.target.style.color = '#D4AF37'}
-            onMouseLeave={e => e.target.style.color = '#A99ECC'}
-          >
-            ✨ Try Smart Match — let us find your Bestie
-          </button>
+          {/* Primary hook: the free personality test (no signup) */}
+          {!hasType && (
+            <Link href="/bestie-type" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', margin: '18px auto 0', padding: '13px 24px', borderRadius: '999px', background: 'rgba(212,175,55,0.10)', border: '1px solid rgba(212,175,55,0.4)', textDecoration: 'none', transition: 'background 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(212,175,55,0.18)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(212,175,55,0.10)'}>
+              <span style={{ fontSize: '18px' }}>🧭</span>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF' }}>What's your eterotype?</span>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: '#D4AF37' }}>Take the free test →</span>
+            </Link>
+          )}
+
+          {/* Smart match — secondary */}
+          <div style={{ marginTop: '16px' }}>
+            <button
+              className="hero-match"
+              onClick={() => setShowMatchModal(true)}
+              style={{ fontSize: '13px', color: '#A99ECC', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textDecorationColor: 'rgba(155,147,192,0.4)', textUnderlineOffset: '4px', transition: 'color 0.2s' }}
+              onMouseEnter={e => e.target.style.color = '#D4AF37'}
+              onMouseLeave={e => e.target.style.color = '#A99ECC'}
+            >
+              ✨ Try Smart Match — let us find your Bestie
+            </button>
+          </div>
         </div>
       </section>
 
