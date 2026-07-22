@@ -64,7 +64,7 @@ export async function generateMetadata({ params, searchParams }) {
 export default async function InvitePage({ params, searchParams }) {
   const { data: profile } = await supabase
     .from('users')
-    .select('id, full_name, username, avatar_url, bestie_score, bio, city, country, energy_type, mind_type, vibe_type, activity_packages(*)')
+    .select('id, full_name, username, avatar_url, bestie_score, bio, city, country, eterotype, eterotype_name, activity_packages(*)')
     .eq('username', params.username)
     .single()
 
@@ -129,8 +129,8 @@ export default async function InvitePage({ params, searchParams }) {
             <div>
               <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', marginBottom: '3px' }}>{profile.full_name}</h2>
               <p style={{ fontSize: '13px', color: '#A99ECC' }}>@{profile.username}{profile.city ? ` · ${profile.city}` : ''}</p>
-              {profile.energy_type && (
-                <p style={{ fontSize: '12px', color: '#9B7FFF', marginTop: '2px' }}>{profile.energy_type} · {profile.mind_type} · {profile.vibe_type}</p>
+              {profile.eterotype && (
+                <p style={{ fontSize: '12px', color: '#9B7FFF', marginTop: '2px' }}>🧭 {profile.eterotype_name || profile.eterotype}</p>
               )}
             </div>
           </div>

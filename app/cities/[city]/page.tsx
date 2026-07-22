@@ -44,7 +44,7 @@ export default async function CityHubPage({ params }) {
   ] = await Promise.all([
     // Top 6 besties in this city
     supabase.from('users')
-      .select('id, username, full_name, avatar_url, bestie_score, energy_type, mind_type, vibe_type, bio')
+      .select('id, username, full_name, avatar_url, bestie_score, eterotype_name, bio')
       .ilike('city', city)
       .order('bestie_score', { ascending: false })
       .limit(6),
@@ -188,7 +188,7 @@ export default async function CityHubPage({ params }) {
                     </div>
                     <div style={{ flex: 1 }}>
                       <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>{u.full_name}</p>
-                      <p style={{ fontSize: '12px', color: '#A99ECC' }}>@{u.username}{u.energy_type ? ` · ${u.energy_type}` : ''}</p>
+                      <p style={{ fontSize: '12px', color: '#A99ECC' }}>@{u.username}{u.eterotype_name ? ` · 🧭 ${u.eterotype_name}` : ''}</p>
                     </div>
                     <span style={{ fontSize: '16px', fontWeight: 700, color: sc }}>{u.bestie_score || 0}</span>
                   </Link>
