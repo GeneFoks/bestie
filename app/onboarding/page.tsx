@@ -129,7 +129,7 @@ export default function OnboardingPage() {
         avatar_url = `${data.publicUrl}?t=${Date.now()}`
       }
     }
-    await supabase.from('users').update({
+    const { error } = await supabase.from('users').update({
       full_name: form.full_name || null,
       avatar_url: avatar_url || null,
       city: form.city || null,
@@ -138,6 +138,7 @@ export default function OnboardingPage() {
       onboarding_completed: true,
     }).eq('id', userId)
     setLoading(false)
+    if (error) { alert(`Could not save your profile: ${error.message}`); return }
     // Un-typed users go take the test (our biggest hook); typed users go home.
     router.push(skip ? '/dashboard' : '/bestie-type')
   }
