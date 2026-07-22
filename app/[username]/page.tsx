@@ -187,7 +187,7 @@ export default async function ProfilePage({ params }) {
   const BADGES = [
     rankPct <= 0.01 && { id: 'top1', emoji: '🏆', label: 'Top 1%', desc: 'Bestie Score in the top 1%', color: '#34D399' },
     rankPct <= 0.10 && rankPct > 0.01 && { id: 'top10', emoji: '🥇', label: 'Top 10%', desc: 'Bestie Score in the top 10%', color: '#D4AF37' },
-    profile.is_verified && { id: 'verified', emoji: '✅', label: 'Verified', desc: 'Identity verified by Bestie', color: '#34D399' },
+    profile.is_verified && { id: 'verified', emoji: '✅', label: 'Verified', desc: 'Verified by 3+ real meetups', color: '#34D399' },
     sessionCount >= 25 && { id: 'session_king', emoji: '👑', label: 'Session King', desc: '25+ confirmed sessions', color: '#D4AF37' },
     sessionCount >= 10 && sessionCount < 25 && { id: 'pro', emoji: '💎', label: 'Pro', desc: '10+ confirmed sessions', color: '#9B7FFF' },
     sessionCount >= 5 && sessionCount < 10 && { id: 'on_fire', emoji: '🔥', label: 'On Fire', desc: '5+ confirmed sessions', color: '#FF6B35' },
