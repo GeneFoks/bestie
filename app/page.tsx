@@ -329,8 +329,8 @@ export default function HomePage() {
           {/* Subtitle */}
           <p className="hero-sub" style={{ fontSize: 'clamp(15px, 2vw, 17px)', color: '#A99ECC', marginBottom: '36px', maxWidth: '460px', margin: '0 auto 36px', lineHeight: 1.65 }}>
             {CITY_FOCUS
-              ? `Find a Bestie for any activity in ${LAUNCH_CITY.name}. Real people. Bestie Score. No awkwardness.`
-              : 'Find a Bestie for any activity. Real people. Bestie Score. No awkwardness.'}
+              ? `Find a Bestie for any activity in ${LAUNCH_CITY.name}. Verified by real meetups. Bestie Score. No awkwardness.`
+              : 'Find a Bestie for any activity. Verified by real meetups. Bestie Score. No awkwardness.'}
           </p>
 
           {/* Search bar */}
