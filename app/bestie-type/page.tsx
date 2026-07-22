@@ -136,16 +136,20 @@ export default function BestieTypePage() {
     if (!result || !userId) return
     const t = TYPES[result]
     setSaving(true)
-    await supabase.from('users').update({
+    const { error } = await supabase.from('users').update({
       eterotype: result,
       eterotype_name: t.name,
       eterotype_family: t.fam,
       eterotype_collective: t.col,
       bestie_type_completed: true,
+      // Finishing the test also completes onboarding — prevents the dashboard
+      // guard from bouncing the user back to step 1.
+      onboarding_completed: true,
       ...(birthDate ? { birth_date: birthDate } : {}),
     }).eq('id', userId)
     try { localStorage.removeItem('bestie_pending_type') } catch {}
     setSaving(false)
+    if (error) { alert(`Could not save: ${error.message}`); return }
     router.push('/dashboard')
   }
 
