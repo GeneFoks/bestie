@@ -457,20 +457,20 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Bestie Type result */}
-        {profile?.bestie_type_completed && (
+        {/* Eterotype result */}
+        {profile?.eterotype && (
           <div style={{ marginBottom: '24px', background: '#111120', border: '1px solid rgba(155,143,255,0.25)', borderRadius: '20px', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <span style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Sparkles size={22} color="#D4AF37" strokeWidth={1.8} /></span>
+              <span style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '22px' }}>🧭</span>
               <div>
-                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '1.5px', color: '#9B7FFF', marginBottom: '4px' }}>BESTIE TYPE</p>
-                <p style={{ fontSize: '16px', fontWeight: 700, color: '#F0EAFF', fontFamily: 'DM Serif Display, serif' }}>
-                  {profile.energy_type} · {profile.mind_type} · {profile.vibe_type}
+                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '1.5px', color: '#9B7FFF', marginBottom: '4px' }}>ETEROTYPE</p>
+                <p style={{ fontSize: '16px', fontWeight: 700, color: '#F0EAFF', fontFamily: 'DM Serif Display, serif', textTransform: 'capitalize' }}>
+                  {profile.eterotype_name || profile.eterotype}{profile.eterotype_family ? ` · ${profile.eterotype_family}` : ''}{profile.eterotype_collective ? ` · ${profile.eterotype_collective}` : ''}
                 </p>
               </div>
             </div>
             <Link href="/bestie-type" style={{ padding: '8px 18px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.1)', color: '#A99ECC', textDecoration: 'none' }}>
-              Retake quiz
+              Retake test
             </Link>
           </div>
         )}
