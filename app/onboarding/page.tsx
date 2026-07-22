@@ -58,6 +58,10 @@ const ACTIVITY_GROUPS = [
   ]},
 ]
 
+const LABELS = Object.fromEntries(
+  ACTIVITY_GROUPS.flatMap(g => g.activities.map(a => [a.id, a.label]))
+)
+
 const STEP_TITLES = ['Add your photo', 'Where are you?', 'What are you into?']
 
 export default function OnboardingPage() {
@@ -82,7 +86,7 @@ export default function OnboardingPage() {
 
       const { data: profile } = await supabase
         .from('users')
-        .select('full_name, avatar_url, city, country, activities, onboarding_completed')
+        .select('full_name, avatar_url, city, country, onboarding_completed')
         .eq('id', user.id).single()
 
       if (profile?.onboarding_completed) { router.push('/dashboard'); return }
@@ -93,7 +97,6 @@ export default function OnboardingPage() {
         avatar_url: profile?.avatar_url || '',
         city: profile?.city || '',
         country: profile?.country || '',
-        activities: Array.isArray(profile?.activities) ? profile.activities : [],
       }))
       if (profile?.avatar_url) setAvatarPreview(profile.avatar_url)
       setChecking(false)
@@ -134,9 +137,18 @@ export default function OnboardingPage() {
       avatar_url: avatar_url || null,
       city: form.city || null,
       country: form.country || null,
-      activities: form.activities,
       onboarding_completed: true,
     }).eq('id', userId)
+    // Persist picked activities as activity packages (users has no activities
+    // column). Skip ones the user already has, keep it best-effort.
+    if (form.activities.length && userId) {
+      const { data: existing } = await supabase.from('activity_packages').select('activity_type').eq('user_id', userId)
+      const have = new Set((existing || []).map(p => p.activity_type))
+      const rows = form.activities
+        .filter(a => !have.has(a))
+        .map(a => ({ user_id: userId, activity_type: a, title: LABELS[a] || a, is_free: true, price_per_session: 0 }))
+      if (rows.length) await supabase.from('activity_packages').insert(rows)
+    }
     setLoading(false)
     if (error) { alert(`Could not save your profile: ${error.message}`); return }
     // Un-typed users go take the test (our biggest hook); typed users go home.
