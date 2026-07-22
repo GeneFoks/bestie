@@ -10,6 +10,7 @@ import { ActivityIcon } from '@/lib/activityIcons'
 import { EmptyState } from '@/components/EmptyState'
 import { CardSkeleton } from '@/components/Loading'
 import { Search, Sparkles, Flame, X, Zap, Gamepad2, BookOpen, Palette, Heart, Moon, Coffee, Users } from 'lucide-react'
+import { relation, TYPES } from '@/lib/socionics'
 
 const FILTER_GROUPS = [
   { id: 'active',    label: 'Active & Outdoors',  Icon: Zap,       filters: [
@@ -84,13 +85,11 @@ const ENERGY_COMPAT = {
   mirror: ['spark', 'builder', 'dynamo', 'guide', 'mirror'],
 }
 
+// Compatibility now runs on the eterotype (socionics) — Duality highest,
+// Conflict lowest. Falls back to 0 if either side hasn't taken the test.
 function compatScore(me, other) {
-  if (!me?.energy_type) return 0
-  let score = 0
-  if (VIBE_COMPAT[me.vibe_type]?.includes(other.vibe_type)) score += 3
-  if (MIND_COMPAT[me.mind_type]?.includes(other.mind_type)) score += 3
-  if (ENERGY_COMPAT[me.energy_type]?.includes(other.energy_type)) score += 2
-  return score
+  const rel = relation(me?.eterotype, other?.eterotype)
+  return rel ? rel.score : 0
 }
 
 export default function BrowsePage() {
@@ -109,10 +108,10 @@ export default function BrowsePage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         const [{ data: profile }, { data: blocks }] = await Promise.all([
-          supabase.from('users').select('id, energy_type, mind_type, vibe_type, bestie_type_completed').eq('id', user.id).single(),
+          supabase.from('users').select('id, eterotype, eterotype_name, bestie_type_completed').eq('id', user.id).single(),
           supabase.from('user_blocks').select('blocked_id').eq('blocker_id', user.id),
         ])
-        if (profile?.bestie_type_completed) setMyProfile(profile)
+        if (profile?.eterotype) setMyProfile(profile)
         if (blocks) setBlockedIds(blocks.map(b => b.blocked_id))
       }
     }
@@ -234,13 +233,13 @@ export default function BrowsePage() {
 
         {myProfile && compatMode && (
           <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(57,255,20,0.06)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '13px', color: '#A99ECC' }}>
-            Showing people compatible with your type <span style={{ color: '#34D399', fontWeight: 600 }}>{myProfile.energy_type} · {myProfile.mind_type} · {myProfile.vibe_type}</span> — best matches first
+            Showing people compatible with your eterotype <span style={{ color: '#34D399', fontWeight: 600 }}>🧭 {myProfile.eterotype_name || myProfile.eterotype}</span> — best matches first
           </div>
         )}
 
         {!myProfile && (
           <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', fontSize: '13px', color: '#A99ECC' }}>
-            <Link href="/bestie-type" style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>Take the Bestie Type quiz →</Link> and we'll show the most compatible people first
+            <Link href="/bestie-type" style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>Take the eterotype test →</Link> and we'll show the most compatible people first
           </div>
         )}
 
