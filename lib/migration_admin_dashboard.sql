@@ -134,11 +134,15 @@ BEGIN
     ),
 
     -- ── 5. MONETIZATION ───────────────────────────────────────────
+    -- Split paid (has a Stripe subscription) from granted/comped Plus so the
+    -- conversion number reflects real paying customers, not free grants.
     'monetization', jsonb_build_object(
-      'plus_active', (SELECT COUNT(*) FROM public.users WHERE subscription_tier='plus' AND (plus_expires_at IS NULL OR plus_expires_at > NOW())),
-      'free',        (SELECT COUNT(*) FROM public.users WHERE NOT (subscription_tier='plus' AND (plus_expires_at IS NULL OR plus_expires_at > NOW())) OR subscription_tier IS NULL),
+      'plus_active',  (SELECT COUNT(*) FROM public.users WHERE subscription_tier='plus' AND (plus_expires_at IS NULL OR plus_expires_at > NOW())),
+      'plus_paid',    (SELECT COUNT(*) FROM public.users WHERE subscription_tier='plus' AND (plus_expires_at IS NULL OR plus_expires_at > NOW()) AND stripe_subscription_id IS NOT NULL),
+      'plus_granted', (SELECT COUNT(*) FROM public.users WHERE subscription_tier='plus' AND (plus_expires_at IS NULL OR plus_expires_at > NOW()) AND stripe_subscription_id IS NULL),
+      'free',         (SELECT COUNT(*) FROM public.users WHERE NOT (subscription_tier='plus' AND (plus_expires_at IS NULL OR plus_expires_at > NOW())) OR subscription_tier IS NULL),
       'conversion_pct', (SELECT COALESCE(ROUND(
-                            100.0 * COUNT(*) FILTER (WHERE subscription_tier='plus' AND (plus_expires_at IS NULL OR plus_expires_at > NOW()))
+                            100.0 * COUNT(*) FILTER (WHERE subscription_tier='plus' AND (plus_expires_at IS NULL OR plus_expires_at > NOW()) AND stripe_subscription_id IS NOT NULL)
                             / NULLIF(COUNT(*),0), 1), 0) FROM public.users)
     ),
 

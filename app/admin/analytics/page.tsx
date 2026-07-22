@@ -263,9 +263,10 @@ export default function AdminAnalyticsPage() {
         {/* 5. MONETIZATION */}
         <Section title="Monetization">
           <Cards items={[
-            { label: 'Plus (active)', value: m.plus_active ?? 0, accent: GREEN },
+            { label: 'Plus (paid)', value: m.plus_paid ?? 0, accent: GREEN },
+            { label: 'Plus (granted)', value: m.plus_granted ?? 0 },
             { label: 'Free', value: m.free ?? 0 },
-            { label: 'Free → Plus', value: `${m.conversion_pct ?? 0}%` },
+            { label: 'Paid conversion', value: `${m.conversion_pct ?? 0}%` },
           ]} />
         </Section>
 
