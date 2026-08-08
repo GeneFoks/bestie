@@ -129,7 +129,7 @@ export default function EditProfilePage() {
   const [editPkg, setEditPkg] = useState({ title: '', activity_type: '', description: '', price_per_session: '', is_free: false, scheduled_at: '' })
   const [myCrews, setMyCrews] = useState<Array<{ id: string; name: string }>>([])
   const [selectedLanguages, setSelectedLanguages] = useState([])
-  const [form, setForm] = useState({ full_name: '', username: '', bio: '', city: '', country: '', avatar_url: '' })
+  const [form, setForm] = useState({ full_name: '', username: '', bio: '', city: '', country: '', avatar_url: '', crypto_tip_address: '', crypto_tip_chain: 'USDT' })
   const [hideFromGraph, setHideFromGraph] = useState(false)
   const [showOnGraph, setShowOnGraph] = useState(false)
   const [locationShared, setLocationShared] = useState(false)
@@ -161,7 +161,7 @@ export default function EditProfilePage() {
         supabase.from('crew_members').select('crew:crews(id, name)').eq('user_id', session.user.id),
       ])
       if (data) {
-        setForm({ full_name: data.full_name || '', username: data.username || '', bio: data.bio || '', city: data.city || '', country: data.country || '', avatar_url: data.avatar_url || '' })
+        setForm({ full_name: data.full_name || '', username: data.username || '', bio: data.bio || '', city: data.city || '', country: data.country || '', avatar_url: data.avatar_url || '', crypto_tip_address: data.crypto_tip_address || '', crypto_tip_chain: data.crypto_tip_chain || 'USDT' })
         setPackages(data.activity_packages || [])
         setSelectedLanguages(data.languages || [])
         if (data.availability) setAvailability({ ...defaultAvail(), ...data.availability })
@@ -251,6 +251,8 @@ export default function EditProfilePage() {
       city: form.city,
       country: form.country,
       avatar_url,
+      crypto_tip_address: form.crypto_tip_address.trim() || null,
+      crypto_tip_chain: form.crypto_tip_address.trim() ? form.crypto_tip_chain : null,
       languages: selectedLanguages,
       availability,
       hide_from_graph: hideFromGraph,
@@ -426,6 +428,24 @@ export default function EditProfilePage() {
               <label style={labelStyle}>State / Country</label>
               <input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} placeholder="TX" style={inputStyle} />
             </div>
+          </div>
+
+          {/* Crypto tips (non-custodial: paid straight to your wallet) */}
+          <div style={{ marginTop: '16px' }}>
+            <label style={labelStyle}>Crypto tip address <span style={{ fontWeight: 400 }}>(optional)</span></label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <select value={form.crypto_tip_chain} onChange={e => setForm(f => ({ ...f, crypto_tip_chain: e.target.value }))} style={{ ...inputStyle, width: '110px', flexShrink: 0, cursor: 'pointer' }}>
+                <option value="USDT">USDT</option>
+                <option value="USDC">USDC</option>
+                <option value="BTC">BTC</option>
+                <option value="ETH">ETH</option>
+                <option value="SOL">SOL</option>
+              </select>
+              <input value={form.crypto_tip_address} onChange={e => setForm(f => ({ ...f, crypto_tip_address: e.target.value }))} placeholder="Your wallet address" style={inputStyle} />
+            </div>
+            <p style={{ fontSize: '11px', color: '#6B6490', marginTop: '6px', lineHeight: 1.5 }}>
+              Shown on your passport so people can tip you directly. Bestie never touches the funds — payments go straight to your wallet. Double-check the address.
+            </p>
           </div>
         </div>
 
