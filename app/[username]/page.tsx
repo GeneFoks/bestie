@@ -15,6 +15,7 @@ import MutualFriends from '@/components/MutualFriends'
 import { getAvatarFrame } from '@/lib/avatarFrame'
 import CompatibilityScore from './CompatibilityScore'
 import StickyBookCTA from './StickyBookCTA'
+import CryptoTip from '@/components/CryptoTip'
 import { ActivityIcon } from '@/lib/activityIcons'
 
 const supabase = createClient(
@@ -404,6 +405,11 @@ export default async function ProfilePage({ params }) {
 
         {/* MUTUAL FRIENDS — social proof */}
         <MutualFriends profileId={profile.id} />
+
+        {/* Crypto tips (non-custodial) */}
+        {profile.crypto_tip_address && (
+          <CryptoTip address={profile.crypto_tip_address} chain={profile.crypto_tip_chain} name={profile.full_name?.split(' ')[0]} />
+        )}
 
         {/* TOP SPARKS */}
         {topSparks.length > 0 && (
