@@ -176,7 +176,9 @@ export default async function CrewsPage() {
                     {featuredHasSwarm && <SwarmBadge />}
                     {featured.avg_bestie_score >= 700 && <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '999px', background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37', fontWeight: 700, backdropFilter: 'blur(8px)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Sparkles size={10} strokeWidth={2} /> Elite</span>}
                     {featured.member_count >= 15 && <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '999px', background: 'rgba(255,107,53,0.2)', border: '1px solid rgba(255,107,53,0.4)', color: '#FF6B35', fontWeight: 700, backdropFilter: 'blur(8px)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Flame size={10} strokeWidth={2} /> Hot</span>}
-                    {!featured.is_public && <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '999px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)', color: '#A99ECC', fontWeight: 600, backdropFilter: 'blur(8px)', display: 'inline-flex', alignItems: 'center' }}><Lock size={10} strokeWidth={2} /></span>}
+                    {featured.is_public
+                      ? <span style={{ fontSize: '10px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(52,211,153,0.16)', border: '1px solid rgba(52,211,153,0.4)', color: '#34D399', fontWeight: 700, backdropFilter: 'blur(8px)' }}>Open</span>
+                      : <span style={{ fontSize: '10px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)', color: '#A99ECC', fontWeight: 600, backdropFilter: 'blur(8px)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Lock size={10} strokeWidth={2} /> Private</span>}
                   </div>
                 </div>
 
@@ -265,10 +267,11 @@ export default async function CrewsPage() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px', flexWrap: 'wrap' }}>
                             <span style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF' }}>{crew.name}</span>
                             {hasSwarm && <SwarmBadge />}
-                            {!crew.is_public && <Lock size={10} color="#A99ECC" strokeWidth={2} />}
+                            {crew.is_public
+                              ? <span style={{ fontSize: '9px', padding: '2px 7px', borderRadius: '999px', background: 'rgba(52,211,153,0.12)', color: '#34D399', fontWeight: 700, border: '1px solid rgba(52,211,153,0.3)' }}>Open</span>
+                              : <span style={{ fontSize: '9px', padding: '2px 7px', borderRadius: '999px', background: 'rgba(155,147,192,0.12)', color: '#A99ECC', fontWeight: 700, border: '1px solid rgba(155,147,192,0.3)', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Lock size={9} strokeWidth={2} /> Private</span>}
                             {crew.avg_bestie_score >= 700 && <span style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', color: '#D4AF37', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Sparkles size={9} strokeWidth={2} /> Elite</span>}
                             {crew.member_count >= 15 && <span style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '999px', background: 'rgba(255,107,53,0.1)', color: '#FF6B35', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Flame size={9} strokeWidth={2} /> Hot</span>}
-                            {crew.member_count < 8 && crew.member_count > 0 && <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#34D399' }} />}
                             {compat && compat.pct >= 35 && (
                               <span style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '999px', background: `${compat.tone.color}1A`, color: compat.tone.color, fontWeight: 700, border: `1px solid ${compat.tone.color}40` }}>
                                 {compat.pct}% match
