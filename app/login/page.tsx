@@ -17,7 +17,8 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    // Emails are case-insensitive — normalize so "Natalia@" == "natalia@"
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password })
     if (error) {
       setError(error.message)
       setLoading(false)

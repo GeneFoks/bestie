@@ -25,7 +25,7 @@ function SignupForm() {
     setLoading(true)
     setError('')
     const { data, error } = await supabase.auth.signUp({
-      email: form.email,
+      email: form.email.trim().toLowerCase(),
       password: form.password,
       options: {
         data: { full_name: form.name },
