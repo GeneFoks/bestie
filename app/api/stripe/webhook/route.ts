@@ -45,6 +45,28 @@ export async function POST(req: NextRequest) {
         break
       }
 
+      // ── Crew subscription (recurring, Connect destination charge) ──
+      if (meta.kind === 'crew_sub') {
+        const { crew_id, user_id } = meta
+        if (!crew_id || !user_id) break
+
+        const periodEnd = new Date(); periodEnd.setMonth(periodEnd.getMonth() + 1)
+        await admin.from('crew_subscriptions').upsert({
+          crew_id, user_id,
+          stripe_subscription_id: session.subscription as string,
+          status: 'active',
+          current_period_end: periodEnd.toISOString(),
+        }, { onConflict: 'crew_id,user_id' })
+
+        // Grant crew membership (idempotent)
+        const { data: already } = await admin.from('crew_members')
+          .select('user_id').eq('crew_id', crew_id).eq('user_id', user_id).maybeSingle()
+        if (!already) await admin.from('crew_members').insert({ crew_id, user_id })
+
+        console.log(`[webhook] crew_sub: user ${user_id} joined crew ${crew_id}`)
+        break
+      }
+
       // ── Event ticket (one-time payment) ──
       if (meta.kind === 'event_ticket') {
         const { session_id, user_id, amount } = meta
@@ -97,14 +119,36 @@ export async function POST(req: NextRequest) {
       await admin.from('crews')
         .update({ plan: 'free', plan_expires_at: null, stripe_subscription_id: null })
         .eq('stripe_subscription_id', sub.id)
-      console.log(`[webhook] subscription ${sub.id} cancelled — downgraded to free`)
+
+      // Crew membership subscription cancelled → mark cancelled + remove member
+      const { data: crewSub } = await admin.from('crew_subscriptions')
+        .select('crew_id, user_id').eq('stripe_subscription_id', sub.id).maybeSingle()
+      if (crewSub) {
+        await admin.from('crew_subscriptions').update({ status: 'canceled' }).eq('stripe_subscription_id', sub.id)
+        await admin.from('crew_members').delete().eq('crew_id', crewSub.crew_id).eq('user_id', crewSub.user_id)
+        console.log(`[webhook] crew_sub cancelled: user ${crewSub.user_id} left crew ${crewSub.crew_id}`)
+      }
+      console.log(`[webhook] subscription ${sub.id} cancelled`)
       break
     }
 
     case 'invoice.payment_failed': {
       const invoice = event.data.object as Stripe.Invoice
+      // Mark crew membership past_due (grace handled by Stripe retries)
+      if (invoice.subscription) {
+        await admin.from('crew_subscriptions').update({ status: 'past_due' })
+          .eq('stripe_subscription_id', invoice.subscription as string)
+      }
       console.warn(`[webhook] payment failed for customer ${invoice.customer}`)
-      // Optionally notify the captain here
+      break
+    }
+
+    case 'account.updated': {
+      // Connect account status changed → sync the crew's payout readiness
+      const acct = event.data.object as Stripe.Account
+      const ready = !!acct.charges_enabled && !!acct.payouts_enabled
+      await admin.from('crews').update({ connect_charges_enabled: ready }).eq('stripe_connect_id', acct.id)
+      console.log(`[webhook] connect account ${acct.id} ready=${ready}`)
       break
     }
   }

@@ -24,7 +24,7 @@ function SignupForm() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: {
@@ -35,6 +35,10 @@ function SignupForm() {
     if (error) {
       setError(error.message)
       setLoading(false)
+    } else if (data.session) {
+      // Email confirmation is off → user is signed in immediately. Skip the
+      // dead-end verify page and go straight into onboarding.
+      router.push('/onboarding')
     } else {
       router.push(`/verify-email?email=${encodeURIComponent(form.email)}`)
     }
