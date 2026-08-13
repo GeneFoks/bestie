@@ -51,6 +51,7 @@ export default function NewGroupSessionPage() {
     location: '',
     max_participants: 6,
     ticket_price: '',
+    recurrence: 'none',
   })
   const [isAmbassador, setIsAmbassador] = useState(false)
   const [coverFile, setCoverFile] = useState<File | null>(null)
@@ -94,17 +95,37 @@ export default function NewGroupSessionPage() {
       const { data: pub } = supabase.storage.from('group-session-covers').getPublicUrl(path)
       cover_image_url = pub.publicUrl
     }
-    const { data, error } = await supabase.from('group_sessions').insert({
+    const base = {
       host_id: userId,
       title: form.title,
       activity_type: form.activity_type || null,
       description: form.description || null,
-      scheduled_at: new Date(form.scheduled_at).toISOString(),
       location: form.location || null,
       max_participants: parseInt(form.max_participants) || 6,
       ticket_price: isAmbassador && form.ticket_price ? Math.max(0, parseFloat(form.ticket_price) || 0) : 0,
       cover_image_url,
+      recurrence: form.recurrence,
+    }
+    // Create the first occurrence
+    const { data, error } = await supabase.from('group_sessions').insert({
+      ...base,
+      scheduled_at: new Date(form.scheduled_at).toISOString(),
     }).select().single()
+
+    // Recurring → generate the next 11 occurrences, all sharing series_id
+    if (!error && data && form.recurrence !== 'none') {
+      const stepDays = form.recurrence === 'weekly' ? 7 : form.recurrence === 'biweekly' ? 14 : 0
+      const rows = []
+      for (let i = 1; i <= 11; i++) {
+        const d = new Date(form.scheduled_at)
+        if (form.recurrence === 'monthly') d.setMonth(d.getMonth() + i)
+        else d.setDate(d.getDate() + i * stepDays)
+        rows.push({ ...base, scheduled_at: d.toISOString(), series_id: data.id })
+      }
+      await supabase.from('group_sessions').update({ series_id: data.id }).eq('id', data.id)
+      await supabase.from('group_sessions').insert(rows)
+    }
+
     setSaving(false)
     if (error || !data) {
       alert(`Could not create the session: ${error?.message || 'unknown error'}`)
@@ -174,6 +195,19 @@ export default function NewGroupSessionPage() {
           <div>
             <label style={labelStyle}>Date & Time *</label>
             <input type="datetime-local" value={form.scheduled_at} onChange={e => setForm(f => ({ ...f, scheduled_at: e.target.value }))} style={{ ...inputStyle, colorScheme: 'dark' }} />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Repeats</label>
+            <select value={form.recurrence} onChange={e => setForm(f => ({ ...f, recurrence: e.target.value }))} style={{ ...inputStyle, cursor: 'pointer' }}>
+              <option value="none">Does not repeat</option>
+              <option value="weekly">Weekly (same day &amp; time)</option>
+              <option value="biweekly">Every 2 weeks</option>
+              <option value="monthly">Monthly</option>
+            </select>
+            {form.recurrence !== 'none' && (
+              <p style={{ fontSize: '11px', color: '#A99ECC', marginTop: '6px' }}>🔁 We'll create the next 12 sessions automatically and keep the series going.</p>
+            )}
           </div>
 
           <div>

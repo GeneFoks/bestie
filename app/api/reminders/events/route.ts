@@ -145,7 +145,39 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ sent })
+  // ── 5. Top up recurring series (keep ~12 future occurrences) ──
+  let created = 0
+  const { data: seriesHeads } = await db.from('group_sessions')
+    .select('series_id, recurrence')
+    .not('series_id', 'is', null).neq('recurrence', 'none')
+  const seenSeries = new Set()
+  for (const s of seriesHeads || []) {
+    if (seenSeries.has(s.series_id)) continue
+    seenSeries.add(s.series_id)
+    // Count future occurrences; if fewer than 6, extend from the latest one.
+    const { data: future } = await db.from('group_sessions')
+      .select('id, title, activity_type, description, location, max_participants, ticket_price, cover_image_url, host_id, scheduled_at, recurrence')
+      .eq('series_id', s.series_id).gte('scheduled_at', new Date().toISOString())
+      .order('scheduled_at', { ascending: false })
+    if (!future || future.length >= 6) continue
+    const tmpl = future[0]
+    const stepDays = tmpl.recurrence === 'weekly' ? 7 : tmpl.recurrence === 'biweekly' ? 14 : 0
+    const rows = []
+    for (let i = 1; i <= 12 - future.length; i++) {
+      const d = new Date(tmpl.scheduled_at)
+      if (tmpl.recurrence === 'monthly') d.setMonth(d.getMonth() + i)
+      else d.setDate(d.getDate() + i * stepDays)
+      rows.push({
+        host_id: tmpl.host_id, title: tmpl.title, activity_type: tmpl.activity_type,
+        description: tmpl.description, location: tmpl.location, max_participants: tmpl.max_participants,
+        ticket_price: tmpl.ticket_price, cover_image_url: tmpl.cover_image_url,
+        recurrence: tmpl.recurrence, series_id: s.series_id, scheduled_at: d.toISOString(),
+      })
+    }
+    if (rows.length) { await db.from('group_sessions').insert(rows); created += rows.length }
+  }
+
+  return NextResponse.json({ sent, created })
 }
 
 // Manual trigger for debugging: /api/reminders/events?s=SECRET
