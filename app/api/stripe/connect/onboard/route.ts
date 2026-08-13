@@ -47,6 +47,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: link.url })
   } catch (err: any) {
     console.error('[connect/onboard]', err.message)
+    // Platform not activated yet → friendly message instead of raw Stripe text
+    if (/platform profile|complete your platform/i.test(err.message || '')) {
+      return NextResponse.json({ error: 'Paid memberships aren\'t live yet — Bestie is finishing payment setup. Please try again soon.' }, { status: 503 })
+    }
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
