@@ -85,7 +85,7 @@ async function handleJoinRequest(update: any) {
   // Which crew owns this Telegram group?
   const { data: crew } = await supabase
     .from('crews')
-    .select('id, name')
+    .select('id, name, slug, sub_active, sub_price')
     .eq('telegram_chat_id', chatId)
     .single()
 
@@ -96,15 +96,25 @@ async function handleJoinRequest(update: any) {
   )
 
   const crewName = crew?.name || chat.title || 'этот крю'
+  const paid = crew?.sub_active && crew?.sub_price
+  const crewLink = crew?.slug ? `bestiehere.com/crews/${crew.slug}` : 'bestiehere.com'
+
   await sendMessage(
     userId,
-    `👋 <b>${firstName}!</b>\n\n` +
-    `Чтобы вступить в группу <b>${chat.title}</b>, нужно быть в крю <b>${crewName}</b> на Bestie.\n\n` +
-    `<b>Шаги:</b>\n` +
-    `1️⃣ Зарегистрируйся на <b>bestiehere.com</b>\n` +
-    `2️⃣ Вступи в крю <b>${crewName}</b>\n` +
-    `3️⃣ Напиши мне: <code>/verify @твой_username</code>\n\n` +
-    `После проверки я одобрю заявку автоматически 🚀`
+    paid
+      ? `👋 <b>${firstName}!</b>\n\n` +
+        `Группа <b>${chat.title}</b> — по подписке (<b>$${Number(crew.sub_price)}/мес</b>).\n\n` +
+        `<b>Шаги:</b>\n` +
+        `1️⃣ Оформи подписку: <b>${crewLink}</b>\n` +
+        `2️⃣ Напиши мне: <code>/verify @твой_username</code>\n\n` +
+        `После оплаты я сразу одобрю заявку 🚀`
+      : `👋 <b>${firstName}!</b>\n\n` +
+        `Чтобы вступить в группу <b>${chat.title}</b>, нужно быть в крю <b>${crewName}</b> на Bestie.\n\n` +
+        `<b>Шаги:</b>\n` +
+        `1️⃣ Зарегистрируйся на <b>bestiehere.com</b>\n` +
+        `2️⃣ Вступи в крю <b>${crewName}</b>\n` +
+        `3️⃣ Напиши мне: <code>/verify @твой_username</code>\n\n` +
+        `После проверки я одобрю заявку автоматически 🚀`
   )
 }
 
@@ -138,7 +148,7 @@ async function handleVerify(message: any) {
   // Which crew is this group linked to?
   const { data: crew } = await supabase
     .from('crews')
-    .select('id, name')
+    .select('id, name, slug, sub_active, sub_price')
     .eq('telegram_chat_id', pending.chat_id)
     .single()
 
@@ -174,6 +184,24 @@ async function handleVerify(message: any) {
       `❌ Ты ещё не в крю <b>${crew.name}</b> на Bestie.\n\nЗайди на <b>bestiehere.com</b>, вступи в крю и попробуй снова.`
     )
     return
+  }
+
+  // Paid crew → require an active subscription before approving TG access.
+  if (crew.sub_active && crew.sub_price) {
+    const { data: sub } = await supabase
+      .from('crew_subscriptions')
+      .select('status')
+      .eq('crew_id', crew.id)
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (sub?.status !== 'active') {
+      const link = crew.slug ? `bestiehere.com/crews/${crew.slug}` : 'bestiehere.com'
+      await sendMessage(userId,
+        `💳 Группа <b>${crew.name}</b> — по подписке (<b>$${Number(crew.sub_price)}/мес</b>).\n\n` +
+        `Оформи подписку здесь: <b>${link}</b>, затем снова напиши <code>/verify @${bestieUsername}</code> — и я сразу одобрю заявку.`
+      )
+      return
+    }
   }
 
   // All good — approve.
