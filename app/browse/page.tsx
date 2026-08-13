@@ -100,8 +100,15 @@ export default function BrowsePage() {
   const [activeGroup, setActiveGroup] = useState(null)
   const [myProfile, setMyProfile] = useState(null)
   const [compatMode, setCompatMode] = useState(false)
+  const [justMatched, setJustMatched] = useState(false)
 
   const [blockedIds, setBlockedIds] = useState<string[]>([])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('matched')) {
+      setJustMatched(true)
+    }
+  }, [])
 
   useEffect(() => {
     const loadMe = async () => {
@@ -111,7 +118,7 @@ export default function BrowsePage() {
           supabase.from('users').select('id, eterotype, eterotype_name, bestie_type_completed').eq('id', user.id).single(),
           supabase.from('user_blocks').select('blocked_id').eq('blocker_id', user.id),
         ])
-        if (profile?.eterotype) setMyProfile(profile)
+        if (profile?.eterotype) { setMyProfile(profile); setCompatMode(true) }
         if (blocks) setBlockedIds(blocks.map(b => b.blocked_id))
       }
     }
@@ -231,7 +238,18 @@ export default function BrowsePage() {
           )}
         </div>
 
-        {myProfile && compatMode && (
+        {justMatched && myProfile && (
+          <div style={{ marginBottom: '16px', padding: '18px 20px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(212,175,55,0.14) 0%, rgba(155,127,255,0.10) 100%)', border: '1px solid rgba(212,175,55,0.3)' }}>
+            <p style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF', margin: '0 0 4px' }}>
+              You're <span style={{ color: '#D4AF37' }}>🧭 {myProfile.eterotype_name || myProfile.eterotype}</span> 🎉
+            </p>
+            <p style={{ fontSize: '13px', color: '#A99ECC', margin: 0, lineHeight: 1.5 }}>
+              Here are the people you'll naturally click with. Open a profile and send a <b style={{ color: '#F0EAFF' }}>knock 👋</b> — an anonymous hello. If they knock back, it's a match.
+            </p>
+          </div>
+        )}
+
+        {myProfile && compatMode && !justMatched && (
           <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(57,255,20,0.06)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '13px', color: '#A99ECC' }}>
             Showing people compatible with your eterotype <span style={{ color: '#34D399', fontWeight: 600 }}>🧭 {myProfile.eterotype_name || myProfile.eterotype}</span> — best matches first
           </div>

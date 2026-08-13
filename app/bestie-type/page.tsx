@@ -150,7 +150,8 @@ export default function BestieTypePage() {
     try { localStorage.removeItem('bestie_pending_type') } catch {}
     setSaving(false)
     if (error) { alert(`Could not save: ${error.message}`); return }
-    router.push('/dashboard')
+    // Straight to their matches, not an empty dashboard — the moment of intent.
+    router.push('/browse?matched=1')
   }
 
   // ---------- INTRO ----------
