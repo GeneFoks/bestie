@@ -8,6 +8,7 @@ import CrewAvatarSection from './CrewAvatarSection'
 import JoinRequestActions from './JoinRequestActions'
 import CrewInviteButton from './CrewInviteButton'
 import CrewMembership from './CrewMembership'
+import CrewNameEditor from './CrewNameEditor'
 import CrewRating from './CrewRating'
 import CrewDeleteButton from './CrewDeleteButton'
 import CrewTelegramLink from './CrewTelegramLink'
@@ -134,7 +135,7 @@ export default async function CrewPage({ params }) {
         {/* Crew identity on cover */}
         <div style={{ position: 'absolute', bottom: '16px', left: '20px', right: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
-            <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '26px', color: '#F0EAFF', margin: 0 }}>{crew.name}</h1>
+            <CrewNameEditor crewId={crew.id} captainId={crew.captain_id} initialName={crew.name} />
             <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '999px', background: crew.is_public ? 'rgba(57,255,20,0.15)' : 'rgba(155,147,192,0.15)', border: crew.is_public ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(155,147,192,0.3)', color: crew.is_public ? '#34D399' : '#A99ECC', fontWeight: 600, backdropFilter: 'blur(8px)' }}>
               {crew.is_public ? 'Open' : (<span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Lock size={10} strokeWidth={2} /> Private</span>)}
             </span>
