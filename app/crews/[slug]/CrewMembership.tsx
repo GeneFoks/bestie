@@ -16,8 +16,10 @@ export default function CrewMembership({ crew }: { crew: any }) {
   const [price, setPrice] = useState(crew.sub_price ? String(crew.sub_price) : '')
   const [desc, setDesc] = useState(crew.sub_description || '')
   const [active, setActive] = useState(!!crew.sub_active)
+  const [grace, setGrace] = useState(crew.sub_grace_until ? crew.sub_grace_until.slice(0, 10) : '')
   const [connectReady, setConnectReady] = useState(!!crew.connect_charges_enabled)
   const [mySub, setMySub] = useState<any>(null)
+  const [isMember, setIsMember] = useState(false)
   const [savedMsg, setSavedMsg] = useState('')
 
   const isCaptain = me && me === crew.captain_id
@@ -26,9 +28,12 @@ export default function CrewMembership({ crew }: { crew: any }) {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return
       setMe(user.id)
-      const { data } = await supabase.from('crew_subscriptions')
-        .select('status').eq('crew_id', crew.id).eq('user_id', user.id).maybeSingle()
+      const [{ data }, { data: mem }] = await Promise.all([
+        supabase.from('crew_subscriptions').select('status').eq('crew_id', crew.id).eq('user_id', user.id).maybeSingle(),
+        supabase.from('crew_members').select('user_id').eq('crew_id', crew.id).eq('user_id', user.id).maybeSingle(),
+      ])
       setMySub(data)
+      setIsMember(!!mem)
       // If captain just came back from onboarding, sync status
       if (user.id === crew.captain_id && new URLSearchParams(window.location.search).get('connect')) {
         const { data: { session } } = await supabase.auth.getSession()
@@ -63,6 +68,7 @@ export default function CrewMembership({ crew }: { crew: any }) {
       sub_price: isNaN(p) ? null : Math.max(0, p),
       sub_description: desc.trim() || null,
       sub_active: active && !isNaN(p) && p > 0 && connectReady,
+      sub_grace_until: grace ? new Date(grace + 'T23:59:59').toISOString() : null,
     }).eq('id', crew.id)
     setBusy(false)
     if (error) { alert(error.message); return }
@@ -107,6 +113,11 @@ export default function CrewMembership({ crew }: { crew: any }) {
               <span style={{ fontSize: '13px', color: '#A99ECC' }}>/ month</span>
             </div>
             <textarea placeholder="What's included? (e.g. weekly pickleball games for kids, court fees covered, group chat)" value={desc} onChange={e => setDesc(e.target.value)} rows={3} style={{ ...input, resize: 'vertical' }} />
+            <div>
+              <label style={{ fontSize: '12px', color: '#A99ECC', display: 'block', marginBottom: '4px' }}>Existing members must subscribe by</label>
+              <input type="date" value={grace} onChange={e => setGrace(e.target.value)} style={{ ...input, colorScheme: 'dark', maxWidth: '200px' }} />
+              <p style={{ fontSize: '11px', color: '#6B6490', marginTop: '4px' }}>Current members who don't subscribe by this date are removed automatically. Leave blank to skip.</p>
+            </div>
             <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '14px', color: '#F0EAFF' }}>
               <input type="checkbox" checked={active} onChange={e => setActive(e.target.checked)} />
               Membership is active (visible to members)
@@ -130,14 +141,23 @@ export default function CrewMembership({ crew }: { crew: any }) {
     )
   }
 
+  // Existing member who hasn't subscribed yet → must pay by the deadline
+  const deadline = crew.sub_grace_until ? new Date(crew.sub_grace_until) : null
+  const deadlineStr = deadline ? deadline.toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) : null
+
   return (
-    <div style={box}>
+    <div style={{ ...box, border: isMember && deadline ? '1px solid rgba(255,107,53,0.35)' : box.border }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
         <Crown size={18} color="#D4AF37" strokeWidth={1.9} />
         <p style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF', margin: 0 }}>Membership · ${Number(crew.sub_price)}/mo</p>
       </div>
+      {isMember && deadlineStr && (
+        <p style={{ fontSize: '13px', color: '#FF6B35', margin: '0 0 12px', lineHeight: 1.5, fontWeight: 600 }}>
+          ⚠️ This crew is now paid. Subscribe by <b>{deadlineStr}</b> to keep your spot and Telegram access — otherwise you'll be removed.
+        </p>
+      )}
       {crew.sub_description && <p style={{ fontSize: '13px', color: '#A99ECC', margin: '0 0 14px', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{crew.sub_description}</p>}
-      <button onClick={subscribe} disabled={busy} style={gold}>{busy ? '…' : `Join for $${Number(crew.sub_price)}/mo →`}</button>
+      <button onClick={subscribe} disabled={busy} style={gold}>{busy ? '…' : `${isMember ? 'Subscribe' : 'Join'} for $${Number(crew.sub_price)}/mo →`}</button>
       <p style={{ fontSize: '11px', color: '#6B6490', textAlign: 'center', marginTop: '8px' }}>Secure payment via Stripe · cancel anytime</p>
     </div>
   )

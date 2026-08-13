@@ -177,7 +177,43 @@ export async function POST(req: NextRequest) {
     if (rows.length) { await db.from('group_sessions').insert(rows); created += rows.length }
   }
 
-  return NextResponse.json({ sent, created })
+  // ── 6. Paid crews: kick non-subscribers from Telegram after the grace date ──
+  let kicked = 0
+  const nowIso = new Date().toISOString()
+  const { data: dueCrews } = await db.from('crews')
+    .select('id, captain_id, telegram_chat_id')
+    .eq('sub_active', true)
+    .not('telegram_chat_id', 'is', null)
+    .not('sub_grace_until', 'is', null)
+    .lte('sub_grace_until', nowIso)
+
+  const TG = process.env.TELEGRAM_BOT_TOKEN
+  for (const c of dueCrews || []) {
+    if (!TG) break
+    const { data: tgMembers } = await db.from('crew_telegram_members')
+      .select('user_id, telegram_user_id').eq('crew_id', c.id)
+    for (const m of tgMembers || []) {
+      if (m.user_id === c.captain_id) continue
+      const { data: sub } = await db.from('crew_subscriptions')
+        .select('status').eq('crew_id', c.id).eq('user_id', m.user_id).maybeSingle()
+      if (sub?.status === 'active') continue
+      try {
+        // Kick without permanent ban: ban then immediately unban.
+        await fetch(`https://api.telegram.org/bot${TG}/banChatMember`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: c.telegram_chat_id, user_id: m.telegram_user_id }),
+        })
+        await fetch(`https://api.telegram.org/bot${TG}/unbanChatMember`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: c.telegram_chat_id, user_id: m.telegram_user_id, only_if_banned: true }),
+        })
+        await db.from('crew_telegram_members').delete().eq('crew_id', c.id).eq('user_id', m.user_id)
+        kicked++
+      } catch {}
+    }
+  }
+
+  return NextResponse.json({ sent, created, kicked })
 }
 
 // Manual trigger for debugging: /api/reminders/events?s=SECRET
