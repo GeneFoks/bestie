@@ -178,6 +178,10 @@ async function handleVerify(message: any) {
 
   // All good — approve.
   await approveJoinRequest(pending.chat_id, userId)
+  // Persist the Bestie↔Telegram mapping so paid crews can enforce membership.
+  await supabase.from('crew_telegram_members').upsert({
+    crew_id: crew.id, user_id: user.id, telegram_user_id: userId, chat_id: pending.chat_id,
+  }, { onConflict: 'crew_id,user_id' })
   await supabase.from('telegram_pending_joins').delete().eq('telegram_user_id', userId)
 
   await sendMessage(userId,
