@@ -14,9 +14,10 @@ type Props = {
   isFull: boolean
   captainUsername: string
   crewSlug: string
+  paid?: boolean
 }
 
-function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, crewSlug }: Props) {
+function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, crewSlug, paid }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [userId, setUserId] = useState<string | null>(null)
@@ -187,6 +188,15 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
     return (
       <div style={{ padding: '12px', borderRadius: '14px', textAlign: 'center', fontSize: '13px', color: '#A99ECC', background: '#131323', border: '1px solid rgba(255,255,255,0.10)' }}>
         This crew is full (108/108)
+      </div>
+    )
+  }
+
+  // Paid crew — no free join; membership happens via the subscription block.
+  if (paid) {
+    return (
+      <div style={{ padding: '12px 14px', borderRadius: '14px', textAlign: 'center', fontSize: '13px', color: '#A99ECC', background: '#131323', border: '1px solid rgba(212,175,55,0.2)' }}>
+        This crew has a paid membership — join below 👇
       </div>
     )
   }

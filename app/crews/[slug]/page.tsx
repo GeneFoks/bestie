@@ -206,7 +206,7 @@ export default async function CrewPage({ params }) {
             <MessageCircle size={16} strokeWidth={2} /> Crew Chat
           </Link>
           <div style={{ flex: 1 }}>
-            <CrewActions crewId={crew.id} captainId={crew.captain_id} isPublic={crew.is_public} isFull={spotsLeft <= 0} captainUsername={crew.captain?.username} crewSlug={params.slug} />
+            <CrewActions crewId={crew.id} captainId={crew.captain_id} isPublic={crew.is_public} isFull={spotsLeft <= 0} captainUsername={crew.captain?.username} crewSlug={params.slug} paid={!!(crew.sub_active && crew.sub_price)} />
           </div>
         </div>
 
