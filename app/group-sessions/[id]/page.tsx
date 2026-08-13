@@ -154,6 +154,11 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
               <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#F0EAFF', lineHeight: 1.2 }}>{session.title}</h1>
             </div>
             <span style={{ display: 'inline-flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
+              {session.recurrence && session.recurrence !== 'none' && (
+                <span style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px', borderRadius: '999px', background: 'rgba(155,127,255,0.12)', border: '1px solid rgba(155,127,255,0.4)', color: '#9B7FFF' }}>
+                  🔁 {session.recurrence === 'weekly' ? 'Weekly' : session.recurrence === 'biweekly' ? 'Every 2 wks' : 'Monthly'}
+                </span>
+              )}
               {Number(session.ticket_price || 0) > 0 && (
                 <span style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37' }}>
                   🎟 ${Number(session.ticket_price)}
