@@ -7,6 +7,7 @@ import CrewActions from './CrewActions'
 import CrewAvatarSection from './CrewAvatarSection'
 import JoinRequestActions from './JoinRequestActions'
 import CrewInviteButton from './CrewInviteButton'
+import CrewMembership from './CrewMembership'
 import CrewRating from './CrewRating'
 import CrewDeleteButton from './CrewDeleteButton'
 import CrewTelegramLink from './CrewTelegramLink'
@@ -228,6 +229,7 @@ export default async function CrewPage({ params }) {
             </span>
           )}
         </Link>
+        <CrewMembership crew={crew} />
         <CrewTelegramLink crewId={crew.id} captainId={crew.captain_id} initialUrl={crew.telegram_url ?? null} />
         <CrewInviteButton crewId={crew.id} captainId={crew.captain_id} crewSlug={params.slug} inviteCode={crew.invite_code || ''} />
         <CrewDeleteButton crewId={crew.id} captainId={crew.captain_id} crewName={crew.name} />
