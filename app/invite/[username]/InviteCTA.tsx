@@ -46,7 +46,7 @@ export default function InviteCTA({ username, activityKey, signupUrl }: Props) {
           href={bookUrl}
           style={{ display: 'block', padding: '16px', borderRadius: '16px', textAlign: 'center', fontSize: '16px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}
         >
-          Book a Session →
+          View profile & connect →
         </Link>
         <Link
           href={messageUrl}
@@ -58,17 +58,28 @@ export default function InviteCTA({ username, activityKey, signupUrl }: Props) {
     )
   }
 
+  // Low-friction first: the free test (no signup) is the strongest hook for
+  // cold ad traffic. Joining is the secondary action.
   return (
     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
       <Link
-        href={signupUrl}
-        style={{ display: 'block', padding: '16px', borderRadius: '16px', textAlign: 'center', fontSize: '16px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}
+        href="/bestie-type"
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '16px', borderRadius: '16px', textAlign: 'center', fontSize: '16px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}
       >
-        Accept &amp; Create Account →
+        🧭 Take the free personality test →
+      </Link>
+      <p style={{ fontSize: '12px', color: '#6B6490', textAlign: 'center', margin: '-2px 0 4px' }}>
+        5 minutes · no signup · find out who you click with
+      </p>
+      <Link
+        href={signupUrl}
+        style={{ display: 'block', padding: '14px', borderRadius: '16px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: '#161628', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', textDecoration: 'none' }}
+      >
+        Join Bestie & connect
       </Link>
       <Link
         href={loginUrl}
-        style={{ display: 'block', padding: '14px', borderRadius: '16px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#A99ECC', textDecoration: 'none' }}
+        style={{ display: 'block', padding: '10px', textAlign: 'center', fontSize: '13px', fontWeight: 500, color: '#A99ECC', textDecoration: 'none' }}
       >
         Already have an account? Log in
       </Link>

@@ -36,7 +36,7 @@ function SignupForm() {
       setError(error.message)
       setLoading(false)
     } else {
-      router.push('/verify-email')
+      router.push(`/verify-email?email=${encodeURIComponent(form.email)}`)
     }
   }
 
