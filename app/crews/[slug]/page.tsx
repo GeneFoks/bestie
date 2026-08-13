@@ -9,6 +9,7 @@ import JoinRequestActions from './JoinRequestActions'
 import CrewInviteButton from './CrewInviteButton'
 import CrewMembership from './CrewMembership'
 import CrewNameEditor from './CrewNameEditor'
+import CrewPrivacyToggle from './CrewPrivacyToggle'
 import CrewRating from './CrewRating'
 import CrewDeleteButton from './CrewDeleteButton'
 import CrewTelegramLink from './CrewTelegramLink'
@@ -78,6 +79,11 @@ export default async function CrewPage({ params }) {
       .limit(5),
     supabase.from('crew_ratings').select('rating').eq('crew_id', crew.id),
   ])
+
+  // Active paid subscribers (badge on the members list)
+  const { data: subs } = await supabase
+    .from('crew_subscriptions').select('user_id').eq('crew_id', crew.id).eq('status', 'active')
+  const subscriberIds = new Set((subs || []).map((s: any) => s.user_id))
 
   // Fetch user profiles separately to avoid PostgREST relationship ambiguity
   const memberUserIds = (rawMembers || []).map((m: any) => m.user_id)
@@ -233,6 +239,7 @@ export default async function CrewPage({ params }) {
         <CrewMembership crew={crew} />
         <CrewTelegramLink crewId={crew.id} captainId={crew.captain_id} initialUrl={crew.telegram_url ?? null} />
         <CrewInviteButton crewId={crew.id} captainId={crew.captain_id} crewSlug={params.slug} inviteCode={crew.invite_code || ''} />
+        <CrewPrivacyToggle crewId={crew.id} captainId={crew.captain_id} isPublic={crew.is_public} />
         <CrewDeleteButton crewId={crew.id} captainId={crew.captain_id} crewName={crew.name} />
         <div style={{ marginBottom: '8px' }} />
 
@@ -396,6 +403,9 @@ export default async function CrewPage({ params }) {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>{user.full_name}</span>
                         <RoleBadge role={effectiveRole} />
+                        {subscriberIds.has(user.id) && (
+                          <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.5px', padding: '2px 8px', borderRadius: '999px', background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.35)', color: '#34D399', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>💳 MEMBER</span>
+                        )}
                       </div>
                       <span style={{ fontSize: '12px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>{user.city ? <><MapPin size={11} strokeWidth={2} /> {user.city}</> : `@${user.username}`}</span>
                     </div>
