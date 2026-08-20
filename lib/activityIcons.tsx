@@ -45,6 +45,7 @@ export const ACTIVITY_ICONS: Record<string, LucideIcon> = {
   bar_hopping:      Beer,
   karaoke:          Mic2,
   festival_crew:    Tent,
+  burning_man:      Flame,
   travel_buddy:     Plane,
   wing_person:      Glasses,
   comedy_show:      Laugh,
