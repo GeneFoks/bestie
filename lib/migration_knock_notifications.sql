@@ -1,45 +1,53 @@
--- ══════════════════════════════════════════════════════════════════
--- Knock Notifications
--- 1. notify_mutual_connections_on_going_to()
---    When a user posts a Going To event, insert in-app notifications
---    for everyone who has a mutual knock with them.
--- ══════════════════════════════════════════════════════════════════
+-- ============================================================================
+-- BESTIE — in-app notifications for knocks
+-- A knock only emailed the receiver; nothing lit up the in-app bell. Now:
+--   • new knock  → anonymous bell notification for the receiver
+--   • match      → both sides get a "It's a match!" notification (name revealed)
+-- Knocks stay anonymous until mutual, so the plain-knock notification never
+-- names the sender.
+-- ============================================================================
 
-CREATE OR REPLACE FUNCTION public.notify_mutual_connections_on_going_to()
+CREATE OR REPLACE FUNCTION public.notify_knock()
 RETURNS TRIGGER AS $$
 DECLARE
-  v_poster_name TEXT;
-  v_activity    TEXT;
+  v_sender_name TEXT;
+  v_recv_name   TEXT;
+  v_sender_un   TEXT;
+  v_recv_un     TEXT;
 BEGIN
-  -- Get poster's name
-  SELECT COALESCE(full_name, username, 'Someone') INTO v_poster_name
-  FROM public.users WHERE id = NEW.user_id;
+  -- New knock (not yet mutual) → anonymous teaser for the receiver
+  IF TG_OP = 'INSERT' AND COALESCE(NEW.is_mutual, FALSE) = FALSE THEN
+    INSERT INTO public.notifications (user_id, type, title, body, link)
+    VALUES (
+      NEW.receiver_id, 'knock',
+      'Someone knocked on you 👋',
+      'Knock back to reveal who — if you both knock, it''s a match.',
+      '/dashboard'
+    );
+    RETURN NEW;
+  END IF;
 
-  v_activity := COALESCE(NEW.activity_type, 'something');
+  -- Became mutual → notify BOTH, reveal identities
+  IF NEW.is_mutual = TRUE AND (TG_OP = 'INSERT' OR COALESCE(OLD.is_mutual, FALSE) = FALSE) THEN
+    SELECT COALESCE(full_name, username), username INTO v_sender_name, v_sender_un
+      FROM public.users WHERE id = NEW.sender_id;
+    SELECT COALESCE(full_name, username), username INTO v_recv_name, v_recv_un
+      FROM public.users WHERE id = NEW.receiver_id;
 
-  -- Insert a notification for every mutual knock connection
-  INSERT INTO public.notifications (user_id, type, title, body, link)
-  SELECT
-    CASE
-      WHEN k.sender_id = NEW.user_id THEN k.receiver_id
-      ELSE k.sender_id
-    END,
-    'going_to',
-    v_poster_name || ' is going out 👋',
-    v_poster_name || ' posted a Going To: ' || v_activity ||
-      CASE WHEN NEW.location IS NOT NULL AND NEW.location != ''
-           THEN ' at ' || NEW.location ELSE '' END,
-    '/going-to'
-  FROM public.knocks k
-  WHERE (k.sender_id = NEW.user_id OR k.receiver_id = NEW.user_id)
-    AND k.is_mutual = true
-    AND k.sender_id = NEW.user_id;  -- one row per pair where poster is sender
+    INSERT INTO public.notifications (user_id, type, title, body, link) VALUES
+      (NEW.receiver_id, 'match', 'It''s a match! 🎉',
+       'You and ' || COALESCE(v_sender_name, 'someone') || ' both knocked. Say hi 👋',
+       '/' || COALESCE(v_sender_un, '')),
+      (NEW.sender_id, 'match', 'It''s a match! 🎉',
+       'You and ' || COALESCE(v_recv_name, 'someone') || ' both knocked. Say hi 👋',
+       '/' || COALESCE(v_recv_un, ''));
+  END IF;
 
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-DROP TRIGGER IF EXISTS on_going_to_posted ON public.going_to;
-CREATE TRIGGER on_going_to_posted
-  AFTER INSERT ON public.going_to
-  FOR EACH ROW EXECUTE FUNCTION public.notify_mutual_connections_on_going_to();
+DROP TRIGGER IF EXISTS on_knock_notify ON public.knocks;
+CREATE TRIGGER on_knock_notify
+  AFTER INSERT OR UPDATE OF is_mutual ON public.knocks
+  FOR EACH ROW EXECUTE FUNCTION public.notify_knock();
