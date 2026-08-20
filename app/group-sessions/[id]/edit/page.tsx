@@ -24,6 +24,7 @@ const ACTIVITY_GROUPS = [
   { label: '🧠 Mind & Growth', activities: [
     { id: 'deep_chat', emoji: '🫂', label: 'Deep Chat' }, { id: 'book_club', emoji: '📚', label: 'Book Club' },
     { id: 'debate_club', emoji: '🗣️', label: 'Debate Club' }, { id: 'language_exchange', emoji: '🌐', label: 'Language Exchange' },
+    { id: 'life_coaching', emoji: '🧭', label: 'Life Coaching' },
   ]},
   { label: '🎨 Creative & Skills', activities: [
     { id: 'cooking_together', emoji: '🍳', label: 'Cooking Together' }, { id: 'dance', emoji: '💃', label: 'Dance' },
@@ -56,6 +57,8 @@ export default function EditGroupSessionPage({ params }: { params: { id: string 
   const [coverFile, setCoverFile] = useState<File | null>(null)
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
   const [removeCover, setRemoveCover] = useState(false)
+  const [connectReady, setConnectReady] = useState(false)
+  const [connecting, setConnecting] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -74,12 +77,43 @@ export default function EditGroupSessionPage({ params }: { params: { id: string 
         scheduled_at: gs.scheduled_at ? toLocalInput(gs.scheduled_at) : '',
         location: gs.location || '',
         max_participants: gs.max_participants || 6,
+        ticket_price: gs.ticket_price ? String(gs.ticket_price) : '',
         cover_image_url: gs.cover_image_url || null,
       })
       if (gs.cover_image_url) setCoverPreview(gs.cover_image_url)
+
+      // Payout readiness for this host (needed to charge for the session)
+      const { data: me } = await supabase.from('users').select('connect_charges_enabled').eq('id', user.id).single()
+      setConnectReady(!!me?.connect_charges_enabled)
+
+      // Returning from Stripe onboarding → confirm readiness
+      const qs = new URLSearchParams(window.location.search)
+      if (qs.get('connect') === 'done') {
+        const { data: { session } } = await supabase.auth.getSession()
+        const res = await fetch('/api/stripe/connect/refresh', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+          body: JSON.stringify({ scope: 'user' }),
+        }).then(r => r.json()).catch(() => null)
+        if (res?.ready) setConnectReady(true)
+        window.history.replaceState({}, '', `/group-sessions/${params.id}/edit`)
+      }
       setLoading(false)
     })()
   }, [params.id])
+
+  const setupPayouts = async () => {
+    setConnecting(true)
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch('/api/stripe/connect/onboard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ scope: 'user', returnPath: `/group-sessions/${params.id}/edit` }),
+    }).then(r => r.json()).catch(() => null)
+    if (res?.url) { window.location.href = res.url; return }
+    alert(res?.error || 'Could not start payout setup. Please try again soon.')
+    setConnecting(false)
+  }
 
   const handleCoverPick = (e: any) => {
     const f = e.target.files?.[0]
@@ -118,6 +152,7 @@ export default function EditGroupSessionPage({ params }: { params: { id: string 
       scheduled_at: new Date(form.scheduled_at).toISOString(),
       location: form.location || null,
       max_participants: parseInt(form.max_participants) || 6,
+      ticket_price: connectReady && form.ticket_price ? Math.max(0, parseFloat(form.ticket_price) || 0) : 0,
       cover_image_url,
     }).eq('id', params.id)
     setSaving(false)
@@ -220,6 +255,34 @@ export default function EditGroupSessionPage({ params }: { params: { id: string 
                 style={{ flexShrink: 0, width: '72px', textAlign: 'center', padding: '8px 6px', borderRadius: '10px', fontSize: '16px', fontWeight: 700, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37', outline: 'none' }}
               />
             </div>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Ticket price</label>
+            {connectReady ? (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '18px', fontWeight: 700, color: '#D4AF37' }}>$</span>
+                  <input
+                    type="number" min={0} step="0.5" placeholder="0 = free event"
+                    value={form.ticket_price}
+                    onChange={e => setForm(f => ({ ...f, ticket_price: e.target.value }))}
+                    style={{ ...inputStyle, maxWidth: '160px' }}
+                  />
+                </div>
+                <p style={{ fontSize: '11px', color: '#34D399', marginTop: '6px' }}>
+                  ✓ Payouts connected. Guests pay to join · Bestie fee 10% · the rest goes to you. Set 0 to keep it free.
+                </p>
+              </div>
+            ) : (
+              <div style={{ padding: '14px 16px', borderRadius: '14px', background: 'rgba(212,175,55,0.05)', border: '1px dashed rgba(212,175,55,0.3)' }}>
+                <p style={{ fontSize: '13px', color: '#F0EAFF', marginBottom: '10px' }}>💰 Want to charge for this session? Connect a Stripe account once — guests pay at checkout and the money lands in your account (Bestie keeps 10%).</p>
+                <button type="button" onClick={setupPayouts} disabled={connecting}
+                  style={{ padding: '10px 16px', borderRadius: '11px', fontSize: '13px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: connecting ? 'wait' : 'pointer' }}>
+                  {connecting ? 'Opening Stripe…' : '💳 Set up payouts'}
+                </button>
+              </div>
+            )}
           </div>
 
           <button onClick={handleSave} disabled={saving || !form.title || !form.scheduled_at}
