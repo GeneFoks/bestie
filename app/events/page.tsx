@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import ProfileNav from '@/components/ProfileNav'
 import BottomNav from '@/components/BottomNav'
-import { Users, UsersRound, Calendar, MapPin, Plus, ArrowUp, Sparkles, Cake, Zap } from 'lucide-react'
+import { Users, UsersRound, Calendar, MapPin, Plus, ArrowUp, Sparkles, Cake, Zap, Trash2 } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 import { PageLoader } from '@/components/Loading'
 import { ActivityIcon } from '@/lib/activityIcons'
@@ -311,7 +311,14 @@ export default function EventsPage() {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {groupSessions.map(gs => <GroupSessionCard key={gs.id} session={gs} />)}
+                    {groupSessions.map(gs => (
+                      <GroupSessionCard
+                        key={gs.id}
+                        session={gs}
+                        canDelete={!!myId && gs.host?.id === myId}
+                        onDeleted={id => setGroupSessions(prev => prev.filter(x => x.id !== id))}
+                      />
+                    ))}
                   </div>
                 )}
               </section>
@@ -417,14 +424,36 @@ function CrewEventCard({ event }: { event: any }) {
   )
 }
 
-function GroupSessionCard({ session }: { session: any }) {
+function GroupSessionCard({ session, canDelete = false, onDeleted }: { session: any; canDelete?: boolean; onDeleted?: (id: string) => void }) {
   const { month, day, time } = formatDate(session.scheduled_at)
   const participantCount = session.participants?.[0]?.count || 0
   const isFull = session.status === 'full'
   const host = session.host
+  const [deleting, setDeleting] = useState(false)
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault(); e.stopPropagation()
+    if (deleting) return
+    if (!confirm(`Delete "${session.title}"? This can't be undone.`)) return
+    setDeleting(true)
+    const { error } = await supabase.from('group_sessions').delete().eq('id', session.id)
+    if (error) { alert(`Could not delete: ${error.message}`); setDeleting(false); return }
+    onDeleted?.(session.id)
+  }
 
   return (
-    <Link href={`/group-sessions/${session.id}`} style={{ display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: '#111120', border: '1px solid rgba(255,255,255,0.11)', textDecoration: 'none' }}>
+    <Link href={`/group-sessions/${session.id}`} style={{ position: 'relative', display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: '#111120', border: '1px solid rgba(255,255,255,0.11)', textDecoration: 'none' }}>
+      {canDelete && (
+        <button
+          onClick={handleDelete}
+          disabled={deleting}
+          title="Delete session"
+          aria-label="Delete session"
+          style={{ position: 'absolute', top: '10px', right: '10px', width: '30px', height: '30px', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,80,80,0.10)', border: '1px solid rgba(255,80,80,0.28)', color: '#FF6B6B', cursor: deleting ? 'wait' : 'pointer', zIndex: 2 }}
+        >
+          <Trash2 size={14} strokeWidth={2} />
+        </button>
+      )}
       {/* Date block */}
       <div style={{ flexShrink: 0, width: '44px', textAlign: 'center', paddingTop: '2px' }}>
         <p style={{ fontSize: '10px', fontWeight: 700, color: '#D4AF37', letterSpacing: '1px' }}>{month}</p>
