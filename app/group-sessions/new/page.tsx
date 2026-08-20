@@ -23,6 +23,7 @@ const ACTIVITY_GROUPS = [
   { label: '🧠 Mind & Growth', activities: [
     { id: 'deep_chat', emoji: '🫂', label: 'Deep Chat' }, { id: 'book_club', emoji: '📚', label: 'Book Club' },
     { id: 'debate_club', emoji: '🗣️', label: 'Debate Club' }, { id: 'language_exchange', emoji: '🌐', label: 'Language Exchange' },
+    { id: 'life_coaching', emoji: '🧭', label: 'Life Coaching' },
   ]},
   { label: '🎨 Creative & Skills', activities: [
     { id: 'cooking_together', emoji: '🍳', label: 'Cooking Together' }, { id: 'dance', emoji: '💃', label: 'Dance' },

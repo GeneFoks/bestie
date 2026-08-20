@@ -7,7 +7,7 @@ import {
   Beer, Tv, Trophy as TrophyIcon, Fish, Tent, MapPinned,
   // Mind / talk
   Brain, MessagesSquare, BookOpen, GraduationCap, Briefcase, DollarSign,
-  Notebook, Globe2, Speech, Target as TargetIcon,
+  Notebook, Globe2, Speech, Target as TargetIcon, Compass,
   // Creative
   ChefHat, Palette, Music, Camera, Drama, PenTool, ImagePlus,
   // Spiritual
@@ -57,6 +57,7 @@ export const ACTIVITY_ICONS: Record<string, LucideIcon> = {
   debate_club:      Speech,
   book_club:        BookOpen,
   language_exchange: Globe2,
+  life_coaching:    Compass,
   career_talk:      Briefcase,
   money_talk:       DollarSign,
   journaling:       Notebook,
