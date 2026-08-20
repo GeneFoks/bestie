@@ -138,7 +138,8 @@ export default function EventsPage() {
               {loading ? 'Loading...' : `${totalEvents} upcoming · ${freePeople.length} free today`}
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
+            <Link href="/group-sessions/mine" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none', padding: '9px 12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', whiteSpace: 'nowrap' }}>My sessions</Link>
             <CreateEventButton variant="compact" />
           </div>
         </div>
