@@ -102,7 +102,7 @@ export default function NewGroupSessionPage() {
     const res = await fetch('/api/stripe/connect/onboard', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
-      body: JSON.stringify({ scope: 'user' }),
+      body: JSON.stringify({ scope: 'user', returnPath: '/group-sessions/new' }),
     }).then(r => r.json()).catch(() => null)
     if (res?.url) { window.location.href = res.url; return }
     alert(res?.error || 'Could not start payout setup. Please try again soon.')

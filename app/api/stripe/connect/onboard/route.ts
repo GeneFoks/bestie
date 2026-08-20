@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await admin.auth.getUser(bearer)
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { crewId, scope } = await req.json()
+  const { crewId, scope, returnPath } = await req.json()
   const origin = req.headers.get('origin') || 'https://bestiehere.com'
 
   // ── Host payouts (per user) — used by paid group sessions ───────────────
@@ -36,10 +36,14 @@ export async function POST(req: NextRequest) {
         uAccountId = account.id
         await admin.from('users').update({ stripe_connect_id: uAccountId }).eq('id', user.id)
       }
+      // Return the host to wherever they started (create form or a specific
+      // session's edit page). Only accept same-site relative paths.
+      const safePath = typeof returnPath === 'string' && returnPath.startsWith('/') ? returnPath : '/group-sessions/new'
+      const sep = safePath.includes('?') ? '&' : '?'
       const link = await stripe.accountLinks.create({
         account: uAccountId,
-        refresh_url: `${origin}/group-sessions/new?connect=refresh`,
-        return_url: `${origin}/group-sessions/new?connect=done`,
+        refresh_url: `${origin}${safePath}${sep}connect=refresh`,
+        return_url: `${origin}${safePath}${sep}connect=done`,
         type: 'account_onboarding',
       })
       return NextResponse.json({ url: link.url })
