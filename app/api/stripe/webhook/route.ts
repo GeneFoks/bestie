@@ -147,7 +147,10 @@ export async function POST(req: NextRequest) {
       // Connect account status changed → sync the crew's payout readiness
       const acct = event.data.object as Stripe.Account
       const ready = !!acct.charges_enabled && !!acct.payouts_enabled
+      // Same connected-account id can belong to a crew (subscriptions) or a
+      // host (paid sessions) — sync both tables.
       await admin.from('crews').update({ connect_charges_enabled: ready }).eq('stripe_connect_id', acct.id)
+      await admin.from('users').update({ connect_charges_enabled: ready }).eq('stripe_connect_id', acct.id)
       console.log(`[webhook] connect account ${acct.id} ready=${ready}`)
       break
     }

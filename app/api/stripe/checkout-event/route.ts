@@ -49,6 +49,22 @@ export async function POST(req: NextRequest) {
     .maybeSingle()
   if (existing) return NextResponse.json({ error: 'You already have a ticket' }, { status: 400 })
 
+  // Route the money to the host's connected account (Bestie keeps 10%),
+  // exactly like paid crew subscriptions. The host must have finished payout
+  // onboarding, otherwise there's nowhere to send the funds.
+  const { data: host } = await admin
+    .from('users')
+    .select('stripe_connect_id, connect_charges_enabled')
+    .eq('id', gs.host_id)
+    .single()
+  if (!host?.stripe_connect_id || !host.connect_charges_enabled) {
+    return NextResponse.json({ error: 'The host hasn\'t finished payment setup yet — tickets aren\'t available.' }, { status: 400 })
+  }
+
+  const PLATFORM_FEE_PERCENT = 10
+  const amountCents = Math.round(price * 100)
+  const feeCents = Math.round(amountCents * PLATFORM_FEE_PERCENT / 100)
+
   const origin = req.headers.get('origin') || 'https://bestiehere.com'
 
   try {
@@ -57,12 +73,16 @@ export async function POST(req: NextRequest) {
       line_items: [{
         price_data: {
           currency: 'usd',
-          unit_amount: Math.round(price * 100),
+          unit_amount: amountCents,
           product_data: { name: `Ticket — ${gs.title}` },
         },
         quantity: 1,
       }],
       customer_email: user.email || undefined,
+      payment_intent_data: {
+        application_fee_amount: feeCents,
+        transfer_data: { destination: host.stripe_connect_id },
+      },
       metadata: {
         kind: 'event_ticket',
         session_id: sessionId,

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "me-site",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": ["-NoProfile", "-Command", "$root='C:\\me'; $l=New-Object System.Net.HttpListener; $l.Prefixes.Add('http://localhost:3344/'); $l.Start(); $mime=@{'.html'='text/html';'.js'='application/javascript';'.css'='text/css';'.json'='application/json';'.mp4'='video/mp4'}; while($l.IsListening){ $c=$l.GetContext(); $p=$c.Request.Url.LocalPath; if($p -eq '/'){$p='/index.html'}; $f=Join-Path $root $p.TrimStart('/'); if(Test-Path $f -PathType Leaf){ $ext=[IO.Path]::GetExtension($f); $ct=$mime[$ext]; if(-not $ct){$ct='application/octet-stream'}; $c.Response.ContentType=$ct; $b=[IO.File]::ReadAllBytes($f); $c.Response.ContentLength64=$b.Length; $c.Response.OutputStream.Write($b,0,$b.Length) } else { $c.Response.StatusCode=404 }; $c.Response.OutputStream.Close() }"],
+      "port": 3344
+    }
+  ]
+}

@@ -54,6 +54,8 @@ export default function NewGroupSessionPage() {
     recurrence: 'none',
   })
   const [isAmbassador, setIsAmbassador] = useState(false)
+  const [connectReady, setConnectReady] = useState(false)
+  const [connecting, setConnecting] = useState(false)
   const [coverFile, setCoverFile] = useState<File | null>(null)
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -73,10 +75,38 @@ export default function NewGroupSessionPage() {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { router.push('/login'); return }
       setUserId(user.id)
-      const { data } = await supabase.from('users').select('is_ambassador, is_admin').eq('id', user.id).single()
+      const { data } = await supabase.from('users').select('is_ambassador, is_admin, stripe_connect_id, connect_charges_enabled').eq('id', user.id).single()
       setIsAmbassador(!!(data?.is_ambassador || data?.is_admin))
+      setConnectReady(!!data?.connect_charges_enabled)
+
+      // Returning from Stripe onboarding → confirm payout readiness
+      const qs = new URLSearchParams(window.location.search)
+      if (qs.get('connect') === 'done') {
+        const { data: { session } } = await supabase.auth.getSession()
+        const res = await fetch('/api/stripe/connect/refresh', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+          body: JSON.stringify({ scope: 'user' }),
+        }).then(r => r.json()).catch(() => null)
+        if (res?.ready) setConnectReady(true)
+        window.history.replaceState({}, '', '/group-sessions/new')
+      }
     })
   }, [])
+
+  // Kick off (or resume) host payout onboarding, then bounce to Stripe.
+  const setupPayouts = async () => {
+    setConnecting(true)
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch('/api/stripe/connect/onboard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ scope: 'user' }),
+    }).then(r => r.json()).catch(() => null)
+    if (res?.url) { window.location.href = res.url; return }
+    alert(res?.error || 'Could not start payout setup. Please try again soon.')
+    setConnecting(false)
+  }
 
   const handleCreate = async () => {
     if (!form.title || !form.scheduled_at) return
@@ -102,7 +132,7 @@ export default function NewGroupSessionPage() {
       description: form.description || null,
       location: form.location || null,
       max_participants: parseInt(form.max_participants) || 6,
-      ticket_price: isAmbassador && form.ticket_price ? Math.max(0, parseFloat(form.ticket_price) || 0) : 0,
+      ticket_price: connectReady && form.ticket_price ? Math.max(0, parseFloat(form.ticket_price) || 0) : 0,
       cover_image_url,
       recurrence: form.recurrence,
     }
@@ -243,7 +273,7 @@ export default function NewGroupSessionPage() {
 
           <div>
             <label style={labelStyle}>Ticket price</label>
-            {isAmbassador ? (
+            {connectReady ? (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{ fontSize: '18px', fontWeight: 700, color: '#D4AF37' }}>$</span>
@@ -254,14 +284,18 @@ export default function NewGroupSessionPage() {
                     style={{ ...inputStyle, maxWidth: '160px' }}
                   />
                 </div>
-                <p style={{ fontSize: '11px', color: '#A99ECC', marginTop: '6px' }}>
-                  Guests pay when they join. Platform fee 10% · payouts weekly.
+                <p style={{ fontSize: '11px', color: '#34D399', marginTop: '6px' }}>
+                  ✓ Payouts connected. Guests pay when they join · Bestie fee 10% · the rest goes to you.
                 </p>
               </div>
             ) : (
               <div style={{ padding: '14px 16px', borderRadius: '14px', background: 'rgba(212,175,55,0.05)', border: '1px dashed rgba(212,175,55,0.3)' }}>
-                <p style={{ fontSize: '13px', color: '#F0EAFF', marginBottom: '4px' }}>👑 Paid events with ticket sales are available to <b style={{ color: '#D4AF37' }}>Bestie Ambassadors</b>.</p>
-                <Link href="/ambassador" style={{ fontSize: '13px', fontWeight: 600, color: '#D4AF37', textDecoration: 'none' }}>Become an ambassador →</Link>
+                <p style={{ fontSize: '13px', color: '#F0EAFF', marginBottom: '10px' }}>💰 Want to charge for this session? Connect a Stripe account once — guests pay at checkout and the money lands in your account (Bestie keeps 10%).</p>
+                <button type="button" onClick={setupPayouts} disabled={connecting}
+                  style={{ padding: '10px 16px', borderRadius: '11px', fontSize: '13px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: connecting ? 'wait' : 'pointer' }}>
+                  {connecting ? 'Opening Stripe…' : '💳 Set up payouts'}
+                </button>
+                <p style={{ fontSize: '11px', color: '#A99ECC', marginTop: '8px' }}>Leave this for free sessions — no setup needed.</p>
               </div>
             )}
           </div>

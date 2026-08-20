@@ -14,7 +14,22 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await admin.auth.getUser(bearer)
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { crewId } = await req.json()
+  const { crewId, scope } = await req.json()
+
+  // Host payouts (per user) for paid sessions
+  if (scope === 'user') {
+    const { data: me } = await admin.from('users').select('id, stripe_connect_id').eq('id', user.id).single()
+    if (!me?.stripe_connect_id) return NextResponse.json({ ready: false })
+    try {
+      const acct = await stripe.accounts.retrieve(me.stripe_connect_id)
+      const ready = !!acct.charges_enabled && !!acct.payouts_enabled
+      await admin.from('users').update({ connect_charges_enabled: ready }).eq('id', user.id)
+      return NextResponse.json({ ready })
+    } catch (err: any) {
+      return NextResponse.json({ error: err.message }, { status: 500 })
+    }
+  }
+
   const { data: crew } = await admin.from('crews').select('id, captain_id, stripe_connect_id').eq('id', crewId).single()
   if (!crew || crew.captain_id !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   if (!crew.stripe_connect_id) return NextResponse.json({ ready: false })

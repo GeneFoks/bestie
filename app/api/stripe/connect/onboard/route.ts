@@ -15,14 +15,48 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await admin.auth.getUser(bearer)
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { crewId } = await req.json()
+  const { crewId, scope } = await req.json()
+  const origin = req.headers.get('origin') || 'https://bestiehere.com'
+
+  // ── Host payouts (per user) — used by paid group sessions ───────────────
+  // No crew; the connected account lives on users.stripe_connect_id and is
+  // reused across every session the host prices.
+  if (scope === 'user') {
+    const { data: me } = await admin.from('users').select('id, stripe_connect_id').eq('id', user.id).single()
+    let uAccountId = me?.stripe_connect_id
+    try {
+      if (!uAccountId) {
+        const account = await stripe.accounts.create({
+          type: 'express',
+          email: user.email || undefined,
+          capabilities: { transfers: { requested: true }, card_payments: { requested: true } },
+          business_type: 'individual',
+          metadata: { host_id: user.id },
+        })
+        uAccountId = account.id
+        await admin.from('users').update({ stripe_connect_id: uAccountId }).eq('id', user.id)
+      }
+      const link = await stripe.accountLinks.create({
+        account: uAccountId,
+        refresh_url: `${origin}/group-sessions/new?connect=refresh`,
+        return_url: `${origin}/group-sessions/new?connect=done`,
+        type: 'account_onboarding',
+      })
+      return NextResponse.json({ url: link.url })
+    } catch (err: any) {
+      console.error('[connect/onboard user]', err.message)
+      if (/platform profile|complete your platform/i.test(err.message || '')) {
+        return NextResponse.json({ error: 'Paid sessions aren\'t live yet — Bestie is finishing payment setup. Please try again soon.' }, { status: 503 })
+      }
+      return NextResponse.json({ error: err.message }, { status: 500 })
+    }
+  }
+
   if (!crewId) return NextResponse.json({ error: 'crewId required' }, { status: 400 })
 
   const { data: crew } = await admin.from('crews').select('id, slug, captain_id, stripe_connect_id').eq('id', crewId).single()
   if (!crew) return NextResponse.json({ error: 'Crew not found' }, { status: 404 })
   if (crew.captain_id !== user.id) return NextResponse.json({ error: 'Only the captain can set up payouts' }, { status: 403 })
-
-  const origin = req.headers.get('origin') || 'https://bestiehere.com'
 
   let accountId = crew.stripe_connect_id
   try {
