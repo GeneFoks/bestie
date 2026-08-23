@@ -216,8 +216,8 @@ export default function BrowsePage() {
   const currentGroup = activeGroup ? FILTER_GROUPS.find(g => g.id === activeGroup) : null
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <ProfileNav />
       </nav>
@@ -225,13 +225,13 @@ export default function BrowsePage() {
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
-            <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', fontWeight: 700, color: '#F0EAFF', marginBottom: '8px' }}>Browse Besties</h1>
-            <p style={{ fontSize: '15px', color: '#A99ECC' }}>
+            <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>Browse Besties</h1>
+            <p style={{ fontSize: '15px', color: 'var(--text-muted)' }}>
               {loading ? 'Loading...' : `${providers.length} Bestie${providers.length !== 1 ? 's' : ''} available`}
             </p>
           </div>
           {myProfile && (
-            <button onClick={() => setCompatMode(!compatMode)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', background: compatMode ? 'rgba(52,211,153,0.12)' : '#131323', border: compatMode ? '1px solid rgba(52,211,153,0.35)' : '1px solid rgba(255,255,255,0.1)', color: compatMode ? '#34D399' : '#A99ECC', transition: 'all 0.2s' }}>
+            <button onClick={() => setCompatMode(!compatMode)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', background: compatMode ? 'rgba(52,211,153,0.12)' : 'var(--surface-1b)', border: compatMode ? '1px solid rgba(52,211,153,0.35)' : '1px solid var(--border)', color: compatMode ? '#34D399' : 'var(--text-muted)', transition: 'all 0.2s' }}>
               <Sparkles size={14} strokeWidth={1.8} />
               {compatMode ? 'Compatibility ON' : 'Compatibility'}
             </button>
@@ -240,32 +240,32 @@ export default function BrowsePage() {
 
         {justMatched && myProfile && (
           <div style={{ marginBottom: '16px', padding: '18px 20px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(212,175,55,0.14) 0%, rgba(155,127,255,0.10) 100%)', border: '1px solid rgba(212,175,55,0.3)' }}>
-            <p style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF', margin: '0 0 4px' }}>
+            <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>
               You're <span style={{ color: '#D4AF37' }}>🧭 {myProfile.eterotype_name || myProfile.eterotype}</span> 🎉
             </p>
-            <p style={{ fontSize: '13px', color: '#A99ECC', margin: 0, lineHeight: 1.5 }}>
-              Here are the people you'll naturally click with. Open a profile and send a <b style={{ color: '#F0EAFF' }}>knock 👋</b> — an anonymous hello. If they knock back, it's a match.
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
+              Here are the people you'll naturally click with. Open a profile and send a <b style={{ color: 'var(--text-primary)' }}>knock 👋</b> — an anonymous hello. If they knock back, it's a match.
             </p>
           </div>
         )}
 
         {myProfile && compatMode && !justMatched && (
-          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(57,255,20,0.06)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '13px', color: '#A99ECC' }}>
+          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(57,255,20,0.06)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '13px', color: 'var(--text-muted)' }}>
             Showing people compatible with your eterotype <span style={{ color: '#34D399', fontWeight: 600 }}>🧭 {myProfile.eterotype_name || myProfile.eterotype}</span> — best matches first
           </div>
         )}
 
         {!myProfile && (
-          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', fontSize: '13px', color: '#A99ECC' }}>
+          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', fontSize: '13px', color: 'var(--text-muted)' }}>
             <Link href="/bestie-type" style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>Take the eterotype test →</Link> and we'll show the most compatible people first
           </div>
         )}
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', marginBottom: '16px' }}>
-          <Search size={18} color="#A99ECC" strokeWidth={2} />
-          <input type="text" placeholder="Search by name, city, or activity..." aria-label="Search Besties" value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px', color: '#F0EAFF', padding: '6px 0', minWidth: 0 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '14px', marginBottom: '16px' }}>
+          <Search size={18} color="var(--text-muted)" strokeWidth={2} />
+          <input type="text" placeholder="Search by name, city, or activity..." aria-label="Search Besties" value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px', color: 'var(--text-primary)', padding: '6px 0', minWidth: 0 }} />
           {search && (
-            <button onClick={() => setSearch('')} aria-label="Clear search" style={{ background: 'none', border: 'none', color: '#A99ECC', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}>
+            <button onClick={() => setSearch('')} aria-label="Clear search" style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}>
               <X size={16} strokeWidth={2} />
             </button>
           )}
@@ -273,11 +273,11 @@ export default function BrowsePage() {
 
         {/* Group tabs */}
         <div className="filters-scroll" style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '12px' }}>
-          <button onClick={() => { setActiveGroup(null); setFilter('all') }} style={{ padding: '8px 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: !activeGroup && filter === 'all' ? 'rgba(212,175,55,0.15)' : '#131323', border: !activeGroup && filter === 'all' ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.12)', color: !activeGroup && filter === 'all' ? '#D4AF37' : '#A99ECC' }}>
+          <button onClick={() => { setActiveGroup(null); setFilter('all') }} style={{ padding: '8px 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: !activeGroup && filter === 'all' ? 'rgba(212,175,55,0.15)' : 'var(--surface-1b)', border: !activeGroup && filter === 'all' ? '1px solid rgba(212,175,55,0.4)' : '1px solid var(--border-strong)', color: !activeGroup && filter === 'all' ? '#D4AF37' : 'var(--text-muted)' }}>
             All
           </button>
           {FILTER_GROUPS.map(group => (
-            <button key={group.id} onClick={() => toggleGroup(group.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: activeGroup === group.id ? 'rgba(212,175,55,0.15)' : '#131323', border: activeGroup === group.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.12)', color: activeGroup === group.id ? '#D4AF37' : '#A99ECC' }}>
+            <button key={group.id} onClick={() => toggleGroup(group.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: activeGroup === group.id ? 'rgba(212,175,55,0.15)' : 'var(--surface-1b)', border: activeGroup === group.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid var(--border-strong)', color: activeGroup === group.id ? '#D4AF37' : 'var(--text-muted)' }}>
               <group.Icon size={13} strokeWidth={1.8} />
               {group.label}
             </button>
@@ -286,10 +286,10 @@ export default function BrowsePage() {
 
         {/* Sub-filters when group selected */}
         {currentGroup && (
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px', padding: '16px', background: '#111120', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.10)' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px', padding: '16px', background: 'var(--surface-1)', borderRadius: '14px', border: '1px solid var(--border)' }}>
             {currentGroup.filters.map(f => (
-              <button key={f.id} onClick={() => setFilter(f.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', background: filter === f.id ? 'rgba(212,175,55,0.15)' : '#131323', border: filter === f.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', color: filter === f.id ? '#D4AF37' : '#A99ECC' }}>
-                <ActivityIcon type={f.id} size={12} color={filter === f.id ? '#D4AF37' : '#A99ECC'} strokeWidth={1.8} />
+              <button key={f.id} onClick={() => setFilter(f.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', background: filter === f.id ? 'rgba(212,175,55,0.15)' : 'var(--surface-1b)', border: filter === f.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid var(--border)', color: filter === f.id ? '#D4AF37' : 'var(--text-muted)' }}>
+                <ActivityIcon type={f.id} size={12} color={filter === f.id ? '#D4AF37' : 'var(--text-muted)'} strokeWidth={1.8} />
                 {f.label}
               </button>
             ))}

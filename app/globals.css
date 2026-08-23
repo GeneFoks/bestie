@@ -13,19 +13,50 @@
 :root {
   --bg:           #09090F;
   --surface-1:    #111120;
+  --surface-1b:   #131323;
   --surface-2:    #161628;
   --surface-3:    #1A1A2E;
+  --nav-bg:       rgba(8,8,16,0.9);
   --border:       rgba(255,255,255,0.10);
+  --border-strong:rgba(255,255,255,0.15);
+  --overlay:      rgba(255,255,255,0.04);
+  --overlay-2:    rgba(255,255,255,0.06);
   --border-gold:  rgba(212,175,55,0.30);
   --text-primary: #F0EAFF;
   --text-muted:   #A99ECC;
   --text-dim:     #6B6280;
+  --placeholder:  #9B93C0;
   --gold:         #D4AF37;
   --gold-dark:    #B8960C;
   --purple:       #9B7FFF;
   --green:        #34D399;
   --coral:        #FF7857;
   --blue:         #60A5FA;
+  color-scheme: dark;
+}
+
+/* ─── LIGHT THEME ───────────────────────────────────────────────
+   Only the surface/text/border tokens flip; brand + accent colors
+   (gold, purple, green, coral) stay identical so the identity holds
+   in both modes. Applied when the user picks Light in settings. */
+:root[data-theme='light'] {
+  --bg:           #F6F4FB;
+  --surface-1:    #FFFFFF;
+  --surface-1b:   #F4F1FA;
+  --surface-2:    #F0ECF8;
+  --surface-3:    #EAE4F4;
+  --nav-bg:       rgba(255,255,255,0.85);
+  --border:       rgba(20,10,40,0.12);
+  --border-strong:rgba(20,10,40,0.18);
+  --overlay:      rgba(20,10,40,0.035);
+  --overlay-2:    rgba(20,10,40,0.06);
+  --border-gold:  rgba(184,150,12,0.35);
+  --text-primary: #1B1530;
+  --text-muted:   #5A5375;
+  --text-dim:     #8B84A5;
+  --placeholder:  #8B84A5;
+  --gold-dark:    #9A7B08;
+  color-scheme: light;
 }
 
 html, body {
@@ -46,8 +77,13 @@ html {
 }
 
 ::placeholder {
-  color: #9B93C0;
+  color: var(--placeholder);
   opacity: 1;
+}
+
+/* Ease the flip between themes (skip on elements that animate themselves) */
+body, nav, section, aside, header, footer {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 ::-webkit-scrollbar { width: 6px; }

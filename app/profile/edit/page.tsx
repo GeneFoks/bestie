@@ -7,6 +7,7 @@ import { MapPin, Calendar } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
+import ThemeToggle from '@/components/ThemeToggle'
 
 const ACTIVITY_GROUPS = [
   {
@@ -346,57 +347,63 @@ export default function EditProfilePage() {
     return a ? `${a.emoji} ${a.label}` : id.replace(/_/g, ' ')
   }
 
-  const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
-  const labelStyle = { fontSize: '13px', fontWeight: 500, color: '#A99ECC', display: 'block', marginBottom: '8px' }
-  const sectionStyle = { background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px', marginBottom: '20px' }
+  const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: 'var(--surface-1)', border: '1px solid var(--border)', color: 'var(--text-primary)', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
+  const labelStyle = { fontSize: '13px', fontWeight: 500, color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }
+  const sectionStyle = { background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '24px', marginBottom: '20px' }
 
   if (loading) return <PageLoader message="Loading your profile…" />
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <style>{`
         select option, select optgroup {
-          background: #1A1A2E;
-          color: #F0EAFF;
+          background: var(--surface-3);
+          color: var(--text-primary);
         }
         select optgroup {
           color: #D4AF37;
           font-weight: 600;
         }
       `}</style>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <Link href="/dashboard" style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>← Dashboard</Link>
-          <button onClick={handleSave} disabled={saving} style={{ fontSize: '14px', fontWeight: 600, padding: '8px 20px', borderRadius: '10px', background: saved ? 'rgba(57,255,20,0.15)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: saved ? '#34D399' : '#09090F', border: saved ? '1px solid rgba(57,255,20,0.3)' : 'none', cursor: 'pointer' }}>
+          <Link href="/dashboard" style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid var(--border)' }}>← Dashboard</Link>
+          <button onClick={handleSave} disabled={saving} style={{ fontSize: '14px', fontWeight: 600, padding: '8px 20px', borderRadius: '10px', background: saved ? 'rgba(57,255,20,0.15)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: saved ? '#34D399' : 'var(--bg)', border: saved ? '1px solid rgba(57,255,20,0.3)' : 'none', cursor: 'pointer' }}>
             {saving ? 'Saving...' : saved ? '✓ Saved!' : 'Save changes'}
           </button>
         </div>
       </nav>
 
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: '40px 24px' }}>
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: '#F0EAFF', marginBottom: '32px' }}>Edit Profile</h1>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '32px' }}>Edit Profile</h1>
+
+        {/* Appearance */}
+        <div style={sectionStyle}>
+          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', marginBottom: '20px' }}>Appearance</h3>
+          <ThemeToggle />
+        </div>
 
         {/* Photo */}
         <div style={sectionStyle}>
-          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF', marginBottom: '20px' }}>Profile Photo</h3>
+          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', marginBottom: '20px' }}>Profile Photo</h3>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <div style={{ width: '80px', height: '80px', borderRadius: '20px', overflow: 'hidden', border: '2px solid rgba(212,175,55,0.3)', flexShrink: 0, background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '80px', height: '80px', borderRadius: '20px', overflow: 'hidden', border: '2px solid rgba(212,175,55,0.3)', flexShrink: 0, background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {avatarPreview ? <img src={avatarPreview} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: '28px', color: '#D4AF37' }}>{form.full_name?.[0] || '?'}</span>}
             </div>
             <div>
-              <label style={{ display: 'inline-block', padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', cursor: 'pointer' }}>
+              <label style={{ display: 'inline-block', padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'var(--border)', border: '1px solid var(--border)', color: 'var(--text-primary)', cursor: 'pointer' }}>
                 Upload photo
                 <input type="file" accept="image/*" onChange={handleAvatarChange} aria-label="Upload avatar photo" style={{ display: 'none' }} />
               </label>
-              <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '8px' }}>JPG, PNG up to 5MB</p>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px' }}>JPG, PNG up to 5MB</p>
             </div>
           </div>
         </div>
 
         {/* Basic Info */}
         <div style={sectionStyle}>
-          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF', marginBottom: '20px' }}>Basic Info</h3>
+          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', marginBottom: '20px' }}>Basic Info</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <div>
@@ -411,14 +418,14 @@ export default function EditProfilePage() {
             <div>
               <label style={labelStyle}>Bio</label>
               <textarea value={form.bio} onChange={e => setForm(f => ({ ...f, bio: e.target.value }))} placeholder="Tell people who you are..." rows={4} style={{ ...inputStyle, resize: 'none', lineHeight: 1.6 }} maxLength={300} />
-              <p style={{ fontSize: '11px', color: '#A99ECC', marginTop: '4px', textAlign: 'right' }}>{form.bio.length}/300</p>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', textAlign: 'right' }}>{form.bio.length}/300</p>
             </div>
           </div>
         </div>
 
         {/* Location */}
         <div style={sectionStyle}>
-          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF', marginBottom: '20px' }}>Location</h3>
+          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', marginBottom: '20px' }}>Location</h3>
           <div className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div>
               <label style={labelStyle}>City</label>
@@ -443,7 +450,7 @@ export default function EditProfilePage() {
               </select>
               <input value={form.crypto_tip_address} onChange={e => setForm(f => ({ ...f, crypto_tip_address: e.target.value }))} placeholder="Your wallet address" style={inputStyle} />
             </div>
-            <p style={{ fontSize: '11px', color: '#6B6490', marginTop: '6px', lineHeight: 1.5 }}>
+            <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '6px', lineHeight: 1.5 }}>
               Shown on your passport so people can tip you directly. Bestie never touches the funds — payments go straight to your wallet. Double-check the address.
             </p>
           </div>
@@ -451,8 +458,8 @@ export default function EditProfilePage() {
 
         {/* Privacy */}
         <div style={sectionStyle}>
-          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF', marginBottom: '8px' }}>Privacy</h3>
-          <label style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '12px', borderRadius: '12px', background: hideFromGraph ? 'rgba(212,175,55,0.06)' : 'transparent', border: hideFromGraph ? '1px solid rgba(212,175,55,0.25)' : '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', transition: 'all 0.15s' }}>
+          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', marginBottom: '8px' }}>Privacy</h3>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '12px', borderRadius: '12px', background: hideFromGraph ? 'rgba(212,175,55,0.06)' : 'transparent', border: hideFromGraph ? '1px solid rgba(212,175,55,0.25)' : '1px solid var(--border)', cursor: 'pointer', transition: 'all 0.15s' }}>
             <input
               type="checkbox"
               checked={hideFromGraph}
@@ -460,15 +467,15 @@ export default function EditProfilePage() {
               style={{ marginTop: '2px', accentColor: '#D4AF37', cursor: 'pointer' }}
             />
             <div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>Hide me from My Circle</div>
-              <div style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.5 }}>Other people won't see who you've met or had sessions with. Your profile and bookings still work as usual.</div>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>Hide me from My Circle</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5 }}>Other people won't see who you've met or had sessions with. Your profile and bookings still work as usual.</div>
             </div>
           </label>
 
           {/* Join the graph — Plus only */}
           <div style={{ marginTop: '12px' }}>
             {isPlus ? (
-              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '12px', borderRadius: '12px', background: showOnGraph ? 'rgba(155,127,255,0.08)' : 'transparent', border: showOnGraph ? '1px solid rgba(155,127,255,0.35)' : '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', transition: 'all 0.15s' }}>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '12px', borderRadius: '12px', background: showOnGraph ? 'rgba(155,127,255,0.08)' : 'transparent', border: showOnGraph ? '1px solid rgba(155,127,255,0.35)' : '1px solid var(--border)', cursor: 'pointer', transition: 'all 0.15s' }}>
                 <input
                   type="checkbox"
                   checked={showOnGraph}
@@ -477,17 +484,17 @@ export default function EditProfilePage() {
                 />
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>🕸️ Show me in My Circle</span>
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>🕸️ Show me in My Circle</span>
                     <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 7px', borderRadius: '999px', background: 'rgba(155,127,255,0.15)', border: '1px solid rgba(155,127,255,0.4)', color: '#9B7FFF' }}>PLUS</span>
                   </div>
-                  <div style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.5 }}>Appear on the graph even before your first session, so people can discover you.</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5 }}>Appear on the graph even before your first session, so people can discover you.</div>
                 </div>
               </label>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '12px', borderRadius: '12px', background: 'rgba(155,127,255,0.06)', border: '1px solid rgba(155,127,255,0.2)' }}>
                 <div>
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>🕸️ Show me in My Circle</div>
-                  <div style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.5 }}>Appear on the graph and let people discover you — a Plus feature.</div>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>🕸️ Show me in My Circle</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5 }}>Appear on the graph and let people discover you — a Plus feature.</div>
                 </div>
                 <a href="/plus" style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '999px', background: 'linear-gradient(135deg, #9B7FFF, #7C5CFF)', color: '#fff', fontSize: '12px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>Plus →</a>
               </div>
@@ -497,13 +504,13 @@ export default function EditProfilePage() {
 
         {/* Languages */}
         <div style={sectionStyle}>
-          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF', marginBottom: '8px' }}>Languages</h3>
-          <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '16px' }}>Select languages you speak</p>
+          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', marginBottom: '8px' }}>Languages</h3>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>Select languages you speak</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {LANGUAGES.map(lang => {
               const selected = selectedLanguages.includes(lang)
               return (
-                <button key={lang} onClick={() => toggleLanguage(lang)} style={{ padding: '8px 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', background: selected ? 'rgba(212,175,55,0.15)' : '#131323', border: selected ? '1px solid rgba(212,175,55,0.5)' : '1px solid rgba(255,255,255,0.12)', color: selected ? '#D4AF37' : '#A99ECC', transition: 'all 0.15s' }}>
+                <button key={lang} onClick={() => toggleLanguage(lang)} style={{ padding: '8px 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', background: selected ? 'rgba(212,175,55,0.15)' : 'var(--surface-1b)', border: selected ? '1px solid rgba(212,175,55,0.5)' : '1px solid var(--border-strong)', color: selected ? '#D4AF37' : 'var(--text-muted)', transition: 'all 0.15s' }}>
                   {lang}
                 </button>
               )
@@ -516,8 +523,8 @@ export default function EditProfilePage() {
 
         {/* Activities */}
         <div style={sectionStyle}>
-          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF', marginBottom: '16px' }}>My Activities</h3>
-          {packages.length === 0 && <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '16px' }}>No activities added yet — pick what you love doing below to get started.</p>}
+          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', marginBottom: '16px' }}>My Activities</h3>
+          {packages.length === 0 && <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '16px' }}>No activities added yet — pick what you love doing below to get started.</p>}
           {packages.map(pkg => (
             <div key={pkg.id} style={{ marginBottom: '8px' }}>
               {editingPkg === pkg.id ? (
@@ -552,7 +559,7 @@ export default function EditProfilePage() {
                       <>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <input type="checkbox" checked={editPkg.is_free} onChange={e => setEditPkg(p => ({ ...p, is_free: e.target.checked }))} id={`edit_free_${pkg.id}`} />
-                          <label htmlFor={`edit_free_${pkg.id}`} style={{ fontSize: '14px', color: '#F0EAFF', cursor: 'pointer' }}>Free match</label>
+                          <label htmlFor={`edit_free_${pkg.id}`} style={{ fontSize: '14px', color: 'var(--text-primary)', cursor: 'pointer' }}>Free match</label>
                         </div>
                         {!editPkg.is_free && (
                           <div>
@@ -563,21 +570,21 @@ export default function EditProfilePage() {
                       </>
                     ) : (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '12px', borderRadius: '12px', background: 'rgba(155,127,255,0.06)', border: '1px solid rgba(155,127,255,0.2)' }}>
-                        <div style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.5 }}>💰 Paid sessions are a Plus feature.</div>
+                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5 }}>💰 Paid sessions are a Plus feature.</div>
                         <a href="/plus" style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '999px', background: 'linear-gradient(135deg, #9B7FFF, #7C5CFF)', color: '#fff', fontSize: '12px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>Plus →</a>
                       </div>
                     )}
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <button onClick={() => setEditingPkg(null)} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#A99ECC', cursor: 'pointer' }}>Cancel</button>
-                      <button onClick={() => handleUpdatePackage(pkg.id)} style={{ flex: 2, padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer' }}>Save changes</button>
+                      <button onClick={() => setEditingPkg(null)} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '14px', background: 'none', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer' }}>Cancel</button>
+                      <button onClick={() => handleUpdatePackage(pkg.id)} style={{ flex: 2, padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: 'var(--bg)', border: 'none', cursor: 'pointer' }}>Save changes</button>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '12px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '12px', background: 'var(--surface-1)', border: '1px solid var(--border)' }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>{pkg.title}</p>
-                    <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '2px' }}>{getActivityLabel(pkg.activity_type)} · {pkg.is_free ? 'Free' : `$${pkg.price_per_session}/session`}</p>
+                    <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{pkg.title}</p>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>{getActivityLabel(pkg.activity_type)} · {pkg.is_free ? 'Free' : `$${pkg.price_per_session}/session`}</p>
                     {pkg.scheduled_at && (
                       <p style={{ fontSize: '12px', color: '#D4AF37', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <Calendar size={12} strokeWidth={2} /> {new Date(pkg.scheduled_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
@@ -585,8 +592,8 @@ export default function EditProfilePage() {
                     )}
                   </div>
                   <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
-                    <button onClick={() => startEdit(pkg)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#A99ECC', cursor: 'pointer', fontSize: '13px', padding: '4px 10px', borderRadius: '8px' }}>Edit</button>
-                    <button onClick={() => handleDeletePackage(pkg.id)} style={{ background: 'none', border: 'none', color: '#A99ECC', cursor: 'pointer', fontSize: '20px', padding: '4px 8px' }}>×</button>
+                    <button onClick={() => startEdit(pkg)} style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px', padding: '4px 10px', borderRadius: '8px' }}>Edit</button>
+                    <button onClick={() => handleDeletePackage(pkg.id)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '20px', padding: '4px 8px' }}>×</button>
                   </div>
                 </div>
               )}
@@ -628,7 +635,7 @@ export default function EditProfilePage() {
                   <>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <input type="checkbox" checked={newPkg.is_free} onChange={e => setNewPkg(p => ({ ...p, is_free: e.target.checked }))} id="is_free" />
-                      <label htmlFor="is_free" style={{ fontSize: '14px', color: '#F0EAFF', cursor: 'pointer' }}>Free match</label>
+                      <label htmlFor="is_free" style={{ fontSize: '14px', color: 'var(--text-primary)', cursor: 'pointer' }}>Free match</label>
                     </div>
                     {!newPkg.is_free && (
                       <div>
@@ -640,8 +647,8 @@ export default function EditProfilePage() {
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '12px', borderRadius: '12px', background: 'rgba(155,127,255,0.06)', border: '1px solid rgba(155,127,255,0.2)' }}>
                     <div>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>💰 Charge for this session</div>
-                      <div style={{ fontSize: '12px', color: '#A99ECC', lineHeight: 1.5 }}>Free members offer free matches. Get Plus to set a price.</div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>💰 Charge for this session</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5 }}>Free members offer free matches. Get Plus to set a price.</div>
                     </div>
                     <a href="/plus" style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '999px', background: 'linear-gradient(135deg, #9B7FFF, #7C5CFF)', color: '#fff', fontSize: '12px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>Plus →</a>
                   </div>
@@ -659,14 +666,14 @@ export default function EditProfilePage() {
                         <option key={c.id} value={c.id}>Only {c.name} members</option>
                       ))}
                     </select>
-                    <p style={{ fontSize: '11px', color: '#A99ECC', marginTop: '4px' }}>
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
                       Lock this offering so only crew members can book it.
                     </p>
                   </div>
                 )}
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <button onClick={() => setShowAddForm(false)} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#A99ECC', cursor: 'pointer' }}>Cancel</button>
-                  <button onClick={handleAddPackage} style={{ flex: 2, padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer' }}>Add activity</button>
+                  <button onClick={() => setShowAddForm(false)} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '14px', background: 'none', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer' }}>Cancel</button>
+                  <button onClick={handleAddPackage} style={{ flex: 2, padding: '10px', borderRadius: '10px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: 'var(--bg)', border: 'none', cursor: 'pointer' }}>Add activity</button>
                 </div>
               </div>
             </div>
@@ -674,29 +681,29 @@ export default function EditProfilePage() {
         </div>
 
         {/* Map visibility */}
-        <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
-          <p style={{ fontSize: '13px', fontWeight: 700, color: '#F0EAFF', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={14} strokeWidth={2} /> Appear on the map</p>
-          <p style={{ fontSize: '12px', color: '#A99ECC', marginBottom: '16px' }}>Shows your approximate location (city-level, ~1km) so others nearby can find you. Requires your city to be set.</p>
+        <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border-strong)', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
+          <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={14} strokeWidth={2} /> Appear on the map</p>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>Shows your approximate location (city-level, ~1km) so others nearby can find you. Requires your city to be set.</p>
           {locationShared ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ flex: 1, padding: '10px 14px', borderRadius: '10px', background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '13px', color: '#34D399', fontWeight: 600 }}>
                 ✓ Visible on map
               </div>
-              <button onClick={removeLocation} style={{ padding: '10px 14px', borderRadius: '10px', fontSize: '13px', background: '#131323', border: '1px solid rgba(255,255,255,0.1)', color: '#A99ECC', cursor: 'pointer' }}>
+              <button onClick={removeLocation} style={{ padding: '10px 14px', borderRadius: '10px', fontSize: '13px', background: 'var(--surface-1b)', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer' }}>
                 Remove
               </button>
             </div>
           ) : (
-            <button onClick={shareLocation} disabled={locating || !form.city} style={{ width: '100%', padding: '11px', borderRadius: '10px', fontSize: '14px', fontWeight: 600, background: form.city ? 'rgba(212,175,55,0.1)' : '#111120', border: form.city ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255,255,255,0.12)', color: form.city ? '#D4AF37' : '#444', cursor: form.city ? 'pointer' : 'not-allowed', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <button onClick={shareLocation} disabled={locating || !form.city} style={{ width: '100%', padding: '11px', borderRadius: '10px', fontSize: '14px', fontWeight: 600, background: form.city ? 'rgba(212,175,55,0.1)' : 'var(--surface-1)', border: form.city ? '1px solid rgba(212,175,55,0.3)' : '1px solid var(--border-strong)', color: form.city ? '#D4AF37' : '#444', cursor: form.city ? 'pointer' : 'not-allowed', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
               {locating ? 'Locating...' : form.city ? (<><MapPin size={14} strokeWidth={2} /> Put me on the map ({form.city})</>) : 'Add your city first'}
             </button>
           )}
         </div>
 
         {/* Availability */}
-        <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
-          <p style={{ fontSize: '13px', fontWeight: 700, color: '#F0EAFF', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={14} strokeWidth={2} /> Availability</p>
-          <p style={{ fontSize: '12px', color: '#A99ECC', marginBottom: '16px' }}>Let people know when you're free to meet up</p>
+        <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border-strong)', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
+          <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={14} strokeWidth={2} /> Availability</p>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>Let people know when you're free to meet up</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {DAYS.map(day => {
               const slot = availability[day.id] || { on: false, from: '09:00', to: '20:00' }
@@ -704,7 +711,7 @@ export default function EditProfilePage() {
                 <div key={day.id} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <button
                     onClick={() => setAvailability(a => ({ ...a, [day.id]: { ...slot, on: !slot.on } }))}
-                    style={{ minWidth: '52px', padding: '6px 10px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, background: slot.on ? 'rgba(212,175,55,0.15)' : '#131323', border: slot.on ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.12)', color: slot.on ? '#D4AF37' : '#555', cursor: 'pointer' }}
+                    style={{ minWidth: '52px', padding: '6px 10px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, background: slot.on ? 'rgba(212,175,55,0.15)' : 'var(--surface-1b)', border: slot.on ? '1px solid rgba(212,175,55,0.4)' : '1px solid var(--border-strong)', color: slot.on ? '#D4AF37' : '#555', cursor: 'pointer' }}
                   >
                     {day.label}
                   </button>
@@ -714,14 +721,14 @@ export default function EditProfilePage() {
                         type="time"
                         value={slot.from}
                         onChange={e => setAvailability(a => ({ ...a, [day.id]: { ...slot, from: e.target.value } }))}
-                        style={{ background: '#1A1A2E', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#F0EAFF', padding: '6px 10px', fontSize: '13px', colorScheme: 'dark', width: '100px' }}
+                        style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-primary)', padding: '6px 10px', fontSize: '13px', colorScheme: 'dark', width: '100px' }}
                       />
-                      <span style={{ fontSize: '12px', color: '#A99ECC' }}>to</span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>to</span>
                       <input
                         type="time"
                         value={slot.to}
                         onChange={e => setAvailability(a => ({ ...a, [day.id]: { ...slot, to: e.target.value } }))}
-                        style={{ background: '#1A1A2E', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#F0EAFF', padding: '6px 10px', fontSize: '13px', colorScheme: 'dark', width: '100px' }}
+                        style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-primary)', padding: '6px 10px', fontSize: '13px', colorScheme: 'dark', width: '100px' }}
                       />
                     </>
                   ) : (
@@ -734,12 +741,12 @@ export default function EditProfilePage() {
         </div>
 
         {/* Companion settings */}
-        <div style={{ background: '#111120', borderRadius: '20px', padding: '20px', border: '1px solid rgba(57,255,20,0.15)', marginBottom: '16px' }}>
-          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF', marginBottom: '4px' }}>AI Companion</h3>
-          <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '20px' }}>Смени тип или имя своего компаньона</p>
+        <div style={{ background: 'var(--surface-1)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(57,255,20,0.15)', marginBottom: '16px' }}>
+          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', marginBottom: '4px' }}>AI Companion</h3>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px' }}>Смени тип или имя своего компаньона</p>
 
           {/* Type selector */}
-          <p style={{ fontSize: '12px', fontWeight: 600, color: '#A99ECC', letterSpacing: '1px', marginBottom: '10px' }}>ТИП</p>
+          <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '1px', marginBottom: '10px' }}>ТИП</p>
           <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
             {[
               { type: 'spark', emoji: '⚡', label: 'Spark', color: '#39FF14', desc: 'Дерзкий' },
@@ -747,26 +754,26 @@ export default function EditProfilePage() {
               { type: 'nova',  emoji: '🌀', label: 'Nova',  color: '#7B8FF5', desc: 'Футурист' },
             ].map(c => (
               <button key={c.type} onClick={() => setCompanionType(c.type)} style={{
-                flex: 1, padding: '12px 8px', borderRadius: '14px', border: companionType === c.type ? `1.5px solid ${c.color}` : '1px solid rgba(255,255,255,0.1)',
+                flex: 1, padding: '12px 8px', borderRadius: '14px', border: companionType === c.type ? `1.5px solid ${c.color}` : '1px solid var(--border)',
                 background: companionType === c.type ? `${c.color}15` : '#0d0d1a',
                 cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', transition: 'all 0.2s',
               }}>
                 <div style={{ fontSize: '24px', marginBottom: '4px' }}>{c.emoji}</div>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: companionType === c.type ? c.color : '#A99ECC' }}>{c.label}</div>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: companionType === c.type ? c.color : 'var(--text-muted)' }}>{c.label}</div>
                 <div style={{ fontSize: '10px', color: '#5A5375' }}>{c.desc}</div>
               </button>
             ))}
           </div>
 
           {/* Name input */}
-          <p style={{ fontSize: '12px', fontWeight: 600, color: '#A99ECC', letterSpacing: '1px', marginBottom: '8px' }}>ИМЯ</p>
+          <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '1px', marginBottom: '8px' }}>ИМЯ</p>
           <div style={{ display: 'flex', gap: '10px' }}>
             <input
               value={companionName}
               onChange={e => setCompanionName(e.target.value.slice(0, 20))}
               placeholder="Bestie"
               maxLength={20}
-              style={{ flex: 1, padding: '10px 14px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, outline: 'none', background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+              style={{ flex: 1, padding: '10px 14px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, outline: 'none', background: '#0d0d1a', border: '1px solid var(--border)', color: 'var(--text-primary)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
             />
             <button onClick={handleSaveCompanion} disabled={savingCompanion} style={{
               padding: '10px 20px', borderRadius: '12px', fontSize: '13px', fontWeight: 600,
@@ -779,7 +786,7 @@ export default function EditProfilePage() {
           </div>
 
           {/* Premium AI — connect your own key (Plus only) */}
-          <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
               <p style={{ fontSize: '12px', fontWeight: 600, color: '#9B7FFF', letterSpacing: '1px', margin: 0 }}>PREMIUM AI</p>
               <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 7px', borderRadius: '999px', background: 'rgba(155,127,255,0.15)', border: '1px solid rgba(155,127,255,0.4)', color: '#9B7FFF' }}>PLUS</span>
@@ -787,7 +794,7 @@ export default function EditProfilePage() {
 
             {isPlus ? (
               <>
-                <p style={{ fontSize: '12px', color: '#A99ECC', marginBottom: '12px', lineHeight: 1.5 }}>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '12px', lineHeight: 1.5 }}>
                   Подключи свой AI-ключ — компаньон будет работать на твоей модели без лимитов.
                 </p>
                 <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
@@ -798,9 +805,9 @@ export default function EditProfilePage() {
                   ].map(p => (
                     <button key={p.id} onClick={() => setCompanionProvider(p.id)} style={{
                       flex: 1, padding: '10px 8px', borderRadius: '12px',
-                      border: companionProvider === p.id ? '1.5px solid #9B7FFF' : '1px solid rgba(255,255,255,0.1)',
+                      border: companionProvider === p.id ? '1.5px solid #9B7FFF' : '1px solid var(--border)',
                       background: companionProvider === p.id ? 'rgba(155,127,255,0.12)' : '#0d0d1a',
-                      color: companionProvider === p.id ? '#9B7FFF' : '#A99ECC',
+                      color: companionProvider === p.id ? '#9B7FFF' : 'var(--text-muted)',
                       cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '13px', fontWeight: 600,
                     }}>{p.label}</button>
                   ))}
@@ -811,7 +818,7 @@ export default function EditProfilePage() {
                   placeholder={companionProvider === 'claude' ? 'sk-ant-…' : companionProvider === 'openai' ? 'sk-…' : 'xai-…'}
                   type="password"
                   autoComplete="off"
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', fontSize: '13px', outline: 'none', background: '#0d0d1a', border: '1px solid rgba(155,127,255,0.25)', color: '#F0EAFF', fontFamily: 'monospace', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', fontSize: '13px', outline: 'none', background: '#0d0d1a', border: '1px solid rgba(155,127,255,0.25)', color: 'var(--text-primary)', fontFamily: 'monospace', boxSizing: 'border-box' }}
                 />
                 <p style={{ fontSize: '11px', color: '#5A5375', marginTop: '8px' }}>
                   Ключ хранится у тебя в аккаунте. Оставь пустым — будет работать встроенный Bestie AI. Нажми «Save» выше, чтобы сохранить.
@@ -830,7 +837,7 @@ export default function EditProfilePage() {
           </div>
         </div>
 
-        <button onClick={handleSave} disabled={saving} style={{ width: '100%', padding: '14px', borderRadius: '14px', fontSize: '15px', fontWeight: 600, background: saved ? 'rgba(57,255,20,0.15)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: saved ? '#34D399' : '#09090F', border: saved ? '1px solid rgba(57,255,20,0.3)' : 'none', cursor: 'pointer' }}>
+        <button onClick={handleSave} disabled={saving} style={{ width: '100%', padding: '14px', borderRadius: '14px', fontSize: '15px', fontWeight: 600, background: saved ? 'rgba(57,255,20,0.15)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: saved ? '#34D399' : 'var(--bg)', border: saved ? '1px solid rgba(57,255,20,0.3)' : 'none', cursor: 'pointer' }}>
           {saving ? 'Saving...' : saved ? '✓ Profile saved!' : 'Save all changes'}
         </button>
       </div>
