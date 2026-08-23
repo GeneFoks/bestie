@@ -80,7 +80,9 @@ export async function POST(req: NextRequest) {
         .select('title, host:users!host_id(email)')
         .eq('id', data.sessionId)
         .single()
-      recipient = gs?.host?.email || null
+      // Supabase types a to-one embed as an array; handle both shapes.
+      const host: any = Array.isArray(gs?.host) ? gs?.host?.[0] : gs?.host
+      recipient = host?.email || null
       bookedTitle = gs?.title || bookedTitle
       // Resolve the joiner's name server-side when only an id is passed.
       if (!data.joinerName && data.joinerId) {
