@@ -72,7 +72,15 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
 
     const { data } = await supabase.rpc('join_group_session', { p_session_id: params.id, p_user_id: myId })
     setJoining(false)
-    if (data === 'joined') load()
+    if (data === 'joined') {
+      // Best-effort email to the host — never block the join on it.
+      fetch('/api/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'session_booked', data: { sessionId: params.id, joinerId: myId } }),
+      }).catch(() => {})
+      load()
+    }
   }
 
   const handleLeave = async () => {
