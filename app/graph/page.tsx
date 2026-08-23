@@ -13,6 +13,7 @@ export default function GraphPage() {
   const svgRef = useRef<SVGSVGElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const graphDataRef = useRef<{ nodes: any[]; links: any[] } | null>(null)
+  const rafRef = useRef<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [nodeCount, setNodeCount] = useState(0)
   const [edgeCount, setEdgeCount] = useState(0)
@@ -84,7 +85,7 @@ export default function GraphPage() {
         .select('id, full_name, username, avatar_url, bestie_score, city')
         .eq('hide_from_graph', false)
         .order('bestie_score', { ascending: false })
-        .limit(140)
+        .limit(70)
 
       if ((!bookings || bookings.length === 0) && contactLinks.length === 0 && knockLinks.length === 0 && optInIds.length === 0 && (!floatUsers || floatUsers.length === 0)) {
         setEmpty(true); setLoading(false); return
@@ -221,6 +222,7 @@ export default function GraphPage() {
     if (loading || !graphDataRef.current) return
     const { nodes, links } = graphDataRef.current
     loadD3(nodes, links)
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
   }, [loading])
 
   const loadD3 = (nodes: any[], links: any[]) => {
@@ -308,19 +310,8 @@ export default function GraphPage() {
       .force('x', d3.forceX(width / 2).strength((d: any) => d.floating ? 0.008 : 0))
       .force('y', d3.forceY(height / 2).strength((d: any) => d.floating ? 0.008 : 0))
       .force('collision', d3.forceCollide().radius((d: any) => nodeRadius(d) + (d.floating ? 6 : 10)))
-
-    // Perpetual gentle drift for the floating crowd — tiny random impulses each
-    // tick keep them wandering forever without ever settling.
-    const driftForce = () => {
-      for (const n of nodes as any[]) {
-        if (!n.floating) continue
-        n.vx = (n.vx || 0) + (Math.random() - 0.5) * 0.5
-        n.vy = (n.vy || 0) + (Math.random() - 0.5) * 0.5
-      }
-    }
-    simulation.force('drift', driftForce)
-    // Keep the sim warm so the drift never stops (low target = calm motion).
-    simulation.alphaTarget(0.035).restart()
+    // The force sim runs once and SETTLES (no perpetual ticking — that was the
+    // lag). Gentle motion for floaters is done by a cheap rAF loop below.
 
     // Dashed pattern for contact edges
     defs.append('marker')
@@ -370,7 +361,7 @@ export default function GraphPage() {
           })
           .on('drag', (event: any, d: any) => { d.fx = event.x; d.fy = event.y })
           .on('end', (event: any, d: any) => {
-            if (!event.active) simulation.alphaTarget(0.035) // keep drift alive
+            if (!event.active) simulation.alphaTarget(0)
             d.fx = null; d.fy = null
           })
       )
@@ -464,6 +455,29 @@ export default function GraphPage() {
         .attr('x1', (d: any) => d.source.x).attr('y1', (d: any) => d.source.y)
         .attr('x2', (d: any) => d.target.x).attr('y2', (d: any) => d.target.y)
       node.attr('transform', (d: any) => `translate(${d.x},${d.y})`)
+    })
+
+    // Once the force sim settles, replace it with a cheap requestAnimationFrame
+    // loop that only nudges the floating nodes (no force maths, no link/edge
+    // updates). This keeps the "alive" feel without the per-tick cost that lagged.
+    const floatSel = node.filter((d: any) => d.floating)
+    simulation.on('end', () => {
+      floatSel.each((d: any) => {
+        d.bx = d.x; d.by = d.y
+        if (d.phase === undefined) d.phase = Math.random() * Math.PI * 2
+      })
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      const step = () => {
+        const t = performance.now() / 1000
+        floatSel.each(function (d: any) {
+          const nx = d.bx + Math.cos(t * 0.5 + d.phase) * 8
+          const ny = d.by + Math.sin(t * 0.6 + d.phase) * 8
+          d.x = nx; d.y = ny
+          ;(this as SVGGElement).setAttribute('transform', `translate(${nx},${ny})`)
+        })
+        rafRef.current = requestAnimationFrame(step)
+      }
+      rafRef.current = requestAnimationFrame(step)
     })
   }
 
