@@ -90,7 +90,9 @@
       "Bash(git commit -m 'feat: eterotype on cities & invite pages \\(retire energy/mind/vibe\\) *)",
       "Bash(command -v gh)",
       "Bash(git commit -q -m 'feat: graph shows everyone \\(not opted out\\) as gently drifting nodes *)",
-      "Bash(git commit -q -m 'feat: email the host when someone books their session \\(free join + paid ticket\\) *)"
+      "Bash(git commit -q -m 'feat: email the host when someone books their session \\(free join + paid ticket\\) *)",
+      "Bash(grep -n \"activity_packages\\\\|KnockButton\\\\|full_name\\\\|href={\\\\`/\\\\|Book\\\\|map\\(\" app/browse/page.tsx)",
+      "Bash(git commit -q -m 'feat: offers discovery feed + activity chips on browse cards *)"
     ]
   }
 }

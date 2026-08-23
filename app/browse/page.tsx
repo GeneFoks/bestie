@@ -146,9 +146,9 @@ export default function BrowsePage() {
       if (filter !== 'all') {
         const { data: pkgs } = await supabase
           .from('activity_packages')
-          .select('provider_id')
+          .select('user_id')
           .eq('activity_type', filter)
-        const userIds = pkgs?.map(p => p.provider_id) || []
+        const userIds = pkgs?.map(p => p.user_id) || []
         if (userIds.length > 0) {
           query = query.in('id', userIds)
         } else {
@@ -229,6 +229,9 @@ export default function BrowsePage() {
             <p style={{ fontSize: '15px', color: 'var(--text-muted)' }}>
               {loading ? 'Loading...' : `${providers.length} Bestie${providers.length !== 1 ? 's' : ''} available`}
             </p>
+            <Link href="/offers" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '8px', fontSize: '13px', fontWeight: 600, color: '#D4AF37', textDecoration: 'none' }}>
+              🧭 Browse all offers →
+            </Link>
           </div>
           {myProfile && (
             <button onClick={() => setCompatMode(!compatMode)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', background: compatMode ? 'rgba(52,211,153,0.12)' : 'var(--surface-1b)', border: compatMode ? '1px solid rgba(52,211,153,0.35)' : '1px solid var(--border)', color: compatMode ? '#34D399' : 'var(--text-muted)', transition: 'all 0.2s' }}>

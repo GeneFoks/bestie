@@ -49,6 +49,10 @@ interface ProviderCardProps {
 export default function ProviderCard({ provider, featured = false }: ProviderCardProps) {
   const [imgError, setImgError] = useState(false)
   const mainPackage = provider.activity_packages?.[0]
+  // Distinct activities this person offers — shown as chips so their breadth is
+  // visible in the feed without opening the profile.
+  const activityTypes = Array.from(new Set((provider.activity_packages || []).map((p: any) => p.activity_type))).slice(0, 4)
+  const extraActivities = (provider.activity_packages?.length || 0) - activityTypes.length
   const score = provider.bestie_score || 0
   const scoreColor = score >= 800 ? colors.green : score >= 600 ? '#D4AF37' : colors.textMuted
   const initials = provider.full_name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || '??'
@@ -159,6 +163,20 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
           <p className="text-xs leading-relaxed line-clamp-2" style={{ color: colors.textMuted, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
             {provider.bio}
           </p>
+        )}
+
+        {/* Open to — activity chips so people see what they offer up-front */}
+        {activityTypes.length >= 2 && (
+          <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', alignItems: 'center' }}>
+            {activityTypes.map((t: string) => (
+              <span key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 9px', borderRadius: '999px', fontSize: '10px', fontWeight: 600, background: 'rgba(155,127,255,0.10)', border: '1px solid rgba(155,127,255,0.22)', color: '#B7A6FF', whiteSpace: 'nowrap' }}>
+                <ActivityIcon type={t} size={11} color="#B7A6FF" strokeWidth={1.8} /> {t.replace(/_/g, ' ')}
+              </span>
+            ))}
+            {extraActivities > 0 && (
+              <span style={{ fontSize: '10px', color: colors.textMuted }}>+{extraActivities} more</span>
+            )}
+          </div>
         )}
 
         {/* Spark tags with counts */}
