@@ -88,6 +88,13 @@ export async function POST(req: NextRequest) {
           await admin.from('group_session_participants').insert({ session_id, user_id })
         }
 
+        // Email the host that a paid spot was booked (best-effort).
+        fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'https://bestiehere.com'}/api/email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'session_booked', data: { sessionId: session_id, joinerId: user_id, paid: true } }),
+        }).catch(() => {})
+
         console.log(`[webhook] ticket: user ${user_id} paid $${amount} for session ${session_id}`)
         break
       }

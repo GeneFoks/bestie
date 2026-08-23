@@ -227,7 +227,7 @@ export default function DashboardPage() {
   if (loading) return <PageLoader message="Loading your profile…" />
 
   const score = profile?.bestie_score || 0
-  const scoreColor = score >= 800 ? '#34D399' : score >= 600 ? '#D4AF37' : '#A99ECC'
+  const scoreColor = score >= 800 ? '#34D399' : score >= 600 ? '#D4AF37' : 'var(--text-muted)'
   const scoreLabel = score >= 800 ? 'Excellent' : score >= 600 ? 'Good' : score >= 400 ? 'Fair' : 'New'
 
   const boostItems = [
@@ -252,13 +252,13 @@ export default function DashboardPage() {
   ]
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <Link href="/browse" style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none' }}>Browse</Link>
+          <Link href="/browse" style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none' }}>Browse</Link>
           {user && <NotificationBell userId={user.id} />}
-          <button onClick={handleLogout} style={{ fontSize: '14px', color: '#A99ECC', background: 'none', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 16px', borderRadius: '10px', cursor: 'pointer' }}>Log out</button>
+          <button onClick={handleLogout} style={{ fontSize: '14px', color: 'var(--text-muted)', background: 'none', border: '1px solid var(--border)', padding: '6px 16px', borderRadius: '10px', cursor: 'pointer' }}>Log out</button>
         </div>
       </nav>
 
@@ -273,7 +273,7 @@ export default function DashboardPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '18px 20px', borderRadius: '18px', background: 'linear-gradient(135deg, rgba(155,127,255,0.16), rgba(124,92,255,0.08))', border: '1px solid rgba(155,127,255,0.35)' }}>
               <div style={{ fontSize: '30px', lineHeight: 1 }}>✦</div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF', margin: '0 0 3px' }}>Upgrade to Bestie Plus — $8/mo</p>
+                <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 3px' }}>Upgrade to Bestie Plus — $8/mo</p>
                 <p style={{ fontSize: '13px', color: '#C9BEEA', margin: 0, lineHeight: 1.4 }}>Premium AI companion · join the graph · charge for sessions</p>
               </div>
               <span style={{ flexShrink: 0, padding: '9px 16px', borderRadius: '999px', background: 'linear-gradient(135deg, #9B7FFF, #7C5CFF)', color: '#fff', fontSize: '13px', fontWeight: 700, whiteSpace: 'nowrap' }}>Get Plus →</span>
@@ -283,17 +283,17 @@ export default function DashboardPage() {
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
-            <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '32px', fontWeight: 700, color: '#F0EAFF', marginBottom: '4px' }}>
+            <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '32px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
               Hey, {profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0]} 👋
             </h1>
-            <p style={{ fontSize: '14px', color: '#A99ECC' }}>@{profile?.username || user?.email?.split('@')[0]}</p>
+            <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>@{profile?.username || user?.email?.split('@')[0]}</p>
           </div>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             <CreateEventButton variant="compact" />
             <button onClick={handleShare} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: copied ? 'rgba(57,255,20,0.15)' : 'linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0.08) 100%)', border: copied ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(212,175,55,0.3)', color: copied ? '#34D399' : '#D4AF37', cursor: 'pointer' }}>
               {copied ? '✓ Copied!' : (<><Share2 size={14} strokeWidth={2} style={{ verticalAlign: 'middle', marginRight: '6px' }} />Share my Passport</>)}
             </button>
-            <Link href={`/${profile?.username}`} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', textDecoration: 'none' }}>
+            <Link href={`/${profile?.username}`} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'var(--border)', border: '1px solid var(--border)', color: 'var(--text-primary)', textDecoration: 'none' }}>
               View my profile →
             </Link>
           </div>
@@ -316,10 +316,10 @@ export default function DashboardPage() {
                   <span style={{ width: '64px', height: '64px', borderRadius: '18px', background: 'rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Sparkles size={30} color="#D4AF37" strokeWidth={1.6} /></span>
                   <div style={{ flex: 1, minWidth: '140px' }}>
                     <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#D4AF37', marginBottom: '4px' }}>START HERE</p>
-                    <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginBottom: '4px', lineHeight: 1.2 }}>Discover your Bestie Type</h2>
-                    <p style={{ fontSize: '13px', color: '#A99ECC' }}>12 questions — unlocks compatibility matching, shows on your passport</p>
+                    <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '4px', lineHeight: 1.2 }}>Discover your Bestie Type</h2>
+                    <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>12 questions — unlocks compatibility matching, shows on your passport</p>
                   </div>
-                  <span style={{ padding: '12px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', whiteSpace: 'nowrap', flexShrink: 0 }}>Take the quiz →</span>
+                  <span style={{ padding: '12px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: 'var(--bg)', whiteSpace: 'nowrap', flexShrink: 0 }}>Take the quiz →</span>
                 </div>
               </Link>
             )
@@ -333,7 +333,7 @@ export default function DashboardPage() {
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '18px', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', flexShrink: 0 }}>
                     {first.map((k: any, i: number) => (
-                      <div key={k.id} style={{ width: '50px', height: '50px', borderRadius: '14px', overflow: 'hidden', background: '#1A1A2E', border: '2px solid #131323', marginLeft: i === 0 ? 0 : '-12px', flexShrink: 0 }}>
+                      <div key={k.id} style={{ width: '50px', height: '50px', borderRadius: '14px', overflow: 'hidden', background: 'var(--surface-3)', border: '2px solid var(--surface-1b)', marginLeft: i === 0 ? 0 : '-12px', flexShrink: 0 }}>
                         {k.sender?.avatar_url
                           ? <img src={k.sender.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: 700, color: '#D4AF37' }}>{k.sender?.full_name?.[0]}</div>
@@ -343,10 +343,10 @@ export default function DashboardPage() {
                   </div>
                   <div style={{ flex: 1, minWidth: '160px' }}>
                     <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#D4AF37', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}><Hand size={13} strokeWidth={2} /> NEW KNOCKS</p>
-                    <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', marginBottom: '2px', lineHeight: 1.2 }}>{pendingKnocks.length === 1 ? `${pendingKnocks[0].sender?.full_name?.split(' ')[0]} knocked` : `${pendingKnocks.length} people knocked`}</h2>
-                    <p style={{ fontSize: '13px', color: '#A99ECC' }}>Knock back to reveal who you matched with</p>
+                    <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: 'var(--text-primary)', marginBottom: '2px', lineHeight: 1.2 }}>{pendingKnocks.length === 1 ? `${pendingKnocks[0].sender?.full_name?.split(' ')[0]} knocked` : `${pendingKnocks.length} people knocked`}</h2>
+                    <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Knock back to reveal who you matched with</p>
                   </div>
-                  <span style={{ padding: '12px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', whiteSpace: 'nowrap', flexShrink: 0 }}>View →</span>
+                  <span style={{ padding: '12px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: 'var(--bg)', whiteSpace: 'nowrap', flexShrink: 0 }}>View →</span>
                 </div>
               </Link>
             )
@@ -361,8 +361,8 @@ export default function DashboardPage() {
                   <span style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(155,127,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Sparkles size={26} color="#9B7FFF" strokeWidth={1.6} /></span>
                   <div style={{ flex: 1, minWidth: '140px' }}>
                     <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#9B7FFF', marginBottom: '4px' }}>HOW DID IT GO?</p>
-                    <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', marginBottom: '2px', lineHeight: 1.2 }}>Record your session with {first.partner?.full_name?.split(' ')[0] || 'someone'}</h2>
-                    <p style={{ fontSize: '13px', color: '#A99ECC' }}>Mood, note, photo — it lives on your passport</p>
+                    <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: 'var(--text-primary)', marginBottom: '2px', lineHeight: 1.2 }}>Record your session with {first.partner?.full_name?.split(' ')[0] || 'someone'}</h2>
+                    <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Mood, note, photo — it lives on your passport</p>
                   </div>
                   <span style={{ padding: '12px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'rgba(155,127,255,0.2)', border: '1px solid rgba(155,127,255,0.4)', color: '#9B7FFF', whiteSpace: 'nowrap', flexShrink: 0 }}>Record →</span>
                 </div>
@@ -379,14 +379,14 @@ export default function DashboardPage() {
                   <span style={{ width: '64px', height: '64px', borderRadius: '18px', background: 'rgba(52,211,153,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Users size={30} color="#34D399" strokeWidth={1.6} /></span>
                   <div style={{ flex: 1, minWidth: '140px' }}>
                     <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#34D399', marginBottom: '4px' }}>WELCOME, {firstName.toUpperCase()}</p>
-                    <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginBottom: '4px', lineHeight: 1.2 }}>Find your first Bestie</h2>
-                    <p style={{ fontSize: '13px', color: '#A99ECC' }}>
+                    <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '4px', lineHeight: 1.2 }}>Find your first Bestie</h2>
+                    <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
                       {profile?.city
                         ? <>Browse people in {profile.city} — knock anonymously, match privately, meet IRL</>
                         : <>Browse real people nearby — knock anonymously, match privately, meet IRL</>}
                     </p>
                   </div>
-                  <span style={{ padding: '12px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #34D399 0%, #2AAA75 100%)', color: '#09090F', whiteSpace: 'nowrap', flexShrink: 0, boxShadow: '0 4px 16px rgba(52,211,153,0.25)' }}>Browse Besties →</span>
+                  <span style={{ padding: '12px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #34D399 0%, #2AAA75 100%)', color: 'var(--bg)', whiteSpace: 'nowrap', flexShrink: 0, boxShadow: '0 4px 16px rgba(52,211,153,0.25)' }}>Browse Besties →</span>
                 </div>
               </Link>
             )
@@ -395,24 +395,24 @@ export default function DashboardPage() {
           // Free Today as hero (default)
           if (showFreeToday) {
             return (
-              <div style={{ marginBottom: '20px', padding: '28px', borderRadius: '24px', background: iAmFree ? 'linear-gradient(135deg, rgba(52,211,153,0.12) 0%, rgba(52,211,153,0.04) 100%)' : 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(212,175,55,0.04) 100%)', border: iAmFree ? '1px solid rgba(52,211,153,0.30)' : '1px solid rgba(212,175,55,0.20)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ marginBottom: '20px', padding: '28px', borderRadius: '24px', background: iAmFree ? 'linear-gradient(135deg, rgba(52,211,153,0.12) 0%, rgba(52,211,153,0.04) 100%)' : 'linear-gradient(135deg, var(--overlay) 0%, rgba(212,175,55,0.04) 100%)', border: iAmFree ? '1px solid rgba(52,211,153,0.30)' : '1px solid rgba(212,175,55,0.20)', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '180px', height: '180px', borderRadius: '50%', background: iAmFree ? 'radial-gradient(circle, rgba(52,211,153,0.16) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(212,175,55,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-                  <span style={{ width: '64px', height: '64px', borderRadius: '50%', background: iAmFree ? 'rgba(52,211,153,0.18)' : 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
-                    <span style={{ display: 'inline-block', width: '20px', height: '20px', borderRadius: '50%', background: iAmFree ? '#34D399' : 'transparent', border: iAmFree ? 'none' : '3px solid #A99ECC', boxShadow: iAmFree ? '0 0 20px rgba(52,211,153,0.7)' : 'none' }} />
+                  <span style={{ width: '64px', height: '64px', borderRadius: '50%', background: iAmFree ? 'rgba(52,211,153,0.18)' : 'var(--overlay-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
+                    <span style={{ display: 'inline-block', width: '20px', height: '20px', borderRadius: '50%', background: iAmFree ? '#34D399' : 'transparent', border: iAmFree ? 'none' : '3px solid var(--text-muted)', boxShadow: iAmFree ? '0 0 20px rgba(52,211,153,0.7)' : 'none' }} />
                     {iAmFree && <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '2px solid rgba(52,211,153,0.4)', animation: 'pulse-free 2s ease-out infinite' }} />}
                   </span>
                   <div style={{ flex: 1, minWidth: '140px' }}>
                     <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: iAmFree ? '#34D399' : '#D4AF37', marginBottom: '4px' }}>{iAmFree ? "YOU'RE LIVE TODAY" : 'SPONTANEOUS MEETUPS'}</p>
-                    <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginBottom: '4px', lineHeight: 1.2 }}>{iAmFree ? 'Visible to Besties nearby' : 'Free for a meetup today?'}</h2>
-                    <p style={{ fontSize: '13px', color: '#A99ECC' }}>
+                    <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '4px', lineHeight: 1.2 }}>{iAmFree ? 'Visible to Besties nearby' : 'Free for a meetup today?'}</h2>
+                    <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
                       {freeInCityCount > 0
                         ? <><span style={{ color: '#34D399', fontWeight: 700 }}>{freeInCityCount}</span> {freeInCityCount === 1 ? 'Bestie is' : 'Besties are'} free{profile?.city ? ` in ${profile.city}` : ''} right now</>
                         : (profile?.city ? `Be the first in ${profile.city} today — others will see you on Pulse` : 'Let others know you\'re up for a meetup')
                       }
                     </p>
                   </div>
-                  <button onClick={toggleFree} disabled={togglingFree} style={{ padding: '14px 28px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.12)' : 'linear-gradient(135deg, #34D399 0%, #2AAA75 100%)', border: iAmFree ? '1px solid rgba(255,107,53,0.35)' : 'none', color: iAmFree ? '#FF6B35' : '#09090F', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: 'Plus Jakarta Sans, sans-serif', boxShadow: iAmFree ? 'none' : '0 4px 16px rgba(52,211,153,0.25)' }}>
+                  <button onClick={toggleFree} disabled={togglingFree} style={{ padding: '14px 28px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.12)' : 'linear-gradient(135deg, #34D399 0%, #2AAA75 100%)', border: iAmFree ? '1px solid rgba(255,107,53,0.35)' : 'none', color: iAmFree ? '#FF6B35' : 'var(--bg)', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: 'Plus Jakarta Sans, sans-serif', boxShadow: iAmFree ? 'none' : '0 4px 16px rgba(52,211,153,0.25)' }}>
                     {togglingFree ? '…' : iAmFree ? 'Turn off' : "I'm free!"}
                   </button>
                 </div>
@@ -431,45 +431,45 @@ export default function DashboardPage() {
 
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', marginBottom: '24px' }}>
-          <div style={{ background: '#111120', border: `1px solid ${scoreColor}25`, borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '8px' }}>BESTIE SCORE</p>
+          <div style={{ background: 'var(--surface-1)', border: `1px solid ${scoreColor}25`, borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '8px' }}>BESTIE SCORE</p>
             <div className="stat-number-lg" style={{ fontSize: '56px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{score}</div>
-            <div style={{ height: '6px', borderRadius: '999px', background: 'rgba(255,255,255,0.10)', margin: '12px 0 8px', overflow: 'hidden' }}>
+            <div style={{ height: '6px', borderRadius: '999px', background: 'var(--border)', margin: '12px 0 8px', overflow: 'hidden' }}>
               <div style={{ height: '100%', width: `${score / 10}%`, borderRadius: '999px', background: `linear-gradient(90deg, ${scoreColor} 0%, #D4AF37 100%)` }} />
             </div>
             <p style={{ fontSize: '12px', fontWeight: 600, color: scoreColor }}>{scoreLabel}</p>
           </div>
-          <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '8px' }}>SESSIONS</p>
-            <div className="stat-number-lg" style={{ fontSize: '56px', fontWeight: 700, color: '#F0EAFF', fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{profile?.total_sessions || 0}</div>
-            <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '12px' }}>completed</p>
+          <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '8px' }}>SESSIONS</p>
+            <div className="stat-number-lg" style={{ fontSize: '56px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{profile?.total_sessions || 0}</div>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '12px' }}>completed</p>
           </div>
-          <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '8px' }}>RATING</p>
+          <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '8px' }}>RATING</p>
             <div className="stat-number-lg" style={{ fontSize: '56px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{profile?.avg_rating ? profile.avg_rating.toFixed(1) : '—'}</div>
-            <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '12px' }}>avg rating</p>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '12px' }}>avg rating</p>
           </div>
-          <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '8px' }}>LOCATION</p>
+          <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '8px' }}>LOCATION</p>
             <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}><MapPin size={26} color="#D4AF37" strokeWidth={1.8} /></div>
-            <p style={{ fontSize: '16px', fontWeight: 600, color: '#F0EAFF' }}>{profile?.city || 'Not set'}</p>
-            <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '4px' }}>{profile?.country || 'Add your city'}</p>
+            <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>{profile?.city || 'Not set'}</p>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{profile?.country || 'Add your city'}</p>
           </div>
         </div>
 
         {/* Eterotype result */}
         {profile?.eterotype && (
-          <div style={{ marginBottom: '24px', background: '#111120', border: '1px solid rgba(155,143,255,0.25)', borderRadius: '20px', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={{ marginBottom: '24px', background: 'var(--surface-1)', border: '1px solid rgba(155,143,255,0.25)', borderRadius: '20px', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
               <span style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '22px' }}>🧭</span>
               <div>
                 <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '1.5px', color: '#9B7FFF', marginBottom: '4px' }}>ETEROTYPE</p>
-                <p style={{ fontSize: '16px', fontWeight: 700, color: '#F0EAFF', fontFamily: 'DM Serif Display, serif', textTransform: 'capitalize' }}>
+                <p style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'DM Serif Display, serif', textTransform: 'capitalize' }}>
                   {profile.eterotype_name || profile.eterotype}{profile.eterotype_family ? ` · ${profile.eterotype_family}` : ''}{profile.eterotype_collective ? ` · ${profile.eterotype_collective}` : ''}
                 </p>
               </div>
             </div>
-            <Link href="/bestie-type" style={{ padding: '8px 18px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.1)', color: '#A99ECC', textDecoration: 'none' }}>
+            <Link href="/bestie-type" style={{ padding: '8px 18px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'var(--border)', border: '1px solid var(--border)', color: 'var(--text-muted)', textDecoration: 'none' }}>
               Retake test
             </Link>
           </div>
@@ -477,12 +477,12 @@ export default function DashboardPage() {
 
         {/* Compact Free Today — only shown when Free Today is NOT the hero (i.e. hero is currently knocks or memories) */}
         {profile?.bestie_type_completed && (pendingKnocks.length > 0 || pendingMemories.length > 0) && (
-          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: iAmFree ? 'rgba(52,211,153,0.06)' : '#111120', border: iAmFree ? '1px solid rgba(52,211,153,0.25)' : '1px solid rgba(255,255,255,0.11)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: iAmFree ? 'rgba(52,211,153,0.06)' : 'var(--surface-1)', border: iAmFree ? '1px solid rgba(52,211,153,0.25)' : '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ display: 'inline-flex', width: '12px', height: '12px', borderRadius: '50%', background: iAmFree ? '#34D399' : 'transparent', border: iAmFree ? 'none' : '2px solid #A99ECC', boxShadow: iAmFree ? '0 0 12px rgba(52,211,153,0.7)' : 'none' }} />
+              <span style={{ display: 'inline-flex', width: '12px', height: '12px', borderRadius: '50%', background: iAmFree ? '#34D399' : 'transparent', border: iAmFree ? 'none' : '2px solid var(--text-muted)', boxShadow: iAmFree ? '0 0 12px rgba(52,211,153,0.7)' : 'none' }} />
               <div>
-                <p style={{ fontSize: '14px', fontWeight: 700, color: iAmFree ? '#34D399' : '#F0EAFF' }}>{iAmFree ? "You're free today" : 'Free today?'}</p>
-                <p style={{ fontSize: '12px', color: '#A99ECC' }}>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: iAmFree ? '#34D399' : 'var(--text-primary)' }}>{iAmFree ? "You're free today" : 'Free today?'}</p>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                   {freeInCityCount > 0
                     ? <><span style={{ color: '#34D399', fontWeight: 600 }}>{freeInCityCount}</span> {freeInCityCount === 1 ? 'Bestie' : 'Besties'} free nearby</>
                     : (iAmFree ? 'Visible on Pulse & Map' : "Let others know you're up for a meetup")
@@ -499,18 +499,18 @@ export default function DashboardPage() {
         {/* Knocks panel — only when knocks is NOT the hero (i.e. bestie_type quiz is the hero instead) */}
         {pendingKnocks.length > 0 && !profile?.bestie_type_completed && (
           <div style={{ marginBottom: '20px', padding: '16px 20px', borderRadius: '16px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Hand size={13} color="#D4AF37" strokeWidth={2} /> NEW KNOCKS</p>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Hand size={13} color="#D4AF37" strokeWidth={2} /> NEW KNOCKS</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
               {pendingKnocks.map((k: any) => (
                 <Link key={k.id} href={`/${k.sender?.username}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', borderRadius: '12px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', textDecoration: 'none' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '8px', overflow: 'hidden', background: '#1A1A2E', flexShrink: 0 }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '8px', overflow: 'hidden', background: 'var(--surface-3)', flexShrink: 0 }}>
                     {k.sender?.avatar_url
                       ? <img src={k.sender.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: '#D4AF37' }}>{k.sender?.full_name?.[0]}</div>
                     }
                   </div>
                   <span style={{ fontSize: '13px', fontWeight: 600, color: '#D4AF37' }}>{k.sender?.full_name?.split(' ')[0]}</span>
-                  <span style={{ fontSize: '11px', color: '#A99ECC' }}>knocked</span>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>knocked</span>
                 </Link>
               ))}
             </div>
@@ -520,11 +520,11 @@ export default function DashboardPage() {
         {/* Pending session memories — hidden when it's currently the hero (no knocks AND quiz complete) */}
         {pendingMemories.length > 0 && (!profile?.bestie_type_completed || pendingKnocks.length > 0) && (
           <div style={{ marginBottom: '20px', padding: '16px 20px', borderRadius: '16px', background: 'rgba(155,143,255,0.05)', border: '1px solid rgba(155,143,255,0.2)' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Sparkles size={13} color="#9B7FFF" strokeWidth={2} /> HOW DID IT GO?</p>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Sparkles size={13} color="#9B7FFF" strokeWidth={2} /> HOW DID IT GO?</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {pendingMemories.map((b: any) => (
                 <Link key={b.id} href={`/sessions/${b.id}/memory`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '12px', background: 'rgba(155,143,255,0.07)', border: '1px solid rgba(155,143,255,0.15)', textDecoration: 'none' }}>
-                  <p style={{ fontSize: '13px', color: '#F0EAFF' }}>
+                  <p style={{ fontSize: '13px', color: 'var(--text-primary)' }}>
                     Session with <span style={{ fontWeight: 700, color: '#9B7FFF' }}>{b.partner?.full_name?.split(' ')[0] || 'someone'}</span>
                   </p>
                   <span style={{ fontSize: '12px', fontWeight: 600, color: '#9B7FFF' }}>Record →</span>
@@ -540,15 +540,15 @@ export default function DashboardPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '20px' }}>
 
           {/* My Crews */}
-          <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px' }}>
+          <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF' }}>My Crews</h3>
+              <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)' }}>My Crews</h3>
               <Link href="/crews" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>Browse →</Link>
             </div>
             {myCrews.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '24px 0' }}>
                 <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(155,127,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}><Users size={26} color="#9B7FFF" strokeWidth={1.6} /></div>
-                <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '16px', maxWidth: '280px', margin: '0 auto 16px', lineHeight: 1.5 }}>You're not in any crew yet — crews are little communities for shared vibes, meetups, and events.</p>
+                <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '16px', maxWidth: '280px', margin: '0 auto 16px', lineHeight: 1.5 }}>You're not in any crew yet — crews are little communities for shared vibes, meetups, and events.</p>
                 <ButtonLink href="/crews" variant="primary" size="sm">Find a Crew</ButtonLink>
               </div>
             ) : (
@@ -557,25 +557,25 @@ export default function DashboardPage() {
                   const newEvents = crewNewEvents[crew.id] || 0
                   const isFeatured = profile?.crew_id === crew.id
                   return (
-                    <Link key={crew.id} href={`/crews/${crew.slug}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', background: isFeatured ? 'rgba(212,175,55,0.06)' : '#111120', border: isFeatured ? '1px solid rgba(212,175,55,0.2)' : '1px solid rgba(255,255,255,0.10)', textDecoration: 'none' }}>
-                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: '#1A1A2E', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Link key={crew.id} href={`/crews/${crew.slug}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', background: isFeatured ? 'rgba(212,175,55,0.06)' : 'var(--surface-1)', border: isFeatured ? '1px solid rgba(212,175,55,0.2)' : '1px solid var(--border)', textDecoration: 'none' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: 'var(--surface-3)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {crew.avatar_url
                           ? <img src={crew.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          : <Users size={16} color="#A99ECC" strokeWidth={1.8} />}
+                          : <Users size={16} color="var(--text-muted)" strokeWidth={1.8} />}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{crew.name}</p>
+                        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{crew.name}</p>
                         {isFeatured && <p style={{ fontSize: '11px', color: '#D4AF37', display: 'flex', alignItems: 'center', gap: '4px' }}><Star size={11} fill="#D4AF37" strokeWidth={0} /> On your passport</p>}
                       </div>
                       {newEvents > 0 && (
-                        <span style={{ background: '#D4AF37', color: '#09090F', fontSize: '11px', fontWeight: 700, borderRadius: '999px', padding: '2px 7px', flexShrink: 0 }}>
+                        <span style={{ background: '#D4AF37', color: 'var(--bg)', fontSize: '11px', fontWeight: 700, borderRadius: '999px', padding: '2px 7px', flexShrink: 0 }}>
                           {newEvents} new
                         </span>
                       )}
                     </Link>
                   )
                 })}
-                <Link href="/crews/new" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, color: '#A99ECC', background: 'transparent', border: '1px dashed rgba(255,255,255,0.1)', textDecoration: 'none', marginTop: '4px' }}>
+                <Link href="/crews/new" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', background: 'transparent', border: '1px dashed var(--border)', textDecoration: 'none', marginTop: '4px' }}>
                   + Create a crew
                 </Link>
               </div>
@@ -584,20 +584,20 @@ export default function DashboardPage() {
 
           {/* Group Sessions */}
           {upcomingGroupSessions.length > 0 && (
-            <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px' }}>
+            <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF' }}>Group Sessions</h3>
+                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)' }}>Group Sessions</h3>
                 <Link href="/group-sessions/new" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>+ New →</Link>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {upcomingGroupSessions.map((gs: any) => {
                   const d = new Date(gs.scheduled_at)
                   return (
-                    <Link key={gs.id} href={`/group-sessions/${gs.id}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', textDecoration: 'none' }}>
+                    <Link key={gs.id} href={`/group-sessions/${gs.id}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', background: 'var(--surface-1)', border: '1px solid var(--border)', textDecoration: 'none' }}>
                       <span style={{ width: '38px', height: '38px', borderRadius: '11px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><UsersRound size={20} color="#D4AF37" strokeWidth={1.7} /></span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{gs.title}</p>
-                        <p style={{ fontSize: '12px', color: '#A99ECC', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{gs.title}</p>
+                        <p style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           {d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · {d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} ·
                           {gs.role === 'host' ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Crown size={11} color="#D4AF37" strokeWidth={2} /> Host</span> : <span>✓ Joined</span>}
                         </p>
@@ -610,22 +610,22 @@ export default function DashboardPage() {
           )}
 
           {/* Quick actions */}
-          <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px' }}>
-            <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF', marginBottom: '16px' }}>Quick actions</h3>
+          <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '24px' }}>
+            <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', marginBottom: '16px' }}>Quick actions</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {actions.map((action) => (
-                <Link key={action.label} href={action.href} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', background: action.badge > 0 ? 'rgba(212,175,55,0.06)' : '#111120', border: action.badge > 0 ? '1px solid rgba(212,175,55,0.2)' : '1px solid rgba(255,255,255,0.10)', textDecoration: 'none' }}>
-                  <span style={{ width: '36px', height: '36px', borderRadius: '10px', background: action.badge > 0 ? 'rgba(212,175,55,0.10)' : '#131323', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <action.Icon size={18} color={action.badge > 0 ? '#D4AF37' : '#A99ECC'} strokeWidth={1.8} />
+                <Link key={action.label} href={action.href} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', background: action.badge > 0 ? 'rgba(212,175,55,0.06)' : 'var(--surface-1)', border: action.badge > 0 ? '1px solid rgba(212,175,55,0.2)' : '1px solid var(--border)', textDecoration: 'none' }}>
+                  <span style={{ width: '36px', height: '36px', borderRadius: '10px', background: action.badge > 0 ? 'rgba(212,175,55,0.10)' : 'var(--surface-1b)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <action.Icon size={18} color={action.badge > 0 ? '#D4AF37' : 'var(--text-muted)'} strokeWidth={1.8} />
                   </span>
                   <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', marginBottom: '1px' }}>{action.label}</p>
-                    <p style={{ fontSize: '12px', color: '#A99ECC' }}>{action.sub}</p>
+                    <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '1px' }}>{action.label}</p>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{action.sub}</p>
                   </div>
                   {action.badge > 0 && (
-                    <span style={{ background: '#D4AF37', color: '#09090F', fontSize: '12px', fontWeight: 700, borderRadius: '999px', padding: '2px 8px', flexShrink: 0 }}>{action.badge}</span>
+                    <span style={{ background: '#D4AF37', color: 'var(--bg)', fontSize: '12px', fontWeight: 700, borderRadius: '999px', padding: '2px 8px', flexShrink: 0 }}>{action.badge}</span>
                   )}
-                  <span style={{ color: '#A99ECC', fontSize: '12px' }}>→</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>→</span>
                 </Link>
               ))}
             </div>
@@ -635,17 +635,17 @@ export default function DashboardPage() {
         {remainingBoost.length > 0 && (
           <div style={{ marginTop: '20px', background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(57,255,20,0.04) 100%)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '20px', padding: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF', display: 'flex', alignItems: 'center', gap: '10px' }}><TrendingUp size={20} color="#D4AF37" strokeWidth={1.8} /> Boost your Bestie Score</h3>
+              <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}><TrendingUp size={20} color="#D4AF37" strokeWidth={1.8} /> Boost your Bestie Score</h3>
               <Link href="/score-guide" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>How it works →</Link>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
               {remainingBoost.map(tip => (
-                <Link key={tip.label} href={tip.href} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', borderRadius: '12px', background: '#131323', textDecoration: 'none' }}>
+                <Link key={tip.label} href={tip.href} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', borderRadius: '12px', background: 'var(--surface-1b)', textDecoration: 'none' }}>
                   <span style={{ width: '32px', height: '32px', borderRadius: '9px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <tip.Icon size={16} color="#D4AF37" strokeWidth={1.8} />
                   </span>
                   <div>
-                    <p style={{ fontSize: '13px', fontWeight: 500, color: '#F0EAFF' }}>{tip.label}</p>
+                    <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>{tip.label}</p>
                     <p style={{ fontSize: '12px', color: '#34D399', fontWeight: 600 }}>{tip.points}</p>
                   </div>
                 </Link>
@@ -656,11 +656,11 @@ export default function DashboardPage() {
 
         {/* Referral block */}
         {profile?.referral_code && (
-          <div style={{ marginTop: '20px', background: '#111120', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '20px', padding: '24px' }}>
+          <div style={{ marginTop: '20px', background: 'var(--surface-1)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '20px', padding: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
               <div>
-                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF', marginBottom: '4px' }}>Invite friends</h3>
-                <p style={{ fontSize: '13px', color: '#A99ECC' }}>You <strong style={{ color: '#D4AF37' }}>both</strong> get +10 Sparks ⚡ when a friend joins with your link</p>
+                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', marginBottom: '4px' }}>Invite friends</h3>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>You <strong style={{ color: '#D4AF37' }}>both</strong> get +10 Sparks ⚡ when a friend joins with your link</p>
               </div>
               {referredCount > 0 && (
                 <div style={{ padding: '6px 14px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', fontSize: '13px', fontWeight: 700, color: '#D4AF37' }}>
@@ -669,13 +669,13 @@ export default function DashboardPage() {
               )}
             </div>
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <div style={{ flex: 1, minWidth: '200px', padding: '10px 16px', borderRadius: '12px', background: '#131323', border: '1px solid rgba(255,255,255,0.12)', fontSize: '13px', color: '#A99ECC', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div style={{ flex: 1, minWidth: '200px', padding: '10px 16px', borderRadius: '12px', background: 'var(--surface-1b)', border: '1px solid var(--border-strong)', fontSize: '13px', color: 'var(--text-muted)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 bestiehere.com/signup?ref={profile.referral_code}
               </div>
               <Button onClick={handleShareRef} variant="primary" size="sm" style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
                 <Share2 size={15} strokeWidth={2.2} /> Share
               </Button>
-              <button onClick={handleCopyRef} style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: refCopied ? 'rgba(57,255,20,0.15)' : 'rgba(255,255,255,0.05)', border: refCopied ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(255,255,255,0.12)', color: refCopied ? '#34D399' : '#A99ECC', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+              <button onClick={handleCopyRef} style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: refCopied ? 'rgba(57,255,20,0.15)' : 'var(--overlay)', border: refCopied ? '1px solid rgba(57,255,20,0.3)' : '1px solid var(--border-strong)', color: refCopied ? '#34D399' : 'var(--text-muted)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
                 {refCopied ? '✓ Copied!' : 'Copy'}
               </button>
             </div>
@@ -688,7 +688,7 @@ export default function DashboardPage() {
               <span style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(52,211,153,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><PartyPopper size={22} color="#34D399" strokeWidth={1.8} /></span>
               <div>
                 <p style={{ fontSize: '14px', fontWeight: 600, color: '#34D399' }}>Profile complete!</p>
-                <p style={{ fontSize: '13px', color: '#A99ECC' }}>Keep earning sessions and Sparks to grow your Score</p>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Keep earning sessions and Sparks to grow your Score</p>
               </div>
             </div>
             <Link href="/score-guide" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(212,175,55,0.3)', whiteSpace: 'nowrap' }}>

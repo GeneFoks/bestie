@@ -76,7 +76,17 @@ export default function GraphPage() {
         .limit(300)
       const optInIds = (optIn || []).map((u: any) => u.id)
 
-      if ((!bookings || bookings.length === 0) && contactLinks.length === 0 && knockLinks.length === 0 && optInIds.length === 0) {
+      // Everyone who hasn't opted out of the graph — shown as free-floating
+      // nodes drifting in space, with no edges. Makes the map feel alive even
+      // for people you're not connected to yet.
+      const { data: floatUsers } = await supabase
+        .from('users')
+        .select('id, full_name, username, avatar_url, bestie_score, city')
+        .eq('hide_from_graph', false)
+        .order('bestie_score', { ascending: false })
+        .limit(140)
+
+      if ((!bookings || bookings.length === 0) && contactLinks.length === 0 && knockLinks.length === 0 && optInIds.length === 0 && (!floatUsers || floatUsers.length === 0)) {
         setEmpty(true); setLoading(false); return
       }
 
@@ -180,6 +190,23 @@ export default function GraphPage() {
         }
       })
 
+      // Append the free-floating crowd — anyone not already a connected node.
+      const connectedIds = new Set(nodes.map((n: any) => n.id))
+      ;(floatUsers || []).forEach((u: any) => {
+        if (connectedIds.has(u.id)) return
+        nodes.push({
+          id: u.id,
+          name: u.full_name || 'Bestie',
+          username: u.username,
+          avatar: u.avatar_url,
+          score: u.bestie_score || 0,
+          sessions: 0,
+          city: u.city,
+          isMe: u.id === currentUserId,
+          floating: true,
+        })
+      })
+
       setNodeCount(nodes.length)
       setEdgeCount(links.length)
       // Store data in ref so the post-render effect can access it
@@ -268,14 +295,32 @@ export default function GraphPage() {
       .attr('width', 32).attr('height', 32).attr('patternUnits', 'userSpaceOnUse')
     // skip for performance
 
-    // Force simulation
+    // Force simulation. Floating nodes get a weaker charge (so 100+ of them
+    // don't blow the connected core off-screen) and a soft pull toward centre
+    // so they stay roughly on canvas while they wander.
     const simulation = d3.forceSimulation(nodes)
+      .velocityDecay(0.55) // more friction → connected core settles, floaters still drift
       .force('link', d3.forceLink(links).id((d: any) => d.id)
         .distance((d: any) => (d.type === 'contact' || d.type === 'knock') ? 120 : 60 + 40 / Math.sqrt(Math.max(d.weight, 0.1)))
         .strength((d: any) => (d.type === 'contact' || d.type === 'knock') ? 0.08 : 0.25))
-      .force('charge', d3.forceManyBody().strength((d: any) => -80 - d.score * 0.05))
+      .force('charge', d3.forceManyBody().strength((d: any) => d.floating ? -26 : -80 - d.score * 0.05))
       .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide().radius((d: any) => nodeRadius(d) + 10))
+      .force('x', d3.forceX(width / 2).strength((d: any) => d.floating ? 0.008 : 0))
+      .force('y', d3.forceY(height / 2).strength((d: any) => d.floating ? 0.008 : 0))
+      .force('collision', d3.forceCollide().radius((d: any) => nodeRadius(d) + (d.floating ? 6 : 10)))
+
+    // Perpetual gentle drift for the floating crowd — tiny random impulses each
+    // tick keep them wandering forever without ever settling.
+    const driftForce = () => {
+      for (const n of nodes as any[]) {
+        if (!n.floating) continue
+        n.vx = (n.vx || 0) + (Math.random() - 0.5) * 0.5
+        n.vy = (n.vy || 0) + (Math.random() - 0.5) * 0.5
+      }
+    }
+    simulation.force('drift', driftForce)
+    // Keep the sim warm so the drift never stops (low target = calm motion).
+    simulation.alphaTarget(0.035).restart()
 
     // Dashed pattern for contact edges
     defs.append('marker')
@@ -316,6 +361,7 @@ export default function GraphPage() {
       .data(nodes)
       .join('g')
       .attr('cursor', 'pointer')
+      .attr('opacity', (d: any) => d.floating ? 0.5 : 1)
       .call(
         d3.drag()
           .on('start', (event: any, d: any) => {
@@ -324,7 +370,7 @@ export default function GraphPage() {
           })
           .on('drag', (event: any, d: any) => { d.fx = event.x; d.fy = event.y })
           .on('end', (event: any, d: any) => {
-            if (!event.active) simulation.alphaTarget(0)
+            if (!event.active) simulation.alphaTarget(0.035) // keep drift alive
             d.fx = null; d.fy = null
           })
       )
@@ -477,6 +523,13 @@ export default function GraphPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: '22px', height: '0px', borderBottom: '1px dotted #FF6B9D', flexShrink: 0 }} />
               <span style={{ fontSize: '11px', color: '#F0EAFF' }}>mutual knock</span>
+            </div>
+            <div style={{ height: '1px', background: 'rgba(255,255,255,0.10)', margin: '3px 0' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '22px', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
+                <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#1A1A2E', border: '1.5px solid rgba(255,255,255,0.2)', opacity: 0.5 }} />
+              </div>
+              <span style={{ fontSize: '11px', color: '#F0EAFF' }}>others nearby</span>
             </div>
           </div>
           <p className="graph-legend-hint" style={{ fontSize: '10px', color: '#A99ECC', marginTop: '8px' }}>Size = Score · Drag · Pinch to zoom</p>

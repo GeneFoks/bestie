@@ -119,9 +119,9 @@ export default function EventsPage() {
   ]
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       {/* Nav */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', background: 'rgba(8,8,16,0.95)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <ProfileNav />
       </nav>
@@ -131,28 +131,28 @@ export default function EventsPage() {
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px', gap: '12px' }}>
           <div>
-            <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(26px, 7vw, 34px)', color: '#F0EAFF', marginBottom: '4px' }}>
+            <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(26px, 7vw, 34px)', color: 'var(--text-primary)', marginBottom: '4px' }}>
               Events
             </h1>
-            <p style={{ fontSize: '13px', color: '#A99ECC' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
               {loading ? 'Loading...' : `${totalEvents} upcoming · ${freePeople.length} free today`}
             </p>
           </div>
           <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
-            <Link href="/group-sessions/mine" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none', padding: '9px 12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', whiteSpace: 'nowrap' }}>My sessions</Link>
+            <Link href="/group-sessions/mine" style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none', padding: '9px 12px', borderRadius: '12px', border: '1px solid var(--border-strong)', whiteSpace: 'nowrap' }}>My sessions</Link>
             <CreateEventButton variant="compact" />
           </div>
         </div>
 
         {/* Free Today toggle */}
         {myId && (
-          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '16px', background: iAmFree ? 'rgba(57,255,20,0.06)' : '#111120', border: iAmFree ? '1px solid rgba(57,255,20,0.22)' : '1px solid rgba(255,255,255,0.11)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '16px', background: iAmFree ? 'rgba(57,255,20,0.06)' : 'var(--surface-1)', border: iAmFree ? '1px solid rgba(57,255,20,0.22)' : '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
             <div>
-              <p style={{ fontSize: '14px', fontWeight: 700, color: iAmFree ? '#34D399' : '#F0EAFF', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: iAmFree ? '#34D399' : 'transparent', border: iAmFree ? 'none' : '2px solid #A99ECC', boxShadow: iAmFree ? '0 0 10px rgba(52,211,153,0.7)' : 'none' }} />
+              <p style={{ fontSize: '14px', fontWeight: 700, color: iAmFree ? '#34D399' : 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: iAmFree ? '#34D399' : 'transparent', border: iAmFree ? 'none' : '2px solid var(--text-muted)', boxShadow: iAmFree ? '0 0 10px rgba(52,211,153,0.7)' : 'none' }} />
                 {iAmFree ? "You're free today" : 'Free today?'}
               </p>
-              <p style={{ fontSize: '11px', color: '#A99ECC', marginTop: '2px' }}>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
                 {iAmFree ? 'Visible to others for spontaneous meetups' : 'Let Besties know you\'re available'}
               </p>
             </div>
@@ -167,13 +167,13 @@ export default function EventsPage() {
         )}
 
         {/* Going to — quick entry into "what I'm up to" */}
-        <Link href="/going-to" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', borderRadius: '14px', background: '#111120', border: '1px solid rgba(255,255,255,0.11)', textDecoration: 'none', marginBottom: '20px' }}>
+        <Link href="/going-to" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', borderRadius: '14px', background: 'var(--surface-1)', border: '1px solid var(--border)', textDecoration: 'none', marginBottom: '20px' }}>
           <span style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(155,127,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Zap size={17} color="#9B7FFF" strokeWidth={1.9} /></span>
           <span style={{ flex: 1 }}>
-            <span style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>Going to…</span>
-            <span style={{ display: 'block', fontSize: '12px', color: '#A99ECC' }}>Share what you're up to & see who's out</span>
+            <span style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>Going to…</span>
+            <span style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)' }}>Share what you're up to & see who's out</span>
           </span>
-          <span style={{ color: '#A99ECC' }}>→</span>
+          <span style={{ color: 'var(--text-muted)' }}>→</span>
         </Link>
 
         {/* Tabs */}
@@ -185,20 +185,20 @@ export default function EventsPage() {
               style={{
                 flexShrink: 0, padding: '7px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
                 cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', whiteSpace: 'nowrap',
-                background: tab === t.id ? 'rgba(212,175,55,0.15)' : '#131323',
-                border: tab === t.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.12)',
-                color: tab === t.id ? '#D4AF37' : '#A99ECC',
+                background: tab === t.id ? 'rgba(212,175,55,0.15)' : 'var(--surface-1b)',
+                border: tab === t.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid var(--border-strong)',
+                color: tab === t.id ? '#D4AF37' : 'var(--text-muted)',
               }}
             >
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                 {t.id === 'free' && (
-                  <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: tab === t.id ? '#34D399' : '#A99ECC', boxShadow: tab === t.id ? '0 0 8px rgba(52,211,153,0.6)' : 'none' }} />
+                  <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: tab === t.id ? '#34D399' : 'var(--text-muted)', boxShadow: tab === t.id ? '0 0 8px rgba(52,211,153,0.6)' : 'none' }} />
                 )}
                 {t.Icon && <t.Icon size={14} strokeWidth={1.8} />}
                 {t.label}
               </span>
               {t.count != null && t.count > 0 && (
-                <span style={{ marginLeft: '6px', background: tab === t.id ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.12)', borderRadius: '6px', padding: '1px 6px', fontSize: '11px' }}>
+                <span style={{ marginLeft: '6px', background: tab === t.id ? 'rgba(212,175,55,0.25)' : 'var(--border-strong)', borderRadius: '6px', padding: '1px 6px', fontSize: '11px' }}>
                   {t.count}
                 </span>
               )}
@@ -214,7 +214,7 @@ export default function EventsPage() {
             {/* FREE TODAY section */}
             {(tab === 'all' || tab === 'free') && (
               <section>
-                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#34D399', boxShadow: '0 0 8px rgba(52,211,153,0.6)' }} />
                   FREE TODAY{myCity ? ` · ${myCity.toUpperCase()}` : ''}
                 </p>
@@ -237,7 +237,7 @@ export default function EventsPage() {
                     {freePeople.length > 8 && (
                       <button
                         onClick={() => setTab('free')}
-                        style={{ padding: '8px 14px', borderRadius: '12px', fontSize: '12px', fontWeight: 600, color: '#A99ECC', background: '#131323', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+                        style={{ padding: '8px 14px', borderRadius: '12px', fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', background: 'var(--surface-1b)', border: '1px solid var(--border-strong)', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
                       >
                         +{freePeople.length - 8} more
                       </button>
@@ -258,13 +258,13 @@ export default function EventsPage() {
             {(tab === 'all' || tab === 'birthday') && (
               <section>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', display: 'flex', alignItems: 'center', gap: '8px' }}><Cake size={13} strokeWidth={2} /> BIRTHDAYS</p>
+                  <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}><Cake size={13} strokeWidth={2} /> BIRTHDAYS</p>
                   <Link href="/birthday/new" style={{ fontSize: '12px', color: '#FF6B35', textDecoration: 'none' }}>+ Create one →</Link>
                 </div>
 
                 {birthdays.length === 0 ? (
-                  <div style={{ padding: '24px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.10)', textAlign: 'center' }}>
-                    <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '10px' }}>No birthdays coming up</p>
+                  <div style={{ padding: '24px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', textAlign: 'center' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '10px' }}>No birthdays coming up</p>
                     <Link href="/birthday/new" style={{ fontSize: '13px', color: '#FF6B35', textDecoration: 'none', fontWeight: 600 }}>🎂 Create a birthday page →</Link>
                   </div>
                 ) : (
@@ -279,13 +279,13 @@ export default function EventsPage() {
             {(tab === 'all' || tab === 'crew') && (
               <section>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', display: 'flex', alignItems: 'center', gap: '8px' }}><Users size={13} strokeWidth={2} /> CREW EVENTS</p>
+                  <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}><Users size={13} strokeWidth={2} /> CREW EVENTS</p>
                   <Link href="/crews" style={{ fontSize: '12px', color: '#D4AF37', textDecoration: 'none' }}>Browse crews →</Link>
                 </div>
 
                 {crewEvents.length === 0 ? (
-                  <div style={{ padding: '24px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.10)', textAlign: 'center' }}>
-                    <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '10px' }}>No crew events scheduled yet</p>
+                  <div style={{ padding: '24px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', textAlign: 'center' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '10px' }}>No crew events scheduled yet</p>
                     <Link href="/crews" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>Join a crew to see their events →</Link>
                   </div>
                 ) : (
@@ -300,13 +300,13 @@ export default function EventsPage() {
             {(tab === 'all' || tab === 'group') && (
               <section>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', display: 'flex', alignItems: 'center', gap: '8px' }}><UsersRound size={13} strokeWidth={2} /> GROUP SESSIONS</p>
+                  <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}><UsersRound size={13} strokeWidth={2} /> GROUP SESSIONS</p>
                   <Link href="/group-sessions/new" style={{ fontSize: '12px', color: '#D4AF37', textDecoration: 'none' }}>+ Host one →</Link>
                 </div>
 
                 {groupSessions.length === 0 ? (
-                  <div style={{ padding: '24px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.10)', textAlign: 'center' }}>
-                    <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '10px' }}>No open group sessions yet</p>
+                  <div style={{ padding: '24px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', textAlign: 'center' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '10px' }}>No open group sessions yet</p>
                     <Link href="/group-sessions/new" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>Host the first one →</Link>
                   </div>
                 ) : (
@@ -338,21 +338,21 @@ export default function EventsPage() {
 
 function FreePill({ user }: { user: any }) {
   const initials = user.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
-  const sc = (user.bestie_score || 0) >= 800 ? '#34D399' : (user.bestie_score || 0) >= 600 ? '#D4AF37' : '#A99ECC'
+  const sc = (user.bestie_score || 0) >= 800 ? '#34D399' : (user.bestie_score || 0) >= 600 ? '#D4AF37' : 'var(--text-muted)'
   return (
     <Link href={`/${user.username}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', borderRadius: '12px', background: 'rgba(57,255,20,0.05)', border: '1px solid rgba(57,255,20,0.16)', textDecoration: 'none' }}>
       <div style={{ position: 'relative', flexShrink: 0 }}>
-        <div style={{ width: '32px', height: '32px', borderRadius: '8px', overflow: 'hidden', background: '#1A1A2E', border: `1.5px solid ${sc}40` }}>
+        <div style={{ width: '32px', height: '32px', borderRadius: '8px', overflow: 'hidden', background: 'var(--surface-3)', border: `1.5px solid ${sc}40` }}>
           {user.avatar_url
             ? <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: sc }}>{initials}</div>
           }
         </div>
-        <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '9px', height: '9px', borderRadius: '50%', background: '#34D399', border: '1.5px solid #09090F' }} />
+        <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '9px', height: '9px', borderRadius: '50%', background: '#34D399', border: '1.5px solid var(--bg)' }} />
       </div>
       <div>
-        <p style={{ fontSize: '12px', fontWeight: 600, color: '#F0EAFF', margin: 0 }}>{user.full_name?.split(' ')[0]}</p>
-        {user.city && <p style={{ fontSize: '10px', color: '#A99ECC', margin: 0 }}>{user.city}</p>}
+        <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{user.full_name?.split(' ')[0]}</p>
+        {user.city && <p style={{ fontSize: '10px', color: 'var(--text-muted)', margin: 0 }}>{user.city}</p>}
       </div>
     </Link>
   )
@@ -363,22 +363,22 @@ function BirthdayCard({ bday }: { bday: any }) {
   const guestCount = bday.guests?.[0]?.count || 0
   const title = bday.title || `${bday.celebrant}'s Birthday 🎉`
   return (
-    <Link href={`/birthday/${bday.share_slug}`} style={{ display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: '#111120', border: '1px solid rgba(255,107,53,0.22)', textDecoration: 'none' }}>
+    <Link href={`/birthday/${bday.share_slug}`} style={{ display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: 'var(--surface-1)', border: '1px solid rgba(255,107,53,0.22)', textDecoration: 'none' }}>
       <div style={{ flexShrink: 0, width: '44px', textAlign: 'center', paddingTop: '2px' }}>
         <p style={{ fontSize: '10px', fontWeight: 700, color: '#FF6B35', letterSpacing: '1px' }}>{month}</p>
-        <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: '#F0EAFF', lineHeight: 1 }}>{day}</p>
-        <p style={{ fontSize: '10px', color: '#A99ECC' }}>{time}</p>
+        <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{day}</p>
+        <p style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{time}</p>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
           <span style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(255,107,53,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <Cake size={15} color="#FF6B35" strokeWidth={1.8} />
           </span>
-          <p style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{title}</p>
+          <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{title}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          {bday.location && <span style={{ fontSize: '11px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={11} strokeWidth={2} /> {bday.location}</span>}
-          <span style={{ fontSize: '11px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Users size={11} strokeWidth={2} /> {guestCount} going</span>
+          {bday.location && <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={11} strokeWidth={2} /> {bday.location}</span>}
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Users size={11} strokeWidth={2} /> {guestCount} going</span>
         </div>
       </div>
     </Link>
@@ -392,19 +392,19 @@ function CrewEventCard({ event }: { event: any }) {
   const crew = event.crew
 
   return (
-    <Link href={`/events/${event.id}`} style={{ display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: '#111120', border: '1px solid rgba(255,255,255,0.11)', textDecoration: 'none' }}>
+    <Link href={`/events/${event.id}`} style={{ display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: 'var(--surface-1)', border: '1px solid var(--border)', textDecoration: 'none' }}>
       {/* Date block */}
       <div style={{ flexShrink: 0, width: '44px', textAlign: 'center', paddingTop: '2px' }}>
         <p style={{ fontSize: '10px', fontWeight: 700, color: '#D4AF37', letterSpacing: '1px' }}>{month}</p>
-        <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: '#F0EAFF', lineHeight: 1 }}>{day}</p>
-        <p style={{ fontSize: '10px', color: '#A99ECC' }}>{time}</p>
+        <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{day}</p>
+        <p style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{time}</p>
       </div>
 
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</p>
+        <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</p>
         {event.description && (
-          <p className="line-clamp-2" style={{ fontSize: '12px', color: '#A99ECC', marginBottom: '8px' }}>{event.description}</p>
+          <p className="line-clamp-2" style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>{event.description}</p>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           {crew && (
@@ -413,8 +413,8 @@ function CrewEventCard({ event }: { event: any }) {
               {crew.name}
             </span>
           )}
-          {event.location && <span style={{ fontSize: '11px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={11} strokeWidth={2} /> {event.location}</span>}
-          <span style={{ fontSize: '11px', color: isFull ? '#FF6B35' : '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          {event.location && <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={11} strokeWidth={2} /> {event.location}</span>}
+          <span style={{ fontSize: '11px', color: isFull ? '#FF6B35' : 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
             <Users size={11} strokeWidth={2} /> {attendeeCount}{event.max_attendees ? `/${event.max_attendees}` : ''}
             {isFull && ' · Full'}
           </span>
@@ -442,7 +442,7 @@ function GroupSessionCard({ session, canDelete = false, onDeleted }: { session: 
   }
 
   return (
-    <Link href={`/group-sessions/${session.id}`} style={{ position: 'relative', display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: '#111120', border: '1px solid rgba(255,255,255,0.11)', textDecoration: 'none' }}>
+    <Link href={`/group-sessions/${session.id}`} style={{ position: 'relative', display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: 'var(--surface-1)', border: '1px solid var(--border)', textDecoration: 'none' }}>
       {canDelete && (
         <button
           onClick={handleDelete}
@@ -457,8 +457,8 @@ function GroupSessionCard({ session, canDelete = false, onDeleted }: { session: 
       {/* Date block */}
       <div style={{ flexShrink: 0, width: '44px', textAlign: 'center', paddingTop: '2px' }}>
         <p style={{ fontSize: '10px', fontWeight: 700, color: '#D4AF37', letterSpacing: '1px' }}>{month}</p>
-        <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: '#F0EAFF', lineHeight: 1 }}>{day}</p>
-        <p style={{ fontSize: '10px', color: '#A99ECC' }}>{time}</p>
+        <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{day}</p>
+        <p style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{time}</p>
       </div>
 
       {/* Info */}
@@ -467,17 +467,17 @@ function GroupSessionCard({ session, canDelete = false, onDeleted }: { session: 
           <span style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <ActivityIcon type={session.activity_type} size={14} color="#D4AF37" strokeWidth={1.8} />
           </span>
-          <p style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{session.title}</p>
+          <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{session.title}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           {host && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#A99ECC' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: 'var(--text-muted)' }}>
               {host.avatar_url && <img src={host.avatar_url} alt="" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />}
               by {host.full_name?.split(' ')[0]}
             </span>
           )}
-          {session.location && <span style={{ fontSize: '11px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={11} strokeWidth={2} /> {session.location}</span>}
-          <span style={{ fontSize: '11px', color: isFull ? '#FF6B35' : '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          {session.location && <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={11} strokeWidth={2} /> {session.location}</span>}
+          <span style={{ fontSize: '11px', color: isFull ? '#FF6B35' : 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
             <Users size={11} strokeWidth={2} /> {participantCount}{session.max_participants ? `/${session.max_participants}` : ''}
           </span>
           <span style={{ fontSize: '11px', fontWeight: 600, color: isFull ? '#FF6B35' : '#34D399', background: isFull ? 'rgba(255,107,53,0.1)' : 'rgba(57,255,20,0.08)', padding: '2px 8px', borderRadius: '6px', border: isFull ? '1px solid rgba(255,107,53,0.25)' : '1px solid rgba(57,255,20,0.2)' }}>

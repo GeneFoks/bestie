@@ -69,6 +69,26 @@ export async function POST(req: NextRequest) {
       recipient = receiver?.email || null
     }
 
+    // Session booking: resolve the host's email + title from the session id so
+    // the client never needs to know the host's address. Covers free joins and
+    // paid tickets (called from the checkout webhook too).
+    let bookedTitle = data?.sessionTitle
+    if (type === 'session_booked' && data?.sessionId) {
+      const svc = serviceClient()
+      const { data: gs } = await svc
+        .from('group_sessions')
+        .select('title, host:users!host_id(email)')
+        .eq('id', data.sessionId)
+        .single()
+      recipient = gs?.host?.email || null
+      bookedTitle = gs?.title || bookedTitle
+      // Resolve the joiner's name server-side when only an id is passed.
+      if (!data.joinerName && data.joinerId) {
+        const { data: joiner } = await svc.from('users').select('full_name, username').eq('id', data.joinerId).single()
+        data.joinerName = joiner?.full_name || joiner?.username || 'Someone'
+      }
+    }
+
     if (type === 'new_knock') {
       // Anonymous teaser — never reveal who knocked. Curiosity is the hook.
       subject = `Someone knocked on Bestie 👀`
@@ -142,6 +162,18 @@ export async function POST(req: NextRequest) {
         `Your session with <strong style="color:#E8E0FF">${data.providerName}</strong> for <strong style="color:#E8E0FF">${data.activityTitle}</strong> is marked as completed. Leave a review and give Sparks!`,
         'Leave a review →',
         data.reviewUrl || 'https://bestiehere.com/sessions'
+      )
+    }
+
+    if (type === 'session_booked') {
+      const who = data?.joinerName || 'Someone'
+      const paidNote = data?.paid ? ' and paid for their spot' : ''
+      subject = `${who} booked your session 🎉`
+      html = emailTemplate(
+        `${who} booked your session 🎉`,
+        `<strong style="color:#E8E0FF">${who}</strong> just joined${paidNote} <strong style="color:#E8E0FF">${bookedTitle || 'your session'}</strong>. Open Bestie to see who's coming.`,
+        'View session →',
+        data?.sessionId ? `https://bestiehere.com/group-sessions/${data.sessionId}` : 'https://bestiehere.com/events'
       )
     }
 
