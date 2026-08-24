@@ -1,7 +1,7 @@
 ﻿// @ts-nocheck
 export const revalidate = 0
 import Link from 'next/link'
-import { MapPin, Lock, Search, Calendar, Clock } from 'lucide-react'
+import { MapPin, Lock, Search, Calendar, Clock, Trophy, Medal, BadgeCheck, Crown, Gem, Flame, Target, Sparkles as SparklesIcon, Star, Sprout, Waves, Zap } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 import ProfileNav from '@/components/ProfileNav'
 import SocialPassportCTA from '@/components/SocialPassportCTA'
@@ -193,21 +193,21 @@ export default async function ProfilePage({ params }) {
   const firstName = profile.full_name?.split(' ')[0] || 'them'
 
   const BADGES = [
-    rankPct <= 0.01 && { id: 'top1', emoji: '🏆', label: 'Top 1%', desc: 'Bestie Score in the top 1%', color: '#34D399' },
-    rankPct <= 0.10 && rankPct > 0.01 && { id: 'top10', emoji: '🥇', label: 'Top 10%', desc: 'Bestie Score in the top 10%', color: '#D4AF37' },
-    profile.is_verified && { id: 'verified', emoji: '✅', label: 'Verified', desc: 'Verified by 3+ real meetups', color: '#34D399' },
-    sessionCount >= 25 && { id: 'session_king', emoji: '👑', label: 'Session King', desc: '25+ confirmed sessions', color: '#D4AF37' },
-    sessionCount >= 10 && sessionCount < 25 && { id: 'pro', emoji: '💎', label: 'Pro', desc: '10+ confirmed sessions', color: '#9B7FFF' },
-    sessionCount >= 5 && sessionCount < 10 && { id: 'on_fire', emoji: '🔥', label: 'On Fire', desc: '5+ confirmed sessions', color: '#FF6B35' },
-    sessionCount >= 1 && sessionCount < 5 && { id: 'first_session', emoji: '🎯', label: 'First Steps', desc: 'Completed first session', color: 'var(--text-muted)' },
-    totalSparks >= 50 && { id: 'spark_icon', emoji: '💫', label: 'Spark Icon', desc: '50+ sparks received', color: '#D4AF37' },
-    totalSparks >= 10 && totalSparks < 50 && { id: 'spark_magnet', emoji: '✨', label: 'Spark Magnet', desc: '10+ sparks received', color: 'var(--text-muted)' },
-    ratingValues.length >= 3 && avgRating >= 4.8 && { id: 'five_star', emoji: '⭐', label: '5-Star', desc: 'Near-perfect average rating', color: '#D4AF37' },
-    ageDays < 30 && score > 200 && { id: 'rising_star', emoji: '🌱', label: 'Rising Star', desc: 'New member with high score', color: '#34D399' },
-    streakWeeks >= 12 && { id: 'streak_12', emoji: '🌊', label: `${streakWeeks}w Streak`, desc: '12+ week streak', color: '#34D399' },
-    streakWeeks >= 8 && streakWeeks < 12 && { id: 'streak_8', emoji: '⚡', label: `${streakWeeks}w Streak`, desc: '8+ week streak', color: '#D4AF37' },
-    streakWeeks >= 4 && streakWeeks < 8 && { id: 'streak_4', emoji: '💥', label: `${streakWeeks}w Streak`, desc: '4+ week streak', color: '#FF6B35' },
-    streakWeeks >= 2 && streakWeeks < 4 && { id: 'streak_2', emoji: '🔥', label: `${streakWeeks}w Streak`, desc: '2+ week streak', color: 'var(--text-muted)' },
+    rankPct <= 0.01 && { id: 'top1', Icon: Trophy, label: 'Top 1%', desc: 'Bestie Score in the top 1%', color: '#34D399' },
+    rankPct <= 0.10 && rankPct > 0.01 && { id: 'top10', Icon: Medal, label: 'Top 10%', desc: 'Bestie Score in the top 10%', color: '#D4AF37' },
+    profile.is_verified && { id: 'verified', Icon: BadgeCheck, label: 'Verified', desc: 'Verified by 3+ real meetups', color: '#34D399' },
+    sessionCount >= 25 && { id: 'session_king', Icon: Crown, label: 'Session King', desc: '25+ confirmed sessions', color: '#D4AF37' },
+    sessionCount >= 10 && sessionCount < 25 && { id: 'pro', Icon: Gem, label: 'Pro', desc: '10+ confirmed sessions', color: '#9B7FFF' },
+    sessionCount >= 5 && sessionCount < 10 && { id: 'on_fire', Icon: Flame, label: 'On Fire', desc: '5+ confirmed sessions', color: '#FF6B35' },
+    sessionCount >= 1 && sessionCount < 5 && { id: 'first_session', Icon: Target, label: 'First Steps', desc: 'Completed first session', color: 'var(--text-muted)' },
+    totalSparks >= 50 && { id: 'spark_icon', Icon: SparklesIcon, label: 'Spark Icon', desc: '50+ sparks received', color: '#D4AF37' },
+    totalSparks >= 10 && totalSparks < 50 && { id: 'spark_magnet', Icon: SparklesIcon, label: 'Spark Magnet', desc: '10+ sparks received', color: 'var(--text-muted)' },
+    ratingValues.length >= 3 && avgRating >= 4.8 && { id: 'five_star', Icon: Star, label: '5-Star', desc: 'Near-perfect average rating', color: '#D4AF37' },
+    ageDays < 30 && score > 200 && { id: 'rising_star', Icon: Sprout, label: 'Rising Star', desc: 'New member with high score', color: '#34D399' },
+    streakWeeks >= 12 && { id: 'streak_12', Icon: Waves, label: `${streakWeeks}w Streak`, desc: '12+ week streak', color: '#34D399' },
+    streakWeeks >= 8 && streakWeeks < 12 && { id: 'streak_8', Icon: Zap, label: `${streakWeeks}w Streak`, desc: '8+ week streak', color: '#D4AF37' },
+    streakWeeks >= 4 && streakWeeks < 8 && { id: 'streak_4', Icon: Flame, label: `${streakWeeks}w Streak`, desc: '4+ week streak', color: '#FF6B35' },
+    streakWeeks >= 2 && streakWeeks < 4 && { id: 'streak_2', Icon: Flame, label: `${streakWeeks}w Streak`, desc: '2+ week streak', color: 'var(--text-muted)' },
   ].filter(Boolean)
 
   return (
@@ -453,7 +453,7 @@ export default async function ProfilePage({ params }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: '8px', marginBottom: '12px' }}>
             {SPARK_TYPES.slice(0, 10).map(s => (
               <Link key={s.id} href={`/sparks/give?to=${profile.username}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 4px', borderRadius: '12px', background: 'var(--surface-1)', border: '1px solid var(--border)', textDecoration: 'none' }}>
-                <span style={{ fontSize: '20px' }}>{s.emoji}</span>
+                <SparkIcon type={s.id} size={18} strokeWidth={1.8} />
                 <span style={{ fontSize: '9px', fontWeight: 500, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
               </Link>
             ))}
@@ -470,7 +470,7 @@ export default async function ProfilePage({ params }) {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {BADGES.map((b: any) => (
                 <div key={b.id} title={b.desc} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '999px', background: `rgba(${b.color === '#34D399' ? '52,211,153' : b.color === '#D4AF37' ? '212,175,55' : b.color === '#FF6B35' ? '255,107,53' : b.color === '#9B7FFF' ? '155,143,255' : '155,147,192'},0.1)`, border: `1px solid ${b.color}35` }}>
-                  <span style={{ fontSize: '14px' }}>{b.emoji}</span>
+                  <b.Icon size={13} color={b.color} strokeWidth={2} style={{ flexShrink: 0 }} />
                   <span style={{ fontSize: '12px', fontWeight: 600, color: b.color }}>{b.label}</span>
                 </div>
               ))}

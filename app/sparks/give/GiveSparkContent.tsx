@@ -257,8 +257,12 @@ export default function GiveSparkContent() {
   if (done) return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ textAlign: 'center', maxWidth: '360px', padding: '0 24px' }}>
-        <div style={{ fontSize: '48px', marginBottom: '16px' }}>
-          {sentTypes.map(t => SPARK_TYPES.find(s => s.id === t)?.emoji).join(' ')}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', marginBottom: '18px' }}>
+          {sentTypes.map(t => (
+            <span key={t} style={{ width: '56px', height: '56px', borderRadius: '18px', background: 'rgba(212,175,55,0.10)', border: '1px solid rgba(212,175,55,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 24px rgba(212,175,55,0.15)' }}>
+              <SparkIcon type={t} size={26} strokeWidth={1.8} />
+            </span>
+          ))}
         </div>
         <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: 'var(--text-primary)', marginBottom: '8px' }}>
           {sentTypes.length > 1 ? 'Sparks sent!' : 'Spark sent!'}
@@ -384,7 +388,7 @@ export default function GiveSparkContent() {
           }}
         >
           {sending ? 'Sending...' : selectedTypes.length > 0
-            ? `Give ${selectedTypes.map(t => SPARK_TYPES.find(s => s.id === t)?.emoji).join('')} ${selectedTypes.map(t => SPARK_TYPES.find(s => s.id === t)?.label).join(', ')}`
+            ? `Give ✨ ${selectedTypes.map(t => SPARK_TYPES.find(s => s.id === t)?.label).join(', ')}`
             : 'Select Sparks'}
         </button>
 
