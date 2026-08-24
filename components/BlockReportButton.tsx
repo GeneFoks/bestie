@@ -96,26 +96,26 @@ export default function BlockReportButton({ profileUserId }: { profileUserId: st
       {/* Report modal */}
       {reportOpen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }} onClick={() => setReportOpen(false)}>
-          <div role="dialog" aria-modal="true" aria-labelledby="report-modal-title" style={{ background: '#0F0F1E', border: '1px solid rgba(255,80,80,0.25)', borderRadius: '20px', padding: '28px', maxWidth: '360px', width: '100%' }} onClick={e => e.stopPropagation()}>
-            <h3 id="report-modal-title" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#E8E0FF', marginBottom: '6px' }}>Report this user</h3>
-            <p style={{ fontSize: '13px', color: '#9B93C0', marginBottom: '20px' }}>Choose a reason. Reports are anonymous and reviewed by our team.</p>
+          <div role="dialog" aria-modal="true" aria-labelledby="report-modal-title" style={{ background: 'var(--surface-1)', border: '1px solid rgba(255,80,80,0.25)', borderRadius: '20px', padding: '28px', maxWidth: '360px', width: '100%' }} onClick={e => e.stopPropagation()}>
+            <h3 id="report-modal-title" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: 'var(--text-primary)', marginBottom: '6px' }}>Report this user</h3>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px' }}>Choose a reason. Reports are anonymous and reviewed by our team.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
               {REPORT_REASONS.map(r => (
                 <button
                   key={r.id}
                   onClick={() => setSelectedReason(r.id)}
-                  style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', textAlign: 'left', background: selectedReason === r.id ? 'rgba(255,80,80,0.12)' : 'rgba(255,255,255,0.03)', border: selectedReason === r.id ? '1px solid rgba(255,80,80,0.4)' : '1px solid rgba(255,255,255,0.08)', color: selectedReason === r.id ? '#FF6B6B' : '#E8E0FF', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', textAlign: 'left', background: selectedReason === r.id ? 'rgba(255,80,80,0.12)' : 'var(--overlay)', border: selectedReason === r.id ? '1px solid rgba(255,80,80,0.4)' : '1px solid var(--border)', color: selectedReason === r.id ? '#FF6B6B' : 'var(--text-primary)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                 >
                   <r.Icon size={16} strokeWidth={2} /> {r.label}
                 </button>
               ))}
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={() => setReportOpen(false)} style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={() => setReportOpen(false)} style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', background: 'var(--overlay)', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer' }}>Cancel</button>
               <button
                 onClick={handleReport}
                 disabled={!selectedReason || loading}
-                style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: selectedReason ? 'rgba(255,80,80,0.15)' : 'rgba(255,255,255,0.04)', border: selectedReason ? '1px solid rgba(255,80,80,0.35)' : '1px solid rgba(255,255,255,0.08)', color: selectedReason ? '#FF6B6B' : '#555', cursor: selectedReason ? 'pointer' : 'default' }}
+                style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: selectedReason ? 'rgba(255,80,80,0.15)' : 'var(--overlay)', border: selectedReason ? '1px solid rgba(255,80,80,0.35)' : '1px solid var(--border)', color: selectedReason ? '#FF6B6B' : '#555', cursor: selectedReason ? 'pointer' : 'default' }}
               >
                 {loading ? 'Sending...' : 'Submit report'}
               </button>
@@ -126,7 +126,7 @@ export default function BlockReportButton({ profileUserId }: { profileUserId: st
 
       {/* Floating done toast */}
       {done && (
-        <div style={{ position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)', zIndex: 300, padding: '10px 20px', borderRadius: '999px', background: '#1a1a35', border: '1px solid rgba(255,255,255,0.12)', color: '#E8E0FF', fontSize: '14px', fontWeight: 600 }}>
+        <div style={{ position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)', zIndex: 300, padding: '10px 20px', borderRadius: '999px', background: 'var(--surface-3)', border: '1px solid var(--border)', color: 'var(--text-primary)', fontSize: '14px', fontWeight: 600 }}>
           {done}
         </div>
       )}
@@ -138,17 +138,17 @@ export default function BlockReportButton({ profileUserId }: { profileUserId: st
           aria-label="More actions"
           aria-haspopup="menu"
           aria-expanded={menuOpen}
-          style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#9B93C0', cursor: 'pointer' }}
+          style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'var(--overlay)', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer' }}
         >
           ···
         </button>
 
         {menuOpen && (
-          <div role="menu" style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, zIndex: 100, background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '8px', minWidth: '180px', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
+          <div role="menu" style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, zIndex: 100, background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '14px', padding: '8px', minWidth: '180px', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
             <button
               onClick={handleBlock}
               disabled={loading}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 12px', borderRadius: '10px', fontSize: '14px', background: 'none', border: 'none', color: isBlocked ? '#34D399' : '#9B93C0', cursor: 'pointer', textAlign: 'left' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 12px', borderRadius: '10px', fontSize: '14px', background: 'none', border: 'none', color: isBlocked ? '#34D399' : 'var(--text-muted)', cursor: 'pointer', textAlign: 'left' }}
             >
               {isBlocked ? (<><CheckCircle2 size={16} strokeWidth={2} /> Unblock user</>) : (<><Ban size={16} strokeWidth={2} /> Block user</>)}
             </button>

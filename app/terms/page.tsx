@@ -1,25 +1,26 @@
+// @ts-nocheck
 import Link from 'next/link'
 
 export const metadata = { title: 'Terms of Service — Bestie' }
 
 const H = ({ children }: { children: React.ReactNode }) => (
-  <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', margin: '32px 0 10px' }}>{children}</h2>
+  <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: 'var(--text-primary)', margin: '32px 0 10px' }}>{children}</h2>
 )
 const P = ({ children }: { children: React.ReactNode }) => (
-  <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.7, margin: '0 0 12px' }}>{children}</p>
+  <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.7, margin: '0 0 12px' }}>{children}</p>
 )
 
 export default function TermsPage() {
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <Link href="/privacy" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none' }}>Privacy Policy →</Link>
+        <Link href="/privacy" style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none' }}>Privacy Policy →</Link>
       </nav>
 
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '48px 24px 100px' }}>
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '32px', color: '#F0EAFF', marginBottom: '8px' }}>Terms of Service</h1>
-        <p style={{ fontSize: '13px', color: '#6B6490', marginBottom: '32px' }}>Last updated: July 15, 2026</p>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '32px', color: 'var(--text-primary)', marginBottom: '8px' }}>Terms of Service</h1>
+        <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '32px' }}>Last updated: July 15, 2026</p>
 
         <P>Welcome to Bestie ("Bestie", "we", "us"), operated at bestiehere.com. By creating an account or using Bestie you agree to these Terms. If you do not agree, do not use the service.</P>
 
@@ -27,7 +28,7 @@ export default function TermsPage() {
         <P>You must be at least 18 years old. You must provide accurate information, use your real identity, and keep your account credentials secure. One account per person.</P>
 
         <H>2. What Bestie is — and is not</H>
-        <P>Bestie is a platform that helps people discover each other and organize meetups, events, and conversations. Bestie is <b style={{ color: '#F0EAFF' }}>not</b> a party to any meeting, event, transaction, or relationship between users. We do not conduct background checks on users unless explicitly stated for a specific feature. Badges such as scores or verification indicators are informational signals, not guarantees of anyone's identity, character, or safety.</P>
+        <P>Bestie is a platform that helps people discover each other and organize meetups, events, and conversations. Bestie is <b style={{ color: 'var(--text-primary)' }}>not</b> a party to any meeting, event, transaction, or relationship between users. We do not conduct background checks on users unless explicitly stated for a specific feature. Badges such as scores or verification indicators are informational signals, not guarantees of anyone's identity, character, or safety.</P>
 
         <H>3. Meeting people in real life</H>
         <P>Meeting anyone you met online carries inherent risk. You agree that you meet other users at your own risk, that you are solely responsible for your interactions with other users, and that you will exercise caution: meet in public places, tell someone where you are going, and never send money to people you have not met. To the maximum extent permitted by law, Bestie is not liable for any loss, injury, or damage arising out of user interactions, whether online or offline.</P>

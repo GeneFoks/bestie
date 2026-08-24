@@ -59,11 +59,11 @@ export default function AdminModerationPage() {
   if (loading) return <PageLoader fullscreen={false} message="Loading reports…" />
 
   if (denied) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ textAlign: 'center', maxWidth: '360px', padding: '0 24px' }}>
         <p style={{ fontSize: '48px', marginBottom: '16px' }}>🔒</p>
-        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginBottom: '8px' }}>Admins only</h2>
-        <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '24px' }}>Run the moderation migration and set <code style={{ color: GOLD }}>is_admin = true</code> on your user row.</p>
+        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '8px' }}>Admins only</h2>
+        <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '24px' }}>Run the moderation migration and set <code style={{ color: GOLD }}>is_admin = true</code> on your user row.</p>
         <Link href="/" style={{ color: GOLD, fontSize: '14px', textDecoration: 'none' }}>← Back home</Link>
       </div>
     </div>
@@ -74,60 +74,60 @@ export default function AdminModerationPage() {
   reports.forEach(r => { counts[r.status || 'pending'] = (counts[r.status || 'pending'] || 0) + 1 })
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: GOLD, textDecoration: 'none' }}>BESTIE</Link>
         <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
-          <Link href="/admin/analytics" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none' }}>Analytics</Link>
+          <Link href="/admin/analytics" style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none' }}>Analytics</Link>
           <span style={{ fontSize: '13px', color: GOLD }}>Moderation</span>
-          <Link href="/admin/ambassadors" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none' }}>Ambassadors</Link>
+          <Link href="/admin/ambassadors" style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none' }}>Ambassadors</Link>
         </div>
       </nav>
 
       <div style={{ maxWidth: '820px', margin: '0 auto', padding: '36px 20px 100px' }}>
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#F0EAFF', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: 'var(--text-primary)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <ShieldAlert size={24} color={GOLD} strokeWidth={1.8} /> Reports
         </h1>
-        <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '24px' }}>
+        <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px' }}>
           {counts.pending} pending · {counts.reviewed} reviewed · {counts.dismissed} dismissed
         </p>
 
         <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
           {(['pending', 'reviewed', 'dismissed', 'all'] as Filter[]).map(f => (
             <button key={f} onClick={() => setFilter(f)} style={{ padding: '7px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize', fontFamily: 'Plus Jakarta Sans, sans-serif',
-              background: filter === f ? 'rgba(212,175,55,0.15)' : '#131323',
-              border: filter === f ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.12)',
-              color: filter === f ? GOLD : '#A99ECC' }}>
+              background: filter === f ? 'rgba(212,175,55,0.15)' : 'var(--surface-1b)',
+              border: filter === f ? '1px solid rgba(212,175,55,0.4)' : '1px solid var(--border)',
+              color: filter === f ? GOLD : 'var(--text-muted)' }}>
               {f}{f !== 'all' && counts[f] > 0 ? ` (${counts[f]})` : ''}
             </button>
           ))}
         </div>
 
         {filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '18px' }}>
+          <div style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '18px' }}>
             <p style={{ fontSize: '34px', marginBottom: '10px' }}>✅</p>
-            <p style={{ fontSize: '14px', color: '#A99ECC' }}>No {filter === 'all' ? '' : filter + ' '}reports. All clear.</p>
+            <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>No {filter === 'all' ? '' : filter + ' '}reports. All clear.</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {filtered.map(r => {
               const status = r.status || 'pending'
-              const statusColor = status === 'pending' ? '#FF6B35' : status === 'reviewed' ? '#34D399' : '#6B6490'
+              const statusColor = status === 'pending' ? '#FF6B35' : status === 'reviewed' ? '#34D399' : 'var(--text-dim)'
               return (
-                <div key={r.id} style={{ background: '#111120', border: `1px solid ${status === 'pending' ? 'rgba(255,107,53,0.25)' : 'rgba(255,255,255,0.10)'}`, borderRadius: '16px', padding: '16px' }}>
+                <div key={r.id} style={{ background: 'var(--surface-1)', border: `1px solid ${status === 'pending' ? 'rgba(255,107,53,0.25)' : 'var(--border)'}`, borderRadius: '16px', padding: '16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '10px', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                       <PersonChip user={r.reporter} label="reporter" />
-                      <span style={{ color: '#6B6490', fontSize: '12px' }}>reported</span>
+                      <span style={{ color: 'var(--text-dim)', fontSize: '12px' }}>reported</span>
                       <PersonChip user={r.reported} label="reported" highlight />
                     </div>
                     <span style={{ fontSize: '11px', fontWeight: 700, color: statusColor, textTransform: 'uppercase', letterSpacing: '1px' }}>{status}</span>
                   </div>
 
-                  <p style={{ fontSize: '14px', color: '#F0EAFF', marginBottom: '6px' }}>
-                    <span style={{ color: '#A99ECC' }}>Reason:</span> {r.reason || '—'}
+                  <p style={{ fontSize: '14px', color: 'var(--text-primary)', marginBottom: '6px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Reason:</span> {r.reason || '—'}
                   </p>
-                  <p style={{ fontSize: '12px', color: '#6B6490', marginBottom: '14px' }}>
+                  <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '14px' }}>
                     {new Date(r.created_at).toLocaleString('en-US')} · {r.reported?.report_count || 1} active report{(r.reported?.report_count || 1) > 1 ? 's' : ''} on this user
                     {r.reported?.is_banned && <b style={{ color: '#FF6B35' }}> · BANNED</b>}
                   </p>
@@ -165,7 +165,7 @@ export default function AdminModerationPage() {
           </div>
         )}
 
-        <p style={{ fontSize: '12px', color: '#6B6490', marginTop: '24px', lineHeight: 1.6 }}>
+        <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '24px', lineHeight: 1.6 }}>
           Dismissed reports don't count against the user's Bestie Score. Banning blocks sign-in at the auth layer; data is kept. Score recalculates automatically when a report's status changes.
         </p>
       </div>
@@ -174,15 +174,15 @@ export default function AdminModerationPage() {
 }
 
 function PersonChip({ user, label, highlight }: any) {
-  if (!user) return <span style={{ fontSize: '13px', color: '#6B6490' }}>deleted user</span>
+  if (!user) return <span style={{ fontSize: '13px', color: 'var(--text-dim)' }}>deleted user</span>
   return (
-    <Link href={`/${user.username}`} target="_blank" style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '4px 10px 4px 4px', borderRadius: '999px', background: highlight ? 'rgba(255,107,53,0.08)' : 'rgba(255,255,255,0.04)', border: highlight ? '1px solid rgba(255,107,53,0.25)' : '1px solid rgba(255,255,255,0.10)', textDecoration: 'none' }}>
-      <span style={{ width: '24px', height: '24px', borderRadius: '50%', overflow: 'hidden', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+    <Link href={`/${user.username}`} target="_blank" style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '4px 10px 4px 4px', borderRadius: '999px', background: highlight ? 'rgba(255,107,53,0.08)' : 'var(--overlay)', border: highlight ? '1px solid rgba(255,107,53,0.25)' : '1px solid var(--border)', textDecoration: 'none' }}>
+      <span style={{ width: '24px', height: '24px', borderRadius: '50%', overflow: 'hidden', background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         {user.avatar_url
           ? <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           : <span style={{ fontSize: '10px', color: '#D4AF37', fontWeight: 700 }}>{user.full_name?.[0] || '?'}</span>}
       </span>
-      <span style={{ fontSize: '13px', fontWeight: 600, color: '#F0EAFF' }}>{user.full_name}</span>
+      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{user.full_name}</span>
     </Link>
   )
 }

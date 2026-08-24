@@ -61,7 +61,7 @@ export default function CompatibilityScore({ profile }: Props) {
       </div>
       <div>
         <p style={{ fontSize: '13px', fontWeight: 700, color, marginBottom: '2px' }}>{res.label} · {pct}% match</p>
-        <p style={{ fontSize: '11px', color: '#A99ECC' }}>{res.note}</p>
+        <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{res.note}</p>
       </div>
     </div>
   )

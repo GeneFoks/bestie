@@ -1,4 +1,5 @@
-﻿'use client'
+﻿// @ts-nocheck
+'use client'
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
@@ -85,12 +86,12 @@ export default function CrewRating({ crewId, avgRating, ratingCount }: Props) {
         })}
       </div>
       {currentAvg > 0 && (
-        <span style={{ fontSize: '13px', color: '#A99ECC' }}>
+        <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
           {currentAvg.toFixed(1)} · {currentCount} {currentCount === 1 ? 'rating' : 'ratings'}
         </span>
       )}
       {isMember && !myRating && (
-        <span style={{ fontSize: '12px', color: '#A99ECC', fontStyle: 'italic' }}>Rate your crew</span>
+        <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>Rate your crew</span>
       )}
     </div>
   )

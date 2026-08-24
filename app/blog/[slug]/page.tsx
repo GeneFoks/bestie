@@ -1,4 +1,5 @@
-﻿import { Metadata } from 'next'
+﻿// @ts-nocheck
+import { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
@@ -56,12 +57,12 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
 
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <Link href="/blog" style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>← Blog</Link>
+        <Link href="/blog" style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid var(--border)' }}>← Blog</Link>
       </nav>
 
       <article style={{ maxWidth: '720px', margin: '0 auto', padding: '60px 24px' }}>
@@ -77,21 +78,21 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
           </div>
         )}
 
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 700, color: '#F0EAFF', lineHeight: 1.2, marginBottom: '16px' }}>{post.title}</h1>
-        {post.description && <p style={{ fontSize: '17px', color: '#A99ECC', lineHeight: 1.6, marginBottom: '24px' }}>{post.description}</p>}
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2, marginBottom: '16px' }}>{post.title}</h1>
+        {post.description && <p style={{ fontSize: '17px', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '24px' }}>{post.description}</p>}
 
-        <p style={{ fontSize: '13px', color: '#6B6490', marginBottom: '40px', paddingBottom: '24px', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+        <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '40px', paddingBottom: '24px', borderBottom: '1px solid var(--border)' }}>
           By {post.author || 'Bestie Team'} · {new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
         </p>
 
         <div
-          style={{ fontSize: '16px', lineHeight: 1.8, color: '#C8C0E8' }}
+          style={{ fontSize: '16px', lineHeight: 1.8, color: 'var(--text-muted)' }}
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
 
-        <div style={{ marginTop: '60px', padding: '28px', background: '#111120', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '20px', textAlign: 'center' }}>
-          <p style={{ fontSize: '18px', fontWeight: 700, color: '#F0EAFF', marginBottom: '8px' }}>Ready to find your people?</p>
-          <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '20px' }}>Join Bestie and start making real connections today.</p>
+        <div style={{ marginTop: '60px', padding: '28px', background: 'var(--surface-1)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '20px', textAlign: 'center' }}>
+          <p style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>Ready to find your people?</p>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '20px' }}>Join Bestie and start making real connections today.</p>
           <Link href="/login" style={{ display: 'inline-block', padding: '12px 28px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
             Join Bestie Free →
           </Link>

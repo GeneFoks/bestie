@@ -105,27 +105,27 @@ export default function FindFriends() {
   }
 
   return (
-    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '18px', padding: '20px', marginBottom: '24px' }}>
+    <div style={{ background: 'var(--overlay)', border: '1px solid var(--border)', borderRadius: '18px', padding: '20px', marginBottom: '24px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', color: '#D4AF37' }}><Search size={22} strokeWidth={2} /></span>
-        <p style={{ fontSize: '15px', fontWeight: 700, color: '#E8E0FF', margin: 0 }}>Bring your friends to Bestie</p>
+        <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Bring your friends to Bestie</p>
       </div>
-      <p style={{ fontSize: '12px', color: '#9B93C0', margin: '0 0 16px 32px' }}>Share your invite link — or check who's already here.</p>
+      <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 16px 32px' }}>Share your invite link — or check who's already here.</p>
 
       {phase === 'idle' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {/* PRIMARY: Share invite link */}
           <div style={{ padding: '14px', borderRadius: '14px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}>
-            <p style={{ fontSize: '12px', color: '#9B93C0', margin: '0 0 10px', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Your invite link</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '12px' }}>
-              <span style={{ flex: 1, fontSize: '13px', color: '#E8E0FF', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 10px', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Your invite link</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border)', marginBottom: '12px' }}>
+              <span style={{ flex: 1, fontSize: '13px', color: 'var(--text-primary)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {inviteUrl || 'Loading…'}
               </span>
               <button
                 onClick={handleCopy}
                 disabled={!inviteUrl}
                 aria-label="Copy invite link"
-                style={{ flexShrink: 0, padding: '6px 10px', borderRadius: '8px', background: copied ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.06)', border: copied ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(255,255,255,0.1)', color: copied ? '#34D399' : '#E8E0FF', cursor: inviteUrl ? 'pointer' : 'default', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 600 }}
+                style={{ flexShrink: 0, padding: '6px 10px', borderRadius: '8px', background: copied ? 'rgba(52,211,153,0.15)' : 'var(--overlay-2)', border: copied ? '1px solid rgba(52,211,153,0.3)' : '1px solid var(--border)', color: copied ? '#34D399' : 'var(--text-primary)', cursor: inviteUrl ? 'pointer' : 'default', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 600 }}
               >
                 {copied ? <><Check size={12} strokeWidth={2.5} /> Copied</> : <><Copy size={12} strokeWidth={2} /> Copy</>}
               </button>
@@ -137,7 +137,7 @@ export default function FindFriends() {
             >
               <Share2 size={16} strokeWidth={2} /> Share via Telegram, WhatsApp, iMessage…
             </button>
-            <p style={{ fontSize: '11px', color: '#9B93C0', margin: '8px 0 0', textAlign: 'center' }}>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '8px 0 0', textAlign: 'center' }}>
               Friends get a pretty card with your Bestie Score
             </p>
           </div>
@@ -145,7 +145,7 @@ export default function FindFriends() {
           {/* SECONDARY: Manual lookup */}
           <button
             onClick={() => setShowManual(!showManual)}
-            style={{ background: 'transparent', border: 'none', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '12px 0 0', color: '#9B93C0', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+            style={{ background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', padding: '12px 0 0', color: 'var(--text-muted)', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
           >
             <Pencil size={12} strokeWidth={2} /> {showManual ? 'Hide' : 'Already know their email or phone? Check if they\'re on Bestie'}
           </button>
@@ -157,22 +157,22 @@ export default function FindFriends() {
                 onChange={e => setManualText(e.target.value)}
                 placeholder={'friend@email.com\n+1234567890\n\nOne per line — emails or phone numbers'}
                 rows={4}
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '10px 12px', color: '#E8E0FF', fontSize: '13px', resize: 'vertical', fontFamily: 'monospace', width: '100%', boxSizing: 'border-box' }}
+                style={{ background: 'var(--overlay)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px 12px', color: 'var(--text-primary)', fontSize: '13px', resize: 'vertical', fontFamily: 'monospace', width: '100%', boxSizing: 'border-box' }}
               />
               <button
                 onClick={handleManualSubmit}
                 disabled={!manualText.trim()}
-                style={{ background: manualText.trim() ? 'rgba(155,127,255,0.15)' : 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '10px 20px', color: manualText.trim() ? '#9B7FFF' : '#9B93C0', fontSize: '13px', fontWeight: 600, cursor: manualText.trim() ? 'pointer' : 'default', border: manualText.trim() ? '1px solid rgba(155,127,255,0.3)' : '1px solid rgba(255,255,255,0.08)' }}
+                style={{ background: manualText.trim() ? 'rgba(155,127,255,0.15)' : 'var(--overlay)', borderRadius: '10px', padding: '10px 20px', color: manualText.trim() ? '#9B7FFF' : 'var(--text-muted)', fontSize: '13px', fontWeight: 600, cursor: manualText.trim() ? 'pointer' : 'default', border: manualText.trim() ? '1px solid rgba(155,127,255,0.3)' : '1px solid var(--border)' }}
               >
                 Find matches →
               </button>
-              <p style={{ fontSize: '11px', color: '#9B93C0', textAlign: 'center', marginTop: '2px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '2px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                 <Lock size={11} strokeWidth={2} /> Hashed with SHA-256 before leaving your device
               </p>
             </div>
           )}
 
-          <p style={{ fontSize: '11px', color: '#9B93C0', textAlign: 'center', marginTop: '4px' }}>
+          <p style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '4px' }}>
             🔒 We match contacts as hashed fingerprints — your raw emails & phone numbers are never saved or shared
           </p>
         </div>
@@ -182,14 +182,14 @@ export default function FindFriends() {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '24px 0' }}>
           <div style={{ width: '32px', height: '32px', border: '3px solid rgba(212,175,55,0.2)', borderTop: '3px solid #D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
           <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-          <p style={{ fontSize: '13px', color: '#9B93C0' }}>Scanning the network...</p>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Scanning the network...</p>
         </div>
       )}
 
       {phase === 'error' && (
         <div style={{ textAlign: 'center', padding: '16px 0' }}>
           <p style={{ fontSize: '14px', color: '#FF6B6B', marginBottom: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><AlertTriangle size={14} strokeWidth={2} /> {errorMsg}</p>
-          <button onClick={() => { setPhase('idle'); setErrorMsg('') }} style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '10px', padding: '8px 18px', color: '#E8E0FF', fontSize: '13px', border: 'none', cursor: 'pointer' }}>
+          <button onClick={() => { setPhase('idle'); setErrorMsg('') }} style={{ background: 'var(--overlay-2)', borderRadius: '10px', padding: '8px 18px', color: 'var(--text-primary)', fontSize: '13px', border: 'none', cursor: 'pointer' }}>
             Try again
           </button>
         </div>
@@ -198,13 +198,13 @@ export default function FindFriends() {
       {phase === 'done' && (
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-            <p style={{ fontSize: '13px', color: '#9B93C0', margin: 0 }}>
-              Checked <strong style={{ color: '#E8E0FF' }}>{importedCount}</strong>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
+              Checked <strong style={{ color: 'var(--text-primary)' }}>{importedCount}</strong>
               {matchedUsers.length > 0 ? ` · ` : ' · '}
               {matchedUsers.length > 0 && <strong style={{ color: '#D4AF37' }}>{matchedUsers.length}</strong>}
               {matchedUsers.length > 0 ? ' on Bestie' : 'no matches yet'}
             </p>
-            <button onClick={() => { setPhase('idle'); setMatchedUsers([]); setManualText('') }} style={{ fontSize: '11px', color: '#9B93C0', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+            <button onClick={() => { setPhase('idle'); setMatchedUsers([]); setManualText('') }} style={{ fontSize: '11px', color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
               Check more
             </button>
           </div>
@@ -212,14 +212,14 @@ export default function FindFriends() {
           {matchedUsers.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
               <p style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center', color: '#9B8FFF' }}><Sprout size={32} strokeWidth={2} /></p>
-              <p style={{ fontSize: '14px', color: '#9B93C0' }}>None of them are on Bestie yet.</p>
-              <p style={{ fontSize: '12px', color: '#9B93C0', marginTop: '4px' }}>Share your invite link above — we'll notify you when they join.</p>
+              <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>None of them are on Bestie yet.</p>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>Share your invite link above — we'll notify you when they join.</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {matchedUsers.map(u => (
-                <Link key={u.id} href={`/${u.username}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', textDecoration: 'none' }}>
-                  <div style={{ width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0, overflow: 'hidden', border: `2px solid ${tierColor(u.bestie_score)}`, background: '#0F0F1E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Link key={u.id} href={`/${u.username}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '12px', background: 'var(--overlay)', border: '1px solid var(--border)', textDecoration: 'none' }}>
+                  <div style={{ width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0, overflow: 'hidden', border: `2px solid ${tierColor(u.bestie_score)}`, background: 'var(--surface-1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {u.photo
                       ? <img src={u.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       : <span style={{ fontSize: '16px', fontWeight: 700, color: tierColor(u.bestie_score) }}>
@@ -228,10 +228,10 @@ export default function FindFriends() {
                     }
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#E8E0FF', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {u.full_name || u.username}
                     </p>
-                    <p style={{ fontSize: '12px', color: '#9B93C0', margin: 0 }}>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
                       @{u.username}{u.city ? ` · ${u.city}` : ''}
                     </p>
                   </div>

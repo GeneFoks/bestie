@@ -23,7 +23,7 @@ const OpenAIIcon = ({ size = 16 }) => (
   </svg>
 )
 const GrokIcon = ({ size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="#E8E3F5">
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="var(--text-primary)">
     <path d="M9.27 15.29l7.978-5.897c.39-.29.95-.177 1.137.272.98 2.369.542 5.215-1.41 7.169-1.951 1.953-4.667 2.382-7.149 1.406L7.116 19.5c3.889 2.66 8.611 1.96 11.562-.993 2.341-2.342 3.066-5.538 2.388-8.42l.006.006c-.983-4.232.242-5.924 2.75-9.382.06-.083.12-.165.179-.248l-3.301 3.305v-.01L9.267 15.292M7.623 16.723c-2.792-2.66-2.303-6.802.388-9.495 1.991-1.993 5.262-2.804 8.022-1.243l2.706-1.25c-.519-.394-1.205-.792-1.974-1.106-3.522-1.527-7.71-.847-10.62 2.066-2.808 2.813-3.675 7.012-1.755 10.646 1.434 2.717.768 4.732-.529 6.766-.13.205-.262.41-.392.616l3.348-3.35-.193-.617.998-2.998z"/>
   </svg>
 )
@@ -340,7 +340,7 @@ export default function SwarmPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Loader size={28} color="#9B7FFF" style={{ animation: 'spin 1s linear infinite' }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -350,11 +350,11 @@ export default function SwarmPage() {
   // ── Upgrade wall ──────────────────────────────────────────────────
   if (planError) {
     return (
-      <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif', color: '#F0EAFF' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif', color: 'var(--text-primary)' }}>
         <div style={{ maxWidth: '520px', margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
           <div style={{ fontSize: '64px', marginBottom: '24px' }}>🐝</div>
           <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '32px', marginBottom: '12px' }}>AI Swarm</h1>
-          <p style={{ fontSize: '15px', color: '#A99ECC', marginBottom: '32px', lineHeight: 1.7 }}>
+          <p style={{ fontSize: '15px', color: 'var(--text-muted)', marginBottom: '32px', lineHeight: 1.7 }}>
             AI Swarm is available on <strong style={{ color: '#D4AF37' }}>Community</strong> and <strong style={{ color: '#9B7FFF' }}>Pro</strong> plans.
             Upgrade your Crew to unlock intelligent matching across all members.
           </p>
@@ -370,14 +370,14 @@ export default function SwarmPage() {
               { id: 'community', label: 'Community', price: '$49/mo', color: '#D4AF37', limit: 'Up to 50 members', features: ['AI Swarm matching', 'Full swarm history', 'All member agents'] },
               { id: 'pro',       label: 'Pro',       price: '$149/mo', color: '#9B7FFF', limit: 'Up to 200 members', features: ['Everything in Community', 'Priority AI processing', 'Custom agent personas', 'Analytics dashboard'] },
             ].map(tier => (
-              <div key={tier.id} style={{ padding: '20px', borderRadius: '16px', background: '#111120', border: `1px solid ${tier.color}40`, textAlign: 'left' }}>
+              <div key={tier.id} style={{ padding: '20px', borderRadius: '16px', background: 'var(--surface-1)', border: `1px solid ${tier.color}40`, textAlign: 'left' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                   <span style={{ fontSize: '16px', fontWeight: 700, color: tier.color }}>{tier.label}</span>
-                  <span style={{ fontSize: '20px', fontWeight: 800, color: '#F0EAFF' }}>{tier.price}</span>
+                  <span style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)' }}>{tier.price}</span>
                 </div>
-                <p style={{ fontSize: '12px', color: '#A99ECC', marginBottom: '10px' }}>{tier.limit}</p>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px' }}>{tier.limit}</p>
                 {tier.features.map(f => (
-                  <div key={f} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#C8BFEE', marginBottom: '4px' }}>
+                  <div key={f} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '4px' }}>
                     <CheckCircle size={12} color={tier.color} /> {f}
                   </div>
                 ))}
@@ -398,7 +398,7 @@ export default function SwarmPage() {
             ))}
           </div>
 
-          <Link href={`/crews/${slug}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: '#A99ECC', textDecoration: 'none' }}>
+          <Link href={`/crews/${slug}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none' }}>
             <ArrowLeft size={14} /> Back to {crew?.name}
           </Link>
         </div>
@@ -408,7 +408,7 @@ export default function SwarmPage() {
 
   // ── Main Swarm UI ─────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif', color: '#F0EAFF' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif', color: 'var(--text-primary)' }}>
       <style>{`
         @keyframes swarmFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
         @keyframes swarmPulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
@@ -418,19 +418,19 @@ export default function SwarmPage() {
 
       {/* Header */}
       <div style={{ borderBottom: '1px solid rgba(155,127,255,0.15)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(155,127,255,0.03)' }}>
-        <Link href={`/crews/${slug}`} style={{ display: 'flex', alignItems: 'center', color: '#A99ECC', textDecoration: 'none' }}>
+        <Link href={`/crews/${slug}`} style={{ display: 'flex', alignItems: 'center', color: 'var(--text-muted)', textDecoration: 'none' }}>
           <ArrowLeft size={18} strokeWidth={2} />
         </Link>
         <div style={{ fontSize: '22px', animation: 'swarmFloat 3s ease-in-out infinite' }}>🐝</div>
         <div>
-          <h1 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: '#F0EAFF' }}>AI Swarm</h1>
+          <h1 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>AI Swarm</h1>
           <p style={{ fontSize: '11px', color: '#9B7FFF', margin: 0 }}>{crew?.name} · {crew?.plan === 'pro' ? 'Pro' : 'Community'}</p>
         </div>
         <div style={{ marginLeft: 'auto' }}>
           <button onClick={() => setShowAgentForm(v => !v)} style={{
             display: 'flex', alignItems: 'center', gap: '6px',
             padding: '7px 12px', borderRadius: '10px', fontSize: '12px', fontWeight: 600,
-            background: showAgentForm ? 'rgba(155,127,255,0.15)' : '#111120',
+            background: showAgentForm ? 'rgba(155,127,255,0.15)' : 'var(--surface-1)',
             border: '1px solid rgba(155,127,255,0.25)', color: '#9B7FFF', cursor: 'pointer',
           }}>
             <Settings size={13} /> My Agent
@@ -442,12 +442,12 @@ export default function SwarmPage() {
 
         {/* Agent Setup Form */}
         {showAgentForm && (
-          <div style={{ marginBottom: '24px', padding: '20px', borderRadius: '16px', background: '#111120', border: '1px solid rgba(155,127,255,0.25)', animation: 'fadeIn 0.25s ease' }}>
+          <div style={{ marginBottom: '24px', padding: '20px', borderRadius: '16px', background: 'var(--surface-1)', border: '1px solid rgba(155,127,255,0.25)', animation: 'fadeIn 0.25s ease' }}>
             <h2 style={{ fontSize: '14px', fontWeight: 700, color: '#9B7FFF', marginBottom: '16px', letterSpacing: '0.5px' }}>
               {agent ? '✏️ Edit My Agent' : '🤖 Connect Your Agent'}
             </h2>
 
-            <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '16px', lineHeight: 1.6 }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px', lineHeight: 1.6 }}>
               Tell the swarm what you can help with. The more specific, the better your matches.
             </p>
 
@@ -458,13 +458,13 @@ export default function SwarmPage() {
               rows={4}
               style={{
                 width: '100%', padding: '12px 14px', borderRadius: '12px', fontSize: '14px',
-                background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF',
+                background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-primary)',
                 fontFamily: 'Plus Jakarta Sans, sans-serif', resize: 'vertical', boxSizing: 'border-box',
                 marginBottom: '14px', outline: 'none', lineHeight: 1.6,
               }}
             />
 
-            <p style={{ fontSize: '12px', fontWeight: 700, color: '#A99ECC', marginBottom: '8px', letterSpacing: '0.5px' }}>AI PROVIDER</p>
+            <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '8px', letterSpacing: '0.5px' }}>AI PROVIDER</p>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
               {PROVIDERS.map(p => {
                 const active = agentProvider === p.id
@@ -473,9 +473,9 @@ export default function SwarmPage() {
                     <button onClick={() => setAgentProvider(p.id)} style={{
                       width: '100%', padding: '10px 8px', borderRadius: '10px', fontSize: '12px', fontWeight: 600,
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                      background: active ? 'rgba(155,127,255,0.15)' : '#0d0d1a',
-                      border: active ? '1.5px solid #9B7FFF' : '1px solid rgba(255,255,255,0.08)',
-                      color: active ? '#9B7FFF' : '#A99ECC',
+                      background: active ? 'rgba(155,127,255,0.15)' : 'var(--bg)',
+                      border: active ? '1.5px solid #9B7FFF' : '1px solid var(--border)',
+                      color: active ? '#9B7FFF' : 'var(--text-muted)',
                       cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif',
                     }}>
                       <p.Icon size={16} /> {p.label}
@@ -488,9 +488,9 @@ export default function SwarmPage() {
                       style={{
                         position: 'absolute', top: '-7px', right: '-7px',
                         width: '18px', height: '18px', borderRadius: '50%', padding: 0,
-                        background: helpProvider === p.id ? '#9B7FFF' : '#1a1a2e',
+                        background: helpProvider === p.id ? '#9B7FFF' : 'var(--surface-3)',
                         border: '1px solid rgba(155,127,255,0.5)',
-                        color: helpProvider === p.id ? '#fff' : '#A99ECC',
+                        color: helpProvider === p.id ? '#fff' : 'var(--text-muted)',
                         fontSize: '11px', fontWeight: 700, lineHeight: 1, cursor: 'pointer',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}>?</button>
@@ -500,13 +500,13 @@ export default function SwarmPage() {
                       <div style={{
                         position: 'absolute', top: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)',
                         width: '240px', zIndex: 20, padding: '12px 14px', borderRadius: '12px',
-                        background: '#16162a', border: '1px solid rgba(155,127,255,0.3)',
+                        background: 'var(--surface-2)', border: '1px solid rgba(155,127,255,0.3)',
                         boxShadow: '0 8px 24px rgba(0,0,0,0.45)', textAlign: 'left',
                       }}>
-                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#F0EAFF', margin: '0 0 8px' }}>
+                        <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 8px' }}>
                           Where to find your {p.label} key
                         </p>
-                        <ol style={{ margin: 0, padding: '0 0 0 16px', color: '#C4BBDF', fontSize: '11.5px', lineHeight: 1.7 }}>
+                        <ol style={{ margin: 0, padding: '0 0 0 16px', color: 'var(--text-muted)', fontSize: '11.5px', lineHeight: 1.7 }}>
                           {p.keySteps.map((s, i) => <li key={i}>{s}</li>)}
                         </ol>
                         <a href={p.keyUrl} target="_blank" rel="noopener noreferrer"
@@ -530,16 +530,16 @@ export default function SwarmPage() {
               placeholder={`${PROVIDERS.find(p => p.id === agentProvider)?.label} API key (optional) — ${PROVIDERS.find(p => p.id === agentProvider)?.keyPrefix}`}
               style={{
                 width: '100%', padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
-                background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.08)', color: '#F0EAFF',
+                background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-primary)',
                 fontFamily: 'Plus Jakarta Sans, sans-serif', boxSizing: 'border-box', marginBottom: '14px', outline: 'none',
               }}
             />
 
             <button onClick={saveAgent} disabled={!agentSkills.trim() || savingAgent} style={{
               width: '100%', padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 700,
-              background: agentSaved ? 'rgba(52,211,153,0.15)' : !agentSkills.trim() ? 'rgba(255,255,255,0.06)' : 'linear-gradient(135deg, #9B7FFF, #7B5FE5)',
+              background: agentSaved ? 'rgba(52,211,153,0.15)' : !agentSkills.trim() ? 'var(--overlay-2)' : 'linear-gradient(135deg, #9B7FFF, #7B5FE5)',
               border: agentSaved ? '1px solid rgba(52,211,153,0.4)' : 'none',
-              color: agentSaved ? '#34D399' : !agentSkills.trim() ? '#5A5375' : '#fff',
+              color: agentSaved ? '#34D399' : !agentSkills.trim() ? 'var(--text-dim)' : '#fff',
               cursor: !agentSkills.trim() || savingAgent ? 'not-allowed' : 'pointer',
               fontFamily: 'Plus Jakarta Sans, sans-serif', transition: 'all 0.2s',
             }}>
@@ -571,7 +571,7 @@ export default function SwarmPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
               <span style={{ fontSize: '24px', animation: 'swarmFloat 3s ease-in-out infinite' }}>🐝</span>
               <div>
-                <p style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF', margin: 0 }}>What do you need?</p>
+                <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>What do you need?</p>
                 <p style={{ fontSize: '12px', color: '#9B7FFF', margin: 0 }}>The swarm will find the best match in your crew</p>
               </div>
             </div>
@@ -585,19 +585,19 @@ export default function SwarmPage() {
                 placeholder="e.g. Need a partner to launch a podcast"
                 style={{
                   flex: 1, padding: '12px 16px', borderRadius: '12px', fontSize: '14px',
-                  background: '#0d0d1a', border: '1px solid rgba(155,127,255,0.2)',
-                  color: '#F0EAFF', fontFamily: 'Plus Jakarta Sans, sans-serif', outline: 'none',
+                  background: 'var(--bg)', border: '1px solid rgba(155,127,255,0.2)',
+                  color: 'var(--text-primary)', fontFamily: 'Plus Jakarta Sans, sans-serif', outline: 'none',
                 }}
               />
               <button onClick={() => runSwarm()} disabled={!query.trim() || searching} style={{
                 width: '46px', height: '46px', borderRadius: '12px', border: 'none',
-                background: query.trim() && !searching ? 'linear-gradient(135deg, #9B7FFF, #7B5FE5)' : 'rgba(255,255,255,0.06)',
+                background: query.trim() && !searching ? 'linear-gradient(135deg, #9B7FFF, #7B5FE5)' : 'var(--overlay-2)',
                 cursor: query.trim() && !searching ? 'pointer' : 'not-allowed',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
               }}>
                 {searching
                   ? <Loader size={16} color="#9B7FFF" style={{ animation: 'spin 1s linear infinite' }} />
-                  : <Send size={16} color={query.trim() ? '#fff' : '#5A5375'} strokeWidth={2} />
+                  : <Send size={16} color={query.trim() ? '#fff' : 'var(--text-dim)'} strokeWidth={2} />
                 }
               </button>
             </div>
@@ -622,7 +622,7 @@ export default function SwarmPage() {
           <div style={{ textAlign: 'center', padding: '40px 0', animation: 'fadeIn 0.3s ease' }}>
             <div style={{ fontSize: '32px', marginBottom: '12px', animation: 'swarmFloat 1s ease-in-out infinite' }}>🐝</div>
             <p style={{ fontSize: '14px', color: '#9B7FFF', fontWeight: 600 }}>Swarm is analyzing your crew...</p>
-            <p style={{ fontSize: '12px', color: '#5A5375' }}>Reading profiles and finding your best matches</p>
+            <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Reading profiles and finding your best matches</p>
           </div>
         )}
 
@@ -637,22 +637,22 @@ export default function SwarmPage() {
               <>
                 <div style={{ marginBottom: '16px' }}>
                   <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', color: '#9B7FFF', marginBottom: '4px' }}>SWARM RESULTS</p>
-                  <p style={{ fontSize: '13px', color: '#A99ECC', fontStyle: 'italic' }}>"{result.query}"</p>
+                  <p style={{ fontSize: '13px', color: 'var(--text-muted)', fontStyle: 'italic' }}>"{result.query}"</p>
                 </div>
 
                 {result.matches?.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '32px', background: '#111120', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ textAlign: 'center', padding: '32px', background: 'var(--surface-1)', borderRadius: '16px', border: '1px solid var(--border)' }}>
                     <p style={{ fontSize: '32px', marginBottom: '8px' }}>🔍</p>
-                    <p style={{ fontSize: '14px', color: '#A99ECC' }}>No close matches found yet.</p>
-                    <p style={{ fontSize: '12px', color: '#5A5375' }}>Encourage more members to activate their agent.</p>
+                    <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>No close matches found yet.</p>
+                    <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Encourage more members to activate their agent.</p>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {result.matches.map((m, i) => (
                       <div key={i} style={{
                         padding: '16px 18px', borderRadius: '16px',
-                        background: i === 0 ? 'linear-gradient(135deg, rgba(155,127,255,0.1), rgba(123,95,229,0.06))' : '#111120',
-                        border: i === 0 ? '1.5px solid rgba(155,127,255,0.35)' : '1px solid rgba(255,255,255,0.08)',
+                        background: i === 0 ? 'linear-gradient(135deg, rgba(155,127,255,0.1), rgba(123,95,229,0.06))' : 'var(--surface-1)',
+                        border: i === 0 ? '1.5px solid rgba(155,127,255,0.35)' : '1px solid var(--border)',
                         position: 'relative',
                       }}>
                         {i === 0 && (
@@ -664,36 +664,36 @@ export default function SwarmPage() {
                           <div style={{
                             width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
                             background: m.avatar_url ? `url(${m.avatar_url}) center/cover` : 'linear-gradient(135deg, #9B7FFF44, #7B5FE544)',
-                            border: `2px solid ${i === 0 ? '#9B7FFF' : 'rgba(255,255,255,0.1)'}`,
+                            border: `2px solid ${i === 0 ? '#9B7FFF' : 'var(--border)'}`,
                             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px',
                           }}>
                             {!m.avatar_url && '👤'}
                           </div>
                           <div style={{ flex: 1 }}>
-                            <p style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF', margin: 0 }}>{m.name}</p>
-                            <p style={{ fontSize: '12px', color: '#A99ECC', margin: 0 }}>@{m.username}</p>
+                            <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{m.name}</p>
+                            <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>@{m.username}</p>
                           </div>
                           <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: '20px', fontWeight: 800, color: i === 0 ? '#9B7FFF' : '#A99ECC' }}>{m.match_score}%</div>
-                            <div style={{ fontSize: '10px', color: '#5A5375' }}>match</div>
+                            <div style={{ fontSize: '20px', fontWeight: 800, color: i === 0 ? '#9B7FFF' : 'var(--text-muted)' }}>{m.match_score}%</div>
+                            <div style={{ fontSize: '10px', color: 'var(--text-dim)' }}>match</div>
                           </div>
                         </div>
 
                         {/* Match score bar */}
-                        <div style={{ height: '3px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', marginBottom: '10px' }}>
+                        <div style={{ height: '3px', borderRadius: '999px', background: 'var(--overlay-2)', marginBottom: '10px' }}>
                           <div style={{ width: `${m.match_score}%`, height: '100%', borderRadius: '999px', background: i === 0 ? 'linear-gradient(90deg, #9B7FFF, #7B5FE5)' : 'rgba(155,127,255,0.4)', transition: 'width 1s ease' }} />
                         </div>
 
-                        <p style={{ fontSize: '13px', color: '#C8BFEE', lineHeight: 1.6, margin: '0 0 12px' }}>{m.reason}</p>
+                        <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, margin: '0 0 12px' }}>{m.reason}</p>
 
                         <Link
                           href={`/messages?to=${m.username}`}
                           style={{
                             display: 'inline-flex', alignItems: 'center', gap: '6px',
                             padding: '7px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 600,
-                            background: i === 0 ? 'rgba(155,127,255,0.15)' : 'rgba(255,255,255,0.06)',
-                            border: i === 0 ? '1px solid rgba(155,127,255,0.3)' : '1px solid rgba(255,255,255,0.08)',
-                            color: i === 0 ? '#9B7FFF' : '#A99ECC', textDecoration: 'none',
+                            background: i === 0 ? 'rgba(155,127,255,0.15)' : 'var(--overlay-2)',
+                            border: i === 0 ? '1px solid rgba(155,127,255,0.3)' : '1px solid var(--border)',
+                            color: i === 0 ? '#9B7FFF' : 'var(--text-muted)', textDecoration: 'none',
                           }}
                         >
                           <Zap size={12} /> Connect →
@@ -704,13 +704,13 @@ export default function SwarmPage() {
                 )}
 
                 {result.summary && (
-                  <p style={{ fontSize: '12px', color: '#5A5375', fontStyle: 'italic', marginTop: '12px', textAlign: 'center' }}>
+                  <p style={{ fontSize: '12px', color: 'var(--text-dim)', fontStyle: 'italic', marginTop: '12px', textAlign: 'center' }}>
                     🐝 {result.summary}
                   </p>
                 )}
 
                 {result.engine && (
-                  <p style={{ fontSize: '11px', color: result.engine.personal ? '#16A34A' : '#9A92B5', marginTop: '8px', textAlign: 'center' }}>
+                  <p style={{ fontSize: '11px', color: result.engine.personal ? '#16A34A' : 'var(--text-dim)', marginTop: '8px', textAlign: 'center' }}>
                     {result.engine.personal
                       ? `✅ Powered by your connected ${result.engine.provider} key`
                       : '⚡ Powered by Bestie AI (connect your own key above)'}
@@ -724,17 +724,17 @@ export default function SwarmPage() {
         {/* Shared board — needs & offers for the whole crew */}
         {!result && (
           <div style={{ marginBottom: '28px' }}>
-            <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', color: '#5A5375', marginBottom: '12px' }}>CREW BOARD</p>
+            <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', color: 'var(--text-dim)', marginBottom: '12px' }}>CREW BOARD</p>
 
             {/* Composer */}
-            <div style={{ padding: '14px', borderRadius: '14px', background: '#111120', border: '1px solid rgba(155,127,255,0.18)', marginBottom: '14px' }}>
+            <div style={{ padding: '14px', borderRadius: '14px', background: 'var(--surface-1)', border: '1px solid rgba(155,127,255,0.18)', marginBottom: '14px' }}>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
                 {(['need', 'offer'] as const).map(k => (
                   <button key={k} onClick={() => setBoardKind(k)} style={{
                     flex: 1, padding: '8px', borderRadius: '10px', fontSize: '12px', fontWeight: 700,
-                    background: boardKind === k ? (k === 'need' ? 'rgba(155,127,255,0.18)' : 'rgba(52,211,153,0.15)') : '#0d0d1a',
-                    border: boardKind === k ? `1.5px solid ${k === 'need' ? '#9B7FFF' : '#34D399'}` : '1px solid rgba(255,255,255,0.08)',
-                    color: boardKind === k ? (k === 'need' ? '#9B7FFF' : '#34D399') : '#A99ECC',
+                    background: boardKind === k ? (k === 'need' ? 'rgba(155,127,255,0.18)' : 'rgba(52,211,153,0.15)') : 'var(--bg)',
+                    border: boardKind === k ? `1.5px solid ${k === 'need' ? '#9B7FFF' : '#34D399'}` : '1px solid var(--border)',
+                    color: boardKind === k ? (k === 'need' ? '#9B7FFF' : '#34D399') : 'var(--text-muted)',
                     cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif',
                   }}>
                     {k === 'need' ? '🙋 I need…' : '✋ I can help…'}
@@ -748,15 +748,15 @@ export default function SwarmPage() {
                 rows={2}
                 style={{
                   width: '100%', padding: '10px 12px', borderRadius: '10px', fontSize: '13px',
-                  background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.08)', color: '#F0EAFF',
+                  background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-primary)',
                   fontFamily: 'Plus Jakarta Sans, sans-serif', resize: 'vertical', boxSizing: 'border-box',
                   marginBottom: '10px', outline: 'none', lineHeight: 1.5,
                 }}
               />
               <button onClick={postToBoard} disabled={!boardText.trim() || posting} style={{
                 width: '100%', padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 700,
-                background: !boardText.trim() ? 'rgba(255,255,255,0.06)' : 'linear-gradient(135deg, #9B7FFF, #7B5FE5)',
-                border: 'none', color: !boardText.trim() ? '#5A5375' : '#fff',
+                background: !boardText.trim() ? 'var(--overlay-2)' : 'linear-gradient(135deg, #9B7FFF, #7B5FE5)',
+                border: 'none', color: !boardText.trim() ? 'var(--text-dim)' : '#fff',
                 cursor: !boardText.trim() || posting ? 'not-allowed' : 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif',
               }}>
                 {posting ? 'Posting…' : 'Post to crew'}
@@ -765,7 +765,7 @@ export default function SwarmPage() {
 
             {/* Feed */}
             {board.length === 0 ? (
-              <p style={{ fontSize: '12px', color: '#5A5375', textAlign: 'center', padding: '12px' }}>
+              <p style={{ fontSize: '12px', color: 'var(--text-dim)', textAlign: 'center', padding: '12px' }}>
                 No posts yet — be the first to share what you need or offer.
               </p>
             ) : (
@@ -775,7 +775,7 @@ export default function SwarmPage() {
                   const closed = post.status === 'closed'
                   return (
                     <div key={post.id} style={{
-                      padding: '12px 14px', borderRadius: '12px', background: '#111120',
+                      padding: '12px 14px', borderRadius: '12px', background: 'var(--surface-1)',
                       border: `1px solid ${isNeed ? 'rgba(155,127,255,0.18)' : 'rgba(52,211,153,0.18)'}`,
                       opacity: closed ? 0.5 : 1,
                     }}>
@@ -787,12 +787,12 @@ export default function SwarmPage() {
                         }}>
                           {isNeed ? 'NEEDS' : 'OFFERS'}
                         </span>
-                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#F0EAFF' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>
                           {post.author?.full_name || post.author?.username || 'Member'}
                         </span>
-                        {closed && <span style={{ fontSize: '10px', color: '#5A5375' }}>· closed</span>}
+                        {closed && <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>· closed</span>}
                       </div>
-                      <p style={{ fontSize: '13px', color: '#C8BFEE', margin: '0 0 8px', lineHeight: 1.5, textDecoration: closed ? 'line-through' : 'none' }}>
+                      <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 8px', lineHeight: 1.5, textDecoration: closed ? 'line-through' : 'none' }}>
                         {post.body}
                       </p>
                       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -806,7 +806,7 @@ export default function SwarmPage() {
                         {post.isMine && (
                           <>
                             <button onClick={() => toggleBoardStatus(post)} style={{
-                              background: 'none', border: 'none', color: '#A99ECC', fontSize: '12px', cursor: 'pointer', padding: 0, fontFamily: 'Plus Jakarta Sans, sans-serif',
+                              background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '12px', cursor: 'pointer', padding: 0, fontFamily: 'Plus Jakarta Sans, sans-serif',
                             }}>
                               {closed ? 'Reopen' : 'Mark resolved'}
                             </button>
@@ -829,23 +829,23 @@ export default function SwarmPage() {
         {/* History */}
         {history.length > 0 && !result && (
           <div>
-            <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', color: '#5A5375', marginBottom: '12px' }}>RECENT SEARCHES</p>
+            <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', color: 'var(--text-dim)', marginBottom: '12px' }}>RECENT SEARCHES</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {history.map((h, i) => (
                 <div key={h.id || i} style={{
-                  padding: '12px 14px', borderRadius: '12px', background: '#111120',
-                  border: '1px solid rgba(255,255,255,0.06)',
+                  padding: '12px 14px', borderRadius: '12px', background: 'var(--surface-1)',
+                  border: '1px solid var(--border)',
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px',
                 }}>
                   <span
                     onClick={() => runSwarm(h.query)}
-                    style={{ flex: 1, cursor: 'pointer', color: '#A99ECC', fontSize: '13px', lineHeight: 1.5 }}
+                    style={{ flex: 1, cursor: 'pointer', color: 'var(--text-muted)', fontSize: '13px', lineHeight: 1.5 }}
                   >
                     "{h.query}"
                   </span>
                   <span
                     onClick={() => runSwarm(h.query)}
-                    style={{ fontSize: '11px', color: '#5A5375', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                    style={{ fontSize: '11px', color: 'var(--text-dim)', cursor: 'pointer', whiteSpace: 'nowrap' }}
                   >↩ re-run</span>
                   <button
                     onClick={() => deleteHistory(h.id)}
@@ -870,8 +870,8 @@ export default function SwarmPage() {
         {members.length > 0 && !result && (
           <div style={{ marginTop: history.length > 0 ? '28px' : '0' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', color: '#5A5375', margin: 0 }}>YOUR CREW</p>
-              <p style={{ fontSize: '11px', color: '#5A5375', margin: 0 }}>
+              <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', color: 'var(--text-dim)', margin: 0 }}>YOUR CREW</p>
+              <p style={{ fontSize: '11px', color: 'var(--text-dim)', margin: 0 }}>
                 {members.filter(m => m.agent?.is_active).length} of {members.length} agents active
               </p>
             </div>
@@ -880,14 +880,14 @@ export default function SwarmPage() {
                 const active = !!m.agent?.is_active
                 return (
                   <div key={m.id} style={{
-                    padding: '14px', borderRadius: '14px', background: '#111120',
-                    border: active ? '1px solid rgba(155,127,255,0.25)' : '1px solid rgba(255,255,255,0.06)',
+                    padding: '14px', borderRadius: '14px', background: 'var(--surface-1)',
+                    border: active ? '1px solid rgba(155,127,255,0.25)' : '1px solid var(--border)',
                     display: 'flex', gap: '12px', alignItems: 'flex-start',
                   }}>
                     <div style={{
                       width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
                       background: m.avatar_url ? `url(${m.avatar_url}) center/cover` : 'linear-gradient(135deg, #9B7FFF44, #7B5FE544)',
-                      border: `2px solid ${active ? '#9B7FFF' : 'rgba(255,255,255,0.1)'}`,
+                      border: `2px solid ${active ? '#9B7FFF' : 'var(--border)'}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px',
                     }}>
                       {!m.avatar_url && '👤'}
@@ -895,7 +895,7 @@ export default function SwarmPage() {
 
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF' }}>
+                        <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
                           {m.full_name || m.username}{m.isMe ? ' (you)' : ''}
                         </span>
                         {active ? (
@@ -903,16 +903,16 @@ export default function SwarmPage() {
                             ● AGENT ON
                           </span>
                         ) : (
-                          <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.4px', padding: '2px 7px', borderRadius: '999px', background: 'rgba(255,255,255,0.05)', color: '#5A5375', border: '1px solid rgba(255,255,255,0.08)' }}>
+                          <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.4px', padding: '2px 7px', borderRadius: '999px', background: 'var(--overlay)', color: 'var(--text-dim)', border: '1px solid var(--border)' }}>
                             NO AGENT
                           </span>
                         )}
                       </div>
-                      <p style={{ fontSize: '12px', color: '#A99ECC', margin: '2px 0 0' }}>
+                      <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
                         @{m.username}{m.city ? ` · ${m.city}` : ''}
                       </p>
                       {active && m.agent?.skills && (
-                        <p style={{ fontSize: '12.5px', color: '#C8BFEE', margin: '8px 0 0', lineHeight: 1.5 }}>
+                        <p style={{ fontSize: '12.5px', color: 'var(--text-muted)', margin: '8px 0 0', lineHeight: 1.5 }}>
                           {m.agent.skills.length > 160 ? m.agent.skills.slice(0, 160) + '…' : m.agent.skills}
                         </p>
                       )}

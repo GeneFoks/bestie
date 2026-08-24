@@ -12,6 +12,7 @@ import BlockReportButton from '@/components/BlockReportButton'
 import KnockButton from '@/components/KnockButton'
 import PassportScoreCard from '@/components/PassportScoreCard'
 import BadgeCrest from '@/components/BadgeCrest'
+import { SparkIcon } from '@/lib/sparkIcons'
 import MutualFriends from '@/components/MutualFriends'
 import { getAvatarFrame } from '@/lib/avatarFrame'
 import CompatibilityScore from './CompatibilityScore'
@@ -222,7 +223,7 @@ export default async function ProfilePage({ params }) {
       <div style={{ position: 'relative', height: '180px', overflow: 'hidden' }}>
         {/* Cover gradient */}
         <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 30% 50%, rgba(${tier.glow},0.35) 0%, rgba(8,8,16,0.0) 70%)` }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(8,8,16,0) 0%, rgba(8,8,16,0.85) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(8,8,16,0) 0%, var(--nav-bg) 100%)' }} />
         {/* Decorative orbs */}
         <div style={{ position: 'absolute', top: '-30px', right: '15%', width: '220px', height: '220px', borderRadius: '50%', background: `radial-gradient(circle, rgba(${tier.glow},0.12) 0%, transparent 70%)` }} />
         <div style={{ position: 'absolute', bottom: '-20px', left: '40%', width: '160px', height: '160px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(155,143,255,0.08) 0%, transparent 70%)' }} />
@@ -323,7 +324,7 @@ export default async function ProfilePage({ params }) {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {profile.activity_packages.map((pkg) => (
-                <div key={pkg.id} style={{ background: 'linear-gradient(135deg, var(--surface-1) 0%, #131324 100%)', border: '1px solid var(--border)', borderRadius: '18px', padding: '18px 20px', transition: 'border-color 0.2s' }}>
+                <div key={pkg.id} style={{ background: 'linear-gradient(135deg, var(--surface-1) 0%, var(--surface-1b) 100%)', border: '1px solid var(--border)', borderRadius: '18px', padding: '18px 20px', transition: 'border-color 0.2s' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     {/* Emoji circle */}
                     <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -411,7 +412,7 @@ export default async function ProfilePage({ params }) {
 
         {/* EARNED BADGES — unique crests awarded by the platform (user_badges) */}
         {(earnedBadges || []).filter((b) => ['city_pioneer'].includes(b.badge_id)).length > 0 && (
-          <div style={{ background: 'linear-gradient(135deg, var(--surface-1) 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '18px', padding: '20px', marginBottom: '20px' }}>
+          <div style={{ background: 'linear-gradient(135deg, var(--surface-1) 0%, var(--surface-3) 100%)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '18px', padding: '20px', marginBottom: '20px' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '16px' }}>BADGES</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px' }}>
               {(earnedBadges || []).filter((b) => ['city_pioneer'].includes(b.badge_id)).map((b) => (
@@ -435,8 +436,8 @@ export default async function ProfilePage({ params }) {
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '14px' }}>TOP SPARKS FROM THE COMMUNITY</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {topSparks.map(s => (
-                <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
-                  <span style={{ fontSize: '14px' }}>{s.emoji}</span>
+                <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '7px 13px', borderRadius: '999px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.22)' }}>
+                  <SparkIcon type={s.id} size={13} strokeWidth={2} />
                   <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>{s.label}</span>
                   <span style={{ fontSize: '12px', fontWeight: 700, color: '#D4AF37' }}>×{s.count}</span>
                 </div>
@@ -514,7 +515,7 @@ export default async function ProfilePage({ params }) {
         )}
 
         {/* SOCIAL PASSPORT FOOTER CARD */}
-        <div style={{ background: 'linear-gradient(135deg, var(--surface-1) 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '18px', padding: '20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ background: 'linear-gradient(135deg, var(--surface-1) 0%, var(--surface-3) 100%)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '18px', padding: '20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '4px' }}>BESTIE SOCIAL PASSPORT</p>
             <p style={{ fontSize: '13px', color: 'var(--text-primary)' }}>bestiehere.com/{profile.username}</p>

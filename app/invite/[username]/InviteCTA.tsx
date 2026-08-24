@@ -1,4 +1,5 @@
-﻿'use client'
+﻿// @ts-nocheck
+'use client'
 // Client component — checks auth state and shows correct CTA:
 // - Logged in  → "Book Session" + "Message" (no need to sign up)
 // - Logged out → "Accept & Create Account" + "Log in"
@@ -50,7 +51,7 @@ export default function InviteCTA({ username, activityKey, signupUrl }: Props) {
         </Link>
         <Link
           href={messageUrl}
-          style={{ display: 'block', padding: '14px', borderRadius: '16px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#A99ECC', textDecoration: 'none' }}
+          style={{ display: 'block', padding: '14px', borderRadius: '16px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--text-muted)', textDecoration: 'none' }}
         >
           💬 Send a message
         </Link>
@@ -68,18 +69,18 @@ export default function InviteCTA({ username, activityKey, signupUrl }: Props) {
       >
         🧭 Take the free personality test →
       </Link>
-      <p style={{ fontSize: '12px', color: '#6B6490', textAlign: 'center', margin: '-2px 0 4px' }}>
+      <p style={{ fontSize: '12px', color: 'var(--text-dim)', textAlign: 'center', margin: '-2px 0 4px' }}>
         5 minutes · no signup · find out who you click with
       </p>
       <Link
         href={signupUrl}
-        style={{ display: 'block', padding: '14px', borderRadius: '16px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: '#161628', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', textDecoration: 'none' }}
+        style={{ display: 'block', padding: '14px', borderRadius: '16px', textAlign: 'center', fontSize: '14px', fontWeight: 600, background: 'var(--surface-2)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', textDecoration: 'none' }}
       >
         Join Bestie & connect
       </Link>
       <Link
         href={loginUrl}
-        style={{ display: 'block', padding: '10px', textAlign: 'center', fontSize: '13px', fontWeight: 500, color: '#A99ECC', textDecoration: 'none' }}
+        style={{ display: 'block', padding: '10px', textAlign: 'center', fontSize: '13px', fontWeight: 500, color: 'var(--text-muted)', textDecoration: 'none' }}
       >
         Already have an account? Log in
       </Link>

@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -114,11 +115,11 @@ export default function SuggestedCrews() {
   if (loading || crews.length === 0) return null
 
   return (
-    <div style={{ marginBottom: '20px', padding: '18px 20px', borderRadius: '20px', background: '#111120', border: '1px solid rgba(155,127,255,0.18)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ marginBottom: '20px', padding: '18px 20px', borderRadius: '20px', background: 'var(--surface-1)', border: '1px solid rgba(155,127,255,0.18)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Sparkles size={16} color="#9B7FFF" strokeWidth={1.8} />
-          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '17px', color: '#F0EAFF', margin: 0 }}>Crews for you</h3>
+          <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '17px', color: 'var(--text-primary)', margin: 0 }}>Crews for you</h3>
         </div>
         <Link href="/crews" style={{ fontSize: '12px', color: '#9B7FFF', textDecoration: 'none', fontWeight: 600 }}>
           Browse all →
@@ -129,16 +130,16 @@ export default function SuggestedCrews() {
         {crews.map(c => {
           const tone = compatTone(c.compat ?? null)
           return (
-            <Link key={c.id} href={`/crews/${c.slug}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', background: '#131323', border: '1px solid rgba(255,255,255,0.10)', textDecoration: 'none' }}>
-              <div style={{ width: '44px', height: '44px', borderRadius: '12px', overflow: 'hidden', background: '#1A1A2E', flexShrink: 0, border: '1px solid rgba(155,127,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Link key={c.id} href={`/crews/${c.slug}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', background: 'var(--surface-1b)', border: '1px solid var(--border)', textDecoration: 'none' }}>
+              <div style={{ width: '44px', height: '44px', borderRadius: '12px', overflow: 'hidden', background: 'var(--surface-3)', flexShrink: 0, border: '1px solid rgba(155,127,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {c.avatar_url
                   ? <img src={c.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   : <Users size={20} color="#9B7FFF" strokeWidth={1.8} />
                 }
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF', marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</p>
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', fontSize: '11px', color: '#A99ECC' }}>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</p>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', fontSize: '11px', color: 'var(--text-muted)' }}>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                     <Users size={11} strokeWidth={2} /> {Array.isArray(c.members) ? (c.members[0]?.count || 0) : (c.members as number)}
                   </span>

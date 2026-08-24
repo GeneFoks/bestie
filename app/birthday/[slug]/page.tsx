@@ -105,11 +105,11 @@ export default function BirthdayPage() {
 
   if (loading) return <PageLoader message="Loading…" />
   if (notFound) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif', textAlign: 'center', padding: '24px' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif', textAlign: 'center', padding: '24px' }}>
       <div>
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎂</div>
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#F0EAFF', marginBottom: '8px' }}>Birthday not found</h1>
-        <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '24px' }}>This link may be wrong or the event was removed.</p>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '8px' }}>Birthday not found</h1>
+        <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '24px' }}>This link may be wrong or the event was removed.</p>
         <Link href="/events" style={{ padding: '12px 24px', borderRadius: '12px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none', fontWeight: 700 }}>Explore events</Link>
       </div>
     </div>
@@ -134,10 +134,10 @@ export default function BirthdayPage() {
   const activeTabs = TABS.filter(t => t.on)
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       {/* Cover */}
-      <div style={{ position: 'relative', height: 'clamp(200px, 40vw, 320px)', background: event.cover_image ? `#111120 url(${event.cover_image}) center/cover` : 'linear-gradient(135deg, #FF6B35 0%, #9B7FFF 100%)' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #09090F 0%, transparent 55%)' }} />
+      <div style={{ position: 'relative', height: 'clamp(200px, 40vw, 320px)', background: event.cover_image ? `var(--surface-1) url(${event.cover_image}) center/cover` : 'linear-gradient(135deg, #FF6B35 0%, #9B7FFF 100%)' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, var(--bg) 0%, transparent 55%)' }} />
         <nav style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}>
           <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', fontWeight: 700, color: '#fff', textDecoration: 'none', textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>BESTIE</Link>
           <button onClick={handleShare} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, background: copied ? 'rgba(52,211,153,0.9)' : 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.25)', color: '#fff', cursor: 'pointer', backdropFilter: 'blur(8px)' }}>
@@ -148,16 +148,16 @@ export default function BirthdayPage() {
 
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: showStickyCTA ? '0 16px 210px' : '0 16px 120px', marginTop: '-40px', position: 'relative' }}>
         {/* Title card */}
-        <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '22px', padding: '22px', marginBottom: '16px' }}>
+        <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '22px', padding: '22px', marginBottom: '16px' }}>
           <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#FF6B35', marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><Cake size={14} strokeWidth={2} /> BIRTHDAY</p>
-          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 6vw, 32px)', color: '#F0EAFF', marginBottom: '14px', lineHeight: 1.15 }}>{title}</h1>
+          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 6vw, 32px)', color: 'var(--text-primary)', marginBottom: '14px', lineHeight: 1.15 }}>{title}</h1>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: event.description ? '14px' : 0 }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '9px', fontSize: '14px', color: '#F0EAFF' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '9px', fontSize: '14px', color: 'var(--text-primary)' }}>
               <Calendar size={16} color="#D4AF37" strokeWidth={1.9} /> {dateStr} · {timeStr}
             </span>
             {event.location && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '9px', fontSize: '14px', color: '#F0EAFF' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '9px', fontSize: '14px', color: 'var(--text-primary)' }}>
                 <MapPin size={16} color="#D4AF37" strokeWidth={1.9} />
                 {event.location_url
                   ? <a href={event.location_url} target="_blank" rel="noopener noreferrer" style={{ color: '#D4AF37', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>{event.location} <ExternalLink size={12} /></a>
@@ -165,21 +165,21 @@ export default function BirthdayPage() {
               </span>
             )}
           </div>
-          {event.description && <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{event.description}</p>}
+          {event.description && <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{event.description}</p>}
         </div>
 
         {/* RSVP */}
-        <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '18px', padding: '18px', marginBottom: '16px' }}>
+        <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '18px', padding: '18px', marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-            <p style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF', margin: 0 }}>Are you coming?</p>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#A99ECC' }}><Users size={13} strokeWidth={2} /> {going.length} going</span>
+            <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Are you coming?</p>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: 'var(--text-muted)' }}><Users size={13} strokeWidth={2} /> {going.length} going</span>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             {[{ id: 'going', label: "I'm in! 🎉" }, { id: 'maybe', label: 'Maybe' }, { id: 'cant', label: "Can't make it" }].map(o => (
               <button key={o.id} onClick={() => setRsvp(o.id)} style={{ flex: 1, padding: '11px 8px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif',
-                background: myRsvp === o.id ? (o.id === 'going' ? 'linear-gradient(135deg, #FF6B35, #E0561F)' : 'rgba(212,175,55,0.18)') : '#0F0F1E',
-                border: myRsvp === o.id ? '1px solid transparent' : '1px solid rgba(255,255,255,0.12)',
-                color: myRsvp === o.id ? (o.id === 'going' ? '#fff' : '#D4AF37') : '#A99ECC' }}>
+                background: myRsvp === o.id ? (o.id === 'going' ? 'linear-gradient(135deg, #FF6B35, #E0561F)' : 'rgba(212,175,55,0.18)') : 'var(--surface-1)',
+                border: myRsvp === o.id ? '1px solid transparent' : '1px solid var(--border)',
+                color: myRsvp === o.id ? (o.id === 'going' ? '#fff' : '#D4AF37') : 'var(--text-muted)' }}>
                 {o.label}
               </button>
             ))}
@@ -187,11 +187,11 @@ export default function BirthdayPage() {
           {going.length > 0 && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '14px' }}>
               {going.slice(0, 12).map(g => (
-                <Link key={g.user_id} href={g.user?.username ? `/${g.user.username}` : '#'} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '5px 10px 5px 5px', borderRadius: '999px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.10)', textDecoration: 'none' }}>
-                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', overflow: 'hidden', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Link key={g.user_id} href={g.user?.username ? `/${g.user.username}` : '#'} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '5px 10px 5px 5px', borderRadius: '999px', background: 'var(--surface-1)', border: '1px solid var(--border)', textDecoration: 'none' }}>
+                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', overflow: 'hidden', background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     {g.user?.avatar_url ? <img src={g.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: '10px', color: '#D4AF37', fontWeight: 700 }}>{g.user?.full_name?.[0]}</span>}
                   </span>
-                  <span style={{ fontSize: '12px', color: '#F0EAFF' }}>{g.user?.full_name?.split(' ')[0]}</span>
+                  <span style={{ fontSize: '12px', color: 'var(--text-primary)' }}>{g.user?.full_name?.split(' ')[0]}</span>
                 </Link>
               ))}
             </div>
@@ -204,9 +204,9 @@ export default function BirthdayPage() {
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
               {activeTabs.map(t => (
                 <button key={t.id} onClick={() => setTab(t.id)} style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '10px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif',
-                  background: tab === t.id ? 'rgba(212,175,55,0.15)' : '#131323',
-                  border: tab === t.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.12)',
-                  color: tab === t.id ? '#D4AF37' : '#A99ECC' }}>
+                  background: tab === t.id ? 'rgba(212,175,55,0.15)' : 'var(--surface-1b)',
+                  border: tab === t.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid var(--border)',
+                  color: tab === t.id ? '#D4AF37' : 'var(--text-muted)' }}>
                   <t.Icon size={15} strokeWidth={1.9} /> {t.label}{t.count > 0 ? ` (${t.count})` : ''}
                 </button>
               ))}
@@ -226,7 +226,7 @@ export default function BirthdayPage() {
 
         {isHost && (
           <div style={{ textAlign: 'center', marginTop: '24px' }}>
-            <p style={{ fontSize: '12px', color: '#6B6490', marginBottom: '10px' }}>You're the host · share the link above to invite guests</p>
+            <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '10px' }}>You're the host · share the link above to invite guests</p>
             <button
               onClick={async () => {
                 const ok = await confirmSheet({
@@ -321,7 +321,7 @@ function PhotoWall({ event, me, photos, onNeedLogin }: any) {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
           {photos.map((p: any) => (
-            <button key={p.id} onClick={() => setLightbox(p.photo_url)} style={{ aspectRatio: '1', borderRadius: '10px', overflow: 'hidden', border: 'none', padding: 0, cursor: 'pointer', background: '#111120' }}>
+            <button key={p.id} onClick={() => setLightbox(p.photo_url)} style={{ aspectRatio: '1', borderRadius: '10px', overflow: 'hidden', border: 'none', padding: 0, cursor: 'pointer', background: 'var(--surface-1)' }}>
               <img src={p.photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </button>
           ))}
@@ -398,7 +398,7 @@ function Wishlist({ event, me, items, setItems, onNeedLogin }: any) {
           <Plus size={18} strokeWidth={2.2} /> Add a gift idea
         </button>
       ) : (
-        <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '16px', padding: '16px', marginBottom: '16px' }}>
+        <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '16px', padding: '16px', marginBottom: '16px' }}>
           <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
             <input value={url} onChange={e => setUrl(e.target.value)} onBlur={fetchPreview} placeholder="Paste Amazon (or any store) link" style={inputSm} />
             <button onClick={fetchPreview} disabled={fetching || !url} style={{ flexShrink: 0, padding: '0 14px', borderRadius: '10px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.35)', color: '#D4AF37', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>{fetching ? '…' : 'Fetch'}</button>
@@ -407,7 +407,7 @@ function Wishlist({ event, me, items, setItems, onNeedLogin }: any) {
           <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Gift name *" style={{ ...inputSm, marginBottom: '10px' }} />
           <input value={price} onChange={e => setPrice(e.target.value)} placeholder="Price (optional)" style={{ ...inputSm, marginBottom: '12px' }} />
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={() => { setAdding(false); setUrl(''); setTitle(''); setImage(null); setPrice('') }} style={{ flex: 1, padding: '11px', borderRadius: '11px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: '#A99ECC', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
+            <button onClick={() => { setAdding(false); setUrl(''); setTitle(''); setImage(null); setPrice('') }} style={{ flex: 1, padding: '11px', borderRadius: '11px', background: 'var(--overlay-2)', border: '1px solid var(--border)', color: 'var(--text-muted)', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
             <button onClick={addItem} disabled={saving || !title.trim()} style={{ flex: 2, padding: '11px', borderRadius: '11px', background: 'linear-gradient(135deg, #D4AF37, #B8960C)', border: 'none', color: '#09090F', fontWeight: 700, fontSize: '14px', cursor: title.trim() ? 'pointer' : 'not-allowed', opacity: title.trim() ? 1 : 0.5 }}>{saving ? 'Adding…' : 'Add to wishlist'}</button>
           </div>
         </div>
@@ -421,30 +421,30 @@ function Wishlist({ event, me, items, setItems, onNeedLogin }: any) {
             const claimed = !!item.claimed_by
             const mineClaim = claimed && item.claimed_by === me?.id
             return (
-              <div key={item.id} style={{ display: 'flex', gap: '12px', padding: '12px', borderRadius: '14px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', opacity: claimed && !mineClaim ? 0.6 : 1 }}>
+              <div key={item.id} style={{ display: 'flex', gap: '12px', padding: '12px', borderRadius: '14px', background: 'var(--surface-1)', border: '1px solid var(--border)', opacity: claimed && !mineClaim ? 0.6 : 1 }}>
                 {item.image_url
                   ? <img src={item.image_url} alt="" style={{ width: '60px', height: '60px', objectFit: 'contain', borderRadius: '10px', background: '#fff', flexShrink: 0 }} />
                   : <span style={{ width: '60px', height: '60px', borderRadius: '10px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Gift size={24} color="#D4AF37" strokeWidth={1.7} /></span>}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px', textDecoration: claimed ? 'line-through' : 'none' }}>{item.title}</p>
+                  <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px', textDecoration: claimed ? 'line-through' : 'none' }}>{item.title}</p>
                   {item.price && <p style={{ fontSize: '13px', color: '#D4AF37', fontWeight: 700, marginBottom: '4px' }}>{item.price}</p>}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                     {item.url && <a href={item.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: '#9B7FFF', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>View <ExternalLink size={11} /></a>}
                     {claimed
                       ? <span style={{ fontSize: '12px', color: '#34D399', fontWeight: 600 }}>{mineClaim ? "You've got this ✓" : `Claimed by ${item.claimer?.full_name?.split(' ')[0] || 'someone'}`}</span>
                       : <button onClick={() => toggleClaim(item)} style={{ fontSize: '12px', fontWeight: 700, color: '#34D399', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: '8px', padding: '3px 10px', cursor: 'pointer' }}>I'll get this</button>}
-                    {mineClaim && <button onClick={() => toggleClaim(item)} style={{ fontSize: '12px', color: '#A99ECC', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>unclaim</button>}
+                    {mineClaim && <button onClick={() => toggleClaim(item)} style={{ fontSize: '12px', color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>unclaim</button>}
                   </div>
                 </div>
                 {(item.added_by === me?.id || me?.id === event.host_id) && (
-                  <button onClick={() => removeItem(item)} aria-label="Remove" style={{ flexShrink: 0, background: 'none', border: 'none', color: '#6B6490', cursor: 'pointer', padding: '2px' }}><X size={16} /></button>
+                  <button onClick={() => removeItem(item)} aria-label="Remove" style={{ flexShrink: 0, background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px' }}><X size={16} /></button>
                 )}
               </div>
             )
           })}
         </div>
       )}
-      <p style={{ fontSize: '11px', color: '#6B6490', textAlign: 'center', marginTop: '12px' }}>🎁 Claims are hidden from the birthday person on their own page… surprise stays safe.</p>
+      <p style={{ fontSize: '11px', color: 'var(--text-dim)', textAlign: 'center', marginTop: '12px' }}>🎁 Claims are hidden from the birthday person on their own page… surprise stays safe.</p>
     </div>
   )
 }
@@ -469,7 +469,7 @@ function Chat({ event, me, messages, onNeedLogin }: any) {
 
   return (
     <div>
-      <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', padding: '12px', minHeight: '200px', maxHeight: '440px', overflowY: 'auto', marginBottom: '12px' }}>
+      <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '16px', padding: '12px', minHeight: '200px', maxHeight: '440px', overflowY: 'auto', marginBottom: '12px' }}>
         {messages.length === 0 ? (
           <div style={{ padding: '40px 0' }}><EmptyBox emoji="💬" text="No messages yet — say hi 👋" /></div>
         ) : (
@@ -478,12 +478,12 @@ function Chat({ event, me, messages, onNeedLogin }: any) {
               const mine = m.user_id === me?.id
               return (
                 <div key={m.id} style={{ display: 'flex', gap: '8px', flexDirection: mine ? 'row-reverse' : 'row' }}>
-                  <span style={{ width: '28px', height: '28px', borderRadius: '50%', overflow: 'hidden', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ width: '28px', height: '28px', borderRadius: '50%', overflow: 'hidden', background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     {m.user?.avatar_url ? <img src={m.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: '11px', color: '#D4AF37', fontWeight: 700 }}>{m.user?.full_name?.[0] || '?'}</span>}
                   </span>
                   <div style={{ maxWidth: '75%' }}>
-                    {!mine && <p style={{ fontSize: '11px', color: '#A99ECC', marginBottom: '2px', paddingLeft: '4px' }}>{m.user?.full_name?.split(' ')[0]}</p>}
-                    <div style={{ padding: '8px 12px', borderRadius: '14px', background: mine ? 'linear-gradient(135deg, #D4AF37, #B8960C)' : '#0F0F1E', border: mine ? 'none' : '1px solid rgba(255,255,255,0.10)', color: mine ? '#09090F' : '#F0EAFF', fontSize: '14px', lineHeight: 1.4, wordBreak: 'break-word' }}>{m.body}</div>
+                    {!mine && <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px', paddingLeft: '4px' }}>{m.user?.full_name?.split(' ')[0]}</p>}
+                    <div style={{ padding: '8px 12px', borderRadius: '14px', background: mine ? 'linear-gradient(135deg, #D4AF37, #B8960C)' : 'var(--surface-1)', border: mine ? 'none' : '1px solid var(--border)', color: mine ? '#09090F' : 'var(--text-primary)', fontSize: '14px', lineHeight: 1.4, wordBreak: 'break-word' }}>{m.body}</div>
                   </div>
                 </div>
               )
@@ -502,7 +502,7 @@ function Chat({ event, me, messages, onNeedLogin }: any) {
 
 function EmptyBox({ emoji, text }: { emoji: string; text: string }) {
   return (
-    <div style={{ textAlign: 'center', padding: '32px 16px', color: '#A99ECC' }}>
+    <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--text-muted)' }}>
       <div style={{ fontSize: '32px', marginBottom: '8px' }}>{emoji}</div>
       <p style={{ fontSize: '13px' }}>{text}</p>
     </div>
@@ -511,6 +511,6 @@ function EmptyBox({ emoji, text }: { emoji: string; text: string }) {
 
 const inputSm: React.CSSProperties = {
   flex: 1, width: '100%', padding: '11px 14px', borderRadius: '11px', fontSize: '14px',
-  background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.12)', color: '#F0EAFF',
+  background: 'var(--surface-1)', border: '1px solid var(--border)', color: 'var(--text-primary)',
   outline: 'none', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif',
 }

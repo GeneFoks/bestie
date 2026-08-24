@@ -304,17 +304,17 @@ export default function CrewChatPage() {
     : []
 
   return (
-    <div style={{ height: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <nav style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', background: 'rgba(8,8,16,0.95)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)', zIndex: 50 }}>
-        <Link href={`/crews/${slug}`} style={{ color: '#A99ECC', textDecoration: 'none', fontSize: '20px', lineHeight: 1 }}>←</Link>
+      <nav style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)', zIndex: 50 }}>
+        <Link href={`/crews/${slug}`} style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '20px', lineHeight: 1 }}>←</Link>
         {crew?.avatar_url
           ? <img src={crew.avatar_url} alt="" style={{ width: '32px', height: '32px', borderRadius: '10px', objectFit: 'cover' }} />
-          : <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Users size={16} color="#D4AF37" strokeWidth={1.8} /></div>
+          : <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Users size={16} color="#D4AF37" strokeWidth={1.8} /></div>
         }
         <div>
-          <div style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF' }}>{crew?.name}</div>
-          <div style={{ fontSize: '11px', color: '#A99ECC' }}>Members only</div>
+          <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>{crew?.name}</div>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Members only</div>
         </div>
       </nav>
 
@@ -324,12 +324,12 @@ export default function CrewChatPage() {
           <Pin size={14} color="#D4AF37" strokeWidth={2} style={{ flexShrink: 0, marginTop: '3px' }} />
           <div style={{ flex: 1, minWidth: 0 }}>
             {pinnedMessages.slice(0, 1).map(m => (
-              <div key={m.id} style={{ fontSize: '12px', color: '#C8C0E0', lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div key={m.id} style={{ fontSize: '12px', color: 'var(--text-primary)', lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 <span style={{ color: '#D4AF37', fontWeight: 700 }}>{m.sender?.full_name?.split(' ')[0]}:</span> {m.content}
               </div>
             ))}
             {pinnedMessages.length > 1 && (
-              <p style={{ fontSize: '11px', color: '#A99ECC', marginTop: '2px' }}>+ {pinnedMessages.length - 1} more pinned</p>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>+ {pinnedMessages.length - 1} more pinned</p>
             )}
           </div>
         </div>
@@ -338,13 +338,13 @@ export default function CrewChatPage() {
       {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {messages.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '60px 0', color: '#A99ECC', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+          <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
             No messages yet. Say hello <Hand size={14} strokeWidth={2} />
           </div>
         )}
         {groupedMessages.map((group, gi) => (
           <div key={gi} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0, background: '#1A1A2E', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0, background: 'var(--surface-3)', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {group.sender?.avatar_url
                 ? <img src={group.sender.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : <span style={{ fontSize: '14px', fontWeight: 700, color: '#D4AF37' }}>{group.sender?.full_name?.[0]}</span>
@@ -352,10 +352,10 @@ export default function CrewChatPage() {
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px' }}>
-                <Link href={`/${group.sender?.username}`} style={{ fontSize: '13px', fontWeight: 700, color: group.sender?.id === userId ? '#D4AF37' : '#F0EAFF', textDecoration: 'none' }}>
+                <Link href={`/${group.sender?.username}`} style={{ fontSize: '13px', fontWeight: 700, color: group.sender?.id === userId ? '#D4AF37' : 'var(--text-primary)', textDecoration: 'none' }}>
                   {group.sender?.full_name}
                 </Link>
-                <span style={{ fontSize: '11px', color: '#A99ECC' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                   {new Date(group.items[0].created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
@@ -367,19 +367,19 @@ export default function CrewChatPage() {
                     {replyMsg && (
                       <div style={{ marginBottom: '4px', padding: '6px 10px', borderLeft: '3px solid rgba(155,127,255,0.5)', background: 'rgba(155,127,255,0.06)', borderRadius: '0 6px 6px 0', fontSize: '12px' }}>
                         <p style={{ color: '#9B7FFF', fontWeight: 600, marginBottom: '1px' }}>{replyMsg.sender?.full_name?.split(' ')[0] || 'someone'}</p>
-                        <p style={{ color: '#A99ECC', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{replyMsg.content}</p>
+                        <p style={{ color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{replyMsg.content}</p>
                       </div>
                     )}
                     <div style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}>
                       {msg.media_url && msg.media_type === 'audio' ? (
                         <AudioMessage url={msg.media_url} durationSec={msg.media_duration} />
                       ) : (
-                        <div style={{ fontSize: '14px', color: '#C8C0E0', lineHeight: 1.6, wordBreak: 'break-word', paddingRight: '40px' }}>
+                        <div style={{ fontSize: '14px', color: 'var(--text-primary)', lineHeight: 1.6, wordBreak: 'break-word', paddingRight: '40px' }}>
                           {renderWithMentions(msg.content)}
                         </div>
                       )}
                       {/* Hover actions */}
-                      <div style={{ position: 'absolute', top: '-2px', right: '-4px', display: 'flex', gap: '2px', opacity: actionsFor === msg.id ? 1 : 0, transition: 'opacity 0.15s', background: '#161628', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '8px', padding: '2px' }}>
+                      <div style={{ position: 'absolute', top: '-2px', right: '-4px', display: 'flex', gap: '2px', opacity: actionsFor === msg.id ? 1 : 0, transition: 'opacity 0.15s', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '2px' }}>
                         <button onClick={(e) => { e.stopPropagation(); setReactionPickerFor(reactionPickerFor === msg.id ? null : msg.id) }} aria-label="React" style={iconBtn}><Smile size={14} strokeWidth={1.8} /></button>
                         <button onClick={(e) => { e.stopPropagation(); setReplyingTo(msg); setActionsFor(null); inputRef.current?.focus() }} aria-label="Reply" style={iconBtn}><Reply size={14} strokeWidth={1.8} /></button>
                         {isCaptain && (
@@ -388,14 +388,14 @@ export default function CrewChatPage() {
                           </button>
                         )}
                       </div>
-                      <button onClick={(e) => { e.stopPropagation(); setActionsFor(actionsFor === msg.id ? null : msg.id) }} aria-label="More" style={{ position: 'absolute', top: '0', right: '-2px', background: 'transparent', border: 'none', color: '#6B6280', cursor: 'pointer', padding: '2px', opacity: actionsFor === msg.id ? 0 : 1 }}>
+                      <button onClick={(e) => { e.stopPropagation(); setActionsFor(actionsFor === msg.id ? null : msg.id) }} aria-label="More" style={{ position: 'absolute', top: '0', right: '-2px', background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px', opacity: actionsFor === msg.id ? 0 : 1 }}>
                         <MoreHorizontal size={14} />
                       </button>
                     </div>
 
                     {/* Reaction picker */}
                     {reactionPickerFor === msg.id && (
-                      <div onClick={e => e.stopPropagation()} style={{ marginTop: '6px', display: 'inline-flex', gap: '4px', padding: '6px 8px', background: '#161628', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '999px', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}>
+                      <div onClick={e => e.stopPropagation()} style={{ marginTop: '6px', display: 'inline-flex', gap: '4px', padding: '6px 8px', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '999px', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}>
                         {QUICK_REACTIONS.map(em => (
                           <button key={em} onClick={() => toggleReaction(msg.id, em)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', padding: '2px 6px', borderRadius: '6px' }}>{em}</button>
                         ))}
@@ -406,7 +406,7 @@ export default function CrewChatPage() {
                     {rx && (
                       <div style={{ marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                         {Object.entries(rx).map(([emoji, info]) => (
-                          <button key={emoji} onClick={() => toggleReaction(msg.id, emoji)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '999px', fontSize: '12px', cursor: 'pointer', background: info.mine ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)', border: info.mine ? '1px solid rgba(212,175,55,0.35)' : '1px solid rgba(255,255,255,0.10)', color: info.mine ? '#D4AF37' : '#C8C0E0', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+                          <button key={emoji} onClick={() => toggleReaction(msg.id, emoji)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '999px', fontSize: '12px', cursor: 'pointer', background: info.mine ? 'rgba(212,175,55,0.15)' : 'var(--overlay)', border: info.mine ? '1px solid rgba(212,175,55,0.35)' : '1px solid var(--border)', color: info.mine ? '#D4AF37' : 'var(--text-muted)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
                             <span>{emoji}</span><span style={{ fontWeight: 700 }}>{info.count}</span>
                           </button>
                         ))}
@@ -422,7 +422,7 @@ export default function CrewChatPage() {
                 )
               })}
             </div>
-            <button onClick={(e) => { e.stopPropagation(); setActionsFor(group.items[0].id) }} aria-label="Message actions" style={{ background: 'transparent', border: 'none', color: '#6B6280', cursor: 'pointer', padding: '2px', flexShrink: 0, marginTop: '2px' }}>
+            <button onClick={(e) => { e.stopPropagation(); setActionsFor(group.items[0].id) }} aria-label="Message actions" style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px', flexShrink: 0, marginTop: '2px' }}>
               <MoreHorizontal size={16} />
             </button>
           </div>
@@ -436,9 +436,9 @@ export default function CrewChatPage() {
           <Reply size={14} color="#9B7FFF" strokeWidth={2} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ fontSize: '11px', color: '#9B7FFF', fontWeight: 700 }}>Replying to {replyingTo.sender?.full_name?.split(' ')[0]}</p>
-            <p style={{ fontSize: '12px', color: '#A99ECC', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{replyingTo.content}</p>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{replyingTo.content}</p>
           </div>
-          <button onClick={() => setReplyingTo(null)} aria-label="Cancel reply" style={{ background: 'none', border: 'none', color: '#A99ECC', cursor: 'pointer', padding: '4px' }}>
+          <button onClick={() => setReplyingTo(null)} aria-label="Cancel reply" style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}>
             <X size={16} strokeWidth={2} />
           </button>
         </div>
@@ -446,19 +446,19 @@ export default function CrewChatPage() {
 
       {/* Mention autocomplete */}
       {mentionResults.length > 0 && (
-        <div style={{ flexShrink: 0, padding: '6px 12px', background: '#0F0F1E', borderTop: '1px solid rgba(155,127,255,0.20)', display: 'flex', gap: '6px', overflowX: 'auto' }}>
+        <div style={{ flexShrink: 0, padding: '6px 12px', background: 'var(--surface-1)', borderTop: '1px solid rgba(155,127,255,0.20)', display: 'flex', gap: '6px', overflowX: 'auto' }}>
           {mentionResults.map(m => (
-            <button key={m.id} onClick={() => insertMention(m.username)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 10px', borderRadius: '10px', background: 'rgba(155,127,255,0.10)', border: '1px solid rgba(155,127,255,0.25)', color: '#F0EAFF', cursor: 'pointer', fontSize: '12px', fontFamily: 'Plus Jakarta Sans, sans-serif', flexShrink: 0 }}>
+            <button key={m.id} onClick={() => insertMention(m.username)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 10px', borderRadius: '10px', background: 'rgba(155,127,255,0.10)', border: '1px solid rgba(155,127,255,0.25)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '12px', fontFamily: 'Plus Jakarta Sans, sans-serif', flexShrink: 0 }}>
               <AtSign size={11} strokeWidth={2} color="#9B7FFF" />
               <span style={{ color: '#9B7FFF', fontWeight: 700 }}>{m.username}</span>
-              <span style={{ color: '#A99ECC' }}>{m.full_name?.split(' ')[0]}</span>
+              <span style={{ color: 'var(--text-muted)' }}>{m.full_name?.split(' ')[0]}</span>
             </button>
           ))}
         </div>
       )}
 
       {/* Input */}
-      <div style={{ flexShrink: 0, padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.10)', background: 'rgba(8,8,16,0.95)', display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+      <div style={{ flexShrink: 0, padding: '12px 16px', borderTop: '1px solid var(--border)', background: 'var(--nav-bg)', display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
         <textarea
           ref={inputRef}
           value={input}
@@ -468,7 +468,7 @@ export default function CrewChatPage() {
           aria-label="Message the crew"
           rows={1}
           maxLength={1000}
-          style={{ flex: 1, padding: '12px 14px', borderRadius: '12px', fontSize: '14px', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', outline: 'none', resize: 'none', lineHeight: 1.5, maxHeight: '120px', overflowY: 'auto', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+          style={{ flex: 1, padding: '12px 14px', borderRadius: '12px', fontSize: '14px', background: 'var(--surface-1)', border: '1px solid var(--border)', color: 'var(--text-primary)', outline: 'none', resize: 'none', lineHeight: 1.5, maxHeight: '120px', overflowY: 'auto', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
         />
         <AudioRecorder onSend={sendAudio} disabled={sending} />
         {input.trim() && (
@@ -486,7 +486,7 @@ export default function CrewChatPage() {
 }
 
 const iconBtn: React.CSSProperties = {
-  background: 'transparent', border: 'none', color: '#A99ECC', cursor: 'pointer',
+  background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer',
   padding: '4px 6px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center',
 }
 

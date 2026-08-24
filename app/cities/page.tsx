@@ -36,16 +36,16 @@ export default async function CitiesPage() {
     .sort((a, b) => b.count - a.count)
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <ProfileNav />
       </nav>
 
       <div style={{ maxWidth: '760px', margin: '0 auto', padding: '40px 24px' }}>
         <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '8px' }}>CITY HUBS</p>
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '32px', color: '#F0EAFF', marginBottom: '8px' }}>Find your city</h1>
-        <p style={{ fontSize: '15px', color: '#A99ECC', marginBottom: '32px' }}>Top Besties, popular activities, and upcoming events near you.</p>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '32px', color: 'var(--text-primary)', marginBottom: '8px' }}>Find your city</h1>
+        <p style={{ fontSize: '15px', color: 'var(--text-muted)', marginBottom: '32px' }}>Top Besties, popular activities, and upcoming events near you.</p>
 
         {cities.length === 0 ? (
           <EmptyState
@@ -61,11 +61,11 @@ export default async function CitiesPage() {
               <Link
                 key={city}
                 href={`/cities/${encodeURIComponent(city)}`}
-                style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '20px', borderRadius: '18px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', textDecoration: 'none', transition: 'border-color 0.15s' }}
+                style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '20px', borderRadius: '18px', background: 'var(--surface-1)', border: '1px solid var(--border)', textDecoration: 'none', transition: 'border-color 0.15s' }}
               >
                 <MapPin size={28} color="#D4AF37" strokeWidth={2} />
-                <span style={{ fontSize: '16px', fontWeight: 700, color: '#F0EAFF', fontFamily: 'DM Serif Display, serif' }}>{city}</span>
-                {country && <span style={{ fontSize: '12px', color: '#A99ECC' }}>{country}</span>}
+                <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'DM Serif Display, serif' }}>{city}</span>
+                {country && <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{country}</span>}
                 <span style={{ fontSize: '13px', fontWeight: 600, color: '#D4AF37', marginTop: '4px' }}>{count} {count === 1 ? 'Bestie' : 'Besties'}</span>
               </Link>
             ))}

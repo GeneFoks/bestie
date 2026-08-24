@@ -156,8 +156,8 @@ export default function OnboardingPage() {
     router.push(skip ? '/dashboard' : '/bestie-type')
   }
 
-  const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
-  const labelStyle = { fontSize: '13px', fontWeight: 500, color: '#A99ECC', display: 'block', marginBottom: '8px' }
+  const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--text-primary)', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
+  const labelStyle = { fontSize: '13px', fontWeight: 500, color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }
   const currentGroup = ACTIVITY_GROUPS.find(g => g.id === activeGroup)
 
   if (checking) return <PageLoader />
@@ -165,19 +165,19 @@ export default function OnboardingPage() {
   const canContinue = step === 1 ? !!form.full_name : true
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ width: '100%', maxWidth: '520px' }}>
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
           <span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: '#D4AF37' }}>BESTIE</span>
-          <p style={{ fontSize: '13px', color: '#A99ECC', marginTop: '4px' }}>Step {step} of 3</p>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>Step {step} of 3</p>
         </div>
         <div style={{ display: 'flex', gap: '6px', marginBottom: '28px' }}>
           {[1,2,3].map(s => (
-            <div key={s} style={{ flex: 1, height: '4px', borderRadius: '999px', background: s <= step ? '#D4AF37' : 'rgba(255,255,255,0.12)', transition: 'all 0.3s' }} />
+            <div key={s} style={{ flex: 1, height: '4px', borderRadius: '999px', background: s <= step ? '#D4AF37' : 'var(--border)', transition: 'all 0.3s' }} />
           ))}
         </div>
-        <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '24px', padding: '32px' }}>
-          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: '#F0EAFF', marginBottom: '20px' }}>
+        <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '24px', padding: '32px' }}>
+          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '20px' }}>
             {STEP_TITLES[step - 1]}
           </h2>
 
@@ -185,12 +185,12 @@ export default function OnboardingPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                 <label style={{ cursor: 'pointer', position: 'relative' }}>
-                  <div style={{ width: '110px', height: '110px', borderRadius: '50%', overflow: 'hidden', background: '#161628', border: '2px dashed rgba(212,175,55,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '110px', height: '110px', borderRadius: '50%', overflow: 'hidden', background: 'var(--surface-2)', border: '2px dashed rgba(212,175,55,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {avatarPreview
                       ? <img src={avatarPreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       : <Camera size={30} color="#D4AF37" strokeWidth={1.6} />}
                   </div>
-                  <span style={{ position: 'absolute', bottom: 0, right: 0, width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #D4AF37, #B8960C)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid #111120' }}>
+                  <span style={{ position: 'absolute', bottom: 0, right: 0, width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #D4AF37, #B8960C)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid var(--surface-1)' }}>
                     <Camera size={15} color="#09090F" strokeWidth={2.2} />
                   </span>
                   <input ref={fileRef} type="file" accept="image/*" onChange={handleAvatarPick} style={{ display: 'none' }} />
@@ -216,17 +216,17 @@ export default function OnboardingPage() {
               </div>
               <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                 <MapPin size={16} color="#D4AF37" strokeWidth={2} style={{ flexShrink: 0, marginTop: '2px' }} />
-                <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.6 }}>Your city is how people find you nearby and how events match you. You can meet online from anywhere too.</p>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6 }}>Your city is how people find you nearby and how events match you. You can meet online from anywhere too.</p>
               </div>
             </div>
           )}
 
           {step === 3 && (
             <div>
-              <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '12px' }}>Pick everything you're open to:</p>
+              <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '12px' }}>Pick everything you're open to:</p>
               <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '10px', marginBottom: '12px', scrollbarWidth: 'none' }}>
                 {ACTIVITY_GROUPS.map(g => (
-                  <button key={g.id} onClick={() => setActiveGroup(g.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: activeGroup === g.id ? 'rgba(212,175,55,0.15)' : '#131323', border: activeGroup === g.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', color: activeGroup === g.id ? '#D4AF37' : '#A99ECC' }}>
+                  <button key={g.id} onClick={() => setActiveGroup(g.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: activeGroup === g.id ? 'rgba(212,175,55,0.15)' : 'var(--surface-1b)', border: activeGroup === g.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid var(--border)', color: activeGroup === g.id ? '#D4AF37' : 'var(--text-muted)' }}>
                     <g.Icon size={13} strokeWidth={1.8} />{g.label}
                   </button>
                 ))}
@@ -235,9 +235,9 @@ export default function OnboardingPage() {
                 {currentGroup?.activities.map(a => {
                   const selected = form.activities.includes(a.id)
                   return (
-                    <button key={a.id} onClick={() => toggleActivity(a.id)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '12px 8px', borderRadius: '14px', border: selected ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', background: selected ? 'rgba(212,175,55,0.1)' : '#111120', cursor: 'pointer' }}>
-                      <ActivityIcon type={a.id} size={22} color={selected ? '#D4AF37' : '#A99ECC'} strokeWidth={1.7} />
-                      <span style={{ fontSize: '11px', fontWeight: 500, color: selected ? '#D4AF37' : '#A99ECC', textAlign: 'center' }}>{a.label}</span>
+                    <button key={a.id} onClick={() => toggleActivity(a.id)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '12px 8px', borderRadius: '14px', border: selected ? '1px solid rgba(212,175,55,0.4)' : '1px solid var(--border)', background: selected ? 'rgba(212,175,55,0.1)' : 'var(--surface-1)', cursor: 'pointer' }}>
+                      <ActivityIcon type={a.id} size={22} color={selected ? '#D4AF37' : 'var(--text-muted)'} strokeWidth={1.7} />
+                      <span style={{ fontSize: '11px', fontWeight: 500, color: selected ? '#D4AF37' : 'var(--text-muted)', textAlign: 'center' }}>{a.label}</span>
                     </button>
                   )
                 })}
@@ -245,7 +245,7 @@ export default function OnboardingPage() {
               {form.activities.length > 0 && (
                 <p style={{ fontSize: '12px', color: '#D4AF37', marginTop: '12px' }}>{form.activities.length} selected</p>
               )}
-              <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '14px', lineHeight: 1.5 }}>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '14px', lineHeight: 1.5 }}>
                 Next: the 5-minute personality test — it powers who you'll click with. 🧭
               </p>
             </div>
@@ -254,8 +254,8 @@ export default function OnboardingPage() {
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
           {step > 1
-            ? <button onClick={() => setStep(s => s - 1)} style={{ fontSize: '14px', color: '#A99ECC', background: 'none', border: 'none', cursor: 'pointer' }}>← Back</button>
-            : <button onClick={() => finish(true)} disabled={loading} style={{ fontSize: '13px', color: '#6B6490', background: 'none', border: 'none', cursor: 'pointer' }}>Skip for now</button>}
+            ? <button onClick={() => setStep(s => s - 1)} style={{ fontSize: '14px', color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>← Back</button>
+            : <button onClick={() => finish(true)} disabled={loading} style={{ fontSize: '13px', color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer' }}>Skip for now</button>}
           {step < 3 ? (
             <button onClick={() => setStep(s => s + 1)} disabled={!canContinue} style={{ padding: '12px 28px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: canContinue ? 'pointer' : 'not-allowed', opacity: canContinue ? 1 : 0.5 }}>
               Continue →

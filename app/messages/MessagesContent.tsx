@@ -234,18 +234,18 @@ export default function MessagesPage() {
   if (loading) return <PageLoader fullscreen={false} message="Loading messages…" />
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', flexDirection: 'column' }}>
-      <nav style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', flexDirection: 'column' }}>
+      <nav style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <Link href="/dashboard" style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>← Dashboard</Link>
+        <Link href="/dashboard" style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid var(--border)' }}>← Dashboard</Link>
       </nav>
 
       <div className="messages-layout" data-view={activeConv ? 'thread' : 'inbox'} style={{ flex: 1, display: 'flex', maxWidth: '1100px', width: '100%', margin: '0 auto', padding: '24px', gap: '20px', height: 'calc(100dvh - 65px)' }}>
 
         {/* Sidebar */}
-        <div className="messages-sidebar" style={{ width: '320px', flexShrink: 0, background: '#111120', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.10)', display: activeConv ? undefined : 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
-            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#F0EAFF' }}>Messages</h2>
+        <div className="messages-sidebar" style={{ width: '320px', flexShrink: 0, background: 'var(--surface-1)', borderRadius: '20px', border: '1px solid var(--border)', display: activeConv ? undefined : 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ padding: '20px', borderBottom: '1px solid var(--border)' }}>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>Messages</h2>
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {conversations.length === 0 ? (
@@ -260,9 +260,9 @@ export default function MessagesPage() {
                 />
               </div>
             ) : conversations.map(conv => (
-              <button key={conv.user.id} onClick={() => setActiveConv(conv)} style={{ width: '100%', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px', background: activeConv?.user.id === conv.user.id ? 'rgba(212,175,55,0.08)' : 'transparent', border: 'none', borderBottom: '1px solid #131323', cursor: 'pointer', textAlign: 'left' }}>
+              <button key={conv.user.id} onClick={() => setActiveConv(conv)} style={{ width: '100%', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px', background: activeConv?.user.id === conv.user.id ? 'rgba(212,175,55,0.08)' : 'transparent', border: 'none', borderBottom: '1px solid var(--surface-1b)', cursor: 'pointer', textAlign: 'left' }}>
                 <div style={{ position: 'relative', flexShrink: 0 }}>
-                  <div style={{ width: '44px', height: '44px', borderRadius: '14px', overflow: 'hidden', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '44px', height: '44px', borderRadius: '14px', overflow: 'hidden', background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {conv.user.avatar_url ? <img src={conv.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700, fontSize: '14px' }}>{initials(conv.user.full_name)}</span>}
                   </div>
                   {conv.unread > 0 && (
@@ -273,10 +273,10 @@ export default function MessagesPage() {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '14px', fontWeight: conv.unread > 0 ? 700 : 600, color: '#F0EAFF' }}>{conv.user.full_name}</span>
-                    {conv.lastMessage && <span style={{ fontSize: '11px', color: '#A99ECC' }}>{formatTime(conv.lastMessage.created_at)}</span>}
+                    <span style={{ fontSize: '14px', fontWeight: conv.unread > 0 ? 700 : 600, color: 'var(--text-primary)' }}>{conv.user.full_name}</span>
+                    {conv.lastMessage && <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{formatTime(conv.lastMessage.created_at)}</span>}
                   </div>
-                  <span style={{ fontSize: '13px', color: conv.unread > 0 ? '#F0EAFF' : '#A99ECC', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', fontWeight: conv.unread > 0 ? 500 : 400 }}>
+                  <span style={{ fontSize: '13px', color: conv.unread > 0 ? 'var(--text-primary)' : 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', fontWeight: conv.unread > 0 ? 500 : 400 }}>
                     {conv.lastMessage ? (conv.lastMessage.sender_id === userId ? 'You: ' : '') + conv.lastMessage.content : 'Start a conversation'}
                   </span>
                 </div>
@@ -286,50 +286,50 @@ export default function MessagesPage() {
         </div>
 
         {/* Chat area */}
-        <div className="messages-thread" style={{ flex: 1, background: '#111120', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.10)', display: activeConv ? 'flex' : 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div className="messages-thread" style={{ flex: 1, background: 'var(--surface-1)', borderRadius: '20px', border: '1px solid var(--border)', display: activeConv ? 'flex' : 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {!activeConv ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
               <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <MessageCircle size={32} color="#D4AF37" strokeWidth={2} />
               </div>
-              <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF' }}>Select a conversation</h3>
+              <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: 'var(--text-primary)' }}>Select a conversation</h3>
               <Link href="/browse" style={{ fontSize: '14px', fontWeight: 600, padding: '10px 24px', borderRadius: '12px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Browse Besties</Link>
             </div>
           ) : (
             <>
-              <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <button
                   onClick={() => setActiveConv(null)}
                   className="messages-back"
                   aria-label="Back to inbox"
-                  style={{ display: 'none', background: 'none', border: 'none', color: '#A99ECC', cursor: 'pointer', padding: '4px 8px', fontSize: '18px', lineHeight: 1 }}
+                  style={{ display: 'none', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px 8px', fontSize: '18px', lineHeight: 1 }}
                 >
                   ←
                 </button>
-                <div style={{ width: '40px', height: '40px', borderRadius: '12px', overflow: 'hidden', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '12px', overflow: 'hidden', background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {activeConv.user.avatar_url ? <img src={activeConv.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700, fontSize: '13px' }}>{initials(activeConv.user.full_name)}</span>}
                 </div>
                 <div>
-                  <p style={{ fontSize: '15px', fontWeight: 600, color: '#F0EAFF' }}>{activeConv.user.full_name}</p>
-                  <p style={{ fontSize: '12px', color: '#A99ECC' }}>@{activeConv.user.username}</p>
+                  <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>{activeConv.user.full_name}</p>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>@{activeConv.user.username}</p>
                 </div>
                 <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <CallButton toUserId={activeConv.user.id} toUserName={activeConv.user.full_name} variant="icon" />
-                  <Link href={`/${activeConv.user.username}`} style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>View profile</Link>
+                  <Link href={`/${activeConv.user.username}`} style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none', padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border)' }}>View profile</Link>
                 </div>
               </div>
 
               <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {messages.length === 0 && <div style={{ textAlign: 'center', padding: '40px 0', color: '#A99ECC', fontSize: '14px' }}>Say hi to {activeConv.user.full_name?.split(' ')[0]} 👋</div>}
+                {messages.length === 0 && <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)', fontSize: '14px' }}>Say hi to {activeConv.user.full_name?.split(' ')[0]} 👋</div>}
                 {messages.map(msg => {
                   const isMine = msg.sender_id === userId
                   return (
                     <div key={msg.id} style={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start', opacity: msg.pending ? 0.55 : 1, transition: 'opacity 0.2s ease' }}>
                       <div style={{ maxWidth: '70%' }}>
-                        <div style={{ padding: '10px 14px', borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: isMine ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.11)', color: isMine ? '#09090F' : '#F0EAFF', fontSize: '14px', lineHeight: 1.5 }}>
+                        <div style={{ padding: '10px 14px', borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: isMine ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.11)', color: isMine ? '#09090F' : 'var(--text-primary)', fontSize: '14px', lineHeight: 1.5 }}>
                           {msg.content}
                         </div>
-                        <p style={{ fontSize: '11px', color: '#A99ECC', marginTop: '4px', textAlign: isMine ? 'right' : 'left' }}>{msg.pending ? 'sending…' : formatTime(msg.created_at)}</p>
+                        <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', textAlign: isMine ? 'right' : 'left' }}>{msg.pending ? 'sending…' : formatTime(msg.created_at)}</p>
                       </div>
                     </div>
                   )
@@ -338,17 +338,17 @@ export default function MessagesPage() {
               </div>
 
               {canDM ? (
-                <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.10)', display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
-                  <textarea value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }} placeholder={`Message ${activeConv.user.full_name?.split(' ')[0]}...`} aria-label={`Message ${activeConv.user.full_name || ''}`} rows={1} style={{ flex: 1, padding: '12px 16px', borderRadius: '14px', fontSize: '14px', outline: 'none', background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', resize: 'none', fontFamily: 'Plus Jakarta Sans, sans-serif', lineHeight: 1.5 }} />
-                  <button onClick={sendMessage} disabled={sending || !newMessage.trim()} style={{ padding: '12px 20px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: newMessage.trim() ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.10)', color: newMessage.trim() ? '#09090F' : '#A99ECC', border: 'none', cursor: newMessage.trim() ? 'pointer' : 'not-allowed', flexShrink: 0 }}>
+                <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border)', display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+                  <textarea value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }} placeholder={`Message ${activeConv.user.full_name?.split(' ')[0]}...`} aria-label={`Message ${activeConv.user.full_name || ''}`} rows={1} style={{ flex: 1, padding: '12px 16px', borderRadius: '14px', fontSize: '14px', outline: 'none', background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--text-primary)', resize: 'none', fontFamily: 'Plus Jakarta Sans, sans-serif', lineHeight: 1.5 }} />
+                  <button onClick={sendMessage} disabled={sending || !newMessage.trim()} style={{ padding: '12px 20px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: newMessage.trim() ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.10)', color: newMessage.trim() ? '#09090F' : 'var(--text-muted)', border: 'none', cursor: newMessage.trim() ? 'pointer' : 'not-allowed', flexShrink: 0 }}>
                     {sending ? '...' : 'Send'}
                   </button>
                 </div>
               ) : (
-                <div style={{ padding: '20px', borderTop: '1px solid rgba(255,255,255,0.10)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', textAlign: 'center' }}>
+                <div style={{ padding: '20px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', textAlign: 'center' }}>
                   <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>🔒</div>
-                  <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>Match first to start chatting</p>
-                  <p style={{ fontSize: '13px', color: '#A99ECC', maxWidth: '320px', lineHeight: 1.5 }}>
+                  <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>Match first to start chatting</p>
+                  <p style={{ fontSize: '13px', color: 'var(--text-muted)', maxWidth: '320px', lineHeight: 1.5 }}>
                     You can message {activeConv.user.full_name?.split(' ')[0]} once you both knock, or after a session together.
                   </p>
                   <Link href={`/${activeConv.user.username}`} style={{ marginTop: '4px', fontSize: '13px', fontWeight: 600, padding: '10px 20px', borderRadius: '12px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>

@@ -77,8 +77,8 @@ export default function PulsePage() {
   const otherFree = myCity ? todayFree.filter(u => !u.city?.toLowerCase().includes(myCity.toLowerCase())) : todayFree
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <ProfileNav />
       </nav>
@@ -87,23 +87,23 @@ export default function PulsePage() {
 
         {/* Header */}
         <div style={{ marginBottom: '32px' }}>
-          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 7vw, 34px)', color: '#F0EAFF', marginBottom: '6px', display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
+          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 7vw, 34px)', color: 'var(--text-primary)', marginBottom: '6px', display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
             <Globe size={28} color="#D4AF37" strokeWidth={2} /> City Pulse
           </h1>
-          <p style={{ fontSize: '14px', color: '#A99ECC' }}>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
             {myCity ? `What's happening in ${myCity} and around the world` : 'What\'s happening right now'}
           </p>
         </div>
 
         {/* Free today toggle */}
         {myId && (
-          <div style={{ marginBottom: '32px', padding: '20px 24px', borderRadius: '20px', background: iAmFree ? 'rgba(52,211,153,0.06)' : '#111120', border: iAmFree ? '1px solid rgba(52,211,153,0.25)' : '1px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={{ marginBottom: '32px', padding: '20px 24px', borderRadius: '20px', background: iAmFree ? 'rgba(52,211,153,0.06)' : 'var(--surface-1)', border: iAmFree ? '1px solid rgba(52,211,153,0.25)' : '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
             <div>
-              <p style={{ fontSize: '15px', fontWeight: 700, color: iAmFree ? '#34D399' : '#F0EAFF', marginBottom: '3px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: iAmFree ? '#34D399' : '#6B5EA8', display: 'inline-block' }} />
+              <p style={{ fontSize: '15px', fontWeight: 700, color: iAmFree ? '#34D399' : 'var(--text-primary)', marginBottom: '3px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: iAmFree ? '#34D399' : 'var(--text-dim)', display: 'inline-block' }} />
                 {iAmFree ? 'You\'re free today' : 'Are you free today?'}
               </p>
-              <p style={{ fontSize: '13px', color: '#A99ECC' }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
                 {iAmFree ? 'Others can see you\'re available for a meetup' : 'Let others know you\'re up for a spontaneous meetup'}
               </p>
             </div>
@@ -120,7 +120,7 @@ export default function PulsePage() {
             {/* Free in your city */}
             {(cityFree.length > 0 || iAmFree) && (
               <section style={{ marginBottom: '36px' }}>
-                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '14px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '14px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34D399', display: 'inline-block' }} />
                   FREE TODAY {myCity ? `· ${myCity.toUpperCase()}` : ''}
                 </p>
@@ -144,7 +144,7 @@ export default function PulsePage() {
             {/* Free elsewhere */}
             {otherFree.length > 0 && (
               <section style={{ marginBottom: '36px' }}>
-                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '14px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '14px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34D399', display: 'inline-block' }} />
                   FREE TODAY · WORLDWIDE
                 </p>
@@ -170,7 +170,7 @@ export default function PulsePage() {
             {groupSessions.length > 0 && (
               <section style={{ marginBottom: '36px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                  <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '8px' }}><PartyPopper size={12} color="#D4AF37" strokeWidth={2} /> UPCOMING GROUP SESSIONS</p>
+                  <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '8px' }}><PartyPopper size={12} color="#D4AF37" strokeWidth={2} /> UPCOMING GROUP SESSIONS</p>
                   <Link href="/group-sessions/new" style={{ fontSize: '12px', color: '#D4AF37', textDecoration: 'none' }}>+ Host one →</Link>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -192,17 +192,17 @@ function FreePill({ user }: { user: any }) {
   return (
     <Link href={`/${user.username}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '14px', background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.18)', textDecoration: 'none', transition: 'all 0.15s' }}>
       <div style={{ position: 'relative' }}>
-        <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: '#1A1A2E', border: `1.5px solid ${scoreColor}50`, flexShrink: 0 }}>
+        <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: 'var(--surface-3)', border: `1.5px solid ${scoreColor}50`, flexShrink: 0 }}>
           {user.avatar_url
             ? <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: scoreColor }}>{initials}</div>
           }
         </div>
-        <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '10px', height: '10px', borderRadius: '50%', background: '#34D399', border: '1.5px solid #09090F' }} />
+        <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '10px', height: '10px', borderRadius: '50%', background: '#34D399', border: '1.5px solid var(--bg)' }} />
       </div>
       <div>
-        <p style={{ fontSize: '13px', fontWeight: 600, color: '#F0EAFF' }}>{user.full_name?.split(' ')[0]}</p>
-        {user.city && <p style={{ fontSize: '11px', color: '#A99ECC' }}>{user.city}</p>}
+        <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{user.full_name?.split(' ')[0]}</p>
+        {user.city && <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{user.city}</p>}
       </div>
     </Link>
   )
@@ -214,15 +214,15 @@ function GroupSessionCard({ session }: { session: any }) {
   const isFull = session.status === 'full'
   const host = session.host
   return (
-    <Link href={`/group-sessions/${session.id}`} style={{ display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: '#111120', border: '1px solid rgba(255,255,255,0.11)', textDecoration: 'none', transition: 'all 0.15s' }}>
+    <Link href={`/group-sessions/${session.id}`} style={{ display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: 'var(--surface-1)', border: '1px solid var(--border)', textDecoration: 'none', transition: 'all 0.15s' }}>
       <div style={{ flexShrink: 0, width: '48px', textAlign: 'center' }}>
         <p style={{ fontSize: '11px', fontWeight: 700, color: '#D4AF37', letterSpacing: '1px' }}>{d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}</p>
-        <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', fontWeight: 700, color: '#F0EAFF', lineHeight: 1.1 }}>{d.getDate()}</p>
-        <p style={{ fontSize: '10px', color: '#A99ECC' }}>{d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+        <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.1 }}>{d.getDate()}</p>
+        <p style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: '15px', fontWeight: 600, color: '#F0EAFF', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{session.title}</p>
-        <p style={{ fontSize: '12px', color: '#A99ECC', marginBottom: '6px', display: 'inline-flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+        <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{session.title}</p>
+        <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px', display: 'inline-flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
           {session.location && <><MapPin size={11} strokeWidth={2} /> {session.location} · </>}
           by {host?.full_name?.split(' ')[0]}
         </p>
@@ -230,7 +230,7 @@ function GroupSessionCard({ session }: { session: any }) {
           <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 8px', borderRadius: '999px', background: isFull ? 'rgba(255,107,53,0.1)' : 'rgba(52,211,153,0.08)', border: isFull ? '1px solid rgba(255,107,53,0.25)' : '1px solid rgba(52,211,153,0.2)', color: isFull ? '#FF6B35' : '#34D399' }}>
             {isFull ? 'Full' : 'Open'}
           </span>
-          <span style={{ fontSize: '11px', color: '#A99ECC' }}>{participantCount}/{session.max_participants} joined</span>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{participantCount}/{session.max_participants} joined</span>
         </div>
       </div>
     </Link>

@@ -72,7 +72,7 @@ export default function MatchModal({ onClose }: MatchModalProps) {
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      style={{ background: 'rgba(8,8,16,0.88)', backdropFilter: 'blur(16px)' }}
+      style={{ background: 'var(--nav-bg)', backdropFilter: 'blur(16px)' }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
@@ -81,7 +81,7 @@ export default function MatchModal({ onClose }: MatchModalProps) {
         aria-labelledby="match-modal-title"
         className="w-full max-w-lg rounded-3xl overflow-hidden flex flex-col"
         style={{
-          background: '#0F0F1E',
+          background: 'var(--surface-1)',
           border: '1px solid rgba(212,175,55,0.2)',
           boxShadow: '0 40px 100px rgba(0,0,0,0.7)',
           maxHeight: '85vh',
@@ -99,7 +99,7 @@ export default function MatchModal({ onClose }: MatchModalProps) {
             <h3
               id="match-modal-title"
               className="text-xl font-bold"
-              style={{ color: '#F0EAFF', fontFamily: 'DM Serif Display, serif' }}
+              style={{ color: 'var(--text-primary)', fontFamily: 'DM Serif Display, serif' }}
             >
               {state === 'results' ? 'Your best matches' : 'Match by personality'}
             </h3>
@@ -109,7 +109,7 @@ export default function MatchModal({ onClose }: MatchModalProps) {
             onClick={onClose}
             aria-label="Close Smart Match"
             className="w-10 h-10 flex items-center justify-center rounded-full transition-colors hover:bg-white/10"
-            style={{ color: '#A99ECC' }}
+            style={{ color: 'var(--text-muted)' }}
           >
             <X size={18} strokeWidth={2} />
           </button>
@@ -118,7 +118,7 @@ export default function MatchModal({ onClose }: MatchModalProps) {
         {/* Body */}
         <div className="p-6 overflow-y-auto">
           {state === 'loading' && (
-            <p className="text-sm text-center py-8" style={{ color: '#A99ECC' }}>Finding your people…</p>
+            <p className="text-sm text-center py-8" style={{ color: 'var(--text-muted)' }}>Finding your people…</p>
           )}
 
           {(state === 'guest' || state === 'no-type') && (
@@ -129,10 +129,10 @@ export default function MatchModal({ onClose }: MatchModalProps) {
               >
                 <Compass size={34} color="#D4AF37" strokeWidth={1.6} />
               </div>
-              <h4 className="text-lg font-bold mb-2" style={{ color: '#F0EAFF', fontFamily: 'DM Serif Display, serif' }}>
+              <h4 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)', fontFamily: 'DM Serif Display, serif' }}>
                 Discover your eterotype first
               </h4>
-              <p className="text-sm mb-6 mx-auto" style={{ color: '#A99ECC', maxWidth: '360px', lineHeight: 1.6 }}>
+              <p className="text-sm mb-6 mx-auto" style={{ color: 'var(--text-muted)', maxWidth: '360px', lineHeight: 1.6 }}>
                 Smart Match pairs people by personality type — 16 types, real socionics.
                 Take the 5-minute test and we'll show you the Besties you'll naturally click with.
               </p>
@@ -144,7 +144,7 @@ export default function MatchModal({ onClose }: MatchModalProps) {
               >
                 {state === 'guest' ? 'Join & take the test' : 'Take the test'} <Sparkles size={14} strokeWidth={2} />
               </Link>
-              <p className="text-xs mt-4" style={{ color: '#6B6490' }}>
+              <p className="text-xs mt-4" style={{ color: 'var(--text-dim)' }}>
                 28 questions · your type shows on your Social Passport
               </p>
             </div>
@@ -153,14 +153,14 @@ export default function MatchModal({ onClose }: MatchModalProps) {
           {state === 'results' && (
             <div>
               {myType && TYPES[myType] && (
-                <p className="text-sm mb-4" style={{ color: '#A99ECC' }}>
+                <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
                   You're <b style={{ color: '#D4AF37' }}>{TYPES[myType].name}</b> — here's who you naturally click with:
                 </p>
               )}
 
               {matches.length === 0 ? (
                 <div className="text-center py-6">
-                  <p className="text-sm mb-3" style={{ color: '#A99ECC' }}>
+                  <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>
                     No one else has taken the test yet — invite your friends and be the first wave.
                   </p>
                   <Link href="/dashboard" onClick={onClose} className="text-sm font-semibold" style={{ color: '#D4AF37' }}>
@@ -171,23 +171,23 @@ export default function MatchModal({ onClose }: MatchModalProps) {
                 <div className="flex flex-col gap-2">
                   {matches.map((m: any) => {
                     const pct = m.rel.score
-                    const color = pct >= 80 ? '#34D399' : pct >= 60 ? '#D4AF37' : '#A99ECC'
+                    const color = pct >= 80 ? '#34D399' : pct >= 60 ? '#D4AF37' : 'var(--text-muted)'
                     return (
                       <Link
                         key={m.id}
                         href={`/${m.username}`}
                         onClick={onClose}
                         className="flex items-center gap-3 p-3 rounded-2xl transition-all hover:bg-white/5"
-                        style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${pct >= 90 ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.08)'}`, textDecoration: 'none' }}
+                        style={{ background: 'var(--overlay)', border: `1px solid ${pct >= 90 ? 'rgba(52,211,153,0.3)' : 'var(--border)'}`, textDecoration: 'none' }}
                       >
-                        <div style={{ width: '46px', height: '46px', borderRadius: '13px', overflow: 'hidden', background: '#1A1A2E', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ width: '46px', height: '46px', borderRadius: '13px', overflow: 'hidden', background: 'var(--surface-3)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {m.avatar_url
                             ? <img src={m.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{m.full_name?.[0]}</span>}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold truncate" style={{ color: '#F0EAFF' }}>{m.full_name}</p>
-                          <p className="text-xs truncate" style={{ color: '#A99ECC' }}>
+                          <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{m.full_name}</p>
+                          <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
                             🧭 {m.eterotype_name || m.eterotype}{m.city ? ` · ${m.city}` : ''}
                           </p>
                         </div>
@@ -202,7 +202,7 @@ export default function MatchModal({ onClose }: MatchModalProps) {
               )}
 
               <div className="flex items-center justify-between mt-5">
-                <Link href="/bestie-type" onClick={onClose} className="text-xs" style={{ color: '#6B6490' }}>
+                <Link href="/bestie-type" onClick={onClose} className="text-xs" style={{ color: 'var(--text-dim)' }}>
                   Retake the test
                 </Link>
                 <Link

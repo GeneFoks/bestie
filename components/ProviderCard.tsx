@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { MapPin, Users, Sparkles } from 'lucide-react'
 import { getFrameColor } from '@/lib/avatarFrame'
 import { ActivityIcon } from '@/lib/activityIcons'
+import { SparkIcon } from '@/lib/sparkIcons'
 import KnockButton from '@/components/KnockButton'
 import { ButtonLink } from '@/components/ui/Button'
 import { colors } from '@/lib/tokens'
@@ -72,7 +73,7 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
     <div
       className="group relative rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
       style={{
-        background: '#0F0F1E',
+        background: 'var(--surface-1)',
         boxShadow: featured
           ? '0 0 0 1px rgba(212,175,55,0.25), 0 20px 60px rgba(0,0,0,0.5)'
           : frameGlow,
@@ -92,7 +93,7 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
         ) : (
           <div
             className="w-full h-full flex items-center justify-center text-5xl font-bold"
-            style={{ background: 'linear-gradient(135deg, #1a1a35 0%, #0F0F1E 100%)', color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}
+            style={{ background: 'linear-gradient(135deg, var(--surface-3) 0%, var(--surface-1) 100%)', color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}
           >
             {initials}
           </div>
@@ -184,15 +185,15 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
         {provider.top_sparks && provider.top_sparks.length > 0 && (
           <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
             {provider.top_sparks.map(s => (
-              <span key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '3px 9px', borderRadius: '999px', fontSize: '10px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.18)', color: '#D4AF37', whiteSpace: 'nowrap' }}>
-                {s.emoji} {s.label} <span style={{ opacity: 0.7, fontWeight: 500 }}>{s.count}</span>
+              <span key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 9px', borderRadius: '999px', fontSize: '10px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.18)', color: '#D4AF37', whiteSpace: 'nowrap' }}>
+                <SparkIcon type={s.id} size={11} strokeWidth={2} /> {s.label} <span style={{ opacity: 0.7, fontWeight: 500 }}>{s.count}</span>
               </span>
             ))}
           </div>
         )}
 
         {mainPackage && (
-          <div className="flex items-center justify-between py-2.5 px-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center justify-between py-2.5 px-3 rounded-xl" style={{ background: 'var(--overlay)', border: '1px solid rgba(255,255,255,0.06)' }}>
             <p className="text-xs font-medium truncate pr-2" style={{ color: colors.textPrimary }}>{mainPackage.title}</p>
             {mainPackage.is_free ? (
               <span className="text-xs font-bold flex-shrink-0" style={{ color: colors.green }}>Free</span>

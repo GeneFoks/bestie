@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { SparkIcon } from '@/lib/sparkIcons'
 import { PageLoader } from '@/components/Loading'
 
 const SPARK_TYPES = [
@@ -148,11 +149,11 @@ if (other) {
   if (loading) return <PageLoader message="Loading…" />
 
   if (done) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ textAlign: 'center', maxWidth: '360px', padding: '0 24px' }}>
         <div style={{ fontSize: '64px', marginBottom: '16px' }}>🎉</div>
-        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#F0EAFF', marginBottom: '8px' }}>Done!</h2>
-        <p style={{ fontSize: '15px', color: '#A99ECC', marginBottom: '28px' }}>
+        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: 'var(--text-primary)', marginBottom: '8px' }}>Done!</h2>
+        <p style={{ fontSize: '15px', color: 'var(--text-muted)', marginBottom: '28px' }}>
           Thanks for reviewing your session with {other?.full_name?.split(' ')[0]}.
         </p>
         <Link href="/sessions" style={{ display: 'inline-block', padding: '12px 28px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
@@ -166,27 +167,27 @@ if (other) {
   const canGiveSpark = sparksBalance > 0 && givenCount < 3
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <Link href="/sessions" style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none' }}>← Sessions</Link>
+        <Link href="/sessions" style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none' }}>← Sessions</Link>
       </nav>
 
       <div style={{ maxWidth: '480px', margin: '0 auto', padding: '48px 24px' }}>
 
         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-          <div style={{ width: '80px', height: '80px', borderRadius: '20px', overflow: 'hidden', background: '#1A1A2E', border: '2px solid rgba(212,175,55,0.3)', margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '80px', height: '80px', borderRadius: '20px', overflow: 'hidden', background: 'var(--surface-3)', border: '2px solid rgba(212,175,55,0.3)', margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {other?.avatar_url
               ? <img src={other.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : <span style={{ fontSize: '32px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>{other?.full_name?.[0]}</span>
             }
           </div>
-          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#F0EAFF', marginBottom: '4px' }}>Review session</h1>
-          <p style={{ fontSize: '14px', color: '#A99ECC' }}>with <span style={{ color: '#F0EAFF', fontWeight: 500 }}>{other?.full_name}</span></p>
+          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '4px' }}>Review session</h1>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>with <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{other?.full_name}</span></p>
         </div>
 
-        <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px', marginBottom: '16px' }}>
-          <p style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '1px', color: '#A99ECC', marginBottom: '16px' }}>
+        <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '24px', marginBottom: '16px' }}>
+          <p style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: '16px' }}>
           RATE YOUR EXPERIENCE
           {booking && (isSeeker ? booking.rating_seeker : booking.rating_provider) && (
             <span style={{ marginLeft: '8px', fontSize: '11px', color: '#D4AF37', fontWeight: 500, letterSpacing: 0 }}>· editing</span>
@@ -210,14 +211,14 @@ if (other) {
           )}
         </div>
 
-        <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px', marginBottom: '24px' }}>
+        <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '24px', marginBottom: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <p style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '1px', color: '#A99ECC' }}>GIVE A SPARK ✨</p>
-            <span style={{ fontSize: '12px', color: '#A99ECC' }}>{sparksBalance} left · max 3 per person</span>
+            <p style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '1px', color: 'var(--text-muted)' }}>GIVE A SPARK ✨</p>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{sparksBalance} left · max 3 per person</span>
           </div>
 
           {!canGiveSpark ? (
-            <p style={{ fontSize: '13px', color: '#A99ECC', textAlign: 'center' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center' }}>
               {sparksBalance <= 0 ? 'No Sparks left' : 'Already gave 3 Sparks to this person'}
             </p>
           ) : (
@@ -233,14 +234,14 @@ if (other) {
                     style={{
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
                       padding: '10px 6px', borderRadius: '12px', cursor: given ? 'not-allowed' : 'pointer',
-                      background: selected ? 'rgba(212,175,55,0.15)' : given ? 'rgba(255,255,255,0.02)' : '#131323',
-                      border: selected ? '1px solid rgba(212,175,55,0.5)' : given ? '1px solid #131323' : '1px solid rgba(255,255,255,0.12)',
+                      background: selected ? 'rgba(212,175,55,0.15)' : given ? 'var(--overlay)' : 'var(--surface-1b)',
+                      border: selected ? '1px solid rgba(212,175,55,0.5)' : given ? '1px solid var(--surface-1b)' : '1px solid var(--border)',
                       opacity: given ? 0.35 : 1,
                     }}
                   >
-                    <span style={{ fontSize: '20px' }}>{s.emoji}</span>
-                    <span style={{ fontSize: '10px', fontWeight: 500, color: selected ? '#D4AF37' : '#A99ECC', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
-                    {given && <span style={{ fontSize: '9px', color: '#A99ECC' }}>✓</span>}
+                    <SparkIcon type={s.id} size={18} color={selected ? '#D4AF37' : 'var(--text-muted)'} strokeWidth={1.8} />
+                    <span style={{ fontSize: '10px', fontWeight: 500, color: selected ? '#D4AF37' : 'var(--text-muted)', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
+                    {given && <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>✓</span>}
                   </button>
                 )
               })}
@@ -253,15 +254,15 @@ if (other) {
           disabled={!rating || submitting}
           style={{
             width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 700,
-            background: rating ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.10)',
-            color: rating ? '#09090F' : '#A99ECC',
+            background: rating ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'var(--overlay-2)',
+            color: rating ? '#09090F' : 'var(--text-muted)',
             border: 'none', cursor: rating ? 'pointer' : 'not-allowed',
           }}
         >
           {submitting ? 'Submitting...' : selectedSpark ? `Submit rating + ✨ ${SPARK_TYPES.find(s => s.id === selectedSpark)?.label}` : 'Submit rating'}
         </button>
 
-        <p style={{ fontSize: '12px', color: '#A99ECC', textAlign: 'center', marginTop: '12px' }}>
+        <p style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '12px' }}>
           Spark is optional — rating is required
         </p>
       </div>

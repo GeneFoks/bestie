@@ -26,7 +26,7 @@ function fmtDuration(seconds) {
 function Section({ title, children }) {
   return (
     <div style={{ marginBottom: '32px' }}>
-      <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', marginBottom: '14px' }}>{title}</h2>
+      <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: 'var(--text-primary)', marginBottom: '14px' }}>{title}</h2>
       {children}
     </div>
   )
@@ -34,9 +34,9 @@ function Section({ title, children }) {
 
 function StatCard({ label, value, accent }) {
   return (
-    <div style={{ flex: 1, minWidth: '130px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', padding: '16px 18px' }}>
+    <div style={{ flex: 1, minWidth: '130px', background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '16px', padding: '16px 18px' }}>
       <div style={{ fontSize: '24px', fontWeight: 700, color: accent || GOLD, fontFamily: 'DM Serif Display, serif' }}>{value}</div>
-      <div style={{ fontSize: '12px', color: '#A99ECC', marginTop: '4px' }}>{label}</div>
+      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{label}</div>
     </div>
   )
 }
@@ -52,10 +52,10 @@ function Cards({ items }) {
 function BarList({ title, rows, valueKey, fmt }) {
   const max = Math.max(1, ...(rows || []).map(r => Number(r[valueKey]) || 0))
   return (
-    <div style={{ background: '#131323', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', padding: '20px' }}>
-      <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '15px', color: '#F0EAFF', marginBottom: '14px' }}>{title}</h3>
+    <div style={{ background: 'var(--surface-1b)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px' }}>
+      <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '15px', color: 'var(--text-primary)', marginBottom: '14px' }}>{title}</h3>
       {(!rows || rows.length === 0) ? (
-        <p style={{ fontSize: '13px', color: '#6B6490' }}>No data yet</p>
+        <p style={{ fontSize: '13px', color: 'var(--text-dim)' }}>No data yet</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
           {rows.map((r, i) => {
@@ -63,10 +63,10 @@ function BarList({ title, rows, valueKey, fmt }) {
             return (
               <div key={i}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '3px' }}>
-                  <span style={{ fontSize: '12px', color: '#C9BFE8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '76%' }}>{r.label || '—'}</span>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '76%' }}>{r.label || '—'}</span>
                   <span style={{ fontSize: '12px', color: GOLD, fontWeight: 700, flexShrink: 0 }}>{fmt ? fmt(v) : v}</span>
                 </div>
-                <div style={{ height: '6px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                <div style={{ height: '6px', borderRadius: '999px', background: 'var(--overlay-2)', overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${(v / max) * 100}%`, borderRadius: '999px', background: 'linear-gradient(90deg, #D4AF37, #B8960C)' }} />
                 </div>
               </div>
@@ -82,10 +82,10 @@ function BarList({ title, rows, valueKey, fmt }) {
 function TrendChart({ title, rows, valueKey }) {
   const max = Math.max(1, ...(rows || []).map(r => Number(r[valueKey]) || 0))
   return (
-    <div style={{ background: '#131323', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', padding: '20px' }}>
-      <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '15px', color: '#F0EAFF', marginBottom: '14px' }}>{title}</h3>
+    <div style={{ background: 'var(--surface-1b)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px' }}>
+      <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '15px', color: 'var(--text-primary)', marginBottom: '14px' }}>{title}</h3>
       {(!rows || rows.length === 0) ? (
-        <p style={{ fontSize: '13px', color: '#6B6490' }}>No data yet</p>
+        <p style={{ fontSize: '13px', color: 'var(--text-dim)' }}>No data yet</p>
       ) : (
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: '120px' }}>
           {rows.map((r, i) => {
@@ -106,17 +106,17 @@ function TrendChart({ title, rows, valueKey }) {
 function Funnel({ steps }) {
   const base = Math.max(1, steps[0]?.value || 0)
   return (
-    <div style={{ background: '#131323', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', padding: '20px' }}>
+    <div style={{ background: 'var(--surface-1b)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {steps.map((s, i) => {
           const pct = Math.round((100 * (s.value || 0)) / base)
           return (
             <div key={i}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <span style={{ fontSize: '13px', color: '#C9BFE8' }}>{s.label}</span>
-                <span style={{ fontSize: '13px', color: GOLD, fontWeight: 700 }}>{s.value} <span style={{ color: '#6B6490', fontWeight: 400 }}>· {pct}%</span></span>
+                <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{s.label}</span>
+                <span style={{ fontSize: '13px', color: GOLD, fontWeight: 700 }}>{s.value} <span style={{ color: 'var(--text-dim)', fontWeight: 400 }}>· {pct}%</span></span>
               </div>
-              <div style={{ height: '10px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+              <div style={{ height: '10px', borderRadius: '999px', background: 'var(--overlay-2)', overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: `${pct}%`, borderRadius: '999px', background: i === 0 ? GREEN : 'linear-gradient(90deg, #D4AF37, #B8960C)' }} />
               </div>
             </div>
@@ -151,11 +151,11 @@ export default function AdminAnalyticsPage() {
   if (loading) return <PageLoader fullscreen={false} message="Loading analytics…" />
 
   if (denied) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ textAlign: 'center', maxWidth: '360px', padding: '0 24px' }}>
         <p style={{ fontSize: '48px', marginBottom: '16px' }}>🔒</p>
-        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginBottom: '8px' }}>Admins only</h2>
-        <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '24px' }}>This page is restricted. If it should be you, set <code style={{ color: GOLD }}>is_admin = true</code> on your user row.</p>
+        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '8px' }}>Admins only</h2>
+        <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '24px' }}>This page is restricted. If it should be you, set <code style={{ color: GOLD }}>is_admin = true</code> on your user row.</p>
         <Link href="/" style={{ color: GOLD, fontSize: '14px', textDecoration: 'none' }}>← Back home</Link>
       </div>
     </div>
@@ -170,22 +170,22 @@ export default function AdminAnalyticsPage() {
   const pb = d?.profile_breakdown || {}
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: GOLD, textDecoration: 'none' }}>BESTIE</Link>
-        <span style={{ fontSize: '13px', color: '#A99ECC' }}>Analytics</span>
+        <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Analytics</span>
       </nav>
 
       <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '28px' }}>
-          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '32px', color: '#F0EAFF' }}>Analytics</h1>
+          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '32px', color: 'var(--text-primary)' }}>Analytics</h1>
           <div style={{ display: 'flex', gap: '6px' }}>
             {RANGES.map(r => (
               <button key={r.days} onClick={() => setDays(r.days)} style={{
                 padding: '8px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
-                background: days === r.days ? 'rgba(212,175,55,0.15)' : '#131323',
-                border: days === r.days ? `1px solid ${GOLD}66` : '1px solid rgba(255,255,255,0.12)',
-                color: days === r.days ? GOLD : '#A99ECC',
+                background: days === r.days ? 'rgba(212,175,55,0.15)' : 'var(--surface-1b)',
+                border: days === r.days ? `1px solid ${GOLD}66` : '1px solid var(--border)',
+                color: days === r.days ? GOLD : 'var(--text-muted)',
               }}>{r.label}</button>
             ))}
           </div>

@@ -59,7 +59,7 @@ export default function StickyBookCTA({ profileId, username, firstName, hasActiv
         }
         .sticky-cta { animation: slideUp 0.3s ease; }
       `}</style>
-      <div className="sticky-cta" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40, padding: '12px 16px calc(20px + env(safe-area-inset-bottom))', background: 'linear-gradient(to top, rgba(8,8,16,0.98) 60%, transparent)', backdropFilter: 'blur(12px)' }}>
+      <div className="sticky-cta" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40, padding: '12px 16px calc(20px + env(safe-area-inset-bottom))', background: 'linear-gradient(to top, var(--nav-bg) 60%, transparent)', backdropFilter: 'blur(12px)' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto', display: 'flex', gap: '10px' }}>
           <Link
             href={primary.href}
@@ -71,7 +71,7 @@ export default function StickyBookCTA({ profileId, username, firstName, hasActiv
             <Link
               href={`/messages?to=${username}`}
               aria-label={`Message ${firstName}`}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '52px', height: '52px', borderRadius: '14px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', textDecoration: 'none', color: '#F0EAFF', flexShrink: 0 }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '52px', height: '52px', borderRadius: '14px', background: 'var(--overlay-2)', border: '1px solid var(--border)', textDecoration: 'none', color: 'var(--text-primary)', flexShrink: 0 }}
             >
               <MessageCircle size={20} strokeWidth={1.8} />
             </Link>
@@ -85,7 +85,7 @@ export default function StickyBookCTA({ profileId, username, firstName, hasActiv
                 btn?.scrollIntoView({ behavior: 'smooth', block: 'center' })
                 btn?.focus?.()
               }}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '52px', height: '52px', borderRadius: '14px', background: hasKnocked ? 'rgba(255,255,255,0.08)' : 'rgba(212,175,55,0.10)', border: hasKnocked ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(212,175,55,0.30)', textDecoration: 'none', color: hasKnocked ? '#A99ECC' : '#D4AF37', flexShrink: 0 }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '52px', height: '52px', borderRadius: '14px', background: hasKnocked ? 'var(--overlay-2)' : 'rgba(212,175,55,0.10)', border: hasKnocked ? '1px solid var(--border)' : '1px solid rgba(212,175,55,0.30)', textDecoration: 'none', color: hasKnocked ? 'var(--text-muted)' : '#D4AF37', flexShrink: 0 }}
             >
               <Hand size={20} strokeWidth={1.8} />
             </Link>

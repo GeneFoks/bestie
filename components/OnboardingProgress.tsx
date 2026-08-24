@@ -88,7 +88,7 @@ export default function OnboardingProgress() {
         onClick={handleDismiss}
         style={{
           position: 'absolute', top: '10px', right: '12px',
-          background: 'none', border: 'none', color: '#5A5375',
+          background: 'none', border: 'none', color: 'var(--text-dim)',
           fontSize: '16px', cursor: 'pointer', lineHeight: 1,
           padding: '2px 4px',
         }}
@@ -100,12 +100,12 @@ export default function OnboardingProgress() {
         <span style={{ fontSize: '20px' }}>🎯</span>
         <div>
           <p style={{
-            fontSize: '13px', fontWeight: 700, color: '#F0EAFF',
+            fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)',
             margin: 0,
           }}>
             Complete your profile
           </p>
-          <p style={{ fontSize: '12px', color: '#A99ECC', margin: 0 }}>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
             {done} of {total} tasks done · tap to view
           </p>
         </div>
@@ -132,9 +132,9 @@ export default function OnboardingProgress() {
             <span key={i} style={{
               fontSize: '11px', fontWeight: 600,
               padding: '3px 10px', borderRadius: '999px',
-              background: completed ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.05)',
-              border: completed ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(255,255,255,0.08)',
-              color: completed ? '#34D399' : '#5A5375',
+              background: completed ? 'rgba(52,211,153,0.12)' : 'var(--overlay)',
+              border: completed ? '1px solid rgba(52,211,153,0.3)' : '1px solid var(--border)',
+              color: completed ? '#34D399' : 'var(--text-dim)',
               textDecoration: completed ? 'line-through' : 'none',
             }}>
               {q.icon} {q.title}

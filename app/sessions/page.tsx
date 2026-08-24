@@ -155,7 +155,7 @@ export default function SessionsPage() {
     <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
       <button
         onClick={() => archiveSession(session)}
-        style={{ flex: 1, padding: '11px 8px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, background: '#131323', border: '1px solid rgba(255,255,255,0.12)', color: '#A99ECC', cursor: 'pointer' }}
+        style={{ flex: 1, padding: '11px 8px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, background: 'var(--surface-1b)', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer' }}
       >
         📦 Archive
       </button>
@@ -169,22 +169,22 @@ export default function SessionsPage() {
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
 
       {/* Delete confirmation modal */}
       {confirmDelete && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-          <div style={{ background: '#111120', border: '1px solid rgba(255,80,80,0.3)', borderRadius: '20px', padding: '24px', maxWidth: '380px', width: '100%', boxSizing: 'border-box' }}>
-            <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginBottom: '12px' }}>Delete session?</h3>
+          <div style={{ background: 'var(--surface-1)', border: '1px solid rgba(255,80,80,0.3)', borderRadius: '20px', padding: '24px', maxWidth: '380px', width: '100%', boxSizing: 'border-box' }}>
+            <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '12px' }}>Delete session?</h3>
             {sessions.find(s => s.id === confirmDelete && s.confirmed_by_seeker && s.confirmed_by_provider) && (
               <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.2)', marginBottom: '16px' }}>
                 <p style={{ fontSize: '13px', color: '#FF6B6B', fontWeight: 600 }}>⚠️ This was a completed session</p>
-                <p style={{ fontSize: '13px', color: '#A99ECC', marginTop: '4px' }}>Deleting it will remove the Bestie Score earned from this session for both participants.</p>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>Deleting it will remove the Bestie Score earned from this session for both participants.</p>
               </div>
             )}
-            <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '20px' }}>This action cannot be undone. The session will be permanently removed.</p>
+            <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '20px' }}>This action cannot be undone. The session will be permanently removed.</p>
             <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={() => setConfirmDelete(null)} style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.1)', color: '#A99ECC', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={() => setConfirmDelete(null)} style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', background: 'var(--overlay-2)', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer' }}>Cancel</button>
               <button
                 onClick={() => deleteSession(sessions.find(s => s.id === confirmDelete))}
                 disabled={deleting}
@@ -197,14 +197,14 @@ export default function SessionsPage() {
         </div>
       )}
 
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <Link href="/dashboard" style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>← Dashboard</Link>
+        <Link href="/dashboard" style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid var(--border)' }}>← Dashboard</Link>
       </nav>
 
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '40px 24px' }}>
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#F0EAFF', marginBottom: '4px' }}>My Sessions</h1>
-        <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '32px' }}>{sessions.length} accepted {sessions.length === 1 ? 'session' : 'sessions'}</p>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: 'var(--text-primary)', marginBottom: '4px' }}>My Sessions</h1>
+        <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '32px' }}>{sessions.length} accepted {sessions.length === 1 ? 'session' : 'sessions'}</p>
 
         {sessions.length === 0 ? (
           <EmptyState
@@ -223,14 +223,14 @@ export default function SessionsPage() {
                   const isSeeker = s.seeker_id === userId
                   const other = isSeeker ? s.provider : s.seeker
                   return (
-                    <div key={s.id} style={{ background: 'linear-gradient(135deg, rgba(52,211,153,0.06) 0%, #111120 100%)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: '20px', padding: '20px', marginBottom: '12px' }}>
+                    <div key={s.id} style={{ background: 'linear-gradient(135deg, rgba(52,211,153,0.06) 0%, var(--surface-1) 100%)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: '20px', padding: '20px', marginBottom: '12px' }}>
                       <div style={{ display: 'flex', gap: '14px', alignItems: 'center', marginBottom: '16px' }}>
-                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', overflow: 'hidden', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', overflow: 'hidden', background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           {other?.avatar_url ? <img src={other.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{other?.full_name?.[0]}</span>}
                         </div>
                         <div>
-                          <p style={{ fontSize: '15px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>{other?.full_name}</p>
-                          <p style={{ fontSize: '13px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><ActivityIcon type={s.package?.activity_type} size={14} color="#D4AF37" strokeWidth={1.8} /> {s.package?.title || 'Session'}</p>
+                          <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>{other?.full_name}</p>
+                          <p style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><ActivityIcon type={s.package?.activity_type} size={14} color="#D4AF37" strokeWidth={1.8} /> {s.package?.title || 'Session'}</p>
                         </div>
                       </div>
                       <p style={{ fontSize: '13px', color: '#34D399', marginBottom: '12px' }}>
@@ -253,18 +253,18 @@ export default function SessionsPage() {
                   const other = isSeeker ? s.provider : s.seeker
                   const myRating = isSeeker ? s.rating_seeker : s.rating_provider
                   return (
-                    <div key={s.id} style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, #111120 100%)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '20px', padding: '20px', marginBottom: '12px' }}>
+                    <div key={s.id} style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, var(--surface-1) 100%)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '20px', padding: '20px', marginBottom: '12px' }}>
                       <div style={{ display: 'flex', gap: '14px', alignItems: 'center', marginBottom: '16px' }}>
-                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', overflow: 'hidden', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', overflow: 'hidden', background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           {other?.avatar_url ? <img src={other.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{other?.full_name?.[0]}</span>}
                         </div>
                         <div>
-                          <p style={{ fontSize: '15px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>{other?.full_name}</p>
-                          <p style={{ fontSize: '13px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><ActivityIcon type={s.package?.activity_type} size={14} color="#D4AF37" strokeWidth={1.8} /> {s.package?.title || 'Session'}</p>
+                          <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>{other?.full_name}</p>
+                          <p style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><ActivityIcon type={s.package?.activity_type} size={14} color="#D4AF37" strokeWidth={1.8} /> {s.package?.title || 'Session'}</p>
                         </div>
                       </div>
                       {myRating ? (
-                        <p style={{ fontSize: '14px', color: '#A99ECC', textAlign: 'center' }}>{'⭐'.repeat(myRating)} — reviewed!</p>
+                        <p style={{ fontSize: '14px', color: 'var(--text-muted)', textAlign: 'center' }}>{'⭐'.repeat(myRating)} — reviewed!</p>
                       ) : (
                         <Link href={`/review/${s.id}`} style={{ display: 'block', padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none', textAlign: 'center' }}>
                           ⭐ Rate + Give Spark →
@@ -279,7 +279,7 @@ export default function SessionsPage() {
 
             {upcoming.length > 0 && (
               <div style={{ marginBottom: '32px' }}>
-                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '12px' }}>UPCOMING</p>
+                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '12px' }}>UPCOMING</p>
                 {upcoming.map((s, i) => {
                   const isSeeker = s.seeker_id === userId
                   const other = isSeeker ? s.provider : s.seeker
@@ -287,15 +287,15 @@ export default function SessionsPage() {
                   const myConfirm = isSeeker ? s.confirmed_by_seeker : s.confirmed_by_provider
                   const isNext = i === 0
                   return (
-                    <div key={s.id} style={{ background: isNext ? 'linear-gradient(135deg, #111120 0%, #141428 100%)' : '#111120', border: isNext ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '20px', marginBottom: '12px', position: 'relative' }}>
+                    <div key={s.id} style={{ background: isNext ? 'linear-gradient(135deg, var(--surface-1) 0%, var(--surface-3) 100%)' : 'var(--surface-1)', border: isNext ? '1px solid rgba(212,175,55,0.3)' : '1px solid var(--border)', borderRadius: '20px', padding: '20px', marginBottom: '12px', position: 'relative' }}>
                       {isNext && <div style={{ position: 'absolute', top: '12px', right: '12px', fontSize: '11px', fontWeight: 600, padding: '3px 10px', borderRadius: '999px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37' }}>Next up</div>}
                       <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                        <div style={{ width: '52px', height: '52px', borderRadius: '14px', overflow: 'hidden', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <div style={{ width: '52px', height: '52px', borderRadius: '14px', overflow: 'hidden', background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           {other?.avatar_url ? <img src={other.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700, fontSize: '18px' }}>{other?.full_name?.[0]}</span>}
                         </div>
                         <div style={{ flex: 1 }}>
-                          <p style={{ fontSize: '15px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>{other?.full_name}</p>
-                          <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '10px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>{other?.full_name}</p>
+                          <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '10px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                             <ActivityIcon type={s.package?.activity_type} size={14} color="#D4AF37" strokeWidth={1.8} /> {s.package?.title || 'Session'}
                           </p>
                           {date && (
@@ -303,13 +303,13 @@ export default function SessionsPage() {
                               <span style={{ fontSize: '12px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', background: date.isToday ? 'rgba(52,211,153,0.1)' : 'rgba(212,175,55,0.1)', border: date.isToday ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(212,175,55,0.2)', color: date.isToday ? '#34D399' : '#D4AF37' }}>
                                 {date.label}
                               </span>
-                              <span style={{ fontSize: '12px', color: '#A99ECC' }}>{date.dateStr} · {date.timeStr}</span>
+                              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{date.dateStr} · {date.timeStr}</span>
                             </div>
                           )}
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: '8px', marginTop: '14px' }}>
-                        <Link href={`/messages?to=${other?.username}`} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: '#131323', border: '1px solid rgba(255,255,255,0.1)', color: '#A99ECC', textDecoration: 'none', textAlign: 'center' }}>
+                        <Link href={`/messages?to=${other?.username}`} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'var(--surface-1b)', border: '1px solid var(--border)', color: 'var(--text-muted)', textDecoration: 'none', textAlign: 'center' }}>
                           💬 Message
                         </Link>
                         <CallButton toUserId={other?.id} toUserName={other?.full_name} bookingId={s.id} variant="full" />
@@ -318,7 +318,7 @@ export default function SessionsPage() {
                             ✓ Session happened
                           </button>
                         ) : (
-                          <div style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(52,211,153,0.04)', border: '1px solid rgba(52,211,153,0.1)', color: '#A99ECC', textAlign: 'center' }}>
+                          <div style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(52,211,153,0.04)', border: '1px solid rgba(52,211,153,0.1)', color: 'var(--text-muted)', textAlign: 'center' }}>
                             ✓ Waiting for them
                           </div>
                         )}
@@ -331,7 +331,7 @@ export default function SessionsPage() {
 
             {past.length > 0 && (
               <div>
-                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#A99ECC', marginBottom: '12px' }}>PAST</p>
+                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '12px' }}>PAST</p>
                 {past.map(s => {
                   const isSeeker = s.seeker_id === userId
                   const other = isSeeker ? s.provider : s.seeker
@@ -341,18 +341,18 @@ export default function SessionsPage() {
                   const myConfirm = isSeeker ? s.confirmed_by_seeker : s.confirmed_by_provider
                   const theirConfirm = isSeeker ? s.confirmed_by_provider : s.confirmed_by_seeker
                   return (
-                    <div key={s.id} style={{ background: '#111120', border: '1px solid #131323', borderRadius: '20px', padding: '20px', marginBottom: '12px' }}>
+                    <div key={s.id} style={{ background: 'var(--surface-1)', border: '1px solid var(--surface-1b)', borderRadius: '20px', padding: '20px', marginBottom: '12px' }}>
                       <div style={{ display: 'flex', gap: '14px', alignItems: 'center', marginBottom: '12px' }}>
-                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', overflow: 'hidden', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', overflow: 'hidden', background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           {other?.avatar_url ? <img src={other.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{other?.full_name?.[0]}</span>}
                         </div>
                         <div style={{ flex: 1 }}>
-                          <p style={{ fontSize: '15px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>{other?.full_name}</p>
-                          <p style={{ fontSize: '13px', color: '#A99ECC', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><ActivityIcon type={s.package?.activity_type} size={14} color="#D4AF37" strokeWidth={1.8} /> {s.package?.title || 'Session'} · {date?.dateStr}</p>
+                          <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>{other?.full_name}</p>
+                          <p style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><ActivityIcon type={s.package?.activity_type} size={14} color="#D4AF37" strokeWidth={1.8} /> {s.package?.title || 'Session'} · {date?.dateStr}</p>
                         </div>
                       </div>
                       {myRating ? (
-                        <p style={{ fontSize: '13px', color: '#A99ECC' }}>{'⭐'.repeat(myRating)} — reviewed</p>
+                        <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{'⭐'.repeat(myRating)} — reviewed</p>
                       ) : bothConfirmed ? (
                         <Link href={`/review/${s.id}`} style={{ display: 'block', padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', textDecoration: 'none', textAlign: 'center' }}>
                           ⭐ Rate this session →
@@ -362,7 +362,7 @@ export default function SessionsPage() {
                           ✓ Confirm session happened
                         </button>
                       ) : (
-                        <p style={{ fontSize: '13px', color: '#A99ECC', textAlign: 'center', padding: '10px' }}>
+                        <p style={{ fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center', padding: '10px' }}>
                           ⏳ Waiting for {other?.full_name?.split(' ')[0]} to confirm
                         </p>
                       )}
