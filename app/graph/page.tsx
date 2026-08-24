@@ -85,7 +85,7 @@ export default function GraphPage() {
         .select('id, full_name, username, avatar_url, bestie_score, city')
         .eq('hide_from_graph', false)
         .order('bestie_score', { ascending: false })
-        .limit(70)
+        .limit(45)
 
       if ((!bookings || bookings.length === 0) && contactLinks.length === 0 && knockLinks.length === 0 && optInIds.length === 0 && (!floatUsers || floatUsers.length === 0)) {
         setEmpty(true); setLoading(false); return
@@ -275,8 +275,10 @@ export default function GraphPage() {
     merge.append('feMergeNode').attr('in', 'blur')
     merge.append('feMergeNode').attr('in', 'SourceGraphic')
 
-    // Clip paths per node
+    // Clip paths only for nodes that will actually render an avatar image
+    // (connected core). Floaters draw as plain circles — cheap to move.
     nodes.forEach(n => {
+      if (n.floating || !n.avatar) return
       const safeId = n.id.replace(/-/g, '')
       defs.append('clipPath')
         .attr('id', `clip-${safeId}`)
@@ -398,7 +400,9 @@ export default function GraphPage() {
       const r = nodeRadius(d)
       const safeId = d.id.replace(/-/g, '')
       el.append('circle').attr('r', r).attr('fill', '#111120')
-      if (d.avatar) {
+      // Floaters never get an <image> — moving raster images every frame is the
+      // main source of lag. They show initials instead (cheap vector).
+      if (d.avatar && !d.floating) {
         el.append('image')
           .attr('href', d.avatar)
           .attr('x', -r).attr('y', -r)
@@ -467,14 +471,18 @@ export default function GraphPage() {
         if (d.phase === undefined) d.phase = Math.random() * Math.PI * 2
       })
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      let odd = false
       const step = () => {
-        const t = performance.now() / 1000
-        floatSel.each(function (d: any) {
-          const nx = d.bx + Math.cos(t * 0.5 + d.phase) * 8
-          const ny = d.by + Math.sin(t * 0.6 + d.phase) * 8
-          d.x = nx; d.y = ny
-          ;(this as SVGGElement).setAttribute('transform', `translate(${nx},${ny})`)
-        })
+        odd = !odd
+        if (odd) { // update on ~every other frame → ~30fps, half the work
+          const t = performance.now() / 1000
+          floatSel.each(function (d: any) {
+            const nx = d.bx + Math.cos(t * 0.5 + d.phase) * 8
+            const ny = d.by + Math.sin(t * 0.6 + d.phase) * 8
+            d.x = nx; d.y = ny
+            ;(this as SVGGElement).setAttribute('transform', `translate(${nx},${ny})`)
+          })
+        }
         rafRef.current = requestAnimationFrame(step)
       }
       rafRef.current = requestAnimationFrame(step)
