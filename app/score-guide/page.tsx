@@ -2,6 +2,7 @@
 'use client'
 
 import Link from 'next/link'
+import { SparkIcon } from '@/lib/sparkIcons'
 
 export default function ScoreGuidePage() {
   return (
