@@ -11,6 +11,7 @@ import EditActivitiesLink from '@/components/EditActivitiesLink'
 import BlockReportButton from '@/components/BlockReportButton'
 import KnockButton from '@/components/KnockButton'
 import PassportScoreCard from '@/components/PassportScoreCard'
+import BadgeCrest from '@/components/BadgeCrest'
 import MutualFriends from '@/components/MutualFriends'
 import { getAvatarFrame } from '@/lib/avatarFrame'
 import CompatibilityScore from './CompatibilityScore'
@@ -140,6 +141,7 @@ export default async function ProfilePage({ params }) {
     { count: totalUsers },
     { data: ratedBookings },
     { count: mutualKnocks },
+    { data: earnedBadges },
   ] = await Promise.all([
     supabase.from('sparks').select('spark_type').eq('receiver_id', profile.id),
     supabase.from('bookings')
@@ -159,6 +161,10 @@ export default async function ProfilePage({ params }) {
       .select('id', { count: 'exact', head: true })
       .eq('sender_id', profile.id)
       .eq('is_mutual', true),
+    supabase.from('user_badges')
+      .select('badge_id, city, awarded_at')
+      .eq('user_id', profile.id)
+      .order('awarded_at', { ascending: true }),
   ])
 
   const sparkCounts: Record<string, number> = {}
@@ -402,6 +408,18 @@ export default async function ProfilePage({ params }) {
             avatarUrl={profile.avatar_url}
           />
         </div>
+
+        {/* EARNED BADGES — unique crests awarded by the platform (user_badges) */}
+        {(earnedBadges || []).filter((b) => ['city_pioneer'].includes(b.badge_id)).length > 0 && (
+          <div style={{ background: 'linear-gradient(135deg, var(--surface-1) 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '18px', padding: '20px', marginBottom: '20px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '16px' }}>BADGES</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px' }}>
+              {(earnedBadges || []).filter((b) => ['city_pioneer'].includes(b.badge_id)).map((b) => (
+                <BadgeCrest key={b.badge_id} badgeId={b.badge_id} city={b.city} size={64} />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* MUTUAL FRIENDS — social proof */}
         <MutualFriends profileId={profile.id} />

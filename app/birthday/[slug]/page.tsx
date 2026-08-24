@@ -120,6 +120,10 @@ export default function BirthdayPage() {
   const isHost = me && me.id === event.host_id
   const title = event.title || `${event.celebrant}'s Birthday 🎉`
 
+  // Sticky RSVP bar — hidden for the host and anyone who already answered.
+  const showStickyCTA = !isHost && !myRsvp
+  const shortDateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+
   const TABS: { id: Tab; label: string; Icon: any; on: boolean; count: number }[] = [
     { id: 'photos', label: 'Photos', Icon: ImagePlus, on: event.allow_photos, count: photos.length },
     { id: 'wishlist', label: 'Wishlist', Icon: Gift, on: event.allow_wishlist, count: wishlist.length },
@@ -140,7 +144,7 @@ export default function BirthdayPage() {
         </nav>
       </div>
 
-      <div style={{ maxWidth: '640px', margin: '0 auto', padding: '0 16px 120px', marginTop: '-40px', position: 'relative' }}>
+      <div style={{ maxWidth: '640px', margin: '0 auto', padding: showStickyCTA ? '0 16px 210px' : '0 16px 120px', marginTop: '-40px', position: 'relative' }}>
         {/* Title card */}
         <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '22px', padding: '22px', marginBottom: '16px' }}>
           <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#FF6B35', marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><Cake size={14} strokeWidth={2} /> BIRTHDAY</p>
@@ -235,6 +239,32 @@ export default function BirthdayPage() {
           </div>
         )}
       </div>
+
+      {/* Sticky RSVP CTA */}
+      {showStickyCTA && (
+        <>
+          <style>{`
+            @keyframes ctaSlideUp {
+              from { transform: translateY(100%); opacity: 0; }
+              to { transform: translateY(0); opacity: 1; }
+            }
+          `}</style>
+          <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 60, background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid var(--border)', padding: '12px 16px calc(12px + env(safe-area-inset-bottom))', animation: 'ctaSlideUp 0.3s ease' }}>
+            <div style={{ maxWidth: '640px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{ flexShrink: 0, minWidth: 0 }}>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3, margin: 0, whiteSpace: 'nowrap' }}>{shortDateStr}</p>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, whiteSpace: 'nowrap' }}>
+                  {timeStr}{going.length > 0 ? ` · ${going.length} going` : ''}
+                </p>
+              </div>
+              <button onClick={() => setRsvp('going')}
+                style={{ flex: 1, padding: '14px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #FF6B35, #E0561F)', border: 'none', color: '#fff', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                I'm in! 🎉
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { Inbox, CheckCircle2, XCircle, PartyPopper, Users, MessageCircle, Sparkles, Hand, Trophy, Bell } from 'lucide-react'
+import { Inbox, CheckCircle2, XCircle, PartyPopper, Users, MessageCircle, Sparkles, Hand, Trophy, Bell, Heart } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function NotificationBell({ userId }: { userId: string }) {
@@ -86,6 +86,8 @@ export default function NotificationBell({ userId }: { userId: string }) {
 
   // icon + tint per notification type (visual hierarchy by topic)
   const typeMeta: Record<string, { Icon: any; color: string; bg: string }> = {
+    match:             { Icon: Heart,         color: '#D4AF37', bg: 'rgba(212,175,55,0.12)' },
+    new_match:         { Icon: Heart,         color: '#D4AF37', bg: 'rgba(212,175,55,0.12)' },
     booking_request:   { Icon: Inbox,         color: '#D4AF37', bg: 'rgba(212,175,55,0.12)' },
     booking_accepted:  { Icon: CheckCircle2,  color: '#34D399', bg: 'rgba(52,211,153,0.12)' },
     booking_declined:  { Icon: XCircle,       color: '#FF6B35', bg: 'rgba(255,107,53,0.12)' },

@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import ProfileNav from '@/components/ProfileNav'
-import BottomNav from '@/components/BottomNav'
 import { Users, UsersRound, Calendar, MapPin, Plus, ArrowUp, Sparkles, Cake, Zap, Trash2 } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 import { PageLoader } from '@/components/Loading'
@@ -63,7 +62,7 @@ export default function EventsPage() {
           .limit(20),
 
         supabase.from('group_sessions')
-          .select('id, title, activity_type, scheduled_at, location, max_participants, status, host:users!host_id(id, full_name, username, avatar_url), participants:group_session_participants(count)')
+          .select('id, title, activity_type, scheduled_at, location, max_participants, status, series_id, recurrence, cover_image_url, host:users!host_id(id, full_name, username, avatar_url), participants:group_session_participants(count)')
           .in('status', ['open', 'full'])
           .gte('scheduled_at', now)
           .order('scheduled_at')
@@ -83,7 +82,15 @@ export default function EventsPage() {
       ])
 
       setCrewEvents(ce || [])
-      setGroupSessions(gs || [])
+      // Collapse recurring series to one card — the nearest upcoming occurrence.
+      // Query is ordered by scheduled_at asc, so the first hit per series wins.
+      const seenSeries = new Set<string>()
+      setGroupSessions((gs || []).filter((s: any) => {
+        const key = s.series_id || s.id
+        if (seenSeries.has(key)) return false
+        seenSeries.add(key)
+        return true
+      }))
       setFreeToday(fp || [])
       setBirthdays(bd || [])
       setLoading(false)
@@ -109,6 +116,17 @@ export default function EventsPage() {
   const otherFree = myCity ? freePeople.filter(u => !u.city?.toLowerCase().includes(myCity.toLowerCase())) : freePeople
 
   const totalEvents = crewEvents.length + groupSessions.length + birthdays.length
+  const allEmpty = totalEvents === 0 && freePeople.length === 0
+
+  // City-first split: items matching myCity go under an "In {city}" divider,
+  // the rest under "Everywhere else" — only when both groups are non-empty.
+  const splitByCity = (items: any[], getLoc: (x: any) => string | null | undefined) => {
+    if (!myCity) return { inCity: [] as any[], elsewhere: items, split: false }
+    const q = myCity.toLowerCase()
+    const inCity = items.filter(x => getLoc(x)?.toLowerCase().includes(q))
+    const elsewhere = items.filter(x => !getLoc(x)?.toLowerCase().includes(q))
+    return { inCity, elsewhere, split: inCity.length > 0 && elsewhere.length > 0 }
+  }
 
   const TABS: { id: Tab; label: string; Icon?: any; count?: number }[] = [
     { id: 'all',      label: 'All',                              count: totalEvents },
@@ -176,8 +194,8 @@ export default function EventsPage() {
           <span style={{ color: 'var(--text-muted)' }}>→</span>
         </Link>
 
-        {/* Tabs */}
-        <div className="filters-scroll" style={{ display: 'flex', gap: '8px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '4px' }}>
+        {/* Tabs — sticky under the top nav */}
+        <div className="filters-scroll" style={{ display: 'flex', gap: '8px', margin: '0 -16px 20px', padding: '10px 16px', overflowX: 'auto', position: 'sticky', top: '66px', zIndex: 40, background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
           {TABS.map(t => (
             <button
               key={t.id}
@@ -208,11 +226,33 @@ export default function EventsPage() {
 
         {loading ? (
           <PageLoader fullscreen={false} message="Loading…" />
+        ) : tab === 'all' && allEmpty ? (
+          /* One composite hero instead of a stack of empty boxes */
+          <div style={{ padding: '44px 24px', borderRadius: '20px', background: 'linear-gradient(160deg, rgba(212,175,55,0.08) 0%, rgba(155,127,255,0.06) 55%, var(--surface-1) 100%)', border: '1px solid var(--border-strong)', textAlign: 'center' }}>
+            <Sparkles size={26} color="#D4AF37" strokeWidth={1.6} style={{ marginBottom: '14px' }} />
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 6vw, 28px)', color: 'var(--text-primary)', marginBottom: '8px', lineHeight: 1.2 }}>
+              This week in {myCity || 'your city'} is yours to start
+            </h2>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', maxWidth: '400px', margin: '0 auto 22px', lineHeight: 1.6 }}>
+              Nothing on the calendar yet — which means the first move is yours. Host something small and see who shows up.
+            </p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <Link href="/group-sessions/new" style={{ fontSize: '13px', fontWeight: 700, padding: '11px 18px', borderRadius: '12px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#080810', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                Host a group session
+              </Link>
+              <Link href="/birthday/new" style={{ fontSize: '13px', fontWeight: 600, padding: '11px 18px', borderRadius: '12px', border: '1px solid rgba(255,107,53,0.35)', background: 'rgba(255,107,53,0.08)', color: '#FF6B35', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                🎂 Create a birthday page
+              </Link>
+              <Link href="/crews" style={{ fontSize: '13px', fontWeight: 600, padding: '11px 18px', borderRadius: '12px', border: '1px solid var(--border-strong)', color: 'var(--text-muted)', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                Browse crews
+              </Link>
+            </div>
+          </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
 
-            {/* FREE TODAY section */}
-            {(tab === 'all' || tab === 'free') && (
+            {/* FREE TODAY section — skipped on All when empty */}
+            {(tab === 'free' || (tab === 'all' && freePeople.length > 0)) && (
               <section>
                 <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#34D399', boxShadow: '0 0 8px rgba(52,211,153,0.6)' }} />
@@ -254,8 +294,8 @@ export default function EventsPage() {
               </section>
             )}
 
-            {/* BIRTHDAYS section */}
-            {(tab === 'all' || tab === 'birthday') && (
+            {/* BIRTHDAYS section — skipped on All when empty */}
+            {(tab === 'birthday' || (tab === 'all' && birthdays.length > 0)) && (
               <section>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                   <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}><Cake size={13} strokeWidth={2} /> BIRTHDAYS</p>
@@ -267,16 +307,22 @@ export default function EventsPage() {
                     <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '10px' }}>No birthdays coming up</p>
                     <Link href="/birthday/new" style={{ fontSize: '13px', color: '#FF6B35', textDecoration: 'none', fontWeight: 600 }}>🎂 Create a birthday page →</Link>
                   </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {birthdays.map(b => <BirthdayCard key={b.id} bday={b} />)}
-                  </div>
-                )}
+                ) : (() => {
+                  const { inCity, elsewhere, split } = splitByCity(birthdays, b => b.location)
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {split && <CityLabel text={`In ${myCity}`} />}
+                      {(split ? inCity : birthdays).map(b => <BirthdayCard key={b.id} bday={b} />)}
+                      {split && <CityLabel text="Everywhere else" />}
+                      {split && elsewhere.map(b => <BirthdayCard key={b.id} bday={b} />)}
+                    </div>
+                  )
+                })()}
               </section>
             )}
 
-            {/* CREW EVENTS section */}
-            {(tab === 'all' || tab === 'crew') && (
+            {/* CREW EVENTS section — skipped on All when empty */}
+            {(tab === 'crew' || (tab === 'all' && crewEvents.length > 0)) && (
               <section>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                   <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}><Users size={13} strokeWidth={2} /> CREW EVENTS</p>
@@ -288,16 +334,22 @@ export default function EventsPage() {
                     <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '10px' }}>No crew events scheduled yet</p>
                     <Link href="/crews" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>Join a crew to see their events →</Link>
                   </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {crewEvents.map(e => <CrewEventCard key={e.id} event={e} />)}
-                  </div>
-                )}
+                ) : (() => {
+                  const { inCity, elsewhere, split } = splitByCity(crewEvents, e => e.location)
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {split && <CityLabel text={`In ${myCity}`} />}
+                      {(split ? inCity : crewEvents).map(e => <CrewEventCard key={e.id} event={e} />)}
+                      {split && <CityLabel text="Everywhere else" />}
+                      {split && elsewhere.map(e => <CrewEventCard key={e.id} event={e} />)}
+                    </div>
+                  )
+                })()}
               </section>
             )}
 
-            {/* GROUP SESSIONS section */}
-            {(tab === 'all' || tab === 'group') && (
+            {/* GROUP SESSIONS section — skipped on All when empty */}
+            {(tab === 'group' || (tab === 'all' && groupSessions.length > 0)) && (
               <section>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                   <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}><UsersRound size={13} strokeWidth={2} /> GROUP SESSIONS</p>
@@ -309,18 +361,25 @@ export default function EventsPage() {
                     <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '10px' }}>No open group sessions yet</p>
                     <Link href="/group-sessions/new" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>Host the first one →</Link>
                   </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {groupSessions.map(gs => (
-                      <GroupSessionCard
-                        key={gs.id}
-                        session={gs}
-                        canDelete={!!myId && gs.host?.id === myId}
-                        onDeleted={id => setGroupSessions(prev => prev.filter(x => x.id !== id))}
-                      />
-                    ))}
-                  </div>
-                )}
+                ) : (() => {
+                  const { inCity, elsewhere, split } = splitByCity(groupSessions, s => s.location)
+                  const renderCard = (gs: any) => (
+                    <GroupSessionCard
+                      key={gs.id}
+                      session={gs}
+                      canDelete={!!myId && gs.host?.id === myId}
+                      onDeleted={id => setGroupSessions(prev => prev.filter(x => x.id !== id))}
+                    />
+                  )
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {split && <CityLabel text={`In ${myCity}`} />}
+                      {(split ? inCity : groupSessions).map(renderCard)}
+                      {split && <CityLabel text="Everywhere else" />}
+                      {split && elsewhere.map(renderCard)}
+                    </div>
+                  )
+                })()}
               </section>
             )}
 
@@ -329,12 +388,17 @@ export default function EventsPage() {
       </div>
 
       <CreateEventButton variant="fab" />
-      <BottomNav />
     </div>
   )
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
+
+function CityLabel({ text }: { text: string }) {
+  return (
+    <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-dim)', margin: '2px 0 -2px' }}>{text}</p>
+  )
+}
 
 function FreePill({ user }: { user: any }) {
   const initials = user.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
@@ -381,6 +445,9 @@ function BirthdayCard({ bday }: { bday: any }) {
           <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Users size={11} strokeWidth={2} /> {guestCount} going</span>
         </div>
       </div>
+      {bday.cover_image && (
+        <img src={bday.cover_image} alt="" style={{ width: '72px', height: '72px', borderRadius: '12px', objectFit: 'cover', flexShrink: 0, alignSelf: 'center' }} />
+      )}
     </Link>
   )
 }
@@ -429,6 +496,7 @@ function GroupSessionCard({ session, canDelete = false, onDeleted }: { session: 
   const participantCount = session.participants?.[0]?.count || 0
   const isFull = session.status === 'full'
   const host = session.host
+  const recurrenceLabel = session.recurrence === 'weekly' ? 'Weekly' : session.recurrence === 'biweekly' ? 'Biweekly' : session.recurrence === 'monthly' ? 'Monthly' : null
   const [deleting, setDeleting] = useState(false)
 
   const handleDelete = async (e: React.MouseEvent) => {
@@ -449,7 +517,7 @@ function GroupSessionCard({ session, canDelete = false, onDeleted }: { session: 
           disabled={deleting}
           title="Delete session"
           aria-label="Delete session"
-          style={{ position: 'absolute', top: '10px', right: '10px', width: '30px', height: '30px', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,80,80,0.10)', border: '1px solid rgba(255,80,80,0.28)', color: '#FF6B6B', cursor: deleting ? 'wait' : 'pointer', zIndex: 2 }}
+          style={{ position: 'absolute', top: '10px', right: session.cover_image_url ? '92px' : '10px', width: '30px', height: '30px', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,80,80,0.10)', border: '1px solid rgba(255,80,80,0.28)', color: '#FF6B6B', cursor: deleting ? 'wait' : 'pointer', zIndex: 2 }}
         >
           <Trash2 size={14} strokeWidth={2} />
         </button>
@@ -483,8 +551,16 @@ function GroupSessionCard({ session, canDelete = false, onDeleted }: { session: 
           <span style={{ fontSize: '11px', fontWeight: 600, color: isFull ? '#FF6B35' : '#34D399', background: isFull ? 'rgba(255,107,53,0.1)' : 'rgba(57,255,20,0.08)', padding: '2px 8px', borderRadius: '6px', border: isFull ? '1px solid rgba(255,107,53,0.25)' : '1px solid rgba(57,255,20,0.2)' }}>
             {isFull ? 'Full' : 'Open'}
           </span>
+          {recurrenceLabel && (
+            <span style={{ fontSize: '11px', fontWeight: 600, color: '#9B7FFF', background: 'rgba(155,127,255,0.10)', padding: '2px 8px', borderRadius: '6px', border: '1px solid rgba(155,127,255,0.25)' }}>
+              🔁 {recurrenceLabel}
+            </span>
+          )}
         </div>
       </div>
+      {session.cover_image_url && (
+        <img src={session.cover_image_url} alt="" style={{ width: '72px', height: '72px', borderRadius: '12px', objectFit: 'cover', flexShrink: 0, alignSelf: 'center' }} />
+      )}
     </Link>
   )
 }

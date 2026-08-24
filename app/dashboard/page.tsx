@@ -19,7 +19,8 @@ import {
   UsersRound, Globe, Network, Search, Zap, Settings, Share2,
   TrendingUp, Hand, Star, Crown, PartyPopper, Target,
 } from 'lucide-react'
-import { buzz, celebrate } from '@/lib/celebrate'
+import { buzz, celebrate, celebrateMatch } from '@/lib/celebrate'
+import MatchCelebration from '@/components/MatchCelebration'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -40,6 +41,7 @@ export default function DashboardPage() {
   const [iAmFree, setIAmFree] = useState(false)
   const [togglingFree, setTogglingFree] = useState(false)
   const [freeInCityCount, setFreeInCityCount] = useState(0)
+  const [matchPartner, setMatchPartner] = useState<any>(null)
 
   useEffect(() => {
     const getUser = async () => {
@@ -109,6 +111,31 @@ export default function DashboardPage() {
       setReferredCount(refCount || 0)
       setPendingKnocks((knocksData || []).filter((k: any) => !k.is_mutual))
 
+      // Celebrate matches the user hasn't seen yet — the case where I knocked
+      // first and the other person knocked back while I was away (they saw the
+      // celebration in-app; I never did). The knocks table has no
+      // seen_celebration column, so a localStorage guard keeps this one-shot.
+      try {
+        const { data: mutuals } = await supabase
+          .from('knocks')
+          .select('created_at, receiver:users!receiver_id(id, full_name, username, avatar_url)')
+          .eq('sender_id', session.user.id)
+          .eq('is_mutual', true)
+          .order('created_at', { ascending: false })
+          .limit(20)
+        if (mutuals?.length) {
+          const celebrated: string[] = JSON.parse(localStorage.getItem('celebrated_matches') || '[]')
+          const partners = mutuals.map((m: any) => m.receiver).filter(Boolean)
+          const fresh = partners.filter((p: any) => !celebrated.includes(p.id))
+          if (fresh.length) {
+            // Mark ALL as celebrated (only one modal per visit — no spam),
+            // then celebrate the most recent one.
+            localStorage.setItem('celebrated_matches', JSON.stringify([...celebrated, ...fresh.map((p: any) => p.id)]))
+            setMatchPartner(fresh[0])
+          }
+        }
+      } catch {}
+
       // Find confirmed bookings without a memory yet
       if (confirmedBookings?.length) {
         const bookingIds = confirmedBookings.map((b: any) => b.id)
@@ -167,6 +194,12 @@ export default function DashboardPage() {
     })
     return () => subscription.unsubscribe()
   }, [])
+
+  // Fire the confetti only once the dashboard (and the match modal) is
+  // actually visible — not mid-fetch behind the page loader.
+  useEffect(() => {
+    if (!loading && matchPartner) celebrateMatch()
+  }, [loading, matchPartner])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -253,6 +286,14 @@ export default function DashboardPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      {matchPartner && (
+        <MatchCelebration
+          profileUsername={matchPartner.username}
+          profileName={matchPartner.full_name}
+          profileAvatarUrl={matchPartner.avatar_url}
+          onClose={() => setMatchPartner(null)}
+        />
+      )}
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -317,7 +358,7 @@ export default function DashboardPage() {
                   <div style={{ flex: 1, minWidth: '140px' }}>
                     <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#D4AF37', marginBottom: '4px' }}>START HERE</p>
                     <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '4px', lineHeight: 1.2 }}>Discover your Bestie Type</h2>
-                    <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>12 questions — unlocks compatibility matching, shows on your passport</p>
+                    <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>5-minute test — unlocks compatibility matching, shows on your passport</p>
                   </div>
                   <span style={{ padding: '12px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: 'var(--bg)', whiteSpace: 'nowrap', flexShrink: 0 }}>Take the quiz →</span>
                 </div>

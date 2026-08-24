@@ -24,15 +24,15 @@ export default function ScoreGuidePage() {
 
         {/* Score ranges */}
         <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px', marginBottom: '20px' }}>
-          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', marginBottom: '20px' }}>Score levels</h2>
+          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', marginBottom: '20px' }}>Score tiers</h2>
           {[
-            { range: '800–1000', label: 'Excellent', color: '#34D399', desc: 'Top Bestie. High trust, active, verified.' },
-            { range: '600–799', label: 'Good', color: '#D4AF37', desc: 'Reliable and social. Strong track record.' },
-            { range: '400–599', label: 'Fair', color: '#A99ECC', desc: 'In progress. Keep completing sessions.' },
-            { range: '50–399', label: 'New', color: '#A99ECC', desc: 'Just started. Fill your profile — Score will grow fast.' },
+            { range: '800–1000', label: 'Platinum', color: '#C9B8FF', rgb: '155,143,255', desc: 'Top Bestie. High trust, active, verified.' },
+            { range: '600–799', label: 'Gold', color: '#D4AF37', rgb: '212,175,55', desc: 'Reliable and social. Strong track record.' },
+            { range: '400–599', label: 'Silver', color: '#C0C8D8', rgb: '192,200,216', desc: 'In progress. Keep completing sessions.' },
+            { range: '50–399', label: 'Bronze', color: '#CD8F4A', rgb: '205,143,74', desc: 'Just started. Fill your profile — Score will grow fast.' },
           ].map(s => (
             <div key={s.range} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '12px 0', borderBottom: '1px solid #131323' }}>
-              <div style={{ width: '80px', padding: '4px 10px', borderRadius: '999px', background: `rgba(${s.color === '#34D399' ? '57,255,20' : s.color === '#D4AF37' ? '212,175,55' : '155,147,192'},0.1)`, border: `1px solid ${s.color}30`, textAlign: 'center', flexShrink: 0 }}>
+              <div style={{ width: '80px', padding: '4px 10px', borderRadius: '999px', background: `rgba(${s.rgb},0.1)`, border: `1px solid ${s.color}30`, textAlign: 'center', flexShrink: 0 }}>
                 <span style={{ fontSize: '12px', fontWeight: 700, color: s.color }}>{s.label}</span>
               </div>
               <div style={{ flex: 1 }}>
@@ -98,15 +98,15 @@ export default function ScoreGuidePage() {
 
         {/* Penalties */}
         <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px', marginBottom: '20px' }}>
-          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', marginBottom: '8px' }}>Penalties & degradation</h2>
-          <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '20px' }}>Score decreases with inactivity or poor reviews</p>
+          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', marginBottom: '8px' }}>Staying active</h2>
+          <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '20px' }}>Regular activity keeps your Score fresh — quiet stretches and low ratings slowly reduce it, and it always grows back once you're active again</p>
           {[
             { emoji: '😐', action: '3-star rating', sub: '', points: '−25' },
             { emoji: '😕', action: '2-star rating', sub: '', points: '−60' },
             { emoji: '😞', action: '1-star rating', sub: '', points: '−100' },
-            { emoji: '💤', action: 'No activity 7–29 days', sub: '', points: '−1/day' },
-            { emoji: '😴', action: 'No activity 30–59 days', sub: '', points: '−3/day' },
-            { emoji: '🪦', action: 'No activity 60+ days', sub: '', points: '−5/day' },
+            { emoji: '💤', action: 'Quiet for 7–29 days', sub: '', points: '−1/day' },
+            { emoji: '😴', action: 'Quiet for 30–59 days', sub: '', points: '−3/day' },
+            { emoji: '🌙', action: 'Quiet for 60+ days', sub: '', points: '−5/day' },
             { emoji: '🚩', action: '3 reports on account', sub: 'Review + penalty', points: '−50' },
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #131323' }}>
