@@ -106,7 +106,7 @@ export default async function EventPage({ params }) {
               {isPast && <span style={{ fontSize: '12px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(155,147,192,0.1)', border: '1px solid rgba(155,147,192,0.2)', color: '#A99ECC', fontWeight: 600 }}>Ended</span>}
               {event.is_members_only
                 ? <span style={{ fontSize: '12px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(155,147,192,0.1)', border: '1px solid rgba(155,147,192,0.2)', color: '#A99ECC', fontWeight: 600 }}>🔒 Members only</span>
-                : <span style={{ fontSize: '12px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', color: '#34D399', fontWeight: 600 }}>🌐 Open</span>
+                : <span style={{ fontSize: '12px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: '#34D399', fontWeight: 600 }}>🌐 Open</span>
               }
             </div>
           </div>

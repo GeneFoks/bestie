@@ -8,9 +8,11 @@ import { supabase } from '@/lib/supabase'
 import ProfileNav from '@/components/ProfileNav'
 import { Users, UsersRound, Calendar, MapPin, Plus, ArrowUp, Sparkles, Cake, Zap, Trash2 } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
-import { PageLoader } from '@/components/Loading'
+import { CardSkeleton, SkeletonList } from '@/components/Loading'
 import { ActivityIcon } from '@/lib/activityIcons'
 import CreateEventButton from '@/components/CreateEventButton'
+import { showToast } from '@/components/Toast'
+import { confirmSheet } from '@/components/ConfirmSheet'
 
 function isToday(ts: string | null): boolean {
   if (!ts) return false
@@ -164,7 +166,7 @@ export default function EventsPage() {
 
         {/* Free Today toggle */}
         {myId && (
-          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '16px', background: iAmFree ? 'rgba(57,255,20,0.06)' : 'var(--surface-1)', border: iAmFree ? '1px solid rgba(57,255,20,0.22)' : '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '16px', background: iAmFree ? 'rgba(52,211,153,0.06)' : 'var(--surface-1)', border: iAmFree ? '1px solid rgba(52,211,153,0.22)' : '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
             <div>
               <p style={{ fontSize: '14px', fontWeight: 700, color: iAmFree ? '#34D399' : 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: iAmFree ? '#34D399' : 'transparent', border: iAmFree ? 'none' : '2px solid var(--text-muted)', boxShadow: iAmFree ? '0 0 10px rgba(52,211,153,0.7)' : 'none' }} />
@@ -177,7 +179,7 @@ export default function EventsPage() {
             <button
               onClick={toggleFree}
               disabled={toggling}
-              style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.1)' : 'rgba(57,255,20,0.12)', border: iAmFree ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(57,255,20,0.35)', color: iAmFree ? '#FF6B35' : '#34D399', whiteSpace: 'nowrap', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+              style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.1)' : 'rgba(52,211,153,0.12)', border: iAmFree ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(52,211,153,0.35)', color: iAmFree ? '#FF6B35' : '#34D399', whiteSpace: 'nowrap', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
             >
               {toggling ? '…' : iAmFree ? 'Turn off' : "I'm free!"}
             </button>
@@ -225,7 +227,25 @@ export default function EventsPage() {
         </div>
 
         {loading ? (
-          <PageLoader fullscreen={false} message="Loading…" />
+          /* Skeleton feed matching the real layout: free-today pills + event cards */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+            <div>
+              <CardSkeleton width={140} height={12} radius={6} style={{ marginBottom: '12px' }} />
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <CardSkeleton key={i} width={124} height={48} radius={12} />
+                ))}
+              </div>
+            </div>
+            <div>
+              <CardSkeleton width={140} height={12} radius={6} style={{ marginBottom: '12px' }} />
+              <SkeletonList count={3} height={104} gap={10} />
+            </div>
+            <div>
+              <CardSkeleton width={140} height={12} radius={6} style={{ marginBottom: '12px' }} />
+              <SkeletonList count={2} height={104} gap={10} />
+            </div>
+          </div>
         ) : tab === 'all' && allEmpty ? (
           /* One composite hero instead of a stack of empty boxes */
           <div style={{ padding: '44px 24px', borderRadius: '20px', background: 'linear-gradient(160deg, rgba(212,175,55,0.08) 0%, rgba(155,127,255,0.06) 55%, var(--surface-1) 100%)', border: '1px solid var(--border-strong)', textAlign: 'center' }}>
@@ -404,7 +424,7 @@ function FreePill({ user }: { user: any }) {
   const initials = user.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
   const sc = (user.bestie_score || 0) >= 800 ? '#34D399' : (user.bestie_score || 0) >= 600 ? '#D4AF37' : 'var(--text-muted)'
   return (
-    <Link href={`/${user.username}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', borderRadius: '12px', background: 'rgba(57,255,20,0.05)', border: '1px solid rgba(57,255,20,0.16)', textDecoration: 'none' }}>
+    <Link href={`/${user.username}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', borderRadius: '12px', background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.16)', textDecoration: 'none' }}>
       <div style={{ position: 'relative', flexShrink: 0 }}>
         <div style={{ width: '32px', height: '32px', borderRadius: '8px', overflow: 'hidden', background: 'var(--surface-3)', border: `1.5px solid ${sc}40` }}>
           {user.avatar_url
@@ -502,10 +522,21 @@ function GroupSessionCard({ session, canDelete = false, onDeleted }: { session: 
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault(); e.stopPropagation()
     if (deleting) return
-    if (!confirm(`Delete "${session.title}"? This can't be undone.`)) return
+    const ok = await confirmSheet({
+      title: `Delete "${session.title}"?`,
+      body: "This can't be undone.",
+      confirmLabel: 'Delete',
+      danger: true,
+    })
+    if (!ok) return
     setDeleting(true)
     const { error } = await supabase.from('group_sessions').delete().eq('id', session.id)
-    if (error) { alert(`Could not delete: ${error.message}`); setDeleting(false); return }
+    if (error) {
+      console.error('Delete session error:', error)
+      showToast("Couldn't delete the session — try again", { type: 'error' })
+      setDeleting(false)
+      return
+    }
     onDeleted?.(session.id)
   }
 
@@ -548,7 +579,7 @@ function GroupSessionCard({ session, canDelete = false, onDeleted }: { session: 
           <span style={{ fontSize: '11px', color: isFull ? '#FF6B35' : 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
             <Users size={11} strokeWidth={2} /> {participantCount}{session.max_participants ? `/${session.max_participants}` : ''}
           </span>
-          <span style={{ fontSize: '11px', fontWeight: 600, color: isFull ? '#FF6B35' : '#34D399', background: isFull ? 'rgba(255,107,53,0.1)' : 'rgba(57,255,20,0.08)', padding: '2px 8px', borderRadius: '6px', border: isFull ? '1px solid rgba(255,107,53,0.25)' : '1px solid rgba(57,255,20,0.2)' }}>
+          <span style={{ fontSize: '11px', fontWeight: 600, color: isFull ? '#FF6B35' : '#34D399', background: isFull ? 'rgba(255,107,53,0.1)' : 'rgba(52,211,153,0.08)', padding: '2px 8px', borderRadius: '6px', border: isFull ? '1px solid rgba(255,107,53,0.25)' : '1px solid rgba(52,211,153,0.2)' }}>
             {isFull ? 'Full' : 'Open'}
           </span>
           {recurrenceLabel && (

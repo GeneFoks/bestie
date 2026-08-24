@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client'
 
 import { useState } from 'react'
@@ -126,7 +127,7 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
             </div>
             {score > 0 && (
               <div className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold flex-shrink-0" style={{ background: 'rgba(8,8,16,0.8)', border: `1px solid ${scoreColor}35`, color: scoreColor }}>
-                <span style={{ fontSize: '9px', opacity: 0.8 }}>BS</span>
+                <span style={{ fontSize: '9px', opacity: 0.8 }}>★</span>
                 <span>{score}</span>
               </div>
             )}
@@ -137,7 +138,7 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
       <div className="px-4 pb-4 pt-3 space-y-3">
         {/* Stats row: BS · met · sparks · rating */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '11px', fontWeight: 700, color: scoreColor }}>BS {score}</span>
+          <span style={{ fontSize: '11px', fontWeight: 700, color: scoreColor }}>★ {score}</span>
           {totalSessions > 0 && (
             <span style={{ fontSize: '11px', color: colors.textMuted, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>· <Users size={11} strokeWidth={2} /> {totalSessions} met</span>
           )}

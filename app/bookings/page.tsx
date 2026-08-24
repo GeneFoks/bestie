@@ -227,7 +227,7 @@ export default function BookingsPage() {
           // Status badge
           const statusMap = {
             pending:   { label: 'PENDING',   color: '#D4AF37', bg: 'rgba(212,175,55,0.12)',   border: 'rgba(212,175,55,0.3)' },
-            accepted:  { label: 'UPCOMING',  color: '#34D399', bg: 'rgba(57,255,20,0.1)',     border: 'rgba(57,255,20,0.25)' },
+            accepted:  { label: 'UPCOMING',  color: '#34D399', bg: 'rgba(52,211,153,0.1)',     border: 'rgba(52,211,153,0.25)' },
             completed: { label: 'COMPLETED', color: '#9B7FFF', bg: 'rgba(155,143,255,0.1)',   border: 'rgba(155,143,255,0.25)' },
             declined:  { label: 'DECLINED',  color: '#ff6b6b', bg: 'rgba(255,80,80,0.08)',    border: 'rgba(255,80,80,0.2)' },
             cancelled: { label: 'CANCELLED', color: '#6B6490', bg: 'rgba(107,100,144,0.1)',   border: 'rgba(107,100,144,0.2)' },

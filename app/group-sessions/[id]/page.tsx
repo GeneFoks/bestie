@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
 import { ActivityIcon } from '@/lib/activityIcons'
+import { showToast } from '@/components/Toast'
+import { confirmSheet } from '@/components/ConfirmSheet'
 
 export default function GroupSessionPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -66,7 +68,10 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
       const data = await res.json()
       setJoining(false)
       if (data.url) window.location.href = data.url
-      else alert(data.error || 'Could not start checkout')
+      else {
+        console.error('Checkout error:', data.error)
+        showToast("Couldn't start checkout — try again", { type: 'error' })
+      }
       return
     }
 
@@ -91,19 +96,38 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
 
   const handleTransferHost = async (p: any) => {
     const name = p.user?.full_name?.split(' ')[0] || 'this participant'
-    if (!confirm(`Make ${name} the host? You'll stay in the event as a participant, but they'll get full control (edit, delete, hosting).`)) return
+    const ok = await confirmSheet({
+      title: `Make ${name} the host?`,
+      body: "You'll stay in the event as a participant, but they'll get full control (edit, delete, hosting).",
+      confirmLabel: 'Make host',
+    })
+    if (!ok) return
     const { error } = await supabase.rpc('transfer_group_session_host', {
       p_session_id: params.id,
       p_new_host_id: p.user_id,
     })
-    if (error) { alert(`Could not transfer: ${error.message}`); return }
+    if (error) {
+      console.error('Transfer host error:', error)
+      showToast("Couldn't transfer hosting — try again", { type: 'error' })
+      return
+    }
     load()
   }
 
   const handleDelete = async () => {
-    if (!confirm('Delete this event permanently? This cannot be undone.')) return
+    const ok = await confirmSheet({
+      title: 'Delete this event?',
+      body: 'This cannot be undone.',
+      confirmLabel: 'Delete',
+      danger: true,
+    })
+    if (!ok) return
     const { error } = await supabase.from('group_sessions').delete().eq('id', params.id)
-    if (error) { alert(`Could not delete: ${error.message}`); return }
+    if (error) {
+      console.error('Delete session error:', error)
+      showToast("Couldn't delete the event — try again", { type: 'error' })
+      return
+    }
     router.push('/events')
   }
 
@@ -176,7 +200,7 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
                   🎟 ${Number(session.ticket_price)}
                 </span>
               )}
-              <span style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px', borderRadius: '999px', background: `rgba(${statusColor === '#34D399' ? '57,255,20' : statusColor === '#FF6B6B' ? '255,107,107' : statusColor === '#FF6B35' ? '255,107,53' : '155,147,192'},0.12)`, border: `1px solid ${statusColor}40`, color: statusColor }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px', borderRadius: '999px', background: `rgba(${statusColor === '#34D399' ? '52,211,153' : statusColor === '#FF6B6B' ? '255,107,107' : statusColor === '#FF6B35' ? '255,107,53' : '155,147,192'},0.12)`, border: `1px solid ${statusColor}40`, color: statusColor }}>
                 {statusLabel}
               </span>
             </span>
@@ -217,7 +241,7 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
               </div>
               <div>
                 <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{host.full_name}</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Host · BS {host.bestie_score || 0}</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Host · ★ {host.bestie_score || 0}</p>
               </div>
               <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#D4AF37' }}>👑 Host</span>
             </Link>
@@ -242,7 +266,7 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
                 </>
               ) : isParticipant ? (
                 <>
-                  <div style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', color: '#34D399', textAlign: 'center' }}>
+                  <div style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: '#34D399', textAlign: 'center' }}>
                     ✓ You're in!
                   </div>
                   <button onClick={handleLeave} style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: 'var(--surface-1b)', border: '1px solid var(--border-strong)', color: 'var(--text-muted)', cursor: 'pointer' }}>

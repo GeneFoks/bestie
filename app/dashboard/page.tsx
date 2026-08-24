@@ -264,10 +264,10 @@ export default function DashboardPage() {
   const scoreLabel = score >= 800 ? 'Excellent' : score >= 600 ? 'Good' : score >= 400 ? 'Fair' : 'New'
 
   const boostItems = [
-    { Icon: Camera, label: 'Add profile photo', points: '+50 BS', done: !!profile?.avatar_url, href: '/profile/edit' },
-    { Icon: Pencil, label: 'Complete your bio', points: '+30 BS', done: !!profile?.bio, href: '/profile/edit' },
-    { Icon: MapPin, label: 'Add your city',    points: '+20 BS', done: !!profile?.city, href: '/profile/edit' },
-    { Icon: Target, label: 'Create an activity', points: '+50 BS', done: profile?.activity_packages?.length > 0, href: '/profile/edit' },
+    { Icon: Camera, label: 'Add profile photo', points: '+50 ★', done: !!profile?.avatar_url, href: '/profile/edit' },
+    { Icon: Pencil, label: 'Complete your bio', points: '+30 ★', done: !!profile?.bio, href: '/profile/edit' },
+    { Icon: MapPin, label: 'Add your city',    points: '+20 ★', done: !!profile?.city, href: '/profile/edit' },
+    { Icon: Target, label: 'Create an activity', points: '+50 ★', done: profile?.activity_packages?.length > 0, href: '/profile/edit' },
   ]
   const remainingBoost = boostItems.filter(i => !i.done)
   const totalNewCrewEvents = Object.values(crewNewEvents).reduce((s, n) => s + n, 0)
@@ -331,7 +331,7 @@ export default function DashboardPage() {
           </div>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             <CreateEventButton variant="compact" />
-            <button onClick={handleShare} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: copied ? 'rgba(57,255,20,0.15)' : 'linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0.08) 100%)', border: copied ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(212,175,55,0.3)', color: copied ? '#34D399' : '#D4AF37', cursor: 'pointer' }}>
+            <button onClick={handleShare} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: copied ? 'rgba(52,211,153,0.15)' : 'linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0.08) 100%)', border: copied ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(212,175,55,0.3)', color: copied ? '#34D399' : '#D4AF37', cursor: 'pointer' }}>
               {copied ? '✓ Copied!' : (<><Share2 size={14} strokeWidth={2} style={{ verticalAlign: 'middle', marginRight: '6px' }} />Share my Passport</>)}
             </button>
             <Link href={`/${profile?.username}`} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'var(--border)', border: '1px solid var(--border)', color: 'var(--text-primary)', textDecoration: 'none' }}>
@@ -674,7 +674,7 @@ export default function DashboardPage() {
         </div>
 
         {remainingBoost.length > 0 && (
-          <div style={{ marginTop: '20px', background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(57,255,20,0.04) 100%)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '20px', padding: '24px' }}>
+          <div style={{ marginTop: '20px', background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(52,211,153,0.04) 100%)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '20px', padding: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}><TrendingUp size={20} color="#D4AF37" strokeWidth={1.8} /> Boost your Bestie Score</h3>
               <Link href="/score-guide" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>How it works →</Link>
@@ -716,7 +716,7 @@ export default function DashboardPage() {
               <Button onClick={handleShareRef} variant="primary" size="sm" style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
                 <Share2 size={15} strokeWidth={2.2} /> Share
               </Button>
-              <button onClick={handleCopyRef} style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: refCopied ? 'rgba(57,255,20,0.15)' : 'var(--overlay)', border: refCopied ? '1px solid rgba(57,255,20,0.3)' : '1px solid var(--border-strong)', color: refCopied ? '#34D399' : 'var(--text-muted)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+              <button onClick={handleCopyRef} style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: refCopied ? 'rgba(52,211,153,0.15)' : 'var(--overlay)', border: refCopied ? '1px solid rgba(52,211,153,0.3)' : '1px solid var(--border-strong)', color: refCopied ? '#34D399' : 'var(--text-muted)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
                 {refCopied ? '✓ Copied!' : 'Copy'}
               </button>
             </div>
@@ -724,7 +724,7 @@ export default function DashboardPage() {
         )}
 
         {remainingBoost.length === 0 && (
-          <div style={{ marginTop: '20px', background: 'rgba(57,255,20,0.05)', border: '1px solid rgba(57,255,20,0.15)', borderRadius: '20px', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ marginTop: '20px', background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: '20px', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(52,211,153,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><PartyPopper size={22} color="#34D399" strokeWidth={1.8} /></span>
               <div>

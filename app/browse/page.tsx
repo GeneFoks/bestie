@@ -272,7 +272,7 @@ export default function BrowsePage() {
         )}
 
         {myProfile?.eterotype && compatMode && !justMatched && (
-          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(57,255,20,0.06)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '13px', color: 'var(--text-muted)' }}>
+          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.2)', fontSize: '13px', color: 'var(--text-muted)' }}>
             Showing people compatible with your Bestie Type <span style={{ color: '#34D399', fontWeight: 600 }}>🧭 {myProfile.eterotype_name || myProfile.eterotype}</span> — best matches first
           </div>
         )}

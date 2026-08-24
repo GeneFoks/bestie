@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Phone } from 'lucide-react'
+import { showToast } from '@/components/Toast'
 
 interface CallButtonProps {
   toUserId: string
@@ -36,11 +37,16 @@ export default function CallButton({ toUserId, toUserName, bookingId, variant = 
       })
 
       const data = await res.json()
-      if (!res.ok) { alert(data.error || 'Could not start call'); return }
+      if (!res.ok) {
+        console.error('Call create failed:', data.error)
+        showToast("Couldn't start the call — try again", { type: 'error' })
+        return
+      }
 
       router.push(`/call/${data.room_name}?call_id=${data.call_id}`)
     } catch (err: any) {
-      alert(err.message || 'Failed to start call')
+      console.error('Call start error:', err)
+      showToast("Couldn't start the call — try again", { type: 'error' })
     } finally {
       setCalling(false)
     }
@@ -53,16 +59,16 @@ export default function CallButton({ toUserId, toUserName, bookingId, variant = 
         disabled={calling}
         style={{
           flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
-          background: calling ? 'rgba(57,255,20,0.04)' : 'rgba(57,255,20,0.08)',
-          border: '1px solid rgba(57,255,20,0.2)',
-          color: calling ? '#9B93C0' : '#39FF14',
+          background: calling ? 'rgba(52,211,153,0.04)' : 'rgba(52,211,153,0.08)',
+          border: '1px solid rgba(52,211,153,0.2)',
+          color: calling ? '#9B93C0' : '#34D399',
           cursor: calling ? 'not-allowed' : 'pointer',
           fontFamily: 'Plus Jakarta Sans, sans-serif',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
         }}
       >
         {calling ? (
-          <><span style={{ display: 'inline-block', width: '12px', height: '12px', border: '2px solid rgba(57,255,20,0.2)', borderTop: '2px solid #39FF14', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />Calling…</>
+          <><span style={{ display: 'inline-block', width: '12px', height: '12px', border: '2px solid rgba(52,211,153,0.2)', borderTop: '2px solid #34D399', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />Calling…</>
         ) : (
           <><Phone size={14} strokeWidth={2} /> Call{toUserName ? ` ${toUserName.split(' ')[0]}` : ''}</>
         )}
@@ -79,15 +85,15 @@ export default function CallButton({ toUserId, toUserName, bookingId, variant = 
       aria-label={toUserName ? `Call ${toUserName}` : 'Start call'}
       style={{
         width: '36px', height: '36px', borderRadius: '10px',
-        border: '1px solid rgba(57,255,20,0.25)',
-        background: calling ? 'rgba(57,255,20,0.04)' : 'rgba(57,255,20,0.1)',
-        color: '#39FF14', fontSize: '16px',
+        border: '1px solid rgba(52,211,153,0.25)',
+        background: calling ? 'rgba(52,211,153,0.04)' : 'rgba(52,211,153,0.1)',
+        color: '#34D399', fontSize: '16px',
         cursor: calling ? 'not-allowed' : 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
       }}
     >
       {calling
-        ? <span style={{ display: 'inline-block', width: '14px', height: '14px', border: '2px solid rgba(57,255,20,0.2)', borderTop: '2px solid #39FF14', borderRadius: '50%', animation: 'cbspin 1s linear infinite' }} />
+        ? <span style={{ display: 'inline-block', width: '14px', height: '14px', border: '2px solid rgba(52,211,153,0.2)', borderTop: '2px solid #34D399', borderRadius: '50%', animation: 'cbspin 1s linear infinite' }} />
         : <Phone size={16} strokeWidth={2} />
       }
       <style>{`@keyframes cbspin { to { transform: rotate(360deg) } }`}</style>

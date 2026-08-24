@@ -236,7 +236,7 @@ export default function FindFriends() {
                     </p>
                   </div>
                   <div style={{ flexShrink: 0, padding: '4px 10px', borderRadius: '8px', background: `${tierColor(u.bestie_score)}18`, border: `1px solid ${tierColor(u.bestie_score)}40` }}>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: tierColor(u.bestie_score) }}>BS {u.bestie_score}</span>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: tierColor(u.bestie_score) }}>★ {u.bestie_score}</span>
                   </div>
                 </Link>
               ))}

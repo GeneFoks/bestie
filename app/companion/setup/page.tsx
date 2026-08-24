@@ -12,10 +12,10 @@ const COMPANIONS = [
     name: 'Spark',
     tagline: 'Дерзкий и с юмором',
     description: 'Подтолкнёт тебя выйти из зоны комфорта. Прямой, весёлый, немного саркастичный — но всегда на твоей стороне.',
-    color: '#39FF14',
-    glow: 'rgba(57,255,20,0.4)',
-    bg: 'rgba(57,255,20,0.06)',
-    border: 'rgba(57,255,20,0.3)',
+    color: '#34D399',
+    glow: 'rgba(52,211,153,0.4)',
+    bg: 'rgba(52,211,153,0.06)',
+    border: 'rgba(52,211,153,0.3)',
     anim: 'spark',
   },
   {
@@ -166,7 +166,7 @@ export default function CompanionSetupPage() {
               width: `${6 + Math.random() * 8}px`,
               height: `${6 + Math.random() * 8}px`,
               borderRadius: Math.random() > 0.5 ? '50%' : '2px',
-              background: ['#39FF14','#D4AF37','#7B8FF5','#FF6B35','#FF3B9A'][Math.floor(Math.random() * 5)],
+              background: ['#34D399','#D4AF37','#7B8FF5','#FF6B35','#FF3B9A'][Math.floor(Math.random() * 5)],
               animation: `confettiPop ${0.8 + Math.random() * 1.2}s ease-out forwards`,
               animationDelay: `${Math.random() * 0.5}s`,
             }} />

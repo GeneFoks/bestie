@@ -116,7 +116,7 @@ export default function NewCrewPage() {
             <p style={{ fontSize: '13px', fontWeight: 600, color: atLimit ? '#FF6B35' : '#D4AF37' }}>
               {atLimit ? 'Crew limit reached' : `Crew slots: ${captainedCount} / ${maxCrews}`}
             </p>
-            <span style={{ fontSize: '12px', color: '#A99ECC' }}>{isPlus ? `BS ${myScore} · Plus` : `BS ${myScore}`}</span>
+            <span style={{ fontSize: '12px', color: '#A99ECC' }}>{isPlus ? `★ ${myScore} · Plus` : `★ ${myScore}`}</span>
           </div>
           <div style={{ display: 'flex', gap: '6px' }}>
             {[1,2,3,4,5].map(i => (
@@ -130,7 +130,7 @@ export default function NewCrewPage() {
           )}
           {isPlus && nextThreshold && (
             <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '10px' }}>
-              Reach <span style={{ color: '#D4AF37', fontWeight: 700 }}>BS {nextThreshold}</span> to unlock {nextMax} crew slots
+              Reach <span style={{ color: '#D4AF37', fontWeight: 700 }}>★ {nextThreshold}</span> to unlock {nextMax} crew slots
             </p>
           )}
         </div>
@@ -213,7 +213,7 @@ export default function NewCrewPage() {
               disabled={submitting || atLimit}
               style={{ padding: '16px', borderRadius: '14px', fontSize: '16px', fontWeight: 700, background: atLimit ? 'rgba(255,255,255,0.10)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: atLimit ? '#A99ECC' : '#09090F', border: atLimit ? '1px solid rgba(255,255,255,0.1)' : 'none', cursor: submitting || atLimit ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1 }}
             >
-              {submitting ? 'Creating…' : atLimit ? `Limit reached · BS ${nextThreshold} to unlock` : (<span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}><Swords size={18} strokeWidth={2} /> Create Crew</span>)}
+              {submitting ? 'Creating…' : atLimit ? `Limit reached · ★ ${nextThreshold} to unlock` : (<span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}><Swords size={18} strokeWidth={2} /> Create Crew</span>)}
             </button>
           )}
         </form>

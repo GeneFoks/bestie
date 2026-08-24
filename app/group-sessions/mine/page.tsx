@@ -8,6 +8,8 @@ import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
 import { ActivityIcon } from '@/lib/activityIcons'
 import { Trash2, Check, Plus, CheckSquare, Square } from 'lucide-react'
+import { showToast } from '@/components/Toast'
+import { confirmSheet } from '@/components/ConfirmSheet'
 
 export default function MySessionsPage() {
   const router = useRouter()
@@ -41,12 +43,22 @@ export default function MySessionsPage() {
 
   const deleteSelected = async () => {
     if (!selected.size) return
-    if (!confirm(`Delete ${selected.size} session${selected.size > 1 ? 's' : ''} permanently? This can't be undone.`)) return
+    const ok = await confirmSheet({
+      title: `Delete ${selected.size} session${selected.size > 1 ? 's' : ''}?`,
+      body: "This can't be undone.",
+      confirmLabel: 'Delete',
+      danger: true,
+    })
+    if (!ok) return
     setDeleting(true)
     const ids = [...selected]
     const { error } = await supabase.from('group_sessions').delete().in('id', ids)
     setDeleting(false)
-    if (error) { alert(`Could not delete: ${error.message}`); return }
+    if (error) {
+      console.error('Delete sessions error:', error)
+      showToast("Couldn't delete the sessions — try again", { type: 'error' })
+      return
+    }
     setSessions(prev => prev.filter(x => !selected.has(x.id)))
     setSelected(new Set())
   }

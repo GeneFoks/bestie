@@ -187,7 +187,7 @@ export default async function CrewsPage() {
                   <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', marginBottom: '4px' }}>{featured.name}</h2>
                   <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: featured.description ? '12px' : '0' }}>
                     {featured.member_count} members
-                    {featured.avg_bestie_score ? ` · avg BS ${featured.avg_bestie_score}` : ''}
+                    {featured.avg_bestie_score ? ` · Avg score ${featured.avg_bestie_score}` : ''}
                   </p>
                   {featured.description && (
                     <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.6, marginBottom: '14px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{featured.description}</p>
@@ -200,10 +200,10 @@ export default async function CrewsPage() {
                     const dateNum = d.getDate()
                     const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
                     return (
-                      <div style={{ background: 'rgba(57,255,20,0.06)', border: '1px solid rgba(57,255,20,0.18)', borderRadius: '14px', padding: '12px 14px', marginBottom: '16px' }}>
+                      <div style={{ background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: '14px', padding: '12px 14px', marginBottom: '16px' }}>
                         <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '1.5px', color: '#34D399', marginBottom: '6px' }}>✦ NEXT EVENT</p>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <div style={{ background: 'rgba(57,255,20,0.12)', border: '1px solid rgba(57,255,20,0.25)', borderRadius: '10px', padding: '6px 10px', textAlign: 'center', flexShrink: 0 }}>
+                          <div style={{ background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: '10px', padding: '6px 10px', textAlign: 'center', flexShrink: 0 }}>
                             <p style={{ fontSize: '10px', fontWeight: 700, color: '#34D399', lineHeight: 1 }}>{day}</p>
                             <p style={{ fontSize: '20px', fontWeight: 700, color: '#F0EAFF', fontFamily: 'DM Serif Display, serif', lineHeight: 1.1 }}>{dateNum}</p>
                           </div>
@@ -284,7 +284,7 @@ export default async function CrewsPage() {
                         {/* Score */}
                         <div style={{ textAlign: 'right', flexShrink: 0 }}>
                           <div style={{ fontSize: '18px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif' }}>{crew.avg_bestie_score ?? '—'}</div>
-                          <div style={{ fontSize: '9px', color: '#A99ECC', letterSpacing: '1px' }}>AVG BS</div>
+                          <div style={{ fontSize: '9px', color: '#A99ECC', letterSpacing: '1px' }}>Avg score</div>
                         </div>
                       </Link>
                     )

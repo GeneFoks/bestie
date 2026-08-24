@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { showToast } from '@/components/Toast'
 import {
   QUESTIONS, TYPES, FAMILY, COLLECTIVE, POLES, ELEMENTS, computeKey,
   QUESTIONS_RU, TYPES_RU, FAMILY_RU, COLLECTIVE_RU, POLES_RU, ELEMENTS_RU,
@@ -153,7 +154,7 @@ export default function BestieTypePage() {
     }).eq('id', userId)
     try { localStorage.removeItem('bestie_pending_type') } catch {}
     setSaving(false)
-    if (error) { alert(`Could not save: ${error.message}`); return }
+    if (error) { console.error(error); showToast("Couldn't save your result — try again", { type: 'error' }); return }
     // Straight to their matches, not an empty dashboard — the moment of intent.
     router.push('/browse?matched=1')
   }

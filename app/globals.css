@@ -266,6 +266,11 @@ a { color: inherit; text-decoration: none; }
   .messages-layout[data-view='inbox'] .messages-thread { display: none !important; }
   .messages-layout[data-view='thread'] .messages-sidebar { display: none !important; }
 
+  /* Thread open: hide the bottom tab bar and give the chat its height back. */
+  body:has(.messages-layout[data-view='thread']) .bottom-nav-wrap { display: none !important; }
+  body:has(.messages-layout[data-view='thread']) { padding-bottom: 0 !important; }
+  .messages-layout[data-view='thread'] { height: calc(100dvh - 65px) !important; }
+
   .messages-sidebar {
     width: 100% !important;
   }

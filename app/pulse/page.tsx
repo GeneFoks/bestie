@@ -97,7 +97,7 @@ export default function PulsePage() {
 
         {/* Free today toggle */}
         {myId && (
-          <div style={{ marginBottom: '32px', padding: '20px 24px', borderRadius: '20px', background: iAmFree ? 'rgba(57,255,20,0.06)' : '#111120', border: iAmFree ? '1px solid rgba(57,255,20,0.25)' : '1px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={{ marginBottom: '32px', padding: '20px 24px', borderRadius: '20px', background: iAmFree ? 'rgba(52,211,153,0.06)' : '#111120', border: iAmFree ? '1px solid rgba(52,211,153,0.25)' : '1px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
             <div>
               <p style={{ fontSize: '15px', fontWeight: 700, color: iAmFree ? '#34D399' : '#F0EAFF', marginBottom: '3px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: iAmFree ? '#34D399' : '#6B5EA8', display: 'inline-block' }} />
@@ -107,7 +107,7 @@ export default function PulsePage() {
                 {iAmFree ? 'Others can see you\'re available for a meetup' : 'Let others know you\'re up for a spontaneous meetup'}
               </p>
             </div>
-            <button onClick={toggleFree} disabled={toggling} style={{ padding: '10px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.1)' : 'rgba(57,255,20,0.12)', border: iAmFree ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(57,255,20,0.35)', color: iAmFree ? '#FF6B35' : '#34D399', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <button onClick={toggleFree} disabled={toggling} style={{ padding: '10px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.1)' : 'rgba(52,211,153,0.12)', border: iAmFree ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(52,211,153,0.35)', color: iAmFree ? '#FF6B35' : '#34D399', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
               {toggling ? '…' : iAmFree ? 'Turn off' : (<><span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34D399', display: 'inline-block' }} />I'm free today!</>)}
             </button>
           </div>
@@ -190,7 +190,7 @@ function FreePill({ user }: { user: any }) {
   const initials = user.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
   const scoreColor = (user.bestie_score || 0) >= 800 ? '#34D399' : (user.bestie_score || 0) >= 600 ? '#D4AF37' : '#A99ECC'
   return (
-    <Link href={`/${user.username}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '14px', background: 'rgba(57,255,20,0.05)', border: '1px solid rgba(57,255,20,0.18)', textDecoration: 'none', transition: 'all 0.15s' }}>
+    <Link href={`/${user.username}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '14px', background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.18)', textDecoration: 'none', transition: 'all 0.15s' }}>
       <div style={{ position: 'relative' }}>
         <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: '#1A1A2E', border: `1.5px solid ${scoreColor}50`, flexShrink: 0 }}>
           {user.avatar_url
@@ -227,7 +227,7 @@ function GroupSessionCard({ session }: { session: any }) {
           by {host?.full_name?.split(' ')[0]}
         </p>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 8px', borderRadius: '999px', background: isFull ? 'rgba(255,107,53,0.1)' : 'rgba(57,255,20,0.08)', border: isFull ? '1px solid rgba(255,107,53,0.25)' : '1px solid rgba(57,255,20,0.2)', color: isFull ? '#FF6B35' : '#34D399' }}>
+          <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 8px', borderRadius: '999px', background: isFull ? 'rgba(255,107,53,0.1)' : 'rgba(52,211,153,0.08)', border: isFull ? '1px solid rgba(255,107,53,0.25)' : '1px solid rgba(52,211,153,0.2)', color: isFull ? '#FF6B35' : '#34D399' }}>
             {isFull ? 'Full' : 'Open'}
           </span>
           <span style={{ fontSize: '11px', color: '#A99ECC' }}>{participantCount}/{session.max_participants} joined</span>

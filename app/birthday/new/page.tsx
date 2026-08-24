@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { ImagePlus, X, Cake } from 'lucide-react'
 import LocationPicker from '@/components/LocationPicker'
+import { showToast } from '@/components/Toast'
 
 export default function NewBirthdayPage() {
   const router = useRouter()
@@ -60,7 +61,8 @@ export default function NewBirthdayPage() {
       const path = `birthday/${userId}/${Date.now()}.${ext}`
       const { error: upErr } = await supabase.storage.from('event-photos').upload(path, coverFile, { contentType: coverFile.type, upsert: false })
       if (upErr) {
-        alert(`Cover upload failed: ${upErr.message}. Check that the "event-photos" Storage bucket exists and is public.`)
+        console.error('Cover upload failed:', upErr.message, '— check that the "event-photos" Storage bucket exists and is public.')
+        showToast("Couldn't upload the cover image — try again.", { type: 'error' })
         setSaving(false)
         return
       }
@@ -84,7 +86,8 @@ export default function NewBirthdayPage() {
 
     setSaving(false)
     if (error) {
-      alert(`Could not create the birthday: ${error.message}`)
+      console.error('Birthday create failed:', error.message)
+      showToast("Couldn't create the birthday page — try again.", { type: 'error' })
       return
     }
     if (data?.share_slug) router.push(`/birthday/${data.share_slug}`)

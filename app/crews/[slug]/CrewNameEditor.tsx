@@ -1,11 +1,12 @@
-'use client'
 // @ts-nocheck
+'use client'
 // Crew name with inline rename for the captain. Slug (URL) stays unchanged.
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Pencil, Check, X } from 'lucide-react'
+import { showToast } from '@/components/Toast'
 
 export default function CrewNameEditor({ crewId, captainId, initialName }: { crewId: string; captainId: string; initialName: string }) {
   const router = useRouter()
@@ -27,7 +28,11 @@ export default function CrewNameEditor({ crewId, captainId, initialName }: { cre
     setSaving(true)
     const { error } = await supabase.from('crews').update({ name: v }).eq('id', crewId)
     setSaving(false)
-    if (error) { alert(`Could not rename: ${error.message}`); return }
+    if (error) {
+      console.error('Crew rename failed:', error)
+      showToast("Couldn't rename the crew — try again", { type: 'error' })
+      return
+    }
     setName(v); setEditing(false)
     router.refresh()
   }

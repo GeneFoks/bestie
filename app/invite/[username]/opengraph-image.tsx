@@ -113,7 +113,7 @@ export default async function OGImage(
           {/* Stats row */}
           <div style={{ display: 'flex', gap: '12px', marginBottom: '32px' }}>
             <div style={{ padding: '12px 20px', background: 'rgba(0,0,0,0.4)', border: `1px solid ${scoreColor}30`, borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ fontSize: '11px', color: '#A99ECC', marginBottom: '4px', letterSpacing: '1px', display: 'flex' }}>BS SCORE</div>
+              <div style={{ fontSize: '11px', color: '#A99ECC', marginBottom: '4px', letterSpacing: '1px', display: 'flex' }}>BESTIE SCORE</div>
               <div style={{ fontSize: '28px', fontWeight: 700, color: scoreColor, display: 'flex' }}>{score}</div>
             </div>
             {sessions > 0 && (

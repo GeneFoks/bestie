@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { ActivityIcon } from '@/lib/activityIcons'
 import { PageLoader } from '@/components/Loading'
+import { showToast } from '@/components/Toast'
 import { Zap, Gamepad2, BookOpen, Palette, Heart, Moon, Coffee, MapPin, Camera, Sparkles } from 'lucide-react'
 
 const ACTIVITY_GROUPS = [
@@ -150,7 +151,7 @@ export default function OnboardingPage() {
       if (rows.length) await supabase.from('activity_packages').insert(rows)
     }
     setLoading(false)
-    if (error) { alert(`Could not save your profile: ${error.message}`); return }
+    if (error) { console.error(error); showToast("Couldn't save your profile — try again", { type: 'error' }); return }
     // Un-typed users go take the test (our biggest hook); typed users go home.
     router.push(skip ? '/dashboard' : '/bestie-type')
   }

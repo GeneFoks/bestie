@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import ProfileNav from '@/components/ProfileNav'
+import { showToast } from '@/components/Toast'
 import { isPlusActive, PLUS_PRICE, PLUS_FEATURES } from '@/lib/plus'
 
 export default function PlusPage() {
@@ -46,7 +47,7 @@ export default function PlusPage() {
       })
       const data = await res.json()
       if (data.url) { window.location.href = data.url }
-      else { alert(data.error || 'Could not start checkout'); setBusy(false) }
+      else { console.error(data.error); showToast("Couldn't start checkout — try again", { type: 'error' }); setBusy(false) }
     } catch {
       setBusy(false)
     }

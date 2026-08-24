@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { createNotification } from '@/lib/notifications'
 import { PageLoader } from '@/components/Loading'
 import { ActivityIcon } from '@/lib/activityIcons'
+import { showToast } from '@/components/Toast'
 
 export default function BookPage({ params }) {
   const router = useRouter()
@@ -58,7 +59,7 @@ export default function BookPage({ params }) {
 
     if (bookingError) {
       console.error('Booking insert failed:', bookingError.message)
-      alert(`Could not send booking request: ${bookingError.message}`)
+      showToast("Couldn't send your request — try again.", { type: 'error' })
       setSending(false)
       return
     }
@@ -133,7 +134,7 @@ export default function BookPage({ params }) {
             <p style={{ fontSize: '16px', fontWeight: 600, color: '#F0EAFF', marginBottom: '4px' }}>{provider.full_name}</p>
             <p style={{ fontSize: '13px', color: '#A99ECC' }}>
               {provider.city && `📍 ${provider.city} · `}
-              BS {provider.bestie_score || 0}
+              ★ {provider.bestie_score || 0}
               {provider.avg_rating > 0 && ` · ⭐ ${Number(provider.avg_rating).toFixed(1)}`}
             </p>
           </div>

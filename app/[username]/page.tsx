@@ -94,7 +94,7 @@ export async function generateMetadata({ params }) {
     .from('users').select('full_name, username, bio, bestie_score, avatar_url').eq('username', params.username).single()
   if (!profile) return { title: 'Bestie' }
   return {
-    title: `${profile.full_name} — BS ${profile.bestie_score || 0} · Bestie`,
+    title: `${profile.full_name} — ★ ${profile.bestie_score || 0} · Bestie`,
     description: `${profile.bio || 'Check my Social Passport on Bestie.'} · Bestie Score: ${profile.bestie_score || 0}`,
     // NOTE: we intentionally do NOT set `images` here. The file-based
     // `opengraph-image.tsx` in this folder generates a branded 1200×630 card
@@ -106,7 +106,7 @@ export async function generateMetadata({ params }) {
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${profile.full_name} — BS ${profile.bestie_score || 0}`,
+      title: `${profile.full_name} — ★ ${profile.bestie_score || 0}`,
       description: profile.bio || 'Check my Social Passport on Bestie.',
     },
   }
@@ -301,7 +301,7 @@ export default async function ProfilePage({ params }) {
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
               <span style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', fontSize: '12px', color: '#D4AF37', fontWeight: 600 }}>🧭 {profile.eterotype_name || profile.eterotype}</span>
               {profile.eterotype_family && <span style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(155,143,255,0.1)', border: '1px solid rgba(155,143,255,0.25)', fontSize: '12px', color: '#9B7FFF', fontWeight: 500, textTransform: 'capitalize' }}>{profile.eterotype_family}</span>}
-              {profile.eterotype_collective && <span style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '12px', color: '#34D399', fontWeight: 500, textTransform: 'capitalize' }}>{profile.eterotype_collective}</span>}
+              {profile.eterotype_collective && <span style={{ padding: '5px 12px', borderRadius: '999px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', fontSize: '12px', color: '#34D399', fontWeight: 500, textTransform: 'capitalize' }}>{profile.eterotype_collective}</span>}
             </div>
           )}
         </div>
@@ -354,7 +354,7 @@ export default async function ProfilePage({ params }) {
                     {/* Price */}
                     <div style={{ flexShrink: 0, textAlign: 'right' }}>
                       {pkg.is_free
-                        ? <div style={{ padding: '4px 10px', borderRadius: '8px', background: 'rgba(57,255,20,0.1)', border: '1px solid rgba(57,255,20,0.25)' }}><span style={{ fontSize: '13px', fontWeight: 700, color: '#34D399' }}>Free</span></div>
+                        ? <div style={{ padding: '4px 10px', borderRadius: '8px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)' }}><span style={{ fontSize: '13px', fontWeight: 700, color: '#34D399' }}>Free</span></div>
                         : pkg.price_per_session > 0 && (
                           <div>
                             <p style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'DM Serif Display, serif', margin: 0 }}>${pkg.price_per_session}</p>
@@ -468,7 +468,7 @@ export default async function ProfilePage({ params }) {
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '14px' }}>ACHIEVEMENTS</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {BADGES.map((b: any) => (
-                <div key={b.id} title={b.desc} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '999px', background: `rgba(${b.color === '#34D399' ? '57,255,20' : b.color === '#D4AF37' ? '212,175,55' : b.color === '#FF6B35' ? '255,107,53' : b.color === '#9B7FFF' ? '155,143,255' : '155,147,192'},0.1)`, border: `1px solid ${b.color}35` }}>
+                <div key={b.id} title={b.desc} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '999px', background: `rgba(${b.color === '#34D399' ? '52,211,153' : b.color === '#D4AF37' ? '212,175,55' : b.color === '#FF6B35' ? '255,107,53' : b.color === '#9B7FFF' ? '155,143,255' : '155,147,192'},0.1)`, border: `1px solid ${b.color}35` }}>
                   <span style={{ fontSize: '14px' }}>{b.emoji}</span>
                   <span style={{ fontSize: '12px', fontWeight: 600, color: b.color }}>{b.label}</span>
                 </div>

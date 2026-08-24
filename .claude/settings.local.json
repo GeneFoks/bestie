@@ -106,7 +106,8 @@
       "Bash(sort -t: -k2 -rn)",
       "Bash(node -e ' *)",
       "Bash(grep -iA0 \"message\")",
-      "Bash(git commit -q -m 'feat: design-audit round 1 — landing, feeds, match moment, UI kit, badges *)"
+      "Bash(git commit -q -m 'feat: design-audit round 1 — landing, feeds, match moment, UI kit, badges *)",
+      "Bash(git commit -q -m 'feat: design-audit round 2 — app-wide polish sweeps *)"
     ]
   }
 }
