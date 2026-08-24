@@ -284,6 +284,16 @@ export default function GraphPage() {
         .attr('opacity', 0.15 + Math.random() * 0.6)
     }
 
+    // Soft star-glow gradients (cheap: gradient-filled circle, no blur filter).
+    // Placed inside each node group so it moves with a single transform — no
+    // extra per-frame cost.
+    const gW = defs.append('radialGradient').attr('id', 'glowWhite')
+    gW.append('stop').attr('offset', '0%').attr('stop-color', '#CFE0FF').attr('stop-opacity', 0.85)
+    gW.append('stop').attr('offset', '100%').attr('stop-color', '#CFE0FF').attr('stop-opacity', 0)
+    const gG = defs.append('radialGradient').attr('id', 'glowGold')
+    gG.append('stop').attr('offset', '0%').attr('stop-color', '#FFD86B').attr('stop-opacity', 0.75)
+    gG.append('stop').attr('offset', '100%').attr('stop-color', '#FFD86B').attr('stop-opacity', 0)
+
     // Glow filter for top nodes
     const glow = defs.append('filter').attr('id', 'glow').attr('x', '-50%').attr('y', '-50%').attr('width', '200%').attr('height', '200%')
     glow.append('feGaussianBlur').attr('stdDeviation', '4').attr('result', 'blur')
@@ -384,6 +394,13 @@ export default function GraphPage() {
           })
       )
 
+    // Star-glow halo behind every node (first child = furthest back)
+    node.append('circle')
+      .attr('r', (d: any) => nodeRadius(d) * (d.floating ? 2.8 : 2.3))
+      .attr('fill', (d: any) => d.floating ? 'url(#glowWhite)' : 'url(#glowGold)')
+      .attr('opacity', (d: any) => d.floating ? 0.4 : 0.55)
+      .attr('pointer-events', 'none')
+
     // Outer glow ring for 25+ session nodes
     node.filter((d: any) => d.sessions >= 25)
       .append('circle')
@@ -404,6 +421,7 @@ export default function GraphPage() {
 
     // Border circle
     node.append('circle')
+      .attr('class', 'frame')
       .attr('r', (d: any) => nodeRadius(d) + 2)
       .attr('fill', (d: any) => frameColor(d.sessions) + '18')
       .attr('stroke', (d: any) => frameColor(d.sessions))
@@ -449,7 +467,7 @@ export default function GraphPage() {
 
     // Hover
     node.on('mouseenter', function(event: any, d: any) {
-      d3.select(this).select('circle:nth-child(2)')
+      d3.select(this).select('.frame')
         .transition().duration(120).attr('r', nodeRadius(d) + 5)
       const rect = svgRef.current!.getBoundingClientRect()
       setHovered(d)
@@ -460,7 +478,7 @@ export default function GraphPage() {
       setTooltipPos({ x: event.clientX - rect.left, y: event.clientY - rect.top })
     })
     .on('mouseleave', function(event: any, d: any) {
-      d3.select(this).select('circle:nth-child(2)')
+      d3.select(this).select('.frame')
         .transition().duration(120).attr('r', nodeRadius(d) + 2)
       setHovered(null)
     })
