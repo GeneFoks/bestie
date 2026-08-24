@@ -3,7 +3,9 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { Calendar, Clock, MessageCircle, CheckCircle2, Hourglass, CalendarDays } from 'lucide-react'
+import { Calendar, Clock, MessageCircle, CheckCircle2, Hourglass, CalendarDays, Trash2 } from 'lucide-react'
+import { showToast } from '@/components/Toast'
+import { confirmSheet } from '@/components/ConfirmSheet'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
@@ -69,6 +71,28 @@ export default function BookingsPage() {
   const sendEmail = async (type, to, data) => {
     try { await fetch('/api/email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type, to, data }) }) }
     catch (e) { console.error(e) }
+  }
+
+  // Permanently remove a finished/declined booking from history — same RPC the
+  // sessions page uses (also recalculates both Bestie Scores).
+  const deleteBooking = async (id) => {
+    const ok = await confirmSheet({
+      title: 'Delete this meetup?',
+      body: "It disappears from both histories and can't be restored.",
+      confirmLabel: 'Delete',
+      danger: true,
+    })
+    if (!ok) return
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const { data, error } = await supabase.rpc('delete_session', { p_booking_id: id, p_user_id: user.id })
+    if (error || data !== 'deleted') {
+      console.error('delete_session failed:', error?.message || data)
+      showToast("Couldn't delete the meetup — try again.", { type: 'error' })
+      return
+    }
+    setBookings(b => b.filter(b2 => b2.id !== id))
+    showToast('Meetup deleted', { type: 'success' })
   }
 
   const updateStatus = async (id, status) => {
@@ -344,6 +368,18 @@ export default function BookingsPage() {
                 {/* Always: Message button */}
                 {booking.status !== 'cancelled' && booking.status !== 'declined' && (
                   <Link href={other?.username ? `/messages?to=${other.username}` : '#'} className="btn-ghost"><MessageCircle size={13} strokeWidth={2} /> Message</Link>
+                )}
+
+                {/* Finished states — allow removing the meetup from history */}
+                {(booking.status === 'completed' || booking.status === 'cancelled' || booking.status === 'declined') && (
+                  <button
+                    onClick={() => deleteBooking(booking.id)}
+                    title="Delete meetup"
+                    aria-label="Delete meetup"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '11px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.25)', color: '#FF6B6B', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+                  >
+                    <Trash2 size={13} strokeWidth={2} /> Delete
+                  </button>
                 )}
 
               </div>

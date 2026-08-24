@@ -12,6 +12,7 @@ import BlockReportButton from '@/components/BlockReportButton'
 import KnockButton from '@/components/KnockButton'
 import PassportScoreCard from '@/components/PassportScoreCard'
 import BadgeCrest from '@/components/BadgeCrest'
+import { SparkIcon } from '@/lib/sparkIcons'
 import MutualFriends from '@/components/MutualFriends'
 import { getAvatarFrame } from '@/lib/avatarFrame'
 import CompatibilityScore from './CompatibilityScore'
@@ -435,8 +436,8 @@ export default async function ProfilePage({ params }) {
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '14px' }}>TOP SPARKS FROM THE COMMUNITY</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {topSparks.map(s => (
-                <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
-                  <span style={{ fontSize: '14px' }}>{s.emoji}</span>
+                <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '7px 13px', borderRadius: '999px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.22)' }}>
+                  <SparkIcon type={s.id} size={13} strokeWidth={2} />
                   <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>{s.label}</span>
                   <span style={{ fontSize: '12px', fontWeight: 700, color: '#D4AF37' }}>×{s.count}</span>
                 </div>

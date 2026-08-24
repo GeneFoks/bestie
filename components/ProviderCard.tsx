@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { MapPin, Users, Sparkles } from 'lucide-react'
 import { getFrameColor } from '@/lib/avatarFrame'
 import { ActivityIcon } from '@/lib/activityIcons'
+import { SparkIcon } from '@/lib/sparkIcons'
 import KnockButton from '@/components/KnockButton'
 import { ButtonLink } from '@/components/ui/Button'
 import { colors } from '@/lib/tokens'
@@ -184,8 +185,8 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
         {provider.top_sparks && provider.top_sparks.length > 0 && (
           <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
             {provider.top_sparks.map(s => (
-              <span key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '3px 9px', borderRadius: '999px', fontSize: '10px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.18)', color: '#D4AF37', whiteSpace: 'nowrap' }}>
-                {s.emoji} {s.label} <span style={{ opacity: 0.7, fontWeight: 500 }}>{s.count}</span>
+              <span key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 9px', borderRadius: '999px', fontSize: '10px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.18)', color: '#D4AF37', whiteSpace: 'nowrap' }}>
+                <SparkIcon type={s.id} size={11} strokeWidth={2} /> {s.label} <span style={{ opacity: 0.7, fontWeight: 500 }}>{s.count}</span>
               </span>
             ))}
           </div>

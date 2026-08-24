@@ -110,7 +110,9 @@
       "Bash(git commit -q -m 'feat: design-audit round 2 — app-wide polish sweeps *)",
       "Read(//tmp/**)",
       "Bash(echo \"---exit $?---\")",
-      "Bash(git commit -q -m 'feat: design-audit round 3 — light theme app-wide, type ceremony, share card, OAuth *)"
+      "Bash(git commit -q -m 'feat: design-audit round 3 — light theme app-wide, type ceremony, share card, OAuth *)",
+      "Bash(cd /c/bestie *)",
+      "Bash(git commit -q -m 'feat: unified gold spark icons + delete meetups from /bookings *)"
     ]
   }
 }

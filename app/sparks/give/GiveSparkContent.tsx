@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { SparkIcon } from '@/lib/sparkIcons'
 import { PageLoader } from '@/components/Loading'
 import { createNotification } from '@/lib/notifications'
 import { celebrate, buzz } from '@/lib/celebrate'
@@ -354,7 +355,7 @@ export default function GiveSparkContent() {
                   transition: 'all 0.15s',
                 }}
               >
-                <span style={{ fontSize: '20px' }}>{s.emoji}</span>
+                <SparkIcon type={s.id} size={18} color={selected ? '#D4AF37' : given ? '#34D399' : 'var(--text-muted)'} strokeWidth={1.8} />
                 <span style={{ fontSize: '10px', fontWeight: 500, color: selected ? '#D4AF37' : given ? '#34D399' : 'var(--text-muted)', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
                 {given && <span style={{ fontSize: '9px', color: '#34D399' }}>{isRevoking ? '…' : '✓ tap to undo'}</span>}
                 {selected && !given && <span style={{ fontSize: '9px', color: '#D4AF37' }}>✓</span>}

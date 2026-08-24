@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { SparkIcon } from '@/lib/sparkIcons'
 import { PageLoader } from '@/components/Loading'
 
 const SPARK_TYPES = [
@@ -238,7 +239,7 @@ if (other) {
                       opacity: given ? 0.35 : 1,
                     }}
                   >
-                    <span style={{ fontSize: '20px' }}>{s.emoji}</span>
+                    <SparkIcon type={s.id} size={18} color={selected ? '#D4AF37' : 'var(--text-muted)'} strokeWidth={1.8} />
                     <span style={{ fontSize: '10px', fontWeight: 500, color: selected ? '#D4AF37' : 'var(--text-muted)', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
                     {given && <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>✓</span>}
                   </button>
