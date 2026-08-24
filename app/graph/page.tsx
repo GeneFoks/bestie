@@ -263,10 +263,26 @@ export default function GraphPage() {
     const svg = d3.select(svgRef.current)
       .attr('width', width)
       .attr('height', height)
-      .style('background', '#09090F')
+      .style('background', 'transparent')
 
     // Defs
     const defs = svg.append('defs')
+
+    // ── Static starfield backdrop (painted once, never animated) ──
+    // Lives on the svg root (not the zoom group), so it stays as a fixed sky
+    // behind the people. Cheap: plain tiny circles, no filters, no motion.
+    const sky = svg.append('g').attr('class', 'starfield').attr('pointer-events', 'none')
+    const STAR_COUNT = Math.min(220, Math.round((width * height) / 7000))
+    for (let i = 0; i < STAR_COUNT; i++) {
+      const r = Math.random() * 1.1 + 0.3
+      const bright = Math.random()
+      sky.append('circle')
+        .attr('cx', Math.random() * width)
+        .attr('cy', Math.random() * height)
+        .attr('r', r)
+        .attr('fill', bright > 0.9 ? '#FFE9A8' : bright > 0.7 ? '#CFE0FF' : '#FFFFFF')
+        .attr('opacity', 0.15 + Math.random() * 0.6)
+    }
 
     // Glow filter for top nodes
     const glow = defs.append('filter').attr('id', 'glow').attr('x', '-50%').attr('y', '-50%').attr('width', '200%').attr('height', '200%')
@@ -490,7 +506,7 @@ export default function GraphPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: '#05050C', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', flexDirection: 'column' }}>
       <style>{`
         @media (max-width: 600px) {
           .graph-stats { display: none !important; }
@@ -582,7 +598,7 @@ export default function GraphPage() {
       )}
 
       {/* Graph area */}
-      <div ref={containerRef} style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+      <div ref={containerRef} style={{ flex: 1, position: 'relative', overflow: 'hidden', background: 'radial-gradient(ellipse at 22% 28%, rgba(96,52,168,0.20), transparent 55%), radial-gradient(ellipse at 78% 72%, rgba(38,74,168,0.18), transparent 55%), radial-gradient(ellipse at 55% 45%, rgba(212,175,55,0.06), transparent 60%), radial-gradient(circle at 50% 50%, #0B0A18 0%, #05050C 70%)' }}>
         {loading ? (
           <PageLoader fullscreen={false} message="Building the web of connections..." />
         ) : empty ? (
