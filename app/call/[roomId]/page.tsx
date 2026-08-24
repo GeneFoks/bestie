@@ -69,11 +69,11 @@ export default function CallPage({ params }: { params: { roomId: string } }) {
 
   if (ended) {
     return (
-      <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif', gap: '16px' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif', gap: '16px' }}>
         <div style={{ width: '72px', height: '72px', borderRadius: '18px', background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Phone size={36} color="#D4AF37" strokeWidth={2} />
         </div>
-        <p style={{ fontSize: '20px', fontWeight: 700, color: '#F0EAFF' }}>Call ended</p>
+        <p style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>Call ended</p>
         <button onClick={() => router.back()} style={{ marginTop: '8px', padding: '12px 28px', borderRadius: '14px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
           Back
         </button>
@@ -83,12 +83,12 @@ export default function CallPage({ params }: { params: { roomId: string } }) {
 
   if (error) {
     return (
-      <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif', gap: '16px', padding: '24px' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif', gap: '16px', padding: '24px' }}>
         <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: 'rgba(255,107,53,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <AlertTriangle size={32} color="#FF6B35" strokeWidth={2} />
         </div>
         <p style={{ fontSize: '16px', color: '#FF6B35', textAlign: 'center' }}>{error}</p>
-        <button onClick={() => router.back()} style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(255,255,255,0.12)', color: '#F0EAFF', border: 'none', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Go back</button>
+        <button onClick={() => router.back()} style={{ padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'var(--overlay-2)', color: 'var(--text-primary)', border: 'none', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Go back</button>
       </div>
     )
   }
@@ -98,17 +98,17 @@ export default function CallPage({ params }: { params: { roomId: string } }) {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#09090F', display: 'flex', flexDirection: 'column', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', display: 'flex', flexDirection: 'column', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
 
       {/* Top bar */}
-      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(8,8,16,0.95)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'var(--nav-bg)', borderBottom: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {otherUser?.avatar_url && (
             <img src={otherUser.avatar_url} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(212,175,55,0.4)' }} />
           )}
           <div>
-            <p style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF', margin: 0 }}>{otherUser?.full_name || 'Bestie'}</p>
-            <p style={{ fontSize: '11px', color: '#A99ECC', margin: 0 }}>BESTIE CALL</p>
+            <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{otherUser?.full_name || 'Bestie'}</p>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>BESTIE CALL</p>
           </div>
         </div>
 

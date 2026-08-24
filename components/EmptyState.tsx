@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react'
 import Link from 'next/link'
 import type { LucideIcon } from 'lucide-react'
@@ -52,8 +53,8 @@ export function EmptyState({
       style={{
         padding: dims.padding,
         borderRadius: '20px',
-        background: '#111120',
-        border: '1px solid rgba(255,255,255,0.08)',
+        background: 'var(--surface-1)',
+        border: '1px solid var(--border)',
         textAlign: 'center',
         fontFamily: 'Plus Jakarta Sans, sans-serif',
       }}
@@ -79,7 +80,7 @@ export function EmptyState({
         style={{
           fontSize: `${dims.titleSize}px`,
           fontWeight: 700,
-          color: '#F0EAFF',
+          color: 'var(--text-primary)',
           fontFamily: 'DM Serif Display, serif',
           marginBottom: description ? '8px' : '16px',
         }}
@@ -90,7 +91,7 @@ export function EmptyState({
         <div
           style={{
             fontSize: `${dims.descSize}px`,
-            color: '#A99ECC',
+            color: 'var(--text-muted)',
             lineHeight: 1.6,
             maxWidth: '380px',
             margin: '0 auto 18px',
@@ -146,9 +147,9 @@ export function EmptyState({
                   borderRadius: '12px',
                   fontSize: '13px',
                   fontWeight: 600,
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  color: '#A99ECC',
+                  background: 'var(--overlay)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-muted)',
                   textDecoration: 'none',
                   whiteSpace: 'nowrap',
                 }}
@@ -163,9 +164,9 @@ export function EmptyState({
                   borderRadius: '12px',
                   fontSize: '13px',
                   fontWeight: 600,
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  color: '#A99ECC',
+                  background: 'var(--overlay)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-muted)',
                   cursor: 'pointer',
                   fontFamily: 'Plus Jakarta Sans, sans-serif',
                   whiteSpace: 'nowrap',

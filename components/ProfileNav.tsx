@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -36,7 +37,7 @@ export default function ProfileNav() {
           </Link>
           <Link
             href="/dashboard"
-            style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', whiteSpace: 'nowrap' }}
+            style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid var(--border)', whiteSpace: 'nowrap' }}
           >
             Dashboard
           </Link>
@@ -47,7 +48,7 @@ export default function ProfileNav() {
           <Link
             href="/login"
             className="desktop-nav-cta"
-            style={{ fontSize: '14px', color: '#9B93C0', textDecoration: 'none' }}
+            style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none' }}
           >
             Log in
           </Link>

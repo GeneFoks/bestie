@@ -93,38 +93,38 @@ export default function NewBirthdayPage() {
     if (data?.share_slug) router.push(`/birthday/${data.share_slug}`)
   }
 
-  const inputStyle = { width: '100%', padding: '12px 14px', borderRadius: '12px', fontSize: '14px', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', outline: 'none', boxSizing: 'border-box' as const }
-  const labelStyle = { fontSize: '12px', fontWeight: 600, color: '#A99ECC', letterSpacing: '0.5px', marginBottom: '6px', display: 'block' }
+  const inputStyle = { width: '100%', padding: '12px 14px', borderRadius: '12px', fontSize: '14px', background: 'var(--surface-1)', border: '1px solid var(--border)', color: 'var(--text-primary)', outline: 'none', boxSizing: 'border-box' as const }
+  const labelStyle = { fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.5px', marginBottom: '6px', display: 'block' }
 
   const canSubmit = form.celebrant && form.event_date
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <Link href="/events" style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>← Events</Link>
+        <Link href="/events" style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid var(--border)' }}>← Events</Link>
       </nav>
 
       <div style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 24px 100px' }}>
         <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#FF6B35', marginBottom: '8px', display: 'inline-flex', alignItems: 'center', gap: '7px' }}><Cake size={14} strokeWidth={2} /> BIRTHDAY</p>
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#F0EAFF', marginBottom: '8px' }}>Create a birthday page</h1>
-        <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '32px' }}>Get one shareable link — guests RSVP, share photos, pick gifts off the wishlist, and chat in one place.</p>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: 'var(--text-primary)', marginBottom: '8px' }}>Create a birthday page</h1>
+        <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '32px' }}>Get one shareable link — guests RSVP, share photos, pick gifts off the wishlist, and chat in one place.</p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
             <label style={labelStyle}>Cover image</label>
             {coverPreview ? (
-              <div style={{ position: 'relative', borderRadius: '14px', overflow: 'hidden', aspectRatio: '16/9', background: '#111120' }}>
+              <div style={{ position: 'relative', borderRadius: '14px', overflow: 'hidden', aspectRatio: '16/9', background: 'var(--surface-1)' }}>
                 <img src={coverPreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 <button type="button" onClick={clearCover} aria-label="Remove cover" style={{ position: 'absolute', top: '10px', right: '10px', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.15)', color: '#F0EAFF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <X size={16} strokeWidth={2.2} />
                 </button>
               </div>
             ) : (
-              <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '28px 16px', borderRadius: '14px', background: 'rgba(255,107,53,0.04)', border: '2px dashed rgba(255,107,53,0.3)', color: '#A99ECC', cursor: 'pointer' }}>
+              <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '28px 16px', borderRadius: '14px', background: 'rgba(255,107,53,0.04)', border: '2px dashed rgba(255,107,53,0.3)', color: 'var(--text-muted)', cursor: 'pointer' }}>
                 <ImagePlus size={22} strokeWidth={1.8} color="#FF6B35" />
-                <span style={{ fontSize: '13px', fontWeight: 600, color: '#F0EAFF' }}>Add a cover image</span>
-                <span style={{ fontSize: '11px', color: '#A99ECC' }}>Optional · shows at the top of the page & in shared previews</span>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Add a cover image</span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Optional · shows at the top of the page & in shared previews</span>
                 <input ref={fileRef} type="file" accept="image/*" onChange={handleCoverPick} style={{ display: 'none' }} />
               </label>
             )}
@@ -165,7 +165,7 @@ export default function NewBirthdayPage() {
           </div>
 
           {/* Feature toggles */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '14px', padding: '6px 14px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '14px', padding: '6px 14px' }}>
             <Toggle label="📸 Shared photo wall" sub="Guests add photos everyone can see" checked={form.allow_photos} onChange={v => setForm(f => ({ ...f, allow_photos: v }))} />
             <Toggle label="🎁 Gift wishlist" sub="Guests claim gifts so nothing's doubled" checked={form.allow_wishlist} onChange={v => setForm(f => ({ ...f, allow_wishlist: v }))} />
             <Toggle label="💬 Guest chat" sub="Everyone coordinates in one thread" checked={form.allow_chat} onChange={v => setForm(f => ({ ...f, allow_chat: v }))} />
@@ -185,8 +185,8 @@ function Toggle({ label, sub, checked, onChange }: { label: string; sub: string;
   return (
     <button type="button" onClick={() => onChange(!checked)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 4px', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer', textAlign: 'left', width: '100%' }}>
       <span style={{ flex: 1 }}>
-        <span style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>{label}</span>
-        <span style={{ display: 'block', fontSize: '12px', color: '#A99ECC' }}>{sub}</span>
+        <span style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{label}</span>
+        <span style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)' }}>{sub}</span>
       </span>
       <span style={{ flexShrink: 0, width: '44px', height: '26px', borderRadius: '999px', background: checked ? '#FF6B35' : 'rgba(255,255,255,0.14)', position: 'relative', transition: 'background 0.2s' }}>
         <span style={{ position: 'absolute', top: '3px', left: checked ? '21px' : '3px', width: '20px', height: '20px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />

@@ -137,59 +137,59 @@ export default function BookingsPage() {
   if (loading) return <PageLoader message="Loading your bookings…" />
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif', paddingBottom: '40px' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif', paddingBottom: '40px' }}>
       <style>{`
         .bk-tab { flex: 1; padding: 10px 4px; border-radius: 10px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; }
         .bk-tab.active { background: rgba(212,175,55,0.12); color: #D4AF37; }
-        .bk-tab.inactive { background: transparent; color: #6B6490; }
-        .bk-card { background: #111120; border: 1px solid rgba(255,255,255,0.10); border-radius: 20px; padding: 18px; margin-bottom: 12px; transition: border-color 0.2s; }
+        .bk-tab.inactive { background: transparent; color: var(--text-dim); }
+        .bk-card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 20px; padding: 18px; margin-bottom: 12px; transition: border-color 0.2s; }
         .bk-card:hover { border-color: rgba(212,175,55,0.15); }
         .btn-confirm { flex: 2; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 700; background: #34D399; color: #09090F; border: none; cursor: pointer; transition: filter 0.2s; }
         .btn-confirm:hover { filter: brightness(0.9); }
         .btn-decline { flex: 1; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 600; background: rgba(255,80,80,0.08); border: 1px solid rgba(255,80,80,0.2); color: #ff6b6b; cursor: pointer; }
-        .btn-ghost { padding: 10px 14px; border-radius: 12px; font-size: 12px; font-weight: 600; background: #131323; border: 1px solid rgba(255,255,255,0.1); color: #A99ECC; cursor: pointer; transition: background 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
-        .btn-ghost:hover { background: rgba(255,255,255,0.12); }
+        .btn-ghost { padding: 10px 14px; border-radius: 12px; font-size: 12px; font-weight: 600; background: var(--surface-1b); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; transition: background 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-ghost:hover { background: var(--surface-3); }
         .btn-spark { padding: 10px 16px; border-radius: 12px; font-size: 12px; font-weight: 700; background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.25); color: #D4AF37; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; gap: 5px; }
         .btn-spark:hover { background: rgba(212,175,55,0.18); }
-        .stat-tile { flex: 1; background: #111120; border: 1px solid rgba(255,255,255,0.10); border-radius: 16px; padding: 16px 12px; text-align: center; }
+        .stat-tile { flex: 1; background: var(--surface-1); border: 1px solid var(--border); border-radius: 16px; padding: 16px 12px; text-align: center; }
       `}</style>
 
       {/* NAV */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           {userId && <NotificationBell userId={userId} />}
-          <Link href="/dashboard" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none', padding: '7px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>← Dashboard</Link>
+          <Link href="/dashboard" style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none', padding: '7px 14px', borderRadius: '10px', border: '1px solid var(--border)' }}>← Dashboard</Link>
         </div>
       </nav>
 
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '32px 20px 0' }}>
 
         {/* Header */}
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '26px', fontWeight: 700, color: '#F0EAFF', marginBottom: '4px' }}>My Plans</h1>
-        <p style={{ fontSize: '13px', color: '#6B6490', marginBottom: '24px' }}>Hangouts, plans & moments with your besties</p>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '26px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>My Plans</h1>
+        <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '24px' }}>Hangouts, plans & moments with your besties</p>
 
         {/* Stats row */}
         <div style={{ display: 'flex', gap: '10px', marginBottom: '24px' }}>
           <div className="stat-tile">
             <p style={{ fontSize: '24px', fontWeight: 700, color: '#D4AF37', marginBottom: '2px' }}>{lifetimeMet}</p>
-            <p style={{ fontSize: '10px', fontWeight: 700, color: '#6B6490', letterSpacing: '1px', textTransform: 'uppercase' }}>Lifetime</p>
-            <p style={{ fontSize: '11px', color: '#A99ECC', marginTop: '1px' }}>met irl</p>
+            <p style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-dim)', letterSpacing: '1px', textTransform: 'uppercase' }}>Lifetime</p>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '1px' }}>met irl</p>
           </div>
           <div className="stat-tile">
             <p style={{ fontSize: '24px', fontWeight: 700, color: '#34D399', marginBottom: '2px' }}>{thisMonthMet}</p>
-            <p style={{ fontSize: '10px', fontWeight: 700, color: '#6B6490', letterSpacing: '1px', textTransform: 'uppercase' }}>This month</p>
-            <p style={{ fontSize: '11px', color: '#A99ECC', marginTop: '1px' }}>confirmed</p>
+            <p style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-dim)', letterSpacing: '1px', textTransform: 'uppercase' }}>This month</p>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '1px' }}>confirmed</p>
           </div>
           <div className="stat-tile">
             <p style={{ fontSize: '24px', fontWeight: 700, color: '#9B7FFF', marginBottom: '2px' }}>{streak > 0 ? `${streak}w` : '—'}</p>
-            <p style={{ fontSize: '10px', fontWeight: 700, color: '#6B6490', letterSpacing: '1px', textTransform: 'uppercase' }}>Streak</p>
-            <p style={{ fontSize: '11px', color: '#A99ECC', marginTop: '1px' }}>{streak > 0 ? 'active' : 'start now'}</p>
+            <p style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-dim)', letterSpacing: '1px', textTransform: 'uppercase' }}>Streak</p>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '1px' }}>{streak > 0 ? 'active' : 'start now'}</p>
           </div>
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: '4px', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '14px', padding: '4px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', gap: '4px', background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '14px', padding: '4px', marginBottom: '20px' }}>
           {tabList.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} className={`bk-tab ${tab === t.id ? 'active' : 'inactive'}`}>
               {t.label} {t.count > 0 && <span style={{ fontSize: '11px', opacity: 0.8 }}>{t.count}</span>}
@@ -202,15 +202,15 @@ export default function BookingsPage() {
           <div style={{ textAlign: 'center', padding: '60px 20px' }}>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
               {tab === 'upcoming'
-                ? <Calendar size={44} color="#A99ECC" strokeWidth={1.6} />
+                ? <Calendar size={44} color="var(--text-muted)" strokeWidth={1.6} />
                 : tab === 'pending'
-                  ? <Hourglass size={44} color="#A99ECC" strokeWidth={1.6} />
-                  : <CheckCircle2 size={44} color="#A99ECC" strokeWidth={1.6} />}
+                  ? <Hourglass size={44} color="var(--text-muted)" strokeWidth={1.6} />
+                  : <CheckCircle2 size={44} color="var(--text-muted)" strokeWidth={1.6} />}
             </div>
-            <p style={{ fontSize: '16px', fontWeight: 600, color: '#F0EAFF', marginBottom: '8px' }}>
+            <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>
               {tab === 'upcoming' ? 'No upcoming sessions' : tab === 'pending' ? 'No pending requests' : 'No completed sessions yet'}
             </p>
-            <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '24px' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px' }}>
               {tab === 'upcoming' ? 'Accepted sessions will appear here' : tab === 'pending' ? 'When someone requests you or you send a request' : 'Complete your first session to start your journey'}
             </p>
             <Link href="/browse" style={{ padding: '10px 22px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Browse Besties</Link>
@@ -230,7 +230,7 @@ export default function BookingsPage() {
             accepted:  { label: 'UPCOMING',  color: '#34D399', bg: 'rgba(52,211,153,0.1)',     border: 'rgba(52,211,153,0.25)' },
             completed: { label: 'COMPLETED', color: '#9B7FFF', bg: 'rgba(155,143,255,0.1)',   border: 'rgba(155,143,255,0.25)' },
             declined:  { label: 'DECLINED',  color: '#ff6b6b', bg: 'rgba(255,80,80,0.08)',    border: 'rgba(255,80,80,0.2)' },
-            cancelled: { label: 'CANCELLED', color: '#6B6490', bg: 'rgba(107,100,144,0.1)',   border: 'rgba(107,100,144,0.2)' },
+            cancelled: { label: 'CANCELLED', color: 'var(--text-dim)', bg: 'rgba(107,100,144,0.1)',   border: 'rgba(107,100,144,0.2)' },
           }
           const st = statusMap[booking.status] || statusMap.pending
 
@@ -239,7 +239,7 @@ export default function BookingsPage() {
               {/* Top row: avatar + info + status */}
               <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start', marginBottom: '14px' }}>
                 <Link href={other?.username ? `/${other.username}` : '#'} style={{ flexShrink: 0 }}>
-                  <div style={{ width: '52px', height: '52px', borderRadius: '16px', overflow: 'hidden', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid rgba(255,255,255,0.12)' }}>
+                  <div style={{ width: '52px', height: '52px', borderRadius: '16px', overflow: 'hidden', background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid var(--border)' }}>
                     {other?.avatar_url
                       ? <img src={other.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       : <span style={{ color: '#D4AF37', fontWeight: 700, fontSize: '16px' }}>{initials(other?.full_name)}</span>}
@@ -248,11 +248,11 @@ export default function BookingsPage() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
                     <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF', marginBottom: '1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {booking.package?.title || 'Session'}
                         {price && <span style={{ marginLeft: '8px', fontSize: '14px', color: price === 'Free' ? '#34D399' : '#D4AF37', fontWeight: 700 }}>{price}</span>}
                       </p>
-                      <p style={{ fontSize: '12px', color: '#A99ECC' }}>
+                      <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                         with <span style={{ color: '#C8C0E8', fontWeight: 500 }}>{other?.full_name || 'Unknown'}</span>
                         {other?.city ? ` · ${other.city}` : ''}
                       </p>
@@ -263,7 +263,7 @@ export default function BookingsPage() {
                   </div>
 
                   {dateStr && (
-                    <p style={{ fontSize: '12px', color: '#A99ECC', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <Clock size={12} color="#D4AF37" strokeWidth={2} /> {dateStr}
                     </p>
                   )}
@@ -271,7 +271,7 @@ export default function BookingsPage() {
               </div>
 
               {booking.message && (
-                <p style={{ fontSize: '13px', color: '#A99ECC', fontStyle: 'italic', marginBottom: '12px', padding: '10px 12px', borderRadius: '10px', background: '#111120', borderLeft: '2px solid rgba(212,175,55,0.3)' }}>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: '12px', padding: '10px 12px', borderRadius: '10px', background: 'var(--surface-1)', borderLeft: '2px solid rgba(212,175,55,0.3)' }}>
                   "{booking.message}"
                 </p>
               )}
@@ -287,11 +287,11 @@ export default function BookingsPage() {
                       <Calendar size={13} strokeWidth={2} /> Add to Calendar
                     </button>
                     {calOpen === booking.id && (
-                      <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '6px', background: '#13132a', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '12px', overflow: 'hidden', zIndex: 10 }}>
-                        <a href={googleCalendarUrl({ title, start, description })} target="_blank" rel="noopener noreferrer" onClick={() => setCalOpen(null)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', fontSize: '13px', color: '#F0EAFF', textDecoration: 'none', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+                      <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '6px', background: 'var(--surface-1b)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '12px', overflow: 'hidden', zIndex: 10 }}>
+                        <a href={googleCalendarUrl({ title, start, description })} target="_blank" rel="noopener noreferrer" onClick={() => setCalOpen(null)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', fontSize: '13px', color: 'var(--text-primary)', textDecoration: 'none', borderBottom: '1px solid var(--border)' }}>
                           <img src="https://ssl.gstatic.com/calendar/images/dynamiclogo_2020q4/calendar_31_2x.png" alt="" style={{ width: '18px', height: '18px', borderRadius: '4px' }} />Google Calendar
                         </a>
-                        <button onClick={() => { downloadICS({ title, start, description, filename: 'bestie-session.ics' }); setCalOpen(null) }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', fontSize: '13px', color: '#F0EAFF', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+                        <button onClick={() => { downloadICS({ title, start, description, filename: 'bestie-session.ics' }); setCalOpen(null) }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', fontSize: '13px', color: 'var(--text-primary)', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
                           <CalendarDays size={16} strokeWidth={2} /> Apple / Outlook (.ics)
                         </button>
                       </div>

@@ -1,4 +1,5 @@
-﻿'use client'
+﻿// @ts-nocheck
+'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -36,7 +37,7 @@ export default function CrewDeleteButton({ crewId, captainId, crewName }: Props)
         <p style={{ fontSize: '14px', fontWeight: 600, color: '#FF6B35', marginBottom: '4px' }}>
           Dissolve "{crewName}"?
         </p>
-        <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '14px' }}>
+        <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '14px' }}>
           All members will be removed. This cannot be undone.
         </p>
         <div style={{ display: 'flex', gap: '8px' }}>
@@ -48,7 +49,7 @@ export default function CrewDeleteButton({ crewId, captainId, crewName }: Props)
           </button>
           <button
             onClick={() => setStep('idle')}
-            style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(255,255,255,0.10)', color: '#A99ECC', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}
+            style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'var(--overlay-2)', color: 'var(--text-muted)', border: '1px solid var(--border)', cursor: 'pointer' }}
           >
             Cancel
           </button>

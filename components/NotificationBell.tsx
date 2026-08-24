@@ -107,7 +107,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
         ref={btnRef}
         onClick={toggleOpen}
         aria-label="Notifications"
-        style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: '10px', borderRadius: '10px', color: unread > 0 ? '#D4AF37' : '#A99ECC', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '40px', minHeight: '40px' }}
+        style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: '10px', borderRadius: '10px', color: unread > 0 ? '#D4AF37' : 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '40px', minHeight: '40px' }}
       >
         <Bell size={20} strokeWidth={2} />
         {unread > 0 && (
@@ -118,9 +118,9 @@ export default function NotificationBell({ userId }: { userId: string }) {
       </button>
 
       {open && (
-        <div style={{ position: 'fixed', top: panelTop, right: '12px', width: 'min(340px, calc(100vw - 24px))', background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', overflow: 'hidden', zIndex: 100, boxShadow: '0 12px 36px rgba(0,0,0,0.5)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+        <div style={{ position: 'fixed', top: panelTop, right: '12px', width: 'min(340px, calc(100vw - 24px))', background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden', zIndex: 100, boxShadow: '0 12px 36px rgba(0,0,0,0.5)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            <span style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF' }}>Notifications</span>
+            <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>Notifications</span>
             {unread > 0 && (
               <button onClick={markAllRead} style={{ fontSize: '12px', color: '#D4AF37', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
                 Mark all read
@@ -132,10 +132,10 @@ export default function NotificationBell({ userId }: { userId: string }) {
             {notifications.length === 0 ? (
               <div style={{ padding: '36px 20px', textAlign: 'center' }}>
                 <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(169,158,204,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                  <Bell size={20} color="#A99ECC" strokeWidth={1.6} />
+                  <Bell size={20} color="var(--text-muted)" strokeWidth={1.6} />
                 </div>
-                <p style={{ fontSize: '13px', color: '#F0EAFF', fontWeight: 600, marginBottom: '4px' }}>You're all caught up</p>
-                <p style={{ fontSize: '12px', color: '#A99ECC' }}>Knocks, sessions, and sparks show up here</p>
+                <p style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 600, marginBottom: '4px' }}>You're all caught up</p>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Knocks, sessions, and sparks show up here</p>
               </div>
             ) : notifications.map(n => {
               const meta = typeMeta[n.type] || fallbackMeta
@@ -145,16 +145,16 @@ export default function NotificationBell({ userId }: { userId: string }) {
                   key={n.id}
                   onClick={() => { markRead(n.id); if (n.link) window.location.href = n.link; setOpen(false) }}
                   style={{ display: 'flex', gap: '12px', padding: '12px 18px', cursor: n.link ? 'pointer' : 'default', background: n.read ? 'transparent' : 'rgba(212,175,55,0.04)', borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.15s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--overlay)' }}
                   onMouseLeave={e => { e.currentTarget.style.background = n.read ? 'transparent' : 'rgba(212,175,55,0.04)' }}
                 >
                   <span style={{ width: '34px', height: '34px', borderRadius: '10px', background: meta.bg, color: meta.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Icon size={16} strokeWidth={2} />
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: '13px', fontWeight: n.read ? 500 : 700, color: '#F0EAFF', marginBottom: '2px', lineHeight: 1.4 }}>{n.title}</p>
-                    {n.body && <p style={{ fontSize: '12px', color: '#A99ECC', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.body}</p>}
-                    <p style={{ fontSize: '11px', color: '#6B6280', marginTop: '3px' }}>{timeAgo(n.created_at)}</p>
+                    <p style={{ fontSize: '13px', fontWeight: n.read ? 500 : 700, color: 'var(--text-primary)', marginBottom: '2px', lineHeight: 1.4 }}>{n.title}</p>
+                    {n.body && <p style={{ fontSize: '12px', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.body}</p>}
+                    <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '3px' }}>{timeAgo(n.created_at)}</p>
                   </div>
                   {!n.read && <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: meta.color, flexShrink: 0, marginTop: '8px', boxShadow: `0 0 8px ${meta.color}80` }} />}
                 </div>

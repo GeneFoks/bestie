@@ -54,26 +54,26 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ width: '100%', maxWidth: '400px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-          <p style={{ marginTop: '8px', fontSize: '14px', color: '#A99ECC' }}>Set new password</p>
+          <p style={{ marginTop: '8px', fontSize: '14px', color: 'var(--text-muted)' }}>Set new password</p>
         </div>
 
-        <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '20px', padding: '32px' }}>
+        <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '32px' }}>
           {done ? (
             <div style={{ textAlign: 'center' }}>
               <div style={{ width: '52px', height: '52px', margin: '0 auto 16px', borderRadius: '14px', background: 'rgba(52,211,153,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Check size={26} color="#34D399" strokeWidth={2.5} />
               </div>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: '#F0EAFF', marginBottom: '12px' }}>Password updated!</h2>
-              <p style={{ fontSize: '14px', color: '#A99ECC' }}>Redirecting to dashboard...</p>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '12px' }}>Password updated!</h2>
+              <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Redirecting to dashboard...</p>
             </div>
           ) : (
             <form onSubmit={handleReset} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label style={{ fontSize: '13px', fontWeight: 500, color: '#A99ECC', display: 'block', marginBottom: '8px' }}>New password</label>
+                <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>New password</label>
                 <input
                   type="password"
                   value={password}
@@ -81,18 +81,18 @@ export default function ResetPasswordPage() {
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--text-primary)', boxSizing: 'border-box' }}
                 />
               </div>
               <div>
-                <label style={{ fontSize: '13px', fontWeight: 500, color: '#A99ECC', display: 'block', marginBottom: '8px' }}>Confirm password</label>
+                <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>Confirm password</label>
                 <input
                   type="password"
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
                   placeholder="••••••••"
                   required
-                  style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: '#161628', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--text-primary)', boxSizing: 'border-box' }}
                 />
               </div>
               {error && (

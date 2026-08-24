@@ -165,7 +165,7 @@ export default function KnockButton({ profileId, profileUsername, variant = 'inl
         title="Tap to undo your knock"
         aria-label="Cancel knock"
         className="knock-sent-btn"
-        style={{ borderRadius: '12px', fontWeight: 500, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)', color: '#A99ECC', cursor: acting ? 'not-allowed' : 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', ...fullWidth, ...layout }}
+        style={{ borderRadius: '12px', fontWeight: 500, background: 'var(--overlay)', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: acting ? 'not-allowed' : 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', ...fullWidth, ...layout }}
       >
         {acting ? '…' : (
           <>
@@ -211,9 +211,9 @@ export default function KnockButton({ profileId, profileUsername, variant = 'inl
     boxShadow: '0 6px 22px rgba(212,175,55,0.28)',
   }
   const idleInlineStyle: React.CSSProperties = {
-    background: 'rgba(255,255,255,0.04)',
-    border: '1px solid rgba(255,255,255,0.10)',
-    color: '#A99ECC',
+    background: 'var(--overlay)',
+    border: '1px solid var(--border)',
+    color: 'var(--text-muted)',
   }
   const idleStyle = isHero ? idleHeroStyle : isCard ? idleCardStyle : idleInlineStyle
 

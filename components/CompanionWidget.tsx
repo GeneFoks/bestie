@@ -209,7 +209,7 @@ export default function CompanionWidget() {
         <button onClick={() => { setOpen(true); setBadge(false) }} style={{
           position: 'fixed', bottom: '80px', right: '16px',
           width: '56px', height: '56px', borderRadius: '18px',
-          background: `radial-gradient(circle at 40% 40%, ${style.glow}, #111120)`,
+          background: `radial-gradient(circle at 40% 40%, ${style.glow}, var(--surface-1))`,
           border: `1.5px solid ${style.border}`, cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '26px',
           zIndex: 1000,
@@ -221,7 +221,7 @@ export default function CompanionWidget() {
             <span style={{
               position: 'absolute', top: '-4px', right: '-4px',
               width: '14px', height: '14px', borderRadius: '50%',
-              background: '#FF4560', border: '2px solid #09090F',
+              background: '#FF4560', border: '2px solid var(--bg)',
               display: 'block',
             }} />
           )}
@@ -242,16 +242,16 @@ export default function CompanionWidget() {
         }}>
 
           {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 16px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
 
             {/* Settings button (top-left) */}
             <button onClick={() => setTab(tab === 'settings' ? 'chat' : 'settings')} style={{
               width: '34px', height: '34px', borderRadius: '10px',
               background: tab === 'settings' ? style.bg : 'transparent',
-              border: tab === 'settings' ? `1px solid ${style.border}` : '1px solid rgba(255,255,255,0.08)',
+              border: tab === 'settings' ? `1px solid ${style.border}` : '1px solid var(--border)',
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}>
-              <Settings size={15} color={tab === 'settings' ? style.color : '#A99ECC'} strokeWidth={2} />
+              <Settings size={15} color={tab === 'settings' ? style.color : 'var(--text-muted)'} strokeWidth={2} />
             </button>
 
             {/* Avatar */}
@@ -270,22 +270,22 @@ export default function CompanionWidget() {
                 <span style={{ fontSize: '10px', padding: '1px 7px', borderRadius: '999px', background: style.bg, border: `1px solid ${style.border}`, color: style.color, fontWeight: 600 }}>LVL {companion.level}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px' }}>
-                <div style={{ flex: 1, height: '3px', borderRadius: '999px', background: 'rgba(255,255,255,0.08)' }}>
+                <div style={{ flex: 1, height: '3px', borderRadius: '999px', background: 'var(--overlay-2)' }}>
                   <div style={{ width: `${levelProgress}%`, height: '100%', borderRadius: '999px', background: style.color, transition: 'width 0.5s ease' }} />
                 </div>
-                <span style={{ fontSize: '10px', color: '#A99ECC', whiteSpace: 'nowrap' }}>{companion.xp} XP</span>
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{companion.xp} XP</span>
               </div>
             </div>
 
             {/* Chat / Quests tabs */}
             {tab !== 'settings' && (
-              <div style={{ display: 'flex', gap: '4px', background: '#111120', borderRadius: '10px', padding: '3px' }}>
+              <div style={{ display: 'flex', gap: '4px', background: 'var(--surface-1)', borderRadius: '10px', padding: '3px' }}>
                 {(['chat', 'quests'] as const).map(t => (
                   <button key={t} onClick={() => setTab(t)} style={{
                     padding: '5px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 600,
                     border: 'none', cursor: 'pointer',
                     background: tab === t ? style.color : 'transparent',
-                    color: tab === t ? '#09090F' : '#A99ECC',
+                    color: tab === t ? '#09090F' : 'var(--text-muted)',
                     fontFamily: 'Plus Jakarta Sans, sans-serif',
                   }}>
                     {t === 'chat' ? '💬' : '⚡'}
@@ -294,7 +294,7 @@ export default function CompanionWidget() {
               </div>
             )}
 
-            <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', color: '#A99ECC', cursor: 'pointer', padding: '4px', display: 'flex' }}>
+            <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px', display: 'flex' }}>
               <X size={18} strokeWidth={2} />
             </button>
           </div>
@@ -302,23 +302,23 @@ export default function CompanionWidget() {
           {/* Settings tab */}
           {tab === 'settings' && (
             <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-              <p style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '1px', color: '#A99ECC', marginBottom: '16px' }}>COMPANION TYPE</p>
+              <p style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: '16px' }}>COMPANION TYPE</p>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
                 {COMPANION_OPTIONS.map(c => (
                   <button key={c.type} onClick={() => setEditType(c.type)} style={{
                     flex: 1, padding: '12px 6px', borderRadius: '14px',
-                    border: editType === c.type ? `1.5px solid ${COMPANION_STYLES[c.type].color}` : '1px solid rgba(255,255,255,0.1)',
-                    background: editType === c.type ? `${COMPANION_STYLES[c.type].color}15` : '#111120',
+                    border: editType === c.type ? `1.5px solid ${COMPANION_STYLES[c.type].color}` : '1px solid var(--border)',
+                    background: editType === c.type ? `${COMPANION_STYLES[c.type].color}15` : 'var(--surface-1)',
                     cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', transition: 'all 0.2s',
                   }}>
                     <div style={{ fontSize: '22px', marginBottom: '4px' }}>{c.emoji}</div>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: editType === c.type ? COMPANION_STYLES[c.type].color : '#A99ECC' }}>{c.label}</div>
-                    <div style={{ fontSize: '10px', color: '#5A5375' }}>{c.desc}</div>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: editType === c.type ? COMPANION_STYLES[c.type].color : 'var(--text-muted)' }}>{c.label}</div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{c.desc}</div>
                   </button>
                 ))}
               </div>
 
-              <p style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '1px', color: '#A99ECC', marginBottom: '10px' }}>NAME</p>
+              <p style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: '10px' }}>NAME</p>
               <input
                 value={editName}
                 onChange={e => setEditName(e.target.value.slice(0, 20))}
@@ -326,8 +326,8 @@ export default function CompanionWidget() {
                 maxLength={20}
                 style={{
                   width: '100%', padding: '12px 14px', borderRadius: '12px', fontSize: '15px', fontWeight: 600,
-                  outline: 'none', background: '#111120', border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#F0EAFF', fontFamily: 'Plus Jakarta Sans, sans-serif', boxSizing: 'border-box',
+                  outline: 'none', background: 'var(--surface-1)', border: '1px solid var(--border)',
+                  color: 'var(--text-primary)', fontFamily: 'Plus Jakarta Sans, sans-serif', boxSizing: 'border-box',
                   marginBottom: '16px',
                 }}
               />
@@ -352,7 +352,7 @@ export default function CompanionWidget() {
                 {messages.length === 0 && (
                   <div style={{ textAlign: 'center', padding: '32px 0' }}>
                     <div style={{ fontSize: '40px', marginBottom: '12px' }}>{style.emoji}</div>
-                    <p style={{ fontSize: '14px', color: '#A99ECC' }}>Start a conversation with {companion.name}!</p>
+                    <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Start a conversation with {companion.name}!</p>
                   </div>
                 )}
                 {messages.map((m, i) => (
@@ -365,9 +365,9 @@ export default function CompanionWidget() {
                     <div style={{
                       maxWidth: '80%', padding: '10px 14px',
                       borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                      background: m.role === 'user' ? `linear-gradient(135deg, ${style.color}22, ${style.glow})` : '#161628',
-                      border: m.role === 'user' ? `1px solid ${style.border}` : '1px solid rgba(255,255,255,0.08)',
-                      fontSize: '14px', color: '#E8E0FF', lineHeight: 1.6,
+                      background: m.role === 'user' ? `linear-gradient(135deg, ${style.color}22, ${style.glow})` : 'var(--surface-2)',
+                      border: m.role === 'user' ? `1px solid ${style.border}` : '1px solid var(--border)',
+                      fontSize: '14px', color: 'var(--text-primary)', lineHeight: 1.6,
                     }}>
                       {m.content}
                     </div>
@@ -376,7 +376,7 @@ export default function CompanionWidget() {
                 {loading && (
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                     <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: style.bg, border: `1px solid ${style.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>{style.emoji}</div>
-                    <div style={{ display: 'flex', gap: '4px', padding: '10px 14px', background: '#161628', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div style={{ display: 'flex', gap: '4px', padding: '10px 14px', background: 'var(--surface-2)', borderRadius: '16px', border: '1px solid var(--border)' }}>
                       {[0,1,2].map(i => <div key={i} style={{ width: '6px', height: '6px', borderRadius: '50%', background: style.color, animation: 'cwTyping 1.2s ease-in-out infinite', animationDelay: `${i * 0.2}s` }} />)}
                     </div>
                   </div>
@@ -402,15 +402,15 @@ export default function CompanionWidget() {
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
                   placeholder={`Message ${companion.name}...`}
-                  style={{ flex: 1, padding: '12px 16px', borderRadius: '14px', fontSize: '14px', outline: 'none', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+                  style={{ flex: 1, padding: '12px 16px', borderRadius: '14px', fontSize: '14px', outline: 'none', background: 'var(--surface-1)', border: '1px solid var(--border)', color: 'var(--text-primary)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
                 />
                 <button onClick={() => sendMessage()} disabled={!input.trim() || loading} style={{
                   width: '44px', height: '44px', borderRadius: '12px',
-                  background: input.trim() && !loading ? style.color : 'rgba(255,255,255,0.06)',
+                  background: input.trim() && !loading ? style.color : 'var(--overlay-2)',
                   border: 'none', cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s',
                 }}>
-                  <Send size={16} strokeWidth={2.5} color={input.trim() && !loading ? '#09090F' : '#5A5375'} />
+                  <Send size={16} strokeWidth={2.5} color={input.trim() && !loading ? '#09090F' : 'var(--text-dim)'} />
                 </button>
               </div>
             </>
@@ -419,11 +419,11 @@ export default function CompanionWidget() {
           {/* Quests tab */}
           {tab === 'quests' && (
             <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
-              <h3 style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '1.5px', color: '#A99ECC', marginBottom: '16px' }}>ACTIVE QUESTS</h3>
+              <h3 style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '1.5px', color: 'var(--text-muted)', marginBottom: '16px' }}>ACTIVE QUESTS</h3>
               {quests.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '32px 0' }}>
                   <div style={{ fontSize: '32px', marginBottom: '12px' }}>🎯</div>
-                  <p style={{ fontSize: '14px', color: '#A99ECC' }}>No quests yet!</p>
+                  <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>No quests yet!</p>
                   <button onClick={() => { setTab('chat'); sendMessage('Give me a quest!') }} style={{ marginTop: '12px', padding: '8px 20px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: style.bg, border: `1px solid ${style.border}`, color: style.color, cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
                     Ask for a quest
                   </button>
@@ -433,10 +433,10 @@ export default function CompanionWidget() {
                   {quests.map((uq, i) => {
                     const q = uq.quest
                     return (
-                      <div key={i} style={{ padding: '14px 16px', borderRadius: '14px', background: '#111120', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div key={i} style={{ padding: '14px 16px', borderRadius: '14px', background: 'var(--surface-1)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <span style={{ fontSize: '24px', flexShrink: 0 }}>{q.icon}</span>
                         <div style={{ flex: 1 }}>
-                          <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>{q.title}</p>
+                          <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>{q.title}</p>
                           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                             {q.xp_reward > 0 && <span style={{ fontSize: '11px', color: style.color, fontWeight: 600 }}>+{q.xp_reward} XP</span>}
                             {q.bs_reward > 0 && <span style={{ fontSize: '11px', color: '#D4AF37', fontWeight: 600 }}>+{q.bs_reward} ★</span>}

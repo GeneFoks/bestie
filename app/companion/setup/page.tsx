@@ -114,7 +114,7 @@ export default function CompanionSetupPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#09090F',
+      background: 'var(--bg)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -181,10 +181,10 @@ export default function CompanionSetupPage() {
           <>
             <div style={{ textAlign: 'center', marginBottom: '32px' }}>
               <div style={{ fontSize: '40px', marginBottom: '12px' }}>✨</div>
-              <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#F0EAFF', marginBottom: '8px' }}>
+              <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: 'var(--text-primary)', marginBottom: '8px' }}>
                 Выбери своего компаньона
               </h1>
-              <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.6 }}>
+              <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.6 }}>
                 Он будет помогать тебе на Bestie, давать квесты<br />и праздновать твои знакомства
               </p>
             </div>
@@ -228,14 +228,14 @@ export default function CompanionSetupPage() {
                       <span style={{ fontSize: '18px', fontWeight: 700, color: companion.color }}>{companion.name}</span>
                       <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '999px', background: companion.bg, border: `1px solid ${companion.border}`, color: companion.color, fontWeight: 600 }}>{companion.tagline}</span>
                     </div>
-                    <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.5, margin: 0 }}>{companion.description}</p>
+                    <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>{companion.description}</p>
                   </div>
                   <span style={{ color: companion.color, fontSize: '20px', flexShrink: 0 }}>→</span>
                 </button>
               ))}
             </div>
 
-            <p style={{ textAlign: 'center', fontSize: '12px', color: '#5A5375', marginTop: '20px' }}>
+            <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-dim)', marginTop: '20px' }}>
               Всегда можно сменить позже в настройках
             </p>
           </>
@@ -244,7 +244,7 @@ export default function CompanionSetupPage() {
         {/* STEP 2: Name it */}
         {step === 'name' && c && (
           <>
-            <button onClick={() => setStep('choose')} style={{ background: 'none', border: 'none', color: '#A99ECC', fontSize: '14px', cursor: 'pointer', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button onClick={() => setStep('choose')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '14px', cursor: 'pointer', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               ← Назад
             </button>
 
@@ -264,16 +264,16 @@ export default function CompanionSetupPage() {
               }}>
                 {c.emoji}
               </div>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#F0EAFF', marginBottom: '8px' }}>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '8px' }}>
                 Как назовёшь?
               </h2>
-              <p style={{ fontSize: '14px', color: '#A99ECC' }}>
+              <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
                 По умолчанию — <span style={{ color: c.color }}>Bestie</span>. Или придумай своё имя.
               </p>
             </div>
 
-            <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '28px' }}>
-              <label style={{ fontSize: '13px', fontWeight: 600, color: '#A99ECC', display: 'block', marginBottom: '10px', letterSpacing: '0.5px' }}>
+            <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '28px' }}>
+              <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '10px', letterSpacing: '0.5px' }}>
                 ИМЯ КОМПАНЬОНА
               </label>
               <input
@@ -288,7 +288,7 @@ export default function CompanionSetupPage() {
                   fontSize: '18px',
                   fontWeight: 600,
                   outline: 'none',
-                  background: '#0d0d1a',
+                  background: 'var(--bg)',
                   border: `1.5px solid ${c.border}`,
                   color: c.color,
                   boxSizing: 'border-box',
@@ -296,7 +296,7 @@ export default function CompanionSetupPage() {
                   textAlign: 'center',
                 }}
               />
-              <p style={{ fontSize: '11px', color: '#5A5375', marginTop: '8px', textAlign: 'right' }}>
+              <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '8px', textAlign: 'right' }}>
                 {companionName.length}/20
               </p>
             </div>
@@ -354,16 +354,16 @@ export default function CompanionSetupPage() {
                 {c.emoji}
               </div>
 
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#F0EAFF', marginBottom: '8px' }}>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: 'var(--text-primary)', marginBottom: '8px' }}>
                 Познакомься с {companionName.trim() || 'Bestie'}!
               </h2>
-              <p style={{ fontSize: '13px', color: '#A99ECC' }}>Твой <span style={{ color: c.color }}>{c.tagline.toLowerCase()}</span> компаньон</p>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Твой <span style={{ color: c.color }}>{c.tagline.toLowerCase()}</span> компаньон</p>
             </div>
 
             {/* Greeting bubble */}
             {greeting && (
               <div style={{
-                background: '#111120',
+                background: 'var(--surface-1)',
                 border: `1px solid ${c.border}`,
                 borderRadius: '20px',
                 padding: '20px 24px',
@@ -376,13 +376,13 @@ export default function CompanionSetupPage() {
                   left: '24px',
                   width: '20px',
                   height: '20px',
-                  background: '#111120',
+                  background: 'var(--surface-1)',
                   border: `1px solid ${c.border}`,
                   borderBottom: 'none',
                   borderRight: 'none',
                   transform: 'rotate(45deg)',
                 }} />
-                <p style={{ fontSize: '15px', color: '#E8E0FF', lineHeight: 1.7, margin: 0 }}>
+                <p style={{ fontSize: '15px', color: 'var(--text-primary)', lineHeight: 1.7, margin: 0 }}>
                   {greeting}
                 </p>
               </div>
@@ -402,7 +402,7 @@ export default function CompanionSetupPage() {
               <span style={{ fontSize: '24px' }}>📸</span>
               <div>
                 <p style={{ fontSize: '12px', color: '#D4AF37', fontWeight: 700, letterSpacing: '1px', marginBottom: '2px' }}>ПЕРВЫЙ КВЕСТ</p>
-                <p style={{ fontSize: '14px', color: '#F0EAFF', fontWeight: 600 }}>Поставь аватар → +100 XP</p>
+                <p style={{ fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>Поставь аватар → +100 XP</p>
               </div>
               <div style={{ marginLeft: 'auto', fontSize: '20px' }}>⚡</div>
             </div>

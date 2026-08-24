@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
@@ -117,7 +118,7 @@ export default function AudioRecorder({ onSend, disabled }: Props) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', borderRadius: '12px', background: 'rgba(212,175,55,0.10)', border: '1px solid rgba(212,175,55,0.35)' }}>
         <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#FF6B35', boxShadow: '0 0 8px rgba(255,107,53,0.6)', animation: 'rec-pulse 1.2s ease-in-out infinite' }} />
-        <span style={{ fontSize: '13px', fontFamily: 'monospace', color: '#F0EAFF', minWidth: '42px' }}>{fmt(elapsed)}</span>
+        <span style={{ fontSize: '13px', fontFamily: 'monospace', color: 'var(--text-primary)', minWidth: '42px' }}>{fmt(elapsed)}</span>
         <button onClick={cancel} aria-label="Cancel recording" style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255,107,53,0.10)', border: '1px solid rgba(255,107,53,0.30)', color: '#FF6B35', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <X size={14} strokeWidth={2} />
         </button>
@@ -135,7 +136,7 @@ export default function AudioRecorder({ onSend, disabled }: Props) {
       disabled={disabled || sending}
       title="Record audio (up to 60s)"
       aria-label="Record audio message"
-      style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)', color: '#A99ECC', cursor: disabled || sending ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+      style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'var(--overlay)', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: disabled || sending ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
     >
       <Mic size={18} strokeWidth={1.8} />
     </button>

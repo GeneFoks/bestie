@@ -22,7 +22,7 @@ function Avatar({ url, name, offset = false }: { url?: string | null; name?: str
         borderRadius: '50%',
         overflow: 'hidden',
         flexShrink: 0,
-        background: '#1A1A2E',
+        background: 'var(--surface-3)',
         border: '2px solid #D4AF37',
         boxShadow: '0 0 16px rgba(212,175,55,0.35)',
         marginLeft: offset ? '-14px' : 0,
@@ -90,11 +90,11 @@ export default function MatchCelebration({
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
       style={{ position: 'fixed', inset: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(5,5,12,0.78)', backdropFilter: 'blur(6px)', padding: '20px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
     >
-      <div style={{ position: 'relative', width: '100%', maxWidth: '380px', background: '#111120', border: '1px solid rgba(212,175,55,0.35)', borderRadius: '24px', padding: '32px 26px', textAlign: 'center', boxShadow: '0 24px 70px rgba(0,0,0,0.6), 0 0 40px rgba(212,175,55,0.12)' }}>
+      <div style={{ position: 'relative', width: '100%', maxWidth: '380px', background: 'var(--surface-1)', border: '1px solid rgba(212,175,55,0.35)', borderRadius: '24px', padding: '32px 26px', textAlign: 'center', boxShadow: '0 24px 70px rgba(0,0,0,0.6), 0 0 40px rgba(212,175,55,0.12)' }}>
         <button
           onClick={onClose}
           aria-label="Close"
-          style={{ position: 'absolute', top: '14px', right: '14px', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: 'none', color: '#A99ECC', cursor: 'pointer' }}
+          style={{ position: 'absolute', top: '14px', right: '14px', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--overlay)', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
         >
           <X size={16} />
         </button>
@@ -106,9 +106,9 @@ export default function MatchCelebration({
         </div>
 
         <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '26px', color: '#D4AF37', marginBottom: '6px' }}>It's a match!</h2>
-        <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.6, marginBottom: '24px' }}>
+        <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '24px' }}>
           {firstName
-            ? <>You and <span style={{ color: '#F0EAFF', fontWeight: 700 }}>{firstName}</span> both knocked. Time to plan something real.</>
+            ? <>You and <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{firstName}</span> both knocked. Time to plan something real.</>
             : <>You both knocked. Time to plan something real.</>}
         </p>
 
@@ -125,14 +125,14 @@ export default function MatchCelebration({
           {/* Referral ask — demoted to a quiet secondary link */}
           <button
             onClick={shareInvite}
-            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px', padding: '11px 18px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'transparent', border: 'none', color: '#A99ECC', cursor: 'pointer', width: '100%' }}
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px', padding: '11px 18px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', width: '100%' }}
           >
             <Share2 size={14} strokeWidth={2} /> {copied ? '✓ Link copied!' : 'Invite a friend · +10 Sparks each'}
           </button>
 
           <button
             onClick={onClose}
-            style={{ padding: '9px', borderRadius: '12px', fontSize: '13px', fontWeight: 500, background: 'transparent', border: 'none', color: '#6B6280', cursor: 'pointer' }}
+            style={{ padding: '9px', borderRadius: '12px', fontSize: '13px', fontWeight: 500, background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}
           >
             Maybe later
           </button>

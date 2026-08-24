@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { showToast } from '@/components/Toast'
+import { celebrate, buzz } from '@/lib/celebrate'
+import TypeCrest from '@/components/TypeCrest'
 import {
   QUESTIONS, TYPES, FAMILY, COLLECTIVE, POLES, ELEMENTS, computeKey,
   QUESTIONS_RU, TYPES_RU, FAMILY_RU, COLLECTIVE_RU, POLES_RU, ELEMENTS_RU,
@@ -32,8 +34,9 @@ const UI = {
     save: 'Save to my passport →', saving: 'Saving…',
     join: 'Join Bestie — save it & meet your matches →',
     kept: 'Your result is kept — it saves to your passport automatically after you sign up.',
-    share: '↗ Share my type', shared: '✓ Copied — send it to a friend', retake: 'Retake',
-    shareText: (name: string, fam: string, col: string) => `My Bestie Type: ${name} 🧭 ${fam} family · ${col} collective. What's yours?`,
+    share: '↗ Share my type', sharePreparing: 'Preparing your card…', shared: 'Link copied ✓', retake: 'Retake',
+    reading: 'Reading your answers…',
+    shareText: (name: string) => `I’m a ${name} on Bestie — what’s your friendship type? bestiehere.com/bestie-type`,
   },
   ru: {
     title: 'Узнай свой Bestie Type',
@@ -49,14 +52,15 @@ const UI = {
     save: 'Сохранить в паспорт →', saving: 'Сохраняю…',
     join: 'Вступить в Bestie — сохранить и увидеть своих →',
     kept: 'Результат не потеряется — сохранится в паспорт автоматически после регистрации.',
-    share: '↗ Поделиться типом', shared: '✓ Скопировано — отправь другу', retake: 'Пройти заново',
+    share: '↗ Поделиться типом', sharePreparing: 'Готовлю карточку…', shared: '✓ Скопировано — отправь другу', retake: 'Пройти заново',
+    reading: 'Читаю твои ответы…',
     shareText: (name: string, fam: string, col: string) => `Мой Bestie Type: ${name} 🧭 Семья: ${fam} · Коллектив: ${col}. А ты кто?`,
   },
 }
 
 export default function BestieTypePage() {
   const router = useRouter()
-  const [step, setStep] = useState<'intro' | 'quiz' | 'result'>('intro')
+  const [step, setStep] = useState<'intro' | 'quiz' | 'reading' | 'result'>('intro')
   const [currentQ, setCurrentQ] = useState(0)
   const [answers, setAnswers] = useState<(number | undefined)[]>([])
   const [birthDate, setBirthDate] = useState('')
@@ -64,6 +68,7 @@ export default function BestieTypePage() {
   const [saving, setSaving] = useState(false)
   const [userId, setUserId] = useState(null)
   const [shared, setShared] = useState(false)
+  const [sharing, setSharing] = useState(false)
   const [lang, setLang] = useState<'en' | 'ru'>('en')
 
   useEffect(() => {
@@ -119,21 +124,61 @@ export default function BestieTypePage() {
       const key = computeKey(next)
       setResult(key)
       try { localStorage.setItem('bestie_pending_type', JSON.stringify({ key, birthDate })) } catch {}
-      setStep('result')
+      // Staged reveal: a short "reading" beat before the ceremony, not an instant swap.
+      setStep('reading')
     }
   }
 
+  // The reveal itself: after the interstitial, show the result and fire confetti
+  // tinted to the type's element colors.
+  useEffect(() => {
+    if (step !== 'reading') return
+    const id = setTimeout(() => {
+      setStep('result')
+      const t = result ? TYPES[result] : null
+      celebrate({
+        count: 70, spread: 95, origin: { x: 0.5, y: 0.35 },
+        ...(t ? { colors: [ELEMENTS[t.fam].color, ELEMENTS[t.col].color, GOLD, '#F0EAFF'] } : {}),
+      })
+      buzz('success')
+    }, 1800)
+    return () => clearTimeout(id)
+  }, [step, result])
+
   const handleShare = async () => {
-    if (!result) return
+    if (!result || sharing) return
     const t = TYPES[result]
     const text = lang === 'ru'
       ? UI.ru.shareText(TYPES_RU[result].name, ELEMENTS_RU[t.fam], ELEMENTS_RU[t.col])
-      : UI.en.shareText(t.name, ELEMENTS[t.fam].name, ELEMENTS[t.col].name)
+      : UI.en.shareText(t.name)
     const url = 'https://bestiehere.com/bestie-type'
-    if (typeof navigator !== 'undefined' && navigator.share) {
-      try { await navigator.share({ title: 'My Bestie Type', text, url }); return } catch { return }
+    setSharing(true)
+    try {
+      // Render the 9:16 story card and hand it to the native share sheet.
+      const res = await fetch('/api/type-card/' + result)
+      if (!res.ok) throw new Error('card render failed')
+      const blob = await res.blob()
+      const file = new File([blob], `bestie-type-${result.toLowerCase()}.png`, { type: 'image/png' })
+      if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: 'My Bestie Type', text }) } catch {}
+        setSharing(false)
+        return
+      }
+      // No file-share support (desktop): download the PNG + copy the test link.
+      const objectUrl = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = objectUrl
+      a.download = `bestie-type-${result.toLowerCase()}.png`
+      document.body.appendChild(a); a.click(); a.remove()
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 4000)
+    } catch {
+      // Card unavailable — fall back to the plain text share.
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        try { await navigator.share({ title: 'My Bestie Type', text, url }); setSharing(false); return } catch {}
+      }
     }
-    navigator.clipboard.writeText(`${text}\n${url}`)
+    try { await navigator.clipboard.writeText(`${text}\n${url}`) } catch {}
+    setSharing(false)
     setShared(true); setTimeout(() => setShared(false), 2000)
   }
 
@@ -222,6 +267,31 @@ export default function BestieTypePage() {
     )
   }
 
+  // ---------- READING INTERSTITIAL ----------
+  // A 1.8s beat between the last answer and the reveal — the ceremony's inhale.
+  if (step === 'reading') {
+    const famColor = result && TYPES[result] ? ELEMENTS[TYPES[result].fam].color : GOLD
+    return (
+      <div style={{ minHeight: '100vh', background: BG, fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <style>{`
+          @keyframes btPulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.12); opacity: 1; } }
+          @keyframes btShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        `}</style>
+        <div style={{ textAlign: 'center', padding: '24px' }}>
+          <div style={{ fontSize: '58px', lineHeight: 1, animation: 'btPulse 1.2s ease-in-out infinite', textShadow: `0 0 46px ${famColor}` }}>🧭</div>
+          <p style={{
+            marginTop: '24px', fontSize: '15px', fontWeight: 600, letterSpacing: '0.4px',
+            background: `linear-gradient(90deg, ${MUT} 30%, ${TXT} 50%, ${MUT} 70%)`,
+            backgroundSize: '200% 100%',
+            WebkitBackgroundClip: 'text', backgroundClip: 'text',
+            color: 'transparent', WebkitTextFillColor: 'transparent',
+            animation: 'btShimmer 1.7s linear infinite',
+          }}>{T.reading}</p>
+        </div>
+      </div>
+    )
+  }
+
   // ---------- RESULT ----------
   if (step === 'result' && result) {
     const t = TYPES[result]
@@ -234,10 +304,16 @@ export default function BestieTypePage() {
     return (
       <div style={{ minHeight: '100vh', background: BG, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
         <div style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 24px' }}>
+          <style>{`
+            @keyframes btReveal { from { opacity: 0; transform: scale(0.85) translateY(12px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+          `}</style>
           <LangToggle />
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
             <p style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '2px', color: GOLD, marginBottom: '14px' }}>{T.yourType}</p>
-            <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '38px', color: TXT, marginBottom: '4px' }}>{typeName}</h1>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '18px', animation: 'btReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) both' }}>
+              <TypeCrest typeId={result} size={156} />
+            </div>
+            <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '38px', color: TXT, marginBottom: '4px', animation: 'btReveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both' }}>{typeName}</h1>
             <p style={{ fontSize: '13px', color: MUT }}>{T.proto} — «{lang === 'ru' ? tr.proto : t.proto}»</p>
             <p style={{ fontSize: '12px', color: '#6B5EA8', marginTop: '6px' }}>{T.flavor}</p>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '16px', flexWrap: 'wrap' }}>
@@ -298,8 +374,8 @@ export default function BestieTypePage() {
               <p style={{ fontSize: '12px', color: MUT, textAlign: 'center', marginTop: '10px' }}>{T.kept}</p>
             </>
           )}
-          <button onClick={handleShare} style={{ width: '100%', marginTop: '12px', padding: '14px', borderRadius: '14px', fontSize: '14px', fontWeight: 700, background: shared ? 'rgba(52,211,153,0.12)' : '#131323', border: shared ? '1px solid rgba(52,211,153,0.35)' : '1px solid rgba(255,255,255,0.12)', color: shared ? '#34D399' : TXT, cursor: 'pointer' }}>
-            {shared ? T.shared : T.share}
+          <button onClick={handleShare} disabled={sharing} style={{ width: '100%', marginTop: '12px', padding: '14px', borderRadius: '14px', fontSize: '14px', fontWeight: 700, background: shared ? 'rgba(52,211,153,0.12)' : '#131323', border: shared ? '1px solid rgba(52,211,153,0.35)' : '1px solid rgba(255,255,255,0.12)', color: shared ? '#34D399' : TXT, cursor: sharing ? 'wait' : 'pointer', opacity: sharing ? 0.75 : 1 }}>
+            {sharing ? T.sharePreparing : shared ? T.shared : T.share}
           </button>
           <button onClick={start} style={{ display: 'block', margin: '18px auto 0', padding: '4px 8px', background: 'none', border: 'none', fontSize: '13px', color: MUT, textDecoration: 'underline', cursor: 'pointer' }}>
             {T.retake}

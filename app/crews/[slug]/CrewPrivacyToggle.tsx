@@ -41,7 +41,7 @@ export default function CrewPrivacyToggle({ crewId, captainId, isPublic }: { cre
   }
 
   return (
-    <button onClick={toggle} disabled={busy} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '12px', borderRadius: '13px', fontSize: '13px', fontWeight: 600, cursor: busy ? 'wait' : 'pointer', background: '#131323', border: '1px solid rgba(255,255,255,0.12)', color: '#A99ECC', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <button onClick={toggle} disabled={busy} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '12px', borderRadius: '13px', fontSize: '13px', fontWeight: 600, cursor: busy ? 'wait' : 'pointer', background: 'var(--surface-1b)', border: '1px solid var(--border)', color: 'var(--text-muted)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       {pub
         ? <><Lock size={14} strokeWidth={2} /> Make crew Private (approve joins)</>
         : <><Globe size={14} strokeWidth={2} /> Make crew Open (anyone can join)</>}

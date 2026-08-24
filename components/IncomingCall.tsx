@@ -115,7 +115,7 @@ export default function IncomingCall() {
       style={{
       position: 'fixed', top: '16px', left: '50%', transform: 'translateX(-50%)',
       zIndex: 9999, width: 'min(400px, calc(100vw - 32px))',
-      background: '#0F0F1E', border: '1px solid rgba(52,211,153,0.4)',
+      background: 'var(--surface-1)', border: '1px solid rgba(52,211,153,0.4)',
       borderRadius: '24px', padding: '20px',
       boxShadow: '0 8px 40px rgba(52,211,153,0.15), 0 4px 20px rgba(0,0,0,0.6)',
       fontFamily: 'Plus Jakarta Sans, sans-serif',
@@ -135,7 +135,7 @@ export default function IncomingCall() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '18px' }}>
         <div style={{
           width: '52px', height: '52px', borderRadius: '16px', overflow: 'hidden',
-          background: '#1a1a35', flexShrink: 0,
+          background: 'var(--surface-3)', flexShrink: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           animation: 'icPulse 1.5s ease-in-out infinite',
           border: '2px solid rgba(52,211,153,0.6)',
@@ -147,8 +147,8 @@ export default function IncomingCall() {
         </div>
         <div>
           <p style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '1.5px', color: '#34D399', marginBottom: '2px' }}>INCOMING CALL</p>
-          <p style={{ fontSize: '16px', fontWeight: 700, color: '#E8E0FF' }}>{caller.full_name}</p>
-          <p style={{ fontSize: '12px', color: '#9B93C0' }}>@{caller.username}</p>
+          <p style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>{caller.full_name}</p>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>@{caller.username}</p>
         </div>
       </div>
 

@@ -70,13 +70,13 @@ export default function CrewRoleManager({ crewId, captainId, memberUserId, membe
         aria-label={`Manage ${memberName}'s role`}
         aria-haspopup="menu"
         aria-expanded={open}
-        style={{ background: 'transparent', border: 'none', color: '#A99ECC', cursor: 'pointer', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       >
         <MoreVertical size={16} strokeWidth={1.8} />
       </button>
 
       {open && (
-        <div role="menu" style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 100, background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '12px', padding: '6px', minWidth: '180px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
+        <div role="menu" style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 100, background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '12px', padding: '6px', minWidth: '180px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
           {currentRole === 'member' && (
             <button
               onClick={() => setRole('moderator')}
@@ -95,7 +95,7 @@ export default function CrewRoleManager({ crewId, captainId, memberUserId, membe
               role="menuitem"
               style={menuBtn}
             >
-              <Shield size={14} color="#A99ECC" strokeWidth={1.8} />
+              <Shield size={14} color="var(--text-muted)" strokeWidth={1.8} />
               <span>Demote to member</span>
             </button>
           )}
@@ -108,7 +108,7 @@ export default function CrewRoleManager({ crewId, captainId, memberUserId, membe
 const menuBtn: React.CSSProperties = {
   display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
   padding: '10px 12px', borderRadius: '8px', fontSize: '13px',
-  background: 'none', border: 'none', color: '#F0EAFF', cursor: 'pointer',
+  background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer',
   textAlign: 'left', fontFamily: 'Plus Jakarta Sans, sans-serif',
 }
 

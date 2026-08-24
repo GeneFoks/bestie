@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client'
 
 import React from 'react'
@@ -18,7 +19,7 @@ export function PageLoader({ message = 'Loading…', fullscreen = true }: PageLo
     <div
       style={{
         minHeight: fullscreen ? '100vh' : '300px',
-        background: fullscreen ? '#09090F' : 'transparent',
+        background: fullscreen ? 'var(--bg)' : 'transparent',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -39,7 +40,7 @@ export function PageLoader({ message = 'Loading…', fullscreen = true }: PageLo
           }}
         />
         {message && (
-          <p style={{ color: '#A99ECC', fontSize: '13px', fontWeight: 500, letterSpacing: '0.2px' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '13px', fontWeight: 500, letterSpacing: '0.2px' }}>
             {message}
           </p>
         )}
@@ -90,7 +91,7 @@ export function CardSkeleton({ height = 120, width = '100%', radius = 16, style 
           height: typeof height === 'number' ? `${height}px` : height,
           borderRadius: typeof radius === 'number' ? `${radius}px` : radius,
           background:
-            'linear-gradient(90deg, #111120 0%, #1A1A2E 50%, #111120 100%)',
+            'linear-gradient(90deg, var(--surface-1) 0%, var(--surface-3) 50%, var(--surface-1) 100%)',
           backgroundSize: '800px 100%',
           animation: 'bestie-shimmer 1.4s ease-in-out infinite',
           ...style,

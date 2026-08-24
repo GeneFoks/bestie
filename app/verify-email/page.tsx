@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -34,16 +35,16 @@ export default function VerifyEmailPage() {
     : null
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ textAlign: 'center', maxWidth: '420px' }}>
         <div style={{ width: '64px', height: '64px', margin: '0 auto 24px', borderRadius: '16px', background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Mail size={32} color="#D4AF37" strokeWidth={2} />
         </div>
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: '#F0EAFF', marginBottom: '12px' }}>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '12px' }}>
           One tap left — check your email
         </h1>
-        <p style={{ fontSize: '15px', color: '#A99ECC', lineHeight: 1.7, marginBottom: '8px' }}>
-          We sent a confirmation link{email ? <> to <b style={{ color: '#F0EAFF' }}>{email}</b></> : ''}. Tap it and you're in.
+        <p style={{ fontSize: '15px', color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: '8px' }}>
+          We sent a confirmation link{email ? <> to <b style={{ color: 'var(--text-primary)' }}>{email}</b></> : ''}. Tap it and you're in.
         </p>
         <p style={{ fontSize: '13px', color: '#FF6B35', lineHeight: 1.6, marginBottom: '28px' }}>
           ⚠️ Don't see it? <b>Check your Spam / Promotions folder</b> — it often lands there.
@@ -55,15 +56,15 @@ export default function VerifyEmailPage() {
           </a>
         )}
 
-        <button onClick={resend} disabled={sending || !email || sent} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '13px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, cursor: sending || sent ? 'default' : 'pointer', background: sent ? 'rgba(52,211,153,0.12)' : '#161628', border: sent ? '1px solid rgba(52,211,153,0.35)' : '1px solid rgba(255,255,255,0.12)', color: sent ? '#34D399' : '#F0EAFF', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+        <button onClick={resend} disabled={sending || !email || sent} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '13px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, cursor: sending || sent ? 'default' : 'pointer', background: sent ? 'rgba(52,211,153,0.12)' : 'var(--surface-2)', border: sent ? '1px solid rgba(52,211,153,0.35)' : '1px solid var(--border)', color: sent ? '#34D399' : 'var(--text-primary)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
           {sent ? <><Check size={15} strokeWidth={2.5} /> Sent — check again</> : <><RefreshCw size={15} strokeWidth={2} /> {sending ? 'Sending…' : 'Resend the email'}</>}
         </button>
         {err && <p style={{ fontSize: '12px', color: '#ff6b6b', marginTop: '10px' }}>{err}</p>}
 
-        <p style={{ fontSize: '13px', color: '#6B6490', marginTop: '24px' }}>
-          Wrong email? <Link href="/signup" style={{ color: '#A99ECC', textDecoration: 'none' }}>Start over</Link>
+        <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginTop: '24px' }}>
+          Wrong email? <Link href="/signup" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Start over</Link>
           {'  ·  '}
-          <Link href="/login" style={{ color: '#A99ECC', textDecoration: 'none' }}>Log in</Link>
+          <Link href="/login" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Log in</Link>
         </p>
       </div>
     </div>

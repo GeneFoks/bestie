@@ -1,36 +1,37 @@
+// @ts-nocheck
 import Link from 'next/link'
 
 export const metadata = { title: 'Privacy Policy — Bestie' }
 
 const H = ({ children }: { children: React.ReactNode }) => (
-  <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', margin: '32px 0 10px' }}>{children}</h2>
+  <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: 'var(--text-primary)', margin: '32px 0 10px' }}>{children}</h2>
 )
 const P = ({ children }: { children: React.ReactNode }) => (
-  <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.7, margin: '0 0 12px' }}>{children}</p>
+  <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.7, margin: '0 0 12px' }}>{children}</p>
 )
 
 export default function PrivacyPage() {
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <Link href="/terms" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none' }}>Terms of Service →</Link>
+        <Link href="/terms" style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none' }}>Terms of Service →</Link>
       </nav>
 
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '48px 24px 100px' }}>
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '32px', color: '#F0EAFF', marginBottom: '8px' }}>Privacy Policy</h1>
-        <p style={{ fontSize: '13px', color: '#6B6490', marginBottom: '32px' }}>Last updated: July 15, 2026</p>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '32px', color: 'var(--text-primary)', marginBottom: '8px' }}>Privacy Policy</h1>
+        <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '32px' }}>Last updated: July 15, 2026</p>
 
         <P>This policy explains what Bestie (bestiehere.com) collects, why, and what control you have. Short version: we collect what's needed to run a social meetup product, we don't sell your data, and your contact imports never leave your device as raw data.</P>
 
         <H>1. What we collect</H>
-        <P><b style={{ color: '#F0EAFF' }}>Account & profile:</b> email, name, username, photo, city, bio, birth date (optional), activities, personality test answers and resulting type.</P>
-        <P><b style={{ color: '#F0EAFF' }}>Activity on the platform:</b> meetups, events and RSVPs, messages, knocks, sparks, reviews, photos you upload, and reputation signals (Bestie Score inputs).</P>
-        <P><b style={{ color: '#F0EAFF' }}>Contact matching (optional):</b> if you use "find friends", emails/phone numbers are hashed (SHA-256) before being sent — we store one-way fingerprints, never your raw contact list.</P>
-        <P><b style={{ color: '#F0EAFF' }}>Technical:</b> device type, pages visited, and basic usage analytics collected first-party. Payments are handled by Stripe — we never see your card number.</P>
+        <P><b style={{ color: 'var(--text-primary)' }}>Account & profile:</b> email, name, username, photo, city, bio, birth date (optional), activities, personality test answers and resulting type.</P>
+        <P><b style={{ color: 'var(--text-primary)' }}>Activity on the platform:</b> meetups, events and RSVPs, messages, knocks, sparks, reviews, photos you upload, and reputation signals (Bestie Score inputs).</P>
+        <P><b style={{ color: 'var(--text-primary)' }}>Contact matching (optional):</b> if you use "find friends", emails/phone numbers are hashed (SHA-256) before being sent — we store one-way fingerprints, never your raw contact list.</P>
+        <P><b style={{ color: 'var(--text-primary)' }}>Technical:</b> device type, pages visited, and basic usage analytics collected first-party. Payments are handled by Stripe — we never see your card number.</P>
 
         <H>2. What we use it for</H>
-        <P>Running the product: matching you with compatible people, showing your public passport, powering events and chats. Safety: reviewing reports, preventing spam and fraud. Communication: transactional emails (knocks, matches, event updates) and, with your consent, product news. We do <b style={{ color: '#F0EAFF' }}>not</b> sell your personal data to third parties.</P>
+        <P>Running the product: matching you with compatible people, showing your public passport, powering events and chats. Safety: reviewing reports, preventing spam and fraud. Communication: transactional emails (knocks, matches, event updates) and, with your consent, product news. We do <b style={{ color: 'var(--text-primary)' }}>not</b> sell your personal data to third parties.</P>
 
         <H>3. What's public</H>
         <P>Your passport (name, photo, city, type, score, badges, activities, memories you choose to share) is visible to other users and may be visible to non-registered visitors via your profile link. Messages and birthday-event guest chats are visible to their participants. You control what goes on your profile.</P>

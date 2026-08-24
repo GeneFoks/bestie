@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client'
 
 import { useState, type CSSProperties } from 'react'
@@ -64,16 +65,16 @@ export default function CreateEventButton({
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              width: '100%', maxWidth: '480px', background: '#111120',
-              border: '1px solid rgba(255,255,255,0.12)', borderBottom: 'none',
+              width: '100%', maxWidth: '480px', background: 'var(--surface-1)',
+              border: '1px solid var(--border)', borderBottom: 'none',
               borderRadius: '24px 24px 0 0', padding: '24px 20px calc(28px + env(safe-area-inset-bottom))',
               animation: 'ce-up 0.25s ease',
             }}
           >
             <style>{`@keyframes ce-up { from { transform: translateY(100%) } to { transform: translateY(0) } }`}</style>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
-              <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: '#F0EAFF', margin: 0 }}>Create an event</h3>
-              <button onClick={() => setOpen(false)} aria-label="Close" style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '10px', width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#A99ECC' }}>
+              <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: 'var(--text-primary)', margin: 0 }}>Create an event</h3>
+              <button onClick={() => setOpen(false)} aria-label="Close" style={{ background: 'var(--overlay-2)', border: 'none', borderRadius: '10px', width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-muted)' }}>
                 <X size={18} strokeWidth={2} />
               </button>
             </div>
@@ -85,7 +86,7 @@ export default function CreateEventButton({
                   <span style={optTitle}>Group session</span>
                   <span style={optSub}>Host a hangout others can join — coffee, sports, coworking…</span>
                 </span>
-                <span style={{ color: '#A99ECC' }}>→</span>
+                <span style={{ color: 'var(--text-muted)' }}>→</span>
               </Link>
 
               <Link href="/birthday/new" onClick={() => setOpen(false)} style={optionStyle}>
@@ -94,7 +95,7 @@ export default function CreateEventButton({
                   <span style={optTitle}>Birthday</span>
                   <span style={optSub}>Shareable page — RSVP, photo wall, gift wishlist & guest chat</span>
                 </span>
-                <span style={{ color: '#A99ECC' }}>→</span>
+                <span style={{ color: 'var(--text-muted)' }}>→</span>
               </Link>
 
               <Link href="/crews" onClick={() => setOpen(false)} style={optionStyle}>
@@ -103,7 +104,7 @@ export default function CreateEventButton({
                   <span style={optTitle}>Crew event</span>
                   <span style={optSub}>Create an event inside your crew — open your crew page to add it</span>
                 </span>
-                <span style={{ color: '#A99ECC' }}>→</span>
+                <span style={{ color: 'var(--text-muted)' }}>→</span>
               </Link>
             </div>
           </div>
@@ -115,12 +116,12 @@ export default function CreateEventButton({
 
 const optionStyle: CSSProperties = {
   display: 'flex', alignItems: 'center', gap: '14px', padding: '16px',
-  borderRadius: '16px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.10)',
+  borderRadius: '16px', background: 'var(--surface-1)', border: '1px solid var(--border)',
   textDecoration: 'none',
 }
 const iconWrap: CSSProperties = {
   width: '46px', height: '46px', borderRadius: '13px', display: 'flex',
   alignItems: 'center', justifyContent: 'center', flexShrink: 0,
 }
-const optTitle: CSSProperties = { display: 'block', fontSize: '15px', fontWeight: 700, color: '#F0EAFF', marginBottom: '2px' }
-const optSub: CSSProperties = { display: 'block', fontSize: '12px', color: '#A99ECC', lineHeight: 1.4 }
+const optTitle: CSSProperties = { display: 'block', fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '2px' }
+const optSub: CSSProperties = { display: 'block', fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.4 }

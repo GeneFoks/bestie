@@ -99,31 +99,31 @@ export default function NewEventPage() {
 
   if (authLoading) return <PageLoader />
 
-  const inputStyle: React.CSSProperties = { width: '100%', padding: '13px 16px', borderRadius: '12px', fontSize: '15px', background: '#111120', border: '1px solid rgba(255,255,255,0.1)', color: '#F0EAFF', outline: 'none', boxSizing: 'border-box' }
-  const labelStyle: React.CSSProperties = { fontSize: '12px', fontWeight: 600, letterSpacing: '1px', color: '#A99ECC', marginBottom: '8px', display: 'block' }
+  const inputStyle: React.CSSProperties = { width: '100%', padding: '13px 16px', borderRadius: '12px', fontSize: '15px', background: 'var(--surface-1)', border: '1px solid var(--border)', color: 'var(--text-primary)', outline: 'none', boxSizing: 'border-box' }
+  const labelStyle: React.CSSProperties = { fontSize: '12px', fontWeight: 600, letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }
 
   if (!crewId) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ textAlign: 'center', padding: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
-          <Lock size={32} color="#A99ECC" strokeWidth={1.8} />
+          <Lock size={32} color="var(--text-muted)" strokeWidth={1.8} />
         </div>
-        <p style={{ color: '#F0EAFF', fontSize: '16px', fontWeight: 700, marginBottom: '8px' }}>{error || 'Access denied'}</p>
+        <p style={{ color: 'var(--text-primary)', fontSize: '16px', fontWeight: 700, marginBottom: '8px' }}>{error || 'Access denied'}</p>
         <Link href={`/crews/${slug}`} style={{ fontSize: '14px', color: '#D4AF37' }}>← Back to Crew</Link>
       </div>
     </div>
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <Link href={`/crews/${slug}`} style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none' }}>← Back to Crew</Link>
+        <Link href={`/crews/${slug}`} style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none' }}>← Back to Crew</Link>
       </nav>
 
       <div style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 24px' }}>
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', color: '#F0EAFF', marginBottom: '8px' }}>Create Event</h1>
-        <p style={{ fontSize: '14px', color: '#A99ECC', marginBottom: '32px' }}>Anyone can join unless you make it members only.</p>
+        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', color: 'var(--text-primary)', marginBottom: '8px' }}>Create Event</h1>
+        <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '32px' }}>Anyone can join unless you make it members only.</p>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
@@ -159,10 +159,10 @@ export default function NewEventPage() {
                 { value: true, Icon: Lock, label: 'Members only', desc: 'Crew members only' },
               ].map(opt => (
                 <button key={String(opt.value)} type="button" onClick={() => setIsMembersOnly(opt.value)}
-                  style={{ padding: '14px', borderRadius: '14px', border: isMembersOnly === opt.value ? '2px solid #D4AF37' : '1px solid rgba(255,255,255,0.12)', background: isMembersOnly === opt.value ? 'rgba(212,175,55,0.08)' : '#111120', cursor: 'pointer', textAlign: 'left' }}>
+                  style={{ padding: '14px', borderRadius: '14px', border: isMembersOnly === opt.value ? '2px solid #D4AF37' : '1px solid var(--border)', background: isMembersOnly === opt.value ? 'rgba(212,175,55,0.08)' : 'var(--surface-1)', cursor: 'pointer', textAlign: 'left' }}>
                   <div style={{ marginBottom: '4px' }}><opt.Icon size={20} color="#D4AF37" strokeWidth={1.8} /></div>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF' }}>{opt.label}</div>
-                  <div style={{ fontSize: '12px', color: '#A99ECC' }}>{opt.desc}</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>{opt.label}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{opt.desc}</div>
                 </button>
               ))}
             </div>
@@ -171,7 +171,7 @@ export default function NewEventPage() {
           {otherCrews.length > 0 && (
             <div>
               <label style={labelStyle}>CO-HOST WITH (optional)</label>
-              <p style={{ fontSize: '12px', color: '#A99ECC', marginBottom: '10px' }}>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px' }}>
                 Members of co-host crews can also RSVP to this event.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -182,12 +182,12 @@ export default function NewEventPage() {
                       key={c.id}
                       type="button"
                       onClick={() => setCoHosts(prev => checked ? prev.filter(id => id !== c.id) : [...prev, c.id])}
-                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', borderRadius: '12px', border: checked ? '1px solid rgba(155,127,255,0.40)' : '1px solid rgba(255,255,255,0.10)', background: checked ? 'rgba(155,127,255,0.08)' : '#111120', cursor: 'pointer', textAlign: 'left', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', borderRadius: '12px', border: checked ? '1px solid rgba(155,127,255,0.40)' : '1px solid var(--border)', background: checked ? 'rgba(155,127,255,0.08)' : 'var(--surface-1)', cursor: 'pointer', textAlign: 'left', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
                     >
-                      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '6px', border: checked ? 'none' : '1.5px solid rgba(255,255,255,0.20)', background: checked ? '#9B7FFF' : 'transparent', color: '#09090F', fontSize: '13px', fontWeight: 700 }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '6px', border: checked ? 'none' : '1.5px solid var(--border-strong)', background: checked ? '#9B7FFF' : 'transparent', color: '#09090F', fontSize: '13px', fontWeight: 700 }}>
                         {checked ? '✓' : ''}
                       </span>
-                      <span style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF' }}>{c.name}</span>
+                      <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{c.name}</span>
                     </button>
                   )
                 })}

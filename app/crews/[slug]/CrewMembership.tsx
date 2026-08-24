@@ -94,8 +94,8 @@ export default function CrewMembership({ crew }: { crew: any }) {
     }
   }
 
-  const box: any = { background: '#111120', border: '1px solid rgba(212,175,55,0.22)', borderRadius: '18px', padding: '20px', marginBottom: '16px' }
-  const input: any = { width: '100%', padding: '11px 14px', borderRadius: '11px', fontSize: '14px', background: '#0F0F1E', border: '1px solid rgba(255,255,255,0.12)', color: '#F0EAFF', outline: 'none', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
+  const box: any = { background: 'var(--surface-1)', border: '1px solid rgba(212,175,55,0.22)', borderRadius: '18px', padding: '20px', marginBottom: '16px' }
+  const input: any = { width: '100%', padding: '11px 14px', borderRadius: '11px', fontSize: '14px', background: 'var(--surface-1)', border: '1px solid var(--border)', color: 'var(--text-primary)', outline: 'none', boxSizing: 'border-box', fontFamily: 'Plus Jakarta Sans, sans-serif' }
   const gold: any = { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '14px', borderRadius: '13px', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37, #B8960C)', color: '#09090F', border: 'none', cursor: 'pointer' }
 
   // ── Captain view ──
@@ -104,13 +104,13 @@ export default function CrewMembership({ crew }: { crew: any }) {
       <div style={box}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
           <span style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Wallet size={17} color="#D4AF37" strokeWidth={1.9} /></span>
-          <p style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF', margin: 0 }}>Paid membership</p>
+          <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Paid membership</p>
         </div>
-        <p style={{ fontSize: '12px', color: '#A99ECC', margin: '0 0 14px' }}>Charge a monthly fee. Bestie keeps 10%, the rest is paid out to you.</p>
+        <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 14px' }}>Charge a monthly fee. Bestie keeps 10%, the rest is paid out to you.</p>
 
         {!connectReady ? (
           <>
-            <p style={{ fontSize: '13px', color: '#A99ECC', marginBottom: '12px', lineHeight: 1.5 }}>First, connect your bank via Stripe (~5 min) so you can receive payouts.</p>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '12px', lineHeight: 1.5 }}>First, connect your bank via Stripe (~5 min) so you can receive payouts.</p>
             <button onClick={startOnboard} disabled={busy} style={gold}>{busy ? '…' : (crew.stripe_connect_id ? 'Finish payout setup →' : 'Set up payouts →')}</button>
           </>
         ) : (
@@ -119,11 +119,11 @@ export default function CrewMembership({ crew }: { crew: any }) {
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <span style={{ fontSize: '18px', fontWeight: 700, color: '#D4AF37' }}>$</span>
               <input type="number" min={1} step="1" placeholder="Price / month" value={price} onChange={e => setPrice(e.target.value)} style={{ ...input, maxWidth: '160px' }} />
-              <span style={{ fontSize: '13px', color: '#A99ECC' }}>/ month</span>
+              <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>/ month</span>
             </div>
             <textarea placeholder="What's included? (e.g. weekly pickleball games for kids, court fees covered, group chat)" value={desc} onChange={e => setDesc(e.target.value)} rows={3} style={{ ...input, resize: 'vertical' }} />
-            <p style={{ fontSize: '11px', color: '#6B6490' }}>New members pay to join. Existing members keep their spot.</p>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '14px', color: '#F0EAFF' }}>
+            <p style={{ fontSize: '11px', color: 'var(--text-dim)' }}>New members pay to join. Existing members keep their spot.</p>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '14px', color: 'var(--text-primary)' }}>
               <input type="checkbox" checked={active} onChange={e => setActive(e.target.checked)} />
               Membership is active (visible to members)
             </label>
@@ -141,7 +141,7 @@ export default function CrewMembership({ crew }: { crew: any }) {
     return (
       <div style={box}>
         <p style={{ fontSize: '14px', fontWeight: 700, color: '#34D399', margin: 0 }}>✓ You're a paying member</p>
-        <p style={{ fontSize: '12px', color: '#A99ECC', margin: '4px 0 0' }}>${Number(crew.sub_price)}/mo · manage or cancel anytime in your Stripe receipt email.</p>
+        <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 0' }}>${Number(crew.sub_price)}/mo · manage or cancel anytime in your Stripe receipt email.</p>
       </div>
     )
   }
@@ -153,11 +153,11 @@ export default function CrewMembership({ crew }: { crew: any }) {
     <div style={box}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
         <Crown size={18} color="#D4AF37" strokeWidth={1.9} />
-        <p style={{ fontSize: '15px', fontWeight: 700, color: '#F0EAFF', margin: 0 }}>Membership · ${Number(crew.sub_price)}/mo</p>
+        <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Membership · ${Number(crew.sub_price)}/mo</p>
       </div>
-      {crew.sub_description && <p style={{ fontSize: '13px', color: '#A99ECC', margin: '0 0 14px', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{crew.sub_description}</p>}
+      {crew.sub_description && <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 14px', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{crew.sub_description}</p>}
       <button onClick={subscribe} disabled={busy} style={gold}>{busy ? '…' : `Join for $${Number(crew.sub_price)}/mo →`}</button>
-      <p style={{ fontSize: '11px', color: '#6B6490', textAlign: 'center', marginTop: '8px' }}>Secure payment via Stripe · cancel anytime</p>
+      <p style={{ fontSize: '11px', color: 'var(--text-dim)', textAlign: 'center', marginTop: '8px' }}>Secure payment via Stripe · cancel anytime</p>
     </div>
   )
 }

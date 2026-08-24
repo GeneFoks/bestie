@@ -92,15 +92,15 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div style={{ background: '#09090F', minHeight: '100vh', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <style>{`
         /* ── Reset ── */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         /* ── Nav ── */
         .nav-links { display: flex; gap: 28px; font-size: 14px; }
-        .nav-link { color: #A99ECC; text-decoration: none; transition: color 0.2s; }
-        .nav-link:hover { color: #F0EAFF; }
+        .nav-link { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+        .nav-link:hover { color: var(--text-primary); }
 
         /* ── Layout grids ── */
         .providers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; width: 100%; max-width: 100%; }
@@ -157,10 +157,10 @@ export default function HomePage() {
 
         /* ── Card interactions ── */
         .glass-card {
-          background: rgba(15,15,30,0.7);
+          background: var(--surface-1);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255,255,255,0.11);
+          border: 1px solid var(--border);
           border-radius: 20px;
           transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
         }
@@ -188,11 +188,11 @@ export default function HomePage() {
         .btn-ghost {
           display: inline-flex; align-items: center; gap: 8px;
           padding: 13px 28px; border-radius: 14px; font-size: 14px; font-weight: 600;
-          background: #161628; border: 1px solid rgba(255,255,255,0.12);
-          color: #F0EAFF; text-decoration: none;
+          background: var(--surface-2); border: 1px solid var(--border);
+          color: var(--text-primary); text-decoration: none;
           transition: background 0.2s, border-color 0.2s, transform 0.2s;
         }
-        .btn-ghost:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.2); transform: translateY(-1px); }
+        .btn-ghost:hover { background: rgba(255,255,255,0.09); border-color: var(--border-strong); transform: translateY(-1px); }
         .btn-sm-gold {
           display: inline-flex; align-items: center;
           padding: 9px 20px; border-radius: 12px; font-size: 13px; font-weight: 700;
@@ -201,7 +201,7 @@ export default function HomePage() {
           transition: filter 0.2s, transform 0.2s;
         }
         .btn-sm-gold:hover { filter: brightness(1.1); transform: translateY(-1px); }
-        .quiet-link { font-size: 13px; color: #A99ECC; text-decoration: underline; text-decoration-color: rgba(155,147,192,0.4); text-underline-offset: 4px; transition: color 0.2s; }
+        .quiet-link { font-size: 13px; color: var(--text-muted); text-decoration: underline; text-decoration-color: rgba(155,147,192,0.4); text-underline-offset: 4px; transition: color 0.2s; }
         .quiet-link:hover { color: #D4AF37; }
 
         /* ── Score card glow ── */
@@ -225,7 +225,7 @@ export default function HomePage() {
       `}</style>
 
       {/* ── NAV ── */}
-      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px', background: 'rgba(8,8,16,0.85)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none', letterSpacing: '-0.3px' }}>BESTIE</Link>
         <div className="nav-links">
           <Link href="/browse" className="nav-link">Browse</Link>
@@ -237,7 +237,7 @@ export default function HomePage() {
         </div>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           {/* My Circle — always visible, desktop & mobile */}
-          <Link href="/graph" aria-label="My Circle" title="My Circle" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#A99ECC', flexShrink: 0 }}>
+          <Link href="/graph" aria-label="My Circle" title="My Circle" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', color: 'var(--text-muted)', flexShrink: 0 }}>
             <Network size={17} strokeWidth={1.8} />
           </Link>
           {/* Desktop: full buttons. Mobile: only Join Free for logged-out */}
@@ -245,7 +245,7 @@ export default function HomePage() {
             <Link href="/dashboard" className="btn-gold" style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '10px' }}>Dashboard →</Link>
           ) : (
             <>
-              <Link href="/login" className="desktop-nav-cta" style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none' }}>Log in</Link>
+              <Link href="/login" className="desktop-nav-cta" style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none' }}>Log in</Link>
               <Link href="/signup" className="btn-gold" style={{ padding: '8px 18px', borderRadius: '10px', fontSize: '13px' }}>Join Free</Link>
             </>
           )}
@@ -273,12 +273,12 @@ export default function HomePage() {
           </p>
 
           {/* Headline */}
-          <h1 className="hero-h1" style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(34px, 7vw, 66px)', fontWeight: 700, color: '#F0EAFF', lineHeight: 1.08, marginBottom: '22px', letterSpacing: '-1px' }}>
+          <h1 className="hero-h1" style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(34px, 7vw, 66px)', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.08, marginBottom: '22px', letterSpacing: '-1px' }}>
             Making friends as an adult<br /><em style={{ color: '#D4AF37', fontStyle: 'italic' }}>shouldn't be this hard.</em>
           </h1>
 
           {/* Subtitle */}
-          <p className="hero-sub" style={{ fontSize: 'clamp(15px, 2vw, 17px)', color: '#A99ECC', maxWidth: '540px', margin: '0 auto 36px', lineHeight: 1.65 }}>
+          <p className="hero-sub" style={{ fontSize: 'clamp(15px, 2vw, 17px)', color: 'var(--text-muted)', maxWidth: '540px', margin: '0 auto 36px', lineHeight: 1.65 }}>
             Bestie matches you with people nearby for hikes, coffee, gym, game nights — verified by real meetups, not endless chats.
           </p>
 
@@ -300,13 +300,13 @@ export default function HomePage() {
       <section id="how-it-works" style={{ padding: '0 20px 64px' }}>
         <div ref={howRef} className={`reveal ${howVisible ? 'visible' : ''}`} style={{ maxWidth: '980px', margin: '0 auto' }}>
           {/* Glassmorphism container */}
-          <div style={{ borderRadius: '28px', background: 'rgba(15,15,30,0.6)', border: '1px solid rgba(255,255,255,0.11)', padding: '52px 44px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 24px 80px rgba(0,0,0,0.35)' }}>
+          <div style={{ borderRadius: '28px', background: 'var(--surface-1)', border: '1px solid var(--border)', padding: '52px 44px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 24px 80px rgba(0,0,0,0.35)' }}>
             <div style={{ textAlign: 'center', marginBottom: '48px' }}>
               <p className="section-label">HOW IT WORKS</p>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 42px)', fontWeight: 700, color: '#F0EAFF', marginBottom: '12px', lineHeight: 1.15 }}>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 42px)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '12px', lineHeight: 1.15 }}>
                 From stranger to friend<br />in four steps.
               </h2>
-              <p style={{ fontSize: '15px', color: '#A99ECC' }}>Built for real human connection — not followers, not likes.</p>
+              <p style={{ fontSize: '15px', color: 'var(--text-muted)' }}>Built for real human connection — not followers, not likes.</p>
             </div>
             <div className="how-grid">
               {[
@@ -320,8 +320,8 @@ export default function HomePage() {
                   <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)', margin: '10px 0 14px' }}>
                     <step.Icon size={22} color="#D4AF37" strokeWidth={1.6} />
                   </div>
-                  <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '17px', fontWeight: 700, color: '#F0EAFF', marginBottom: '10px' }}>{step.title}</h3>
-                  <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.75 }}>{step.desc}</p>
+                  <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '10px' }}>{step.title}</h3>
+                  <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.75 }}>{step.desc}</p>
                 </div>
               ))}
             </div>
@@ -339,8 +339,8 @@ export default function HomePage() {
               <span style={{ fontSize: '52px', flexShrink: 0 }}>🧭</span>
               <div style={{ flex: 1, minWidth: '220px' }}>
                 <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#D4AF37', marginBottom: '6px' }}>FREE · 5 MINUTES · NO SIGNUP</p>
-                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(20px, 4vw, 28px)', color: '#F0EAFF', marginBottom: '6px', lineHeight: 1.2 }}>What's your friendship type?</h2>
-                <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.6, maxWidth: '540px' }}>28 questions reveal one of 16 types — your eterotype shows who you'll naturally click with.</p>
+                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(20px, 4vw, 28px)', color: 'var(--text-primary)', marginBottom: '6px', lineHeight: 1.2 }}>What's your friendship type?</h2>
+                <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '540px' }}>28 questions reveal one of 16 types — your eterotype shows who you'll naturally click with.</p>
               </div>
               <span style={{ flexShrink: 0, padding: '14px 26px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', whiteSpace: 'nowrap' }}>Take the test →</span>
             </div>
@@ -354,7 +354,7 @@ export default function HomePage() {
         <div ref={featRef} className={`reveal ${featVisible ? 'visible' : ''}`} style={{ maxWidth: '980px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '44px' }}>
             <p className="section-label">WHAT'S INSIDE</p>
-            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 38px)', fontWeight: 700, color: '#F0EAFF' }}>Everything you need to actually meet people</h2>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 38px)', fontWeight: 700, color: 'var(--text-primary)' }}>Everything you need to actually meet people</h2>
           </div>
           <div className="features-grid">
             {FEATURES.map((f) => (
@@ -362,8 +362,8 @@ export default function HomePage() {
                 <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.12)', marginBottom: '14px' }}>
                   <f.Icon size={20} color="#D4AF37" strokeWidth={1.6} />
                 </div>
-                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '16px', fontWeight: 700, color: '#F0EAFF', marginBottom: '7px' }}>{f.title}</h3>
-                <p style={{ fontSize: '13px', color: '#A99ECC', lineHeight: 1.65 }}>{f.desc}</p>
+                <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '7px' }}>{f.title}</h3>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.65 }}>{f.desc}</p>
               </div>
             ))}
           </div>
@@ -377,10 +377,10 @@ export default function HomePage() {
             {/* Left: explanation */}
             <div>
               <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2.5px', color: '#34D399', textTransform: 'uppercase', marginBottom: '16px' }}>THE BESTIE SCORE</p>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(28px, 5vw, 46px)', fontWeight: 700, color: '#F0EAFF', lineHeight: 1.15, marginBottom: '20px' }}>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(28px, 5vw, 46px)', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.15, marginBottom: '20px' }}>
                 Proof you <em style={{ color: '#D4AF37', fontStyle: 'italic' }}>show up.</em>
               </h2>
-              <p style={{ fontSize: '15px', color: '#A99ECC', marginBottom: '24px', lineHeight: 1.75 }}>
+              <p style={{ fontSize: '15px', color: 'var(--text-muted)', marginBottom: '24px', lineHeight: 1.75 }}>
                 Your score grows with every confirmed meetup, rating, and week of consistency — real-life reliability, not follower counts.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '32px' }}>
@@ -391,9 +391,9 @@ export default function HomePage() {
                   { label: '💎 Legend', desc: '1+ year, trusted by many' },
                   { label: '👑 OG Bestie', desc: '2+ years — the real ones' },
                 ].map(b => (
-                  <div key={b.label} style={{ display: 'flex', gap: '10px', alignItems: 'center', fontSize: '13px', padding: '8px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid #131323' }}>
-                    <span style={{ color: '#F0EAFF', fontWeight: 600, minWidth: '120px' }}>{b.label}</span>
-                    <span style={{ color: '#A99ECC' }}>{b.desc}</span>
+                  <div key={b.label} style={{ display: 'flex', gap: '10px', alignItems: 'center', fontSize: '13px', padding: '8px 14px', borderRadius: '12px', background: 'var(--overlay)', border: '1px solid var(--surface-1b)' }}>
+                    <span style={{ color: 'var(--text-primary)', fontWeight: 600, minWidth: '120px' }}>{b.label}</span>
+                    <span style={{ color: 'var(--text-muted)' }}>{b.desc}</span>
                   </div>
                 ))}
               </div>
@@ -402,24 +402,24 @@ export default function HomePage() {
 
             {/* Right: score card */}
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <div className="score-card" style={{ width: '280px', padding: '32px 28px', borderRadius: '28px', textAlign: 'center', background: 'rgba(15,15,30,0.8)', border: '1px solid rgba(52,211,153,0.2)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
-                <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '2px', color: '#A99ECC', marginBottom: '8px', textTransform: 'uppercase' }}>BESTIE SCORE</p>
+              <div className="score-card" style={{ width: '280px', padding: '32px 28px', borderRadius: '28px', textAlign: 'center', background: 'var(--surface-1)', border: '1px solid rgba(52,211,153,0.2)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
+                <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>BESTIE SCORE</p>
                 <div style={{ fontSize: '80px', fontWeight: 700, color: '#34D399', fontFamily: 'DM Serif Display, serif', lineHeight: 1, margin: '4px 0 16px', textShadow: '0 0 40px rgba(52,211,153,0.4)' }}>874</div>
                 {/* Progress bar */}
                 <div style={{ height: '7px', borderRadius: '999px', background: 'rgba(255,255,255,0.10)', marginBottom: '8px', overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: '87.4%', borderRadius: '999px', background: 'linear-gradient(90deg, #34D399 0%, #D4AF37 100%)', boxShadow: '0 0 12px rgba(52,211,153,0.5)' }} />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#A99ECC', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '24px' }}>
                   <span>0</span>
                   <span style={{ color: '#34D399', fontWeight: 700 }}>Excellent</span>
                   <span>1000</span>
                 </div>
                 {/* Stats */}
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.10)', paddingTop: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                <div style={{ borderTop: '1px solid var(--border)', paddingTop: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                   {[{ label: 'Sessions', val: '43' }, { label: 'Rating', val: '4.9' }, { label: 'Sparks', val: '127' }].map((s) => (
-                    <div key={s.label} style={{ padding: '10px 4px', borderRadius: '12px', background: '#111120' }}>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#F0EAFF', marginBottom: '2px' }}>{s.val}</div>
-                      <div style={{ fontSize: '10px', color: '#A99ECC', fontWeight: 600, letterSpacing: '0.5px' }}>{s.label}</div>
+                    <div key={s.label} style={{ padding: '10px 4px', borderRadius: '12px', background: 'var(--surface-1)' }}>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '2px' }}>{s.val}</div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.5px' }}>{s.label}</div>
                     </div>
                   ))}
                 </div>
@@ -436,23 +436,23 @@ export default function HomePage() {
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '20px' }}>
               <div>
                 <p className="section-label">HAPPENING SOON</p>
-                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 700, color: '#F0EAFF' }}>Upcoming events</h2>
+                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 700, color: 'var(--text-primary)' }}>Upcoming events</h2>
               </div>
-              <Link href="/events" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none', marginBottom: '2px' }}>See all →</Link>
+              <Link href="/events" style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none', marginBottom: '2px' }}>See all →</Link>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px' }}>
               {upcomingEvents.map(ev => {
                 const d = new Date(ev.when)
                 return (
-                  <Link key={`${ev.kind}-${ev.id}`} href={ev.href} style={{ display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: '#111120', border: ev.kind === 'birthday' ? '1px solid rgba(255,107,53,0.22)' : '1px solid rgba(255,255,255,0.11)', textDecoration: 'none' }}>
+                  <Link key={`${ev.kind}-${ev.id}`} href={ev.href} style={{ display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: 'var(--surface-1)', border: ev.kind === 'birthday' ? '1px solid rgba(255,107,53,0.22)' : '1px solid var(--border)', textDecoration: 'none' }}>
                     <div style={{ flexShrink: 0, width: '44px', textAlign: 'center' }}>
                       <p style={{ fontSize: '10px', fontWeight: 700, color: ev.kind === 'birthday' ? '#FF6B35' : '#D4AF37', letterSpacing: '1px' }}>{d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}</p>
-                      <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: '#F0EAFF', lineHeight: 1 }}>{d.getDate()}</p>
-                      <p style={{ fontSize: '10px', color: '#A99ECC' }}>{d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+                      <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{d.getDate()}</p>
+                      <p style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: '14px', fontWeight: 700, color: '#F0EAFF', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.title}</p>
-                      <p style={{ fontSize: '12px', color: '#A99ECC', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.title}</p>
+                      <p style={{ fontSize: '12px', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {ev.sub}{ev.location ? ` · ${ev.location}` : ''}
                       </p>
                     </div>
@@ -471,19 +471,19 @@ export default function HomePage() {
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '28px' }}>
               <div>
                 <p className="section-label">LEADERBOARD</p>
-                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 700, color: '#F0EAFF' }}>{CITY_FOCUS ? `Top Besties in ${LAUNCH_CITY.name}` : 'Top Besties'}</h2>
+                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 700, color: 'var(--text-primary)' }}>{CITY_FOCUS ? `Top Besties in ${LAUNCH_CITY.name}` : 'Top Besties'}</h2>
               </div>
-              <Link href="/browse" style={{ fontSize: '13px', color: '#A99ECC', textDecoration: 'none', marginBottom: '2px', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#D4AF37'} onMouseLeave={e=>e.target.style.color='#A99ECC'}>See all →</Link>
+              <Link href="/browse" style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none', marginBottom: '2px', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#D4AF37'} onMouseLeave={e=>e.target.style.color='var(--text-muted)'}>See all →</Link>
             </div>
             <div className="providers-grid">
               {topProviders.map((provider, i) => {
                 const badge = i === 0
                   ? { label: '👑 #1 Top Bestie', bg: 'linear-gradient(135deg, #D4AF37, #B8960C)', color: '#09090F', border: 'none' }
                   : i === 1
-                  ? { label: '🥈 #2', bg: 'rgba(155,147,192,0.2)', color: '#A99ECC', border: '1px solid rgba(155,147,192,0.3)' }
+                  ? { label: '🥈 #2', bg: 'rgba(155,147,192,0.2)', color: 'var(--text-muted)', border: '1px solid rgba(155,147,192,0.3)' }
                   : i === 2
                   ? { label: '🥉 #3', bg: 'rgba(180,100,40,0.2)', color: '#CD7F32', border: '1px solid rgba(180,100,40,0.3)' }
-                  : { label: `#${i + 1}`, bg: '#131323', color: '#A99ECC', border: '1px solid rgba(255,255,255,0.12)' }
+                  : { label: `#${i + 1}`, bg: 'var(--surface-1b)', color: 'var(--text-muted)', border: '1px solid var(--border)' }
                 return (
                   <div key={provider.id} style={{ position: 'relative', paddingTop: '16px', width: '100%', boxSizing: 'border-box' }}>
                     <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', zIndex: 10, background: badge.bg, border: badge.border, borderRadius: '999px', padding: '4px 14px', fontSize: '11px', fontWeight: 700, color: badge.color, whiteSpace: 'nowrap', maxWidth: 'calc(100% - 24px)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -509,8 +509,8 @@ export default function HomePage() {
           <div style={{ borderRadius: '28px', textAlign: 'center', background: 'linear-gradient(135deg, rgba(212,175,55,0.09) 0%, rgba(52,211,153,0.04) 100%)', border: '1px solid rgba(212,175,55,0.2)', padding: '56px 36px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', bottom: '-60px', right: '-60px', width: '260px', height: '260px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
             <div style={{ position: 'relative', zIndex: 1 }}>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 700, color: '#F0EAFF', marginBottom: '14px', lineHeight: 1.15 }}>Your next friend is one meetup away.</h2>
-              <p style={{ fontSize: '16px', color: '#A99ECC', marginBottom: '32px' }}>{CITY_FOCUS ? `Be a founding member — help build ${LAUNCH_CITY.possessive} social scene.` : 'Be a founding member — help build the first real-life friendship network.'}</p>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '14px', lineHeight: 1.15 }}>Your next friend is one meetup away.</h2>
+              <p style={{ fontSize: '16px', color: 'var(--text-muted)', marginBottom: '32px' }}>{CITY_FOCUS ? `Be a founding member — help build ${LAUNCH_CITY.possessive} social scene.` : 'Be a founding member — help build the first real-life friendship network.'}</p>
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                 <Link href="/bestie-type" className="btn-gold">Take the free 5-min test →</Link>
                 <Link href="/signup" className="btn-ghost">Join free</Link>
@@ -524,7 +524,7 @@ export default function HomePage() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{ borderTop: '1px solid #161628', padding: '32px 24px' }}>
+      <footer style={{ borderTop: '1px solid var(--surface-2)', padding: '32px 24px' }}>
         <div style={{ maxWidth: '980px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
           <span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37' }}>BESTIE</span>
           <div style={{ display: 'flex', gap: '20px', fontSize: '13px', flexWrap: 'wrap' }}>
@@ -532,7 +532,7 @@ export default function HomePage() {
               { href: '/browse', label: 'Browse' }, { href: '/crews', label: 'Crews' },
               { href: '/pulse', label: 'Pulse' }, { href: '/plans', label: 'Plans' }, { href: '#how-it-works', label: 'How It Works' }, { href: '/score-guide', label: 'Bestie Score' }, { href: '/terms', label: 'Terms' }, { href: '/privacy', label: 'Privacy' }, { href: '/signup', label: 'Join' },
             ].map(l => (
-              <Link key={l.label} href={l.href} style={{ color: '#6B6490', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#A99ECC'} onMouseLeave={e=>e.target.style.color='#6B6490'}>{l.label}</Link>
+              <Link key={l.label} href={l.href} style={{ color: 'var(--text-dim)', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='var(--text-muted)'} onMouseLeave={e=>e.target.style.color='var(--text-dim)'}>{l.label}</Link>
             ))}
           </div>
           <p style={{ fontSize: '12px', color: '#4A4268' }}>© 2026 Bestie. {CITY_FOCUS ? LAUNCH_CITY.full : 'Worldwide'}. 18+</p>

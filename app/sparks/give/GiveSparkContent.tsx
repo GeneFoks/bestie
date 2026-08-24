@@ -209,10 +209,10 @@ export default function GiveSparkContent() {
   if (loading) return <PageLoader fullscreen={false} message="Loading…" />
 
   if (!recipient) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ textAlign: 'center' }}>
         <p style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</p>
-        <p style={{ color: '#A99ECC' }}>User not found</p>
+        <p style={{ color: 'var(--text-muted)' }}>User not found</p>
         <Link href="/browse" style={{ color: '#D4AF37', fontSize: '14px' }}>Browse Besties</Link>
       </div>
     </div>
@@ -220,14 +220,14 @@ export default function GiveSparkContent() {
 
   // You need a minimum Bestie Score to give Sparks (≈ a complete profile).
   if ((myProfile?.bestie_score ?? 0) < MIN_SPARK_SCORE) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ textAlign: 'center', maxWidth: '380px', padding: '0 24px' }}>
         <p style={{ fontSize: '48px', marginBottom: '16px' }}>🔒</p>
-        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#F0EAFF', marginBottom: '8px' }}>Reach Bestie Score {MIN_SPARK_SCORE} to give Sparks</h2>
-        <p style={{ fontSize: '15px', color: '#A99ECC', marginBottom: '12px', lineHeight: 1.5 }}>
+        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '8px' }}>Reach Bestie Score {MIN_SPARK_SCORE} to give Sparks</h2>
+        <p style={{ fontSize: '15px', color: 'var(--text-muted)', marginBottom: '12px', lineHeight: 1.5 }}>
           Sparks are a trust signal, so only members with an established profile can give them. Complete your profile — photo, bio, city and your Bestie Type — to get there.
         </p>
-        <p style={{ fontSize: '13px', color: '#6B6490', marginBottom: '28px' }}>
+        <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '28px' }}>
           Your Bestie Score: <span style={{ color: '#D4AF37', fontWeight: 700 }}>{myProfile?.bestie_score ?? 0}</span> / {MIN_SPARK_SCORE}
         </p>
         <ButtonLink href="/profile/edit" variant="primary">
@@ -239,12 +239,12 @@ export default function GiveSparkContent() {
 
   // You can only Spark people you have a real connection with.
   if (!hasRelationship) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ textAlign: 'center', maxWidth: '380px', padding: '0 24px' }}>
         <p style={{ fontSize: '48px', marginBottom: '16px' }}>🤝</p>
-        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#F0EAFF', marginBottom: '8px' }}>Connect first to give Sparks</h2>
-        <p style={{ fontSize: '15px', color: '#A99ECC', marginBottom: '24px', lineHeight: 1.5 }}>
-          Sparks are a personal endorsement. You can Spark <span style={{ color: '#F0EAFF', fontWeight: 500 }}>{recipient.full_name}</span> once you’ve matched (you both knocked) or had a session together.
+        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '8px' }}>Connect first to give Sparks</h2>
+        <p style={{ fontSize: '15px', color: 'var(--text-muted)', marginBottom: '24px', lineHeight: 1.5 }}>
+          Sparks are a personal endorsement. You can Spark <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{recipient.full_name}</span> once you’ve matched (you both knocked) or had a session together.
         </p>
         <ButtonLink href={`/${recipient.username}`} variant="primary">
           Go to their profile to knock →
@@ -254,15 +254,15 @@ export default function GiveSparkContent() {
   )
 
   if (done) return (
-    <div style={{ minHeight: '100vh', background: '#09090F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ textAlign: 'center', maxWidth: '360px', padding: '0 24px' }}>
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>
           {sentTypes.map(t => SPARK_TYPES.find(s => s.id === t)?.emoji).join(' ')}
         </div>
-        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: '#F0EAFF', marginBottom: '8px' }}>
+        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: 'var(--text-primary)', marginBottom: '8px' }}>
           {sentTypes.length > 1 ? 'Sparks sent!' : 'Spark sent!'}
         </h2>
-        <p style={{ fontSize: '15px', color: '#A99ECC', marginBottom: '28px' }}>
+        <p style={{ fontSize: '15px', color: 'var(--text-muted)', marginBottom: '28px' }}>
           You gave <span style={{ color: '#D4AF37', fontWeight: 600 }}>
             {sentTypes.map(t => SPARK_TYPES.find(s => s.id === t)?.label).join(', ')}
           </span> to {recipient.full_name}.
@@ -280,36 +280,36 @@ export default function GiveSparkContent() {
   const canSelect = canGiveMore - selectedTypes.length
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <Link href={`/${recipient.username}`} style={{ fontSize: '14px', color: '#A99ECC', textDecoration: 'none' }}>← Back</Link>
+        <Link href={`/${recipient.username}`} style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none' }}>← Back</Link>
       </nav>
 
       <div style={{ maxWidth: '520px', margin: '0 auto', padding: '40px 24px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ width: '72px', height: '72px', borderRadius: '18px', overflow: 'hidden', background: '#1A1A2E', border: '2px solid rgba(212,175,55,0.3)', margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '72px', height: '72px', borderRadius: '18px', overflow: 'hidden', background: 'var(--surface-3)', border: '2px solid rgba(212,175,55,0.3)', margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {recipient.avatar_url
               ? <img src={recipient.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : <span style={{ fontSize: '28px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>{recipient.full_name?.[0]}</span>
             }
           </div>
-          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: '#F0EAFF', marginBottom: '4px' }}>Give Sparks ✨</h1>
-          <p style={{ fontSize: '14px', color: '#A99ECC' }}>to <span style={{ color: '#F0EAFF', fontWeight: 500 }}>{recipient.full_name}</span></p>
+          <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '4px' }}>Give Sparks ✨</h1>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>to <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{recipient.full_name}</span></p>
         </div>
 
         <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-          <div style={{ flex: 1, background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
+          <div style={{ flex: 1, background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
             <div style={{ fontSize: '22px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>{sparksLeft}</div>
-            <div style={{ fontSize: '11px', color: '#A99ECC', marginTop: '2px' }}>your balance</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>your balance</div>
           </div>
-          <div style={{ flex: 1, background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
-            <div style={{ fontSize: '22px', fontWeight: 700, color: canGiveMore === 0 ? '#FF6B6B' : '#F0EAFF', fontFamily: 'DM Serif Display, serif' }}>{canGiveMore}</div>
-            <div style={{ fontSize: '11px', color: '#A99ECC', marginTop: '2px' }}>left for this person</div>
+          <div style={{ flex: 1, background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: canGiveMore === 0 ? '#FF6B6B' : 'var(--text-primary)', fontFamily: 'DM Serif Display, serif' }}>{canGiveMore}</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>left for this person</div>
           </div>
-          <div style={{ flex: 1, background: selectedTypes.length > 0 ? 'rgba(212,175,55,0.1)' : '#111120', border: selectedTypes.length > 0 ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255,255,255,0.10)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
+          <div style={{ flex: 1, background: selectedTypes.length > 0 ? 'rgba(212,175,55,0.1)' : 'var(--surface-1)', border: selectedTypes.length > 0 ? '1px solid rgba(212,175,55,0.3)' : '1px solid var(--border)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
             <div style={{ fontSize: '22px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>{selectedTypes.length}</div>
-            <div style={{ fontSize: '11px', color: '#A99ECC', marginTop: '2px' }}>selected</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>selected</div>
           </div>
         </div>
 
@@ -348,14 +348,14 @@ export default function GiveSparkContent() {
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
                   padding: '12px 6px', borderRadius: '12px',
                   cursor: disabled ? 'not-allowed' : 'pointer',
-                  background: selected ? 'rgba(212,175,55,0.15)' : given ? 'rgba(52,211,153,0.06)' : '#131323',
-                  border: selected ? '1px solid rgba(212,175,55,0.5)' : given ? '1px solid rgba(52,211,153,0.25)' : '1px solid rgba(255,255,255,0.12)',
+                  background: selected ? 'rgba(212,175,55,0.15)' : given ? 'rgba(52,211,153,0.06)' : 'var(--surface-1b)',
+                  border: selected ? '1px solid rgba(212,175,55,0.5)' : given ? '1px solid rgba(52,211,153,0.25)' : '1px solid var(--border)',
                   opacity: disabled && !selected && !given ? 0.4 : 1,
                   transition: 'all 0.15s',
                 }}
               >
                 <span style={{ fontSize: '20px' }}>{s.emoji}</span>
-                <span style={{ fontSize: '10px', fontWeight: 500, color: selected ? '#D4AF37' : given ? '#34D399' : '#A99ECC', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
+                <span style={{ fontSize: '10px', fontWeight: 500, color: selected ? '#D4AF37' : given ? '#34D399' : 'var(--text-muted)', textAlign: 'center', lineHeight: 1.3 }}>{s.label}</span>
                 {given && <span style={{ fontSize: '9px', color: '#34D399' }}>{isRevoking ? '…' : '✓ tap to undo'}</span>}
                 {selected && !given && <span style={{ fontSize: '9px', color: '#D4AF37' }}>✓</span>}
               </button>
@@ -377,7 +377,7 @@ export default function GiveSparkContent() {
             background: selectedTypes.length > 0 && sparksLeft > 0 && canGiveMore > 0
               ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)'
               : 'rgba(255,255,255,0.10)',
-            color: selectedTypes.length > 0 && sparksLeft > 0 && canGiveMore > 0 ? '#09090F' : '#A99ECC',
+            color: selectedTypes.length > 0 && sparksLeft > 0 && canGiveMore > 0 ? '#09090F' : 'var(--text-muted)',
             border: 'none', cursor: selectedTypes.length > 0 && sparksLeft > 0 && canGiveMore > 0 ? 'pointer' : 'not-allowed',
             transition: 'all 0.2s',
           }}
@@ -387,7 +387,7 @@ export default function GiveSparkContent() {
             : 'Select Sparks'}
         </button>
 
-        <p style={{ fontSize: '12px', color: '#A99ECC', textAlign: 'center', marginTop: '16px' }}>
+        <p style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '16px' }}>
           Sparks are rare — you get 30 total, max 3 per person.
         </p>
       </div>
