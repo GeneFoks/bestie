@@ -131,12 +131,12 @@ export default function ScoreGuidePage() {
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '8px' }}>
             {[
-              { emoji: '💛', label: 'Kind' }, { emoji: '🎉', label: 'Fun' }, { emoji: '🔒', label: 'Reliable' },
-              { emoji: '💎', label: 'Genuine' }, { emoji: '🛡️', label: 'Safe' }, { emoji: '⚡', label: 'Energetic' },
-              { emoji: '👂', label: 'Good listener' }, { emoji: '🌟', label: 'Social' }, { emoji: '⏰', label: 'Punctual' }, { emoji: '🌊', label: 'Open' },
+              { id: 'kind', label: 'Kind' }, { id: 'fun', label: 'Fun' }, { id: 'reliable', label: 'Reliable' },
+              { id: 'genuine', label: 'Genuine' }, { id: 'safe', label: 'Safe' }, { id: 'energetic', label: 'Energetic' },
+              { id: 'good_listener', label: 'Good listener' }, { id: 'social', label: 'Social' }, { id: 'punctual', label: 'Punctual' }, { id: 'open', label: 'Open' },
             ].map(s => (
               <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', borderRadius: '10px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
-                <span style={{ fontSize: '16px' }}>{s.emoji}</span>
+                <SparkIcon type={s.id} size={15} strokeWidth={2} />
                 <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{s.label}</span>
               </div>
             ))}
