@@ -1,5 +1,5 @@
-'use client'
 // @ts-nocheck
+'use client'
 // Paid crew membership block.
 // - Captain (no payouts set up): "Set up payouts" → Stripe Connect onboarding
 // - Captain (payouts ready): set price + "what's included", toggle active
@@ -9,6 +9,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Wallet, Crown } from 'lucide-react'
+import { showToast } from '@/components/Toast'
 
 export default function CrewMembership({ crew }: { crew: any }) {
   const [me, setMe] = useState<string | null>(null)
@@ -57,7 +58,10 @@ export default function CrewMembership({ crew }: { crew: any }) {
     const j = await res.json()
     setBusy(false)
     if (j.url) window.location.href = j.url
-    else alert(j.error || 'Could not start payout setup')
+    else {
+      console.error('Payout onboarding failed:', j.error)
+      showToast("Couldn't start payout setup — try again", { type: 'error' })
+    }
   }
 
   const saveSettings = async () => {
@@ -69,7 +73,11 @@ export default function CrewMembership({ crew }: { crew: any }) {
       sub_active: active && !isNaN(p) && p > 0 && connectReady,
     }).eq('id', crew.id)
     setBusy(false)
-    if (error) { alert(error.message); return }
+    if (error) {
+      console.error('Saving membership settings failed:', error)
+      showToast("Couldn't save membership settings — try again", { type: 'error' })
+      return
+    }
     setSavedMsg('Saved ✓'); setTimeout(() => setSavedMsg(''), 2500)
   }
 
@@ -80,7 +88,10 @@ export default function CrewMembership({ crew }: { crew: any }) {
     const j = await res.json()
     setBusy(false)
     if (j.url) window.location.href = j.url
-    else alert(j.error || 'Could not start checkout')
+    else {
+      console.error('Subscribe checkout failed:', j.error)
+      showToast("Couldn't start checkout — try again", { type: 'error' })
+    }
   }
 
   const box: any = { background: '#111120', border: '1px solid rgba(212,175,55,0.22)', borderRadius: '18px', padding: '20px', marginBottom: '16px' }

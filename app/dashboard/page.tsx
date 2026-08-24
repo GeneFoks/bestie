@@ -19,7 +19,8 @@ import {
   UsersRound, Globe, Network, Search, Zap, Settings, Share2,
   TrendingUp, Hand, Star, Crown, PartyPopper, Target,
 } from 'lucide-react'
-import { buzz, celebrate } from '@/lib/celebrate'
+import { buzz, celebrate, celebrateMatch } from '@/lib/celebrate'
+import MatchCelebration from '@/components/MatchCelebration'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -40,6 +41,7 @@ export default function DashboardPage() {
   const [iAmFree, setIAmFree] = useState(false)
   const [togglingFree, setTogglingFree] = useState(false)
   const [freeInCityCount, setFreeInCityCount] = useState(0)
+  const [matchPartner, setMatchPartner] = useState<any>(null)
 
   useEffect(() => {
     const getUser = async () => {
@@ -109,6 +111,31 @@ export default function DashboardPage() {
       setReferredCount(refCount || 0)
       setPendingKnocks((knocksData || []).filter((k: any) => !k.is_mutual))
 
+      // Celebrate matches the user hasn't seen yet — the case where I knocked
+      // first and the other person knocked back while I was away (they saw the
+      // celebration in-app; I never did). The knocks table has no
+      // seen_celebration column, so a localStorage guard keeps this one-shot.
+      try {
+        const { data: mutuals } = await supabase
+          .from('knocks')
+          .select('created_at, receiver:users!receiver_id(id, full_name, username, avatar_url)')
+          .eq('sender_id', session.user.id)
+          .eq('is_mutual', true)
+          .order('created_at', { ascending: false })
+          .limit(20)
+        if (mutuals?.length) {
+          const celebrated: string[] = JSON.parse(localStorage.getItem('celebrated_matches') || '[]')
+          const partners = mutuals.map((m: any) => m.receiver).filter(Boolean)
+          const fresh = partners.filter((p: any) => !celebrated.includes(p.id))
+          if (fresh.length) {
+            // Mark ALL as celebrated (only one modal per visit — no spam),
+            // then celebrate the most recent one.
+            localStorage.setItem('celebrated_matches', JSON.stringify([...celebrated, ...fresh.map((p: any) => p.id)]))
+            setMatchPartner(fresh[0])
+          }
+        }
+      } catch {}
+
       // Find confirmed bookings without a memory yet
       if (confirmedBookings?.length) {
         const bookingIds = confirmedBookings.map((b: any) => b.id)
@@ -167,6 +194,12 @@ export default function DashboardPage() {
     })
     return () => subscription.unsubscribe()
   }, [])
+
+  // Fire the confetti only once the dashboard (and the match modal) is
+  // actually visible — not mid-fetch behind the page loader.
+  useEffect(() => {
+    if (!loading && matchPartner) celebrateMatch()
+  }, [loading, matchPartner])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -231,10 +264,10 @@ export default function DashboardPage() {
   const scoreLabel = score >= 800 ? 'Excellent' : score >= 600 ? 'Good' : score >= 400 ? 'Fair' : 'New'
 
   const boostItems = [
-    { Icon: Camera, label: 'Add profile photo', points: '+50 BS', done: !!profile?.avatar_url, href: '/profile/edit' },
-    { Icon: Pencil, label: 'Complete your bio', points: '+30 BS', done: !!profile?.bio, href: '/profile/edit' },
-    { Icon: MapPin, label: 'Add your city',    points: '+20 BS', done: !!profile?.city, href: '/profile/edit' },
-    { Icon: Target, label: 'Create an activity', points: '+50 BS', done: profile?.activity_packages?.length > 0, href: '/profile/edit' },
+    { Icon: Camera, label: 'Add profile photo', points: '+50 ★', done: !!profile?.avatar_url, href: '/profile/edit' },
+    { Icon: Pencil, label: 'Complete your bio', points: '+30 ★', done: !!profile?.bio, href: '/profile/edit' },
+    { Icon: MapPin, label: 'Add your city',    points: '+20 ★', done: !!profile?.city, href: '/profile/edit' },
+    { Icon: Target, label: 'Create an activity', points: '+50 ★', done: profile?.activity_packages?.length > 0, href: '/profile/edit' },
   ]
   const remainingBoost = boostItems.filter(i => !i.done)
   const totalNewCrewEvents = Object.values(crewNewEvents).reduce((s, n) => s + n, 0)
@@ -253,6 +286,14 @@ export default function DashboardPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      {matchPartner && (
+        <MatchCelebration
+          profileUsername={matchPartner.username}
+          profileName={matchPartner.full_name}
+          profileAvatarUrl={matchPartner.avatar_url}
+          onClose={() => setMatchPartner(null)}
+        />
+      )}
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -290,7 +331,7 @@ export default function DashboardPage() {
           </div>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             <CreateEventButton variant="compact" />
-            <button onClick={handleShare} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: copied ? 'rgba(57,255,20,0.15)' : 'linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0.08) 100%)', border: copied ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(212,175,55,0.3)', color: copied ? '#34D399' : '#D4AF37', cursor: 'pointer' }}>
+            <button onClick={handleShare} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: copied ? 'rgba(52,211,153,0.15)' : 'linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0.08) 100%)', border: copied ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(212,175,55,0.3)', color: copied ? '#34D399' : '#D4AF37', cursor: 'pointer' }}>
               {copied ? '✓ Copied!' : (<><Share2 size={14} strokeWidth={2} style={{ verticalAlign: 'middle', marginRight: '6px' }} />Share my Passport</>)}
             </button>
             <Link href={`/${profile?.username}`} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'var(--border)', border: '1px solid var(--border)', color: 'var(--text-primary)', textDecoration: 'none' }}>
@@ -317,7 +358,7 @@ export default function DashboardPage() {
                   <div style={{ flex: 1, minWidth: '140px' }}>
                     <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#D4AF37', marginBottom: '4px' }}>START HERE</p>
                     <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '4px', lineHeight: 1.2 }}>Discover your Bestie Type</h2>
-                    <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>12 questions — unlocks compatibility matching, shows on your passport</p>
+                    <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>5-minute test — unlocks compatibility matching, shows on your passport</p>
                   </div>
                   <span style={{ padding: '12px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: 'var(--bg)', whiteSpace: 'nowrap', flexShrink: 0 }}>Take the quiz →</span>
                 </div>
@@ -633,7 +674,7 @@ export default function DashboardPage() {
         </div>
 
         {remainingBoost.length > 0 && (
-          <div style={{ marginTop: '20px', background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(57,255,20,0.04) 100%)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '20px', padding: '24px' }}>
+          <div style={{ marginTop: '20px', background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(52,211,153,0.04) 100%)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '20px', padding: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}><TrendingUp size={20} color="#D4AF37" strokeWidth={1.8} /> Boost your Bestie Score</h3>
               <Link href="/score-guide" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>How it works →</Link>
@@ -675,7 +716,7 @@ export default function DashboardPage() {
               <Button onClick={handleShareRef} variant="primary" size="sm" style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
                 <Share2 size={15} strokeWidth={2.2} /> Share
               </Button>
-              <button onClick={handleCopyRef} style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: refCopied ? 'rgba(57,255,20,0.15)' : 'var(--overlay)', border: refCopied ? '1px solid rgba(57,255,20,0.3)' : '1px solid var(--border-strong)', color: refCopied ? '#34D399' : 'var(--text-muted)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+              <button onClick={handleCopyRef} style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: refCopied ? 'rgba(52,211,153,0.15)' : 'var(--overlay)', border: refCopied ? '1px solid rgba(52,211,153,0.3)' : '1px solid var(--border-strong)', color: refCopied ? '#34D399' : 'var(--text-muted)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
                 {refCopied ? '✓ Copied!' : 'Copy'}
               </button>
             </div>
@@ -683,7 +724,7 @@ export default function DashboardPage() {
         )}
 
         {remainingBoost.length === 0 && (
-          <div style={{ marginTop: '20px', background: 'rgba(57,255,20,0.05)', border: '1px solid rgba(57,255,20,0.15)', borderRadius: '20px', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ marginTop: '20px', background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: '20px', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(52,211,153,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><PartyPopper size={22} color="#34D399" strokeWidth={1.8} /></span>
               <div>

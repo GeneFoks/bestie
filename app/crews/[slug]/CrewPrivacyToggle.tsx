@@ -1,5 +1,5 @@
-'use client'
 // @ts-nocheck
+'use client'
 // Captain-only: flip a crew between Open (anyone can join) and Private
 // (join requires approval). Renders nothing for non-captains.
 
@@ -7,6 +7,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Lock, Globe } from 'lucide-react'
+import { showToast } from '@/components/Toast'
+import { confirmSheet } from '@/components/ConfirmSheet'
 
 export default function CrewPrivacyToggle({ crewId, captainId, isPublic }: { crewId: string; captainId: string; isPublic: boolean }) {
   const router = useRouter()
@@ -22,13 +24,18 @@ export default function CrewPrivacyToggle({ crewId, captainId, isPublic }: { cre
 
   const toggle = async () => {
     const next = !pub
-    if (!confirm(next
-      ? 'Make this crew Open? Anyone will be able to join instantly.'
-      : 'Make this crew Private? New members will need your approval to join.')) return
+    const ok = await confirmSheet(next
+      ? { title: 'Make this crew Open?', body: 'Anyone will be able to join instantly.', confirmLabel: 'Make Open' }
+      : { title: 'Make this crew Private?', body: 'New members will need your approval to join.', confirmLabel: 'Make Private' })
+    if (!ok) return
     setBusy(true)
     const { error } = await supabase.from('crews').update({ is_public: next }).eq('id', crewId)
     setBusy(false)
-    if (error) { alert(`Could not change: ${error.message}`); return }
+    if (error) {
+      console.error('Crew privacy change failed:', error)
+      showToast("Couldn't change crew privacy — try again", { type: 'error' })
+      return
+    }
     setPub(next)
     router.refresh()
   }

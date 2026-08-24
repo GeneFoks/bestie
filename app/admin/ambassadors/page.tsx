@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
+import { showToast } from '@/components/Toast'
 import { Crown, Check, X } from 'lucide-react'
 
 const GOLD = '#D4AF37'
@@ -30,7 +31,7 @@ export default function AdminAmbassadorsPage() {
   const decide = async (app: any, approve: boolean) => {
     setBusy(app.id)
     const { error } = await supabase.rpc('admin_decide_ambassador', { p_application_id: app.id, p_approve: approve })
-    if (error) alert(error.message)
+    if (error) { console.error(error); showToast("Couldn't update the application — try again", { type: 'error' }) }
     else setApps(prev => prev.map(a => a.id === app.id
       ? { ...a, status: approve ? 'approved' : 'rejected', applicant: { ...a.applicant, is_ambassador: approve } }
       : a))
@@ -86,7 +87,7 @@ export default function AdminAmbassadorsPage() {
                     <span style={{ minWidth: 0 }}>
                       <span style={{ display: 'block', fontSize: '14px', fontWeight: 700, color: '#F0EAFF' }}>{a.applicant?.full_name}</span>
                       <span style={{ display: 'block', fontSize: '12px', color: '#A99ECC' }}>
-                        @{a.applicant?.username}{a.applicant?.city ? ` · ${a.applicant.city}` : ''} · BS {a.applicant?.bestie_score}
+                        @{a.applicant?.username}{a.applicant?.city ? ` · ${a.applicant.city}` : ''} · ★ {a.applicant?.bestie_score}
                       </span>
                     </span>
                   </Link>

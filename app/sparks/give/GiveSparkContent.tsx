@@ -9,6 +9,7 @@ import { PageLoader } from '@/components/Loading'
 import { createNotification } from '@/lib/notifications'
 import { celebrate, buzz } from '@/lib/celebrate'
 import { ButtonLink } from '@/components/ui/Button'
+import { confirmSheet } from '@/components/ConfirmSheet'
 
 const SPARK_TYPES = [
   { id: 'kind', emoji: '💛', label: 'Kind' },
@@ -180,7 +181,13 @@ export default function GiveSparkContent() {
   const revokeSpark = async (type) => {
     if (!recipient || revoking) return
     const label = SPARK_TYPES.find(s => s.id === type)?.label || 'this Spark'
-    if (!window.confirm(`Take back “${label}”? It returns to your balance.`)) return
+    const ok = await confirmSheet({
+      title: `Take back “${label}”?`,
+      body: 'It returns to your balance.',
+      confirmLabel: 'Take back',
+      danger: true,
+    })
+    if (!ok) return
     setRevoking(type)
     setError(null)
     const { data, error: err } = await supabase.rpc('revoke_spark', {

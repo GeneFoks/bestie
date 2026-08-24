@@ -1,5 +1,5 @@
-﻿'use client'
-// @ts-nocheck
+﻿// @ts-nocheck
+'use client'
 // Shows "You'd vibe at X% match" based on shared traits + city + activities
 
 import { useState, useEffect } from 'react'
@@ -55,7 +55,7 @@ export default function CompatibilityScore({ profile }: Props) {
   const color = pct >= 80 ? '#34D399' : pct >= 60 ? '#D4AF37' : '#A99ECC'
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '14px', background: `rgba(${color === '#34D399' ? '57,255,20' : color === '#D4AF37' ? '212,175,55' : '155,147,192'},0.07)`, border: `1px solid ${color}25`, marginBottom: '16px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '14px', background: `rgba(${color === '#34D399' ? '52,211,153' : color === '#D4AF37' ? '212,175,55' : '155,147,192'},0.07)`, border: `1px solid ${color}25`, marginBottom: '16px' }}>
       <div style={{ width: '44px', height: '44px', borderRadius: '50%', border: `2px solid ${color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <span style={{ fontSize: '13px', fontWeight: 700, color, fontFamily: 'DM Serif Display, serif' }}>{pct}%</span>
       </div>

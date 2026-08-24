@@ -199,6 +199,54 @@ export default function GoingToPage() {
 
   const currentGroup = ACTIVITY_GROUPS.find(g => g.label === activeGroup)
 
+  // Composer card — rendered at the top normally, or inside the empty state when the feed is quiet
+  const composer = (
+    <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px', marginBottom: '24px' }}>
+      <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF', marginBottom: '16px' }}>What are you up to?</h3>
+
+      {/* Group tabs */}
+      <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '12px', marginBottom: '12px', scrollbarWidth: 'none' }}>
+        {ACTIVITY_GROUPS.map(g => (
+          <button key={g.label} onClick={() => setActiveGroup(g.label)} style={{ padding: '6px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: activeGroup === g.label ? 'rgba(212,175,55,0.15)' : '#131323', border: activeGroup === g.label ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', color: activeGroup === g.label ? '#D4AF37' : '#A99ECC' }}>
+            {g.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Activity grid for active group */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '16px' }}>
+        {currentGroup?.activities.map(a => {
+          const selected = form.activity_type === a.id
+          return (
+            <button key={a.id} onClick={() => setForm(f => ({ ...f, activity_type: a.id }))} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 6px', borderRadius: '12px', border: selected ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', background: selected ? 'rgba(212,175,55,0.1)' : '#111120', cursor: 'pointer' }}>
+              <ActivityIcon type={a.id} size={20} color={selected ? '#D4AF37' : '#A99ECC'} strokeWidth={1.8} />
+              <span style={{ fontSize: '10px', color: selected ? '#D4AF37' : '#A99ECC', textAlign: 'center', lineHeight: 1.3 }}>{a.label}</span>
+            </button>
+          )
+        })}
+      </div>
+
+      {form.activity_type && (
+        <div style={{ marginBottom: '12px', padding: '8px 14px', borderRadius: '10px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', fontSize: '13px', color: '#D4AF37' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>Selected: <ActivityIcon type={form.activity_type} size={14} color="#D4AF37" strokeWidth={1.8} /> {getActivity(form.activity_type)?.label}</span>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+        <input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="What's the vibe? (optional)" style={inputStyle} />
+        <input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="📍 Location (optional)" style={inputStyle} />
+        <div>
+          <label style={{ fontSize: '12px', color: '#A99ECC', display: 'block', marginBottom: '6px' }}>🗓 Date & time <span style={{ color: '#6B5EA8' }}>(optional)</span></label>
+          <input type="datetime-local" value={form.scheduled_at} onChange={e => setForm(f => ({ ...f, scheduled_at: e.target.value }))} style={{ ...inputStyle, colorScheme: 'dark' }} />
+        </div>
+      </div>
+
+      <button onClick={handlePost} disabled={posting || !form.activity_type} style={{ width: '100%', padding: '13px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: form.activity_type ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.10)', color: form.activity_type ? '#09090F' : '#A99ECC', border: 'none', cursor: form.activity_type ? 'pointer' : 'not-allowed' }}>
+        {posting ? 'Posting...' : '⚡ Post my status'}
+      </button>
+    </div>
+  )
+
   return (
     <div style={{ minHeight: '100vh', background: '#09090F', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'rgba(8,8,16,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
@@ -213,7 +261,7 @@ export default function GoingToPage() {
         </div>
 
         {current ? (
-          <div style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(57,255,20,0.05) 100%)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: '20px', padding: '20px', marginBottom: '24px' }}>
+          <div style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(52,211,153,0.05) 100%)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: '20px', padding: '20px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
               <p style={{ fontSize: '12px', fontWeight: 600, color: '#D4AF37', letterSpacing: '1px' }}>YOUR STATUS</p>
               <span style={{ fontSize: '12px', color: '#A99ECC' }}>⏱ {getTimeLeft(current.expires_at)}</span>
@@ -231,52 +279,7 @@ export default function GoingToPage() {
               Remove status
             </button>
           </div>
-        ) : (
-          <div style={{ background: '#111120', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '24px', marginBottom: '24px' }}>
-            <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF', marginBottom: '16px' }}>What are you up to?</h3>
-
-            {/* Group tabs */}
-            <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '12px', marginBottom: '12px', scrollbarWidth: 'none' }}>
-              {ACTIVITY_GROUPS.map(g => (
-                <button key={g.label} onClick={() => setActiveGroup(g.label)} style={{ padding: '6px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: activeGroup === g.label ? 'rgba(212,175,55,0.15)' : '#131323', border: activeGroup === g.label ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', color: activeGroup === g.label ? '#D4AF37' : '#A99ECC' }}>
-                  {g.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Activity grid for active group */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '16px' }}>
-              {currentGroup?.activities.map(a => {
-                const selected = form.activity_type === a.id
-                return (
-                  <button key={a.id} onClick={() => setForm(f => ({ ...f, activity_type: a.id }))} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 6px', borderRadius: '12px', border: selected ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.10)', background: selected ? 'rgba(212,175,55,0.1)' : '#111120', cursor: 'pointer' }}>
-                    <ActivityIcon type={a.id} size={20} color={selected ? '#D4AF37' : '#A99ECC'} strokeWidth={1.8} />
-                    <span style={{ fontSize: '10px', color: selected ? '#D4AF37' : '#A99ECC', textAlign: 'center', lineHeight: 1.3 }}>{a.label}</span>
-                  </button>
-                )
-              })}
-            </div>
-
-            {form.activity_type && (
-              <div style={{ marginBottom: '12px', padding: '8px 14px', borderRadius: '10px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', fontSize: '13px', color: '#D4AF37' }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>Selected: <ActivityIcon type={form.activity_type} size={14} color="#D4AF37" strokeWidth={1.8} /> {getActivity(form.activity_type)?.label}</span>
-              </div>
-            )}
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
-              <input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="What's the vibe? (optional)" style={inputStyle} />
-              <input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="📍 Location (optional)" style={inputStyle} />
-              <div>
-                <label style={{ fontSize: '12px', color: '#A99ECC', display: 'block', marginBottom: '6px' }}>🗓 Date & time <span style={{ color: '#6B5EA8' }}>(optional)</span></label>
-                <input type="datetime-local" value={form.scheduled_at} onChange={e => setForm(f => ({ ...f, scheduled_at: e.target.value }))} style={{ ...inputStyle, colorScheme: 'dark' }} />
-              </div>
-            </div>
-
-            <button onClick={handlePost} disabled={posting || !form.activity_type} style={{ width: '100%', padding: '13px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: form.activity_type ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.10)', color: form.activity_type ? '#09090F' : '#A99ECC', border: 'none', cursor: form.activity_type ? 'pointer' : 'not-allowed' }}>
-              {posting ? 'Posting...' : '⚡ Post my status'}
-            </button>
-          </div>
-        )}
+        ) : stories.length > 0 ? composer : null}
 
         <div>
           <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: '#F0EAFF', marginBottom: '16px' }}>
@@ -285,12 +288,23 @@ export default function GoingToPage() {
           </h3>
 
           {stories.length === 0 ? (
-            <EmptyState
-              Icon={MapPin}
-              title="Nobody's out yet"
-              description="Share what you're up to — others see it in their feed and may want to join."
-              accent="gold"
-            />
+            current ? (
+              <EmptyState
+                Icon={MapPin}
+                title="Nobody's out yet"
+                description="Your status is live — others will see it in their feed and may want to join."
+                accent="gold"
+              />
+            ) : (
+              <div>
+                <div style={{ textAlign: 'center', padding: '8px 0 20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}><MapPin size={36} color="#A99ECC" strokeWidth={1.6} /></div>
+                  <p style={{ fontSize: '16px', fontWeight: 700, color: '#F0EAFF', marginBottom: '4px' }}>Nobody&rsquo;s out — you go first</p>
+                  <p style={{ fontSize: '13px', color: '#A99ECC' }}>Post what you&rsquo;re up to below — it shows here for 24h so nearby Besties can join you.</p>
+                </div>
+                {composer}
+              </div>
+            )
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {stories.map(story => {
@@ -318,7 +332,7 @@ export default function GoingToPage() {
                       {story.location && <p style={{ fontSize: '12px', color: '#A99ECC', marginBottom: '4px' }}>📍 {story.location}</p>}
                       {story.scheduled_at && <p style={{ fontSize: '12px', color: '#D4AF37', marginBottom: '8px' }}>🗓 {formatDate(story.scheduled_at)}</p>}
                       <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                        <button onClick={() => handleJoin(story)} disabled={alreadyJoined || joiningId === story.id} style={{ fontSize: '12px', fontWeight: 600, padding: '7px 16px', borderRadius: '8px', background: alreadyJoined ? 'rgba(57,255,20,0.1)' : 'rgba(212,175,55,0.1)', border: alreadyJoined ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(212,175,55,0.2)', color: alreadyJoined ? '#34D399' : '#D4AF37', cursor: alreadyJoined ? 'default' : 'pointer' }}>
+                        <button onClick={() => handleJoin(story)} disabled={alreadyJoined || joiningId === story.id} style={{ fontSize: '12px', fontWeight: 600, padding: '7px 16px', borderRadius: '8px', background: alreadyJoined ? 'rgba(52,211,153,0.1)' : 'rgba(212,175,55,0.1)', border: alreadyJoined ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(212,175,55,0.2)', color: alreadyJoined ? '#34D399' : '#D4AF37', cursor: alreadyJoined ? 'default' : 'pointer' }}>
                           {alreadyJoined ? '✓ Request sent' : joiningId === story.id ? 'Sending...' : '⚡ Join them'}
                         </button>
                         <Link href={`/messages?to=${story.users?.username}`} style={{ fontSize: '12px', fontWeight: 600, padding: '7px 16px', borderRadius: '8px', background: '#131323', border: '1px solid rgba(255,255,255,0.12)', color: '#A99ECC', textDecoration: 'none' }}>

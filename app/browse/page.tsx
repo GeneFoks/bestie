@@ -101,6 +101,7 @@ export default function BrowsePage() {
   const [myProfile, setMyProfile] = useState(null)
   const [compatMode, setCompatMode] = useState(false)
   const [justMatched, setJustMatched] = useState(false)
+  const [inviteCopied, setInviteCopied] = useState(false)
 
   const [blockedIds, setBlockedIds] = useState<string[]>([])
 
@@ -115,10 +116,15 @@ export default function BrowsePage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         const [{ data: profile }, { data: blocks }] = await Promise.all([
-          supabase.from('users').select('id, eterotype, eterotype_name, bestie_type_completed').eq('id', user.id).single(),
+          supabase.from('users').select('id, username, city, eterotype, eterotype_name, bestie_type_completed').eq('id', user.id).single(),
           supabase.from('user_blocks').select('blocked_id').eq('blocker_id', user.id),
         ])
-        if (profile?.eterotype) { setMyProfile(profile); setCompatMode(true) }
+        // Store the profile for every logged-in user (invite link + self-filter
+        // need it), but only turn compatibility on when they have a type.
+        if (profile) {
+          setMyProfile(profile)
+          if (profile.eterotype) setCompatMode(true)
+        }
         if (blocks) setBlockedIds(blocks.map(b => b.blocked_id))
       }
     }
@@ -186,13 +192,13 @@ export default function BrowsePage() {
         })
       }
 
-      if (myProfile && compatMode) {
+      // Never show the current user their own card — even without an eterotype.
+      result = result.filter(p => p.id !== myProfile?.id)
+
+      if (myProfile?.eterotype && compatMode) {
         result = result
-          .filter(p => p.id !== myProfile.id)
           .map(p => ({ ...p, _compat: compatScore(myProfile, p) }))
           .sort((a, b) => b._compat - a._compat || b.bestie_score - a.bestie_score)
-      } else {
-        result = result.filter(p => p.id !== myProfile?.id)
       }
 
       setProviders(result.slice(0, 200))
@@ -200,6 +206,19 @@ export default function BrowsePage() {
     }
     fetchProviders()
   }, [search, filter, compatMode, myProfile])
+
+  // Native share sheet when available (mobile); otherwise copy the invite
+  // link and flash a "copied" state on the button.
+  const handleInvite = async () => {
+    const url = myProfile?.username ? `https://bestiehere.com/invite/${myProfile.username}` : 'https://bestiehere.com'
+    const text = `Be my first Bestie — real people, real moments. Join with my link and we both get +10 Sparks ⚡`
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try { await navigator.share({ title: 'Join me on Bestie', text, url }); return } catch { return }
+    }
+    try { await navigator.clipboard.writeText(`${text}\n${url}`) } catch {}
+    setInviteCopied(true)
+    setTimeout(() => setInviteCopied(false), 2000)
+  }
 
   const getCompatLabel = (p) => {
     if (!myProfile || !compatMode || !p._compat) return null
@@ -233,7 +252,7 @@ export default function BrowsePage() {
               🧭 Browse all offers →
             </Link>
           </div>
-          {myProfile && (
+          {myProfile?.eterotype && (
             <button onClick={() => setCompatMode(!compatMode)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', background: compatMode ? 'rgba(52,211,153,0.12)' : 'var(--surface-1b)', border: compatMode ? '1px solid rgba(52,211,153,0.35)' : '1px solid var(--border)', color: compatMode ? '#34D399' : 'var(--text-muted)', transition: 'all 0.2s' }}>
               <Sparkles size={14} strokeWidth={1.8} />
               {compatMode ? 'Compatibility ON' : 'Compatibility'}
@@ -241,10 +260,10 @@ export default function BrowsePage() {
           )}
         </div>
 
-        {justMatched && myProfile && (
+        {justMatched && myProfile?.eterotype && !loading && providers.length > 0 && (
           <div style={{ marginBottom: '16px', padding: '18px 20px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(212,175,55,0.14) 0%, rgba(155,127,255,0.10) 100%)', border: '1px solid rgba(212,175,55,0.3)' }}>
             <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>
-              You're <span style={{ color: '#D4AF37' }}>🧭 {myProfile.eterotype_name || myProfile.eterotype}</span> 🎉
+              Your Bestie Type is <span style={{ color: '#D4AF37' }}>🧭 {myProfile.eterotype_name || myProfile.eterotype}</span> 🎉
             </p>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
               Here are the people you'll naturally click with. Open a profile and send a <b style={{ color: 'var(--text-primary)' }}>knock 👋</b> — an anonymous hello. If they knock back, it's a match.
@@ -252,15 +271,15 @@ export default function BrowsePage() {
           </div>
         )}
 
-        {myProfile && compatMode && !justMatched && (
-          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(57,255,20,0.06)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '13px', color: 'var(--text-muted)' }}>
-            Showing people compatible with your eterotype <span style={{ color: '#34D399', fontWeight: 600 }}>🧭 {myProfile.eterotype_name || myProfile.eterotype}</span> — best matches first
+        {myProfile?.eterotype && compatMode && !justMatched && (
+          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.2)', fontSize: '13px', color: 'var(--text-muted)' }}>
+            Showing people compatible with your Bestie Type <span style={{ color: '#34D399', fontWeight: 600 }}>🧭 {myProfile.eterotype_name || myProfile.eterotype}</span> — best matches first
           </div>
         )}
 
-        {!myProfile && (
+        {!myProfile?.eterotype && (
           <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', fontSize: '13px', color: 'var(--text-muted)' }}>
-            <Link href="/bestie-type" style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>Take the eterotype test →</Link> and we'll show the most compatible people first
+            <Link href="/bestie-type" style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>🧭 Take the Bestie Type test →</Link> and we'll show the most compatible people first
           </div>
         )}
 
@@ -320,6 +339,25 @@ export default function BrowsePage() {
               )
             })}
           </div>
+        ) : justMatched && myProfile?.eterotype && !(search || filter !== 'all' || activeGroup) ? (
+          /* Pioneer moment — they just got their type but nobody else is here yet */
+          <div style={{ padding: '44px 28px', borderRadius: '20px', background: 'linear-gradient(135deg, rgba(212,175,55,0.14) 0%, rgba(155,127,255,0.10) 100%)', border: '1px solid rgba(212,175,55,0.3)', textAlign: 'center' }}>
+            <div style={{ fontSize: '40px', marginBottom: '12px' }}>🧭</div>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 8px' }}>
+              You're the first <span style={{ color: '#D4AF37' }}>{myProfile.eterotype_name || myProfile.eterotype}</span> {myProfile.city ? `in ${myProfile.city}` : 'around here'}
+            </h2>
+            <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: '0 0 22px', lineHeight: 1.6 }}>
+              Founding Besties set the tone — here's how to start:
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <button onClick={handleInvite} style={{ padding: '11px 22px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', whiteSpace: 'nowrap' }}>
+                {inviteCopied ? 'Link copied ✓' : 'Invite a friend (+10 ⚡ each)'}
+              </button>
+              <Link href="/group-sessions/new" style={{ padding: '11px 22px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'var(--overlay)', border: '1px solid var(--border-strong)', color: 'var(--text-muted)', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                Host a session
+              </Link>
+            </div>
+          </div>
         ) : (
           <EmptyState
             Icon={Search}
@@ -327,7 +365,12 @@ export default function BrowsePage() {
             description={search || filter !== 'all' || activeGroup ? 'Try a different search or clear filters to see everyone.' : 'Be the first Bestie in your city — invite a friend or fill out your activities.'}
             primaryCTA={search || filter !== 'all' || activeGroup
               ? { label: 'Clear filters', onClick: () => { setSearch(''); setFilter('all'); setActiveGroup(null) } }
-              : { label: 'Add your activities', href: '/profile/edit' }}
+              : myProfile
+                ? { label: inviteCopied ? 'Link copied ✓' : 'Invite a friend (+10 ⚡)', onClick: handleInvite }
+                : { label: 'Add your activities', href: '/profile/edit' }}
+            secondaryCTA={!(search || filter !== 'all' || activeGroup) && myProfile
+              ? { label: 'Add your activities', href: '/profile/edit' }
+              : undefined}
             accent="gold"
           />
         )}

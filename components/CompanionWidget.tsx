@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { X, Send, Settings } from 'lucide-react'
 
 const COMPANION_STYLES = {
-  spark: { color: '#39FF14', glow: 'rgba(57,255,20,0.3)', bg: 'rgba(57,255,20,0.06)', border: 'rgba(57,255,20,0.25)', emoji: '⚡' },
+  spark: { color: '#34D399', glow: 'rgba(52,211,153,0.3)', bg: 'rgba(52,211,153,0.06)', border: 'rgba(52,211,153,0.25)', emoji: '⚡' },
   sage:  { color: '#D4AF37', glow: 'rgba(212,175,55,0.3)', bg: 'rgba(212,175,55,0.06)', border: 'rgba(212,175,55,0.25)', emoji: '🔮' },
   nova:  { color: '#7B8FF5', glow: 'rgba(123,143,245,0.3)', bg: 'rgba(123,143,245,0.06)', border: 'rgba(123,143,245,0.25)', emoji: '🌀' },
 }
@@ -334,8 +334,8 @@ export default function CompanionWidget() {
 
               <button onClick={saveSettings} disabled={savingSettings} style={{
                 width: '100%', padding: '13px', borderRadius: '14px', fontSize: '14px', fontWeight: 700,
-                background: settingsSaved ? 'rgba(57,255,20,0.15)' : `${COMPANION_STYLES[editType].color}`,
-                border: settingsSaved ? '1px solid rgba(57,255,20,0.4)' : 'none',
+                background: settingsSaved ? 'rgba(52,211,153,0.15)' : `${COMPANION_STYLES[editType].color}`,
+                border: settingsSaved ? '1px solid rgba(52,211,153,0.4)' : 'none',
                 color: settingsSaved ? '#34D399' : '#09090F',
                 cursor: savingSettings ? 'not-allowed' : 'pointer',
                 fontFamily: 'Plus Jakarta Sans, sans-serif', transition: 'all 0.2s',
@@ -439,8 +439,8 @@ export default function CompanionWidget() {
                           <p style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', marginBottom: '2px' }}>{q.title}</p>
                           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                             {q.xp_reward > 0 && <span style={{ fontSize: '11px', color: style.color, fontWeight: 600 }}>+{q.xp_reward} XP</span>}
-                            {q.bs_reward > 0 && <span style={{ fontSize: '11px', color: '#D4AF37', fontWeight: 600 }}>+{q.bs_reward} BS</span>}
-                            {q.sparks_reward > 0 && <span style={{ fontSize: '11px', color: '#39FF14', fontWeight: 600 }}>+{q.sparks_reward} ⚡</span>}
+                            {q.bs_reward > 0 && <span style={{ fontSize: '11px', color: '#D4AF37', fontWeight: 600 }}>+{q.bs_reward} ★</span>}
+                            {q.sparks_reward > 0 && <span style={{ fontSize: '11px', color: '#34D399', fontWeight: 600 }}>+{q.sparks_reward} ⚡</span>}
                           </div>
                         </div>
                       </div>

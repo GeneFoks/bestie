@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import ProfileNav from '@/components/ProfileNav'
-import BottomNav from '@/components/BottomNav'
 import { PageLoader } from '@/components/Loading'
 import { EmptyState } from '@/components/EmptyState'
 import { ActivityIcon } from '@/lib/activityIcons'
@@ -147,7 +146,6 @@ export default function OffersPage() {
           </div>
         )}
       </div>
-      <BottomNav />
     </div>
   )
 }

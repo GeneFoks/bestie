@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
 import { ImagePlus, X } from 'lucide-react'
 import LocationPicker from '@/components/LocationPicker'
+import { showToast } from '@/components/Toast'
 
 const ACTIVITY_GROUPS = [
   { label: '🏃 Active & Outdoors', activities: [
@@ -112,7 +113,8 @@ export default function EditGroupSessionPage({ params }: { params: { id: string 
       body: JSON.stringify({ scope: 'user', returnPath: `/group-sessions/${params.id}/edit` }),
     }).then(r => r.json()).catch(() => null)
     if (res?.url) { window.location.href = res.url; return }
-    alert(res?.error || 'Could not start payout setup. Please try again soon.')
+    console.error('Payout setup error:', res?.error)
+    showToast("Couldn't start payout setup — try again soon", { type: 'error' })
     setConnecting(false)
   }
 
@@ -139,7 +141,7 @@ export default function EditGroupSessionPage({ params }: { params: { id: string 
       const { error: upErr } = await supabase.storage.from('group-session-covers').upload(path, coverFile, { contentType: coverFile.type, upsert: false })
       if (upErr) {
         console.error('Cover upload failed:', upErr)
-        alert(`Cover upload failed: ${upErr.message}. Check that the "group-session-covers" Storage bucket exists and is public.`)
+        showToast("Couldn't upload the cover image — try again", { type: 'error' })
         setSaving(false)
         return
       }

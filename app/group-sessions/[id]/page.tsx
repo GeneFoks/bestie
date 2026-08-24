@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
 import { ActivityIcon } from '@/lib/activityIcons'
+import { showToast } from '@/components/Toast'
+import { confirmSheet } from '@/components/ConfirmSheet'
 
 export default function GroupSessionPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -66,7 +68,10 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
       const data = await res.json()
       setJoining(false)
       if (data.url) window.location.href = data.url
-      else alert(data.error || 'Could not start checkout')
+      else {
+        console.error('Checkout error:', data.error)
+        showToast("Couldn't start checkout — try again", { type: 'error' })
+      }
       return
     }
 
@@ -91,19 +96,38 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
 
   const handleTransferHost = async (p: any) => {
     const name = p.user?.full_name?.split(' ')[0] || 'this participant'
-    if (!confirm(`Make ${name} the host? You'll stay in the event as a participant, but they'll get full control (edit, delete, hosting).`)) return
+    const ok = await confirmSheet({
+      title: `Make ${name} the host?`,
+      body: "You'll stay in the event as a participant, but they'll get full control (edit, delete, hosting).",
+      confirmLabel: 'Make host',
+    })
+    if (!ok) return
     const { error } = await supabase.rpc('transfer_group_session_host', {
       p_session_id: params.id,
       p_new_host_id: p.user_id,
     })
-    if (error) { alert(`Could not transfer: ${error.message}`); return }
+    if (error) {
+      console.error('Transfer host error:', error)
+      showToast("Couldn't transfer hosting — try again", { type: 'error' })
+      return
+    }
     load()
   }
 
   const handleDelete = async () => {
-    if (!confirm('Delete this event permanently? This cannot be undone.')) return
+    const ok = await confirmSheet({
+      title: 'Delete this event?',
+      body: 'This cannot be undone.',
+      confirmLabel: 'Delete',
+      danger: true,
+    })
+    if (!ok) return
     const { error } = await supabase.from('group_sessions').delete().eq('id', params.id)
-    if (error) { alert(`Could not delete: ${error.message}`); return }
+    if (error) {
+      console.error('Delete session error:', error)
+      showToast("Couldn't delete the event — try again", { type: 'error' })
+      return
+    }
     router.push('/events')
   }
 
@@ -136,6 +160,10 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
   const statusColor = isCancelled ? '#FF6B6B' : isCompleted ? 'var(--text-muted)' : isFull ? '#FF6B35' : '#34D399'
   const statusLabel = isCancelled ? 'Cancelled' : isCompleted ? 'Completed' : isFull ? 'Full' : 'Open'
 
+  const price = Number(session.ticket_price || 0)
+  // Sticky conversion bar — only for visitors who can actually join.
+  const showStickyCTA = !isHost && !isParticipant && !isFull && !isPast && !isCancelled && !isCompleted
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
@@ -143,7 +171,7 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
         <Link href="/dashboard" style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid var(--border)' }}>← Dashboard</Link>
       </nav>
 
-      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '40px 24px' }}>
+      <div style={{ maxWidth: '600px', margin: '0 auto', padding: showStickyCTA ? '40px 24px 130px' : '40px 24px' }}>
 
         {/* Header card */}
         <div style={{ background: 'linear-gradient(135deg, var(--surface-1) 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '24px', overflow: 'hidden', marginBottom: '20px' }}>
@@ -172,7 +200,7 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
                   🎟 ${Number(session.ticket_price)}
                 </span>
               )}
-              <span style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px', borderRadius: '999px', background: `rgba(${statusColor === '#34D399' ? '57,255,20' : statusColor === '#FF6B6B' ? '255,107,107' : statusColor === '#FF6B35' ? '255,107,53' : '155,147,192'},0.12)`, border: `1px solid ${statusColor}40`, color: statusColor }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px', borderRadius: '999px', background: `rgba(${statusColor === '#34D399' ? '52,211,153' : statusColor === '#FF6B6B' ? '255,107,107' : statusColor === '#FF6B35' ? '255,107,53' : '155,147,192'},0.12)`, border: `1px solid ${statusColor}40`, color: statusColor }}>
                 {statusLabel}
               </span>
             </span>
@@ -213,7 +241,7 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
               </div>
               <div>
                 <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{host.full_name}</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Host · BS {host.bestie_score || 0}</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Host · ★ {host.bestie_score || 0}</p>
               </div>
               <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#D4AF37' }}>👑 Host</span>
             </Link>
@@ -238,7 +266,7 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
                 </>
               ) : isParticipant ? (
                 <>
-                  <div style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', color: '#34D399', textAlign: 'center' }}>
+                  <div style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: '#34D399', textAlign: 'center' }}>
                     ✓ You're in!
                   </div>
                   <button onClick={handleLeave} style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: 'var(--surface-1b)', border: '1px solid var(--border-strong)', color: 'var(--text-muted)', cursor: 'pointer' }}>
@@ -300,6 +328,34 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
           </div>
         )}
       </div>
+
+      {/* Sticky conversion CTA */}
+      {showStickyCTA && (
+        <>
+          <style>{`
+            @keyframes ctaSlideUp {
+              from { transform: translateY(100%); opacity: 0; }
+              to { transform: translateY(0); opacity: 1; }
+            }
+          `}</style>
+          <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 60, background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid var(--border)', padding: '12px 20px calc(12px + env(safe-area-inset-bottom))', animation: 'ctaSlideUp 0.3s ease' }}>
+            <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{ flexShrink: 0 }}>
+                <p style={{ fontSize: '17px', fontWeight: 800, color: price > 0 ? '#D4AF37' : '#34D399', lineHeight: 1.2, margin: 0 }}>
+                  {price > 0 ? `$${price}` : 'Free'}
+                </p>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', whiteSpace: 'nowrap', margin: 0 }}>
+                  {spotsLeft} spot{spotsLeft !== 1 ? 's' : ''} left
+                </p>
+              </div>
+              <button onClick={handleJoin} disabled={joining}
+                style={{ flex: 1, padding: '14px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', border: 'none', color: '#09090F', cursor: joining ? 'wait' : 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {joining ? 'Joining...' : price > 0 ? `🎟 Get a ticket — $${price}` : '🎉 Join session'}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

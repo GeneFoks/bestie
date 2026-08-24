@@ -223,7 +223,7 @@ export default function SessionsPage() {
                   const isSeeker = s.seeker_id === userId
                   const other = isSeeker ? s.provider : s.seeker
                   return (
-                    <div key={s.id} style={{ background: 'linear-gradient(135deg, rgba(57,255,20,0.06) 0%, #111120 100%)', border: '1px solid rgba(57,255,20,0.25)', borderRadius: '20px', padding: '20px', marginBottom: '12px' }}>
+                    <div key={s.id} style={{ background: 'linear-gradient(135deg, rgba(52,211,153,0.06) 0%, #111120 100%)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: '20px', padding: '20px', marginBottom: '12px' }}>
                       <div style={{ display: 'flex', gap: '14px', alignItems: 'center', marginBottom: '16px' }}>
                         <div style={{ width: '48px', height: '48px', borderRadius: '14px', overflow: 'hidden', background: '#1A1A2E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           {other?.avatar_url ? <img src={other.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{other?.full_name?.[0]}</span>}
@@ -300,7 +300,7 @@ export default function SessionsPage() {
                           </p>
                           {date && (
                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                              <span style={{ fontSize: '12px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', background: date.isToday ? 'rgba(57,255,20,0.1)' : 'rgba(212,175,55,0.1)', border: date.isToday ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(212,175,55,0.2)', color: date.isToday ? '#34D399' : '#D4AF37' }}>
+                              <span style={{ fontSize: '12px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', background: date.isToday ? 'rgba(52,211,153,0.1)' : 'rgba(212,175,55,0.1)', border: date.isToday ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(212,175,55,0.2)', color: date.isToday ? '#34D399' : '#D4AF37' }}>
                                 {date.label}
                               </span>
                               <span style={{ fontSize: '12px', color: '#A99ECC' }}>{date.dateStr} · {date.timeStr}</span>
@@ -314,11 +314,11 @@ export default function SessionsPage() {
                         </Link>
                         <CallButton toUserId={other?.id} toUserName={other?.full_name} bookingId={s.id} variant="full" />
                         {!myConfirm ? (
-                          <button onClick={() => confirmSession(s)} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', color: '#34D399', cursor: 'pointer' }}>
+                          <button onClick={() => confirmSession(s)} style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: '#34D399', cursor: 'pointer' }}>
                             ✓ Session happened
                           </button>
                         ) : (
-                          <div style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(57,255,20,0.04)', border: '1px solid rgba(57,255,20,0.1)', color: '#A99ECC', textAlign: 'center' }}>
+                          <div style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(52,211,153,0.04)', border: '1px solid rgba(52,211,153,0.1)', color: '#A99ECC', textAlign: 'center' }}>
                             ✓ Waiting for them
                           </div>
                         )}
@@ -358,7 +358,7 @@ export default function SessionsPage() {
                           ⭐ Rate this session →
                         </Link>
                       ) : !myConfirm ? (
-                        <button onClick={() => confirmSession(s)} style={{ width: '100%', padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', color: '#34D399', cursor: 'pointer' }}>
+                        <button onClick={() => confirmSession(s)} style={{ width: '100%', padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: '#34D399', cursor: 'pointer' }}>
                           ✓ Confirm session happened
                         </button>
                       ) : (

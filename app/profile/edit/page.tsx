@@ -369,7 +369,7 @@ export default function EditProfilePage() {
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <div style={{ display: 'flex', gap: '12px' }}>
           <Link href="/dashboard" style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid var(--border)' }}>← Dashboard</Link>
-          <button onClick={handleSave} disabled={saving} style={{ fontSize: '14px', fontWeight: 600, padding: '8px 20px', borderRadius: '10px', background: saved ? 'rgba(57,255,20,0.15)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: saved ? '#34D399' : 'var(--bg)', border: saved ? '1px solid rgba(57,255,20,0.3)' : 'none', cursor: 'pointer' }}>
+          <button onClick={handleSave} disabled={saving} style={{ fontSize: '14px', fontWeight: 600, padding: '8px 20px', borderRadius: '10px', background: saved ? 'rgba(52,211,153,0.15)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: saved ? '#34D399' : 'var(--bg)', border: saved ? '1px solid rgba(52,211,153,0.3)' : 'none', cursor: 'pointer' }}>
             {saving ? 'Saving...' : saved ? '✓ Saved!' : 'Save changes'}
           </button>
         </div>
@@ -686,7 +686,7 @@ export default function EditProfilePage() {
           <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>Shows your approximate location (city-level, ~1km) so others nearby can find you. Requires your city to be set.</p>
           {locationShared ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ flex: 1, padding: '10px 14px', borderRadius: '10px', background: 'rgba(57,255,20,0.08)', border: '1px solid rgba(57,255,20,0.2)', fontSize: '13px', color: '#34D399', fontWeight: 600 }}>
+              <div style={{ flex: 1, padding: '10px 14px', borderRadius: '10px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', fontSize: '13px', color: '#34D399', fontWeight: 600 }}>
                 ✓ Visible on map
               </div>
               <button onClick={removeLocation} style={{ padding: '10px 14px', borderRadius: '10px', fontSize: '13px', background: 'var(--surface-1b)', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer' }}>
@@ -741,7 +741,7 @@ export default function EditProfilePage() {
         </div>
 
         {/* Companion settings */}
-        <div style={{ background: 'var(--surface-1)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(57,255,20,0.15)', marginBottom: '16px' }}>
+        <div style={{ background: 'var(--surface-1)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(52,211,153,0.15)', marginBottom: '16px' }}>
           <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', marginBottom: '4px' }}>AI Companion</h3>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px' }}>Смени тип или имя своего компаньона</p>
 
@@ -749,7 +749,7 @@ export default function EditProfilePage() {
           <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '1px', marginBottom: '10px' }}>ТИП</p>
           <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
             {[
-              { type: 'spark', emoji: '⚡', label: 'Spark', color: '#39FF14', desc: 'Дерзкий' },
+              { type: 'spark', emoji: '⚡', label: 'Spark', color: '#34D399', desc: 'Дерзкий' },
               { type: 'sage',  emoji: '🔮', label: 'Sage',  color: '#D4AF37', desc: 'Мистик' },
               { type: 'nova',  emoji: '🌀', label: 'Nova',  color: '#7B8FF5', desc: 'Футурист' },
             ].map(c => (
@@ -777,9 +777,9 @@ export default function EditProfilePage() {
             />
             <button onClick={handleSaveCompanion} disabled={savingCompanion} style={{
               padding: '10px 20px', borderRadius: '12px', fontSize: '13px', fontWeight: 600,
-              background: companionSaved ? 'rgba(57,255,20,0.15)' : 'rgba(57,255,20,0.1)',
-              border: companionSaved ? '1px solid rgba(57,255,20,0.4)' : '1px solid rgba(57,255,20,0.2)',
-              color: companionSaved ? '#34D399' : '#39FF14', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif',
+              background: companionSaved ? 'rgba(52,211,153,0.15)' : 'rgba(52,211,153,0.1)',
+              border: companionSaved ? '1px solid rgba(52,211,153,0.4)' : '1px solid rgba(52,211,153,0.2)',
+              color: companionSaved ? '#34D399' : '#34D399', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif',
             }}>
               {savingCompanion ? '...' : companionSaved ? '✓ Saved!' : 'Save'}
             </button>
@@ -837,7 +837,7 @@ export default function EditProfilePage() {
           </div>
         </div>
 
-        <button onClick={handleSave} disabled={saving} style={{ width: '100%', padding: '14px', borderRadius: '14px', fontSize: '15px', fontWeight: 600, background: saved ? 'rgba(57,255,20,0.15)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: saved ? '#34D399' : 'var(--bg)', border: saved ? '1px solid rgba(57,255,20,0.3)' : 'none', cursor: 'pointer' }}>
+        <button onClick={handleSave} disabled={saving} style={{ width: '100%', padding: '14px', borderRadius: '14px', fontSize: '15px', fontWeight: 600, background: saved ? 'rgba(52,211,153,0.15)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: saved ? '#34D399' : 'var(--bg)', border: saved ? '1px solid rgba(52,211,153,0.3)' : 'none', cursor: 'pointer' }}>
           {saving ? 'Saving...' : saved ? '✓ Profile saved!' : 'Save all changes'}
         </button>
       </div>

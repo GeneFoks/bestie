@@ -142,12 +142,12 @@ export default async function CrewPage({ params }) {
         <div style={{ position: 'absolute', bottom: '16px', left: '20px', right: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
             <CrewNameEditor crewId={crew.id} captainId={crew.captain_id} initialName={crew.name} />
-            <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '999px', background: crew.is_public ? 'rgba(57,255,20,0.15)' : 'rgba(155,147,192,0.15)', border: crew.is_public ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(155,147,192,0.3)', color: crew.is_public ? '#34D399' : '#A99ECC', fontWeight: 600, backdropFilter: 'blur(8px)' }}>
+            <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '999px', background: crew.is_public ? 'rgba(52,211,153,0.15)' : 'rgba(155,147,192,0.15)', border: crew.is_public ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(155,147,192,0.3)', color: crew.is_public ? '#34D399' : '#A99ECC', fontWeight: 600, backdropFilter: 'blur(8px)' }}>
               {crew.is_public ? 'Open' : (<span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Lock size={10} strokeWidth={2} /> Private</span>)}
             </span>
           </div>
           <p style={{ fontSize: '13px', color: 'rgba(232,224,255,0.7)', margin: 0 }}>
-            {memberCount} members{avgScore > 0 ? ` · avg BS ${avgScore}` : ''}
+            {memberCount} members{avgScore > 0 ? ` · Avg score ${avgScore}` : ''}
           </p>
         </div>
       </div>
@@ -202,7 +202,7 @@ export default async function CrewPage({ params }) {
               <p style={{ fontSize: '10px', color: '#D4AF37', fontWeight: 600, letterSpacing: '1px', marginBottom: '1px' }}>CAPTAIN</p>
               <Link href={`/${crew.captain.username}`} style={{ fontSize: '14px', fontWeight: 600, color: '#F0EAFF', textDecoration: 'none' }}>{crew.captain.full_name}</Link>
             </div>
-            <span style={{ fontSize: '13px', fontWeight: 700, color: '#D4AF37' }}>BS {crew.captain.bestie_score}</span>
+            <span style={{ fontSize: '13px', fontWeight: 700, color: '#D4AF37' }}>★ {crew.captain.bestie_score}</span>
           </div>
         )}
 
@@ -412,7 +412,7 @@ export default async function CrewPage({ params }) {
                     {/* Score circle */}
                     <div style={{ width: '44px', height: '44px', borderRadius: '50%', border: `2px solid ${sc}40`, background: `${sc}10`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <span style={{ fontSize: '12px', fontWeight: 800, color: sc, lineHeight: 1 }}>{user.bestie_score >= 1000 ? '1k' : user.bestie_score}</span>
-                      <span style={{ fontSize: '7px', color: '#A99ECC', letterSpacing: '0.5px', lineHeight: 1, marginTop: '1px' }}>BS</span>
+                      <span style={{ fontSize: '7px', color: '#A99ECC', letterSpacing: '0.5px', lineHeight: 1, marginTop: '1px' }}>★</span>
                     </div>
                   </Link>
                   <CrewRoleManager

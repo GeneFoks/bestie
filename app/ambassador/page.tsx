@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { showToast } from '@/components/Toast'
 import { Crown, Ticket, Sparkles, Star } from 'lucide-react'
 
 const GOLD = '#D4AF37'
@@ -36,7 +37,15 @@ export default function AmbassadorPage() {
       message: message.trim() || null,
     })
     setSending(false)
-    if (error) { alert(error.message.includes('duplicate') ? 'You already applied — we\'ll get back to you soon!' : error.message); return }
+    if (error) {
+      if (error.message.includes('duplicate')) {
+        showToast("You already applied — we'll get back to you soon!", { type: 'info' })
+      } else {
+        console.error(error)
+        showToast("Couldn't send your application — try again", { type: 'error' })
+      }
+      return
+    }
     setApplication({ status: 'pending' })
   }
 
@@ -86,7 +95,7 @@ export default function AmbassadorPage() {
         </div>
 
         {me?.is_ambassador ? (
-          <div style={{ textAlign: 'center', padding: '22px', borderRadius: '16px', background: 'rgba(57,255,20,0.06)', border: '1px solid rgba(57,255,20,0.25)' }}>
+          <div style={{ textAlign: 'center', padding: '22px', borderRadius: '16px', background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.25)' }}>
             <p style={{ fontSize: '16px', fontWeight: 700, color: '#34D399', marginBottom: '6px' }}>👑 You're an Ambassador</p>
             <Link href="/group-sessions/new" style={{ fontSize: '14px', fontWeight: 600, color: GOLD, textDecoration: 'none' }}>Create a paid event →</Link>
           </div>

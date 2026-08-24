@@ -265,7 +265,7 @@ export default function ActivitiesPage() {
                           window.scrollTo({ top: 400, behavior: 'smooth' })
                         }
                       }}
-                      style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '12px 14px', borderRadius: '16px', border: alreadyHave ? '1px solid rgba(57,255,20,0.35)' : i < 3 ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(255,255,255,0.11)', background: alreadyHave ? 'rgba(57,255,20,0.06)' : i < 3 ? 'rgba(255,107,53,0.06)' : '#111120', cursor: alreadyHave ? 'default' : 'pointer', minWidth: '72px' }}
+                      style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '12px 14px', borderRadius: '16px', border: alreadyHave ? '1px solid rgba(52,211,153,0.35)' : i < 3 ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(255,255,255,0.11)', background: alreadyHave ? 'rgba(52,211,153,0.06)' : i < 3 ? 'rgba(255,107,53,0.06)' : '#111120', cursor: alreadyHave ? 'default' : 'pointer', minWidth: '72px' }}
                     >
                       <ActivityIcon type={a.id} size={22} color={alreadyHave ? '#34D399' : '#D4AF37'} strokeWidth={1.7} />
                       <span style={{ fontSize: '10px', fontWeight: 600, color: alreadyHave ? '#34D399' : '#F0EAFF', textAlign: 'center', lineHeight: 1.3, whiteSpace: 'nowrap' }}>{a.label}</span>

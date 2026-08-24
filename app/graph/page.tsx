@@ -609,7 +609,7 @@ export default function GraphPage() {
           <p style={{ fontSize: '13px', fontWeight: 700, color: '#F0EAFF', marginBottom: '2px' }}>{hovered.name}</p>
           <p style={{ fontSize: '11px', color: '#A99ECC', marginBottom: '4px' }}>@{hovered.username}{hovered.city ? ` · ${hovered.city}` : ''}</p>
           <div style={{ display: 'flex', gap: '10px' }}>
-            <span style={{ fontSize: '11px', color: scoreColor(hovered.score), fontWeight: 700 }}>BS {hovered.score}</span>
+            <span style={{ fontSize: '11px', color: scoreColor(hovered.score), fontWeight: 700 }}>★ {hovered.score}</span>
             <span style={{ fontSize: '11px', color: '#A99ECC' }}>{hovered.sessions} meetups</span>
           </div>
         </div>

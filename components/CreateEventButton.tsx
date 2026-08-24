@@ -23,7 +23,7 @@ export default function CreateEventButton({
         aria-label="Create event"
         className="create-event-fab"
         style={{
-          position: 'fixed', left: '18px', bottom: 'calc(84px + env(safe-area-inset-bottom))',
+          position: 'fixed', right: '18px', bottom: 'calc(84px + env(safe-area-inset-bottom))',
           zIndex: 90, width: '56px', height: '56px', borderRadius: '50%', border: 'none',
           background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F',
           display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',

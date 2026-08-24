@@ -92,7 +92,22 @@
       "Bash(git commit -q -m 'feat: graph shows everyone \\(not opted out\\) as gently drifting nodes *)",
       "Bash(git commit -q -m 'feat: email the host when someone books their session \\(free join + paid ticket\\) *)",
       "Bash(grep -n \"activity_packages\\\\|KnockButton\\\\|full_name\\\\|href={\\\\`/\\\\|Book\\\\|map\\(\" app/browse/page.tsx)",
-      "Bash(git commit -q -m 'feat: offers discovery feed + activity chips on browse cards *)"
+      "Bash(git commit -q -m 'feat: offers discovery feed + activity chips on browse cards *)",
+      "mcp__claude-in-chrome__navigate",
+      "mcp__claude-in-chrome__get_page_text",
+      "mcp__claude-in-chrome__read_page",
+      "mcp__claude-in-chrome__tabs_close_mcp",
+      "Bash(git commit -q -m 'fix: build — host embed is typed as an array in email route *)",
+      "Bash(git commit -q -m 'perf: stop the graph lagging — settle the sim, drift floaters via rAF *)",
+      "mcp__claude-in-chrome__computer",
+      "Bash(git commit -q -m 'perf: cut graph lag further — floaters are vector-only, throttled *)",
+      "Bash(git commit -q -m 'feat: cosmic backdrop for the graph — people as stars in space *)",
+      "Bash(git commit -q -m 'feat: soft star-glow halo around people on the graph *)",
+      "Bash(sort -t: -k2 -rn)",
+      "Bash(node -e ' *)",
+      "Bash(grep -iA0 \"message\")",
+      "Bash(git commit -q -m 'feat: design-audit round 1 — landing, feeds, match moment, UI kit, badges *)",
+      "Bash(git commit -q -m 'feat: design-audit round 2 — app-wide polish sweeps *)"
     ]
   }
 }

@@ -10,6 +10,7 @@ import { PageLoader } from '@/components/Loading'
 import { MessageCircle } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 import { createNotification } from '@/lib/notifications'
+import { showToast } from '@/components/Toast'
 
 export default function MessagesPage() {
   const router = useRouter()
@@ -184,10 +185,21 @@ export default function MessagesPage() {
     setSending(true)
     const text = newMessage.trim()
     setNewMessage('') // optimistic clear
+    // Optimistic bubble — appears instantly with a pending look, reconciled below.
+    const tempId = `pending-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    setMessages(m => [...m, {
+      id: tempId,
+      sender_id: userId,
+      receiver_id: activeConv.user.id,
+      content: text,
+      read: false,
+      created_at: new Date().toISOString(),
+      pending: true,
+    }])
     const msg = { sender_id: userId, receiver_id: activeConv.user.id, content: text, read: false }
     const { data, error } = await supabase.from('direct_messages').insert(msg).select().single()
     if (data) {
-      setMessages(m => m.some(x => x.id === data.id) ? m : [...m, data])
+      setMessages(m => m.map(x => x.id === tempId ? data : x))
       await loadConversations(userId)
       // Fire-and-forget notification to the recipient
       createNotification({
@@ -198,10 +210,11 @@ export default function MessagesPage() {
         link: `/messages?to=${activeConv.user.username || activeConv.user.id}`,
       }).catch(() => {})
     } else {
-      // Restore message if failed
+      // Roll back the optimistic bubble and restore the draft
+      setMessages(m => m.filter(x => x.id !== tempId))
       setNewMessage(text)
       console.error('Message send failed:', error?.message)
-      alert('Could not send message. Please try again.')
+      showToast("Couldn't send your message — try again.", { type: 'error' })
     }
     setSending(false)
   }
@@ -311,12 +324,12 @@ export default function MessagesPage() {
                 {messages.map(msg => {
                   const isMine = msg.sender_id === userId
                   return (
-                    <div key={msg.id} style={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start' }}>
+                    <div key={msg.id} style={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start', opacity: msg.pending ? 0.55 : 1, transition: 'opacity 0.2s ease' }}>
                       <div style={{ maxWidth: '70%' }}>
                         <div style={{ padding: '10px 14px', borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: isMine ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.11)', color: isMine ? '#09090F' : '#F0EAFF', fontSize: '14px', lineHeight: 1.5 }}>
                           {msg.content}
                         </div>
-                        <p style={{ fontSize: '11px', color: '#A99ECC', marginTop: '4px', textAlign: isMine ? 'right' : 'left' }}>{formatTime(msg.created_at)}</p>
+                        <p style={{ fontSize: '11px', color: '#A99ECC', marginTop: '4px', textAlign: isMine ? 'right' : 'left' }}>{msg.pending ? 'sending…' : formatTime(msg.created_at)}</p>
                       </div>
                     </div>
                   )

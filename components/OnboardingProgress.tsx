@@ -76,8 +76,8 @@ export default function OnboardingProgress() {
         margin: '0 0 16px',
         padding: '14px 16px',
         borderRadius: '16px',
-        background: 'linear-gradient(135deg, rgba(57,255,20,0.07), rgba(123,143,245,0.07))',
-        border: '1px solid rgba(57,255,20,0.2)',
+        background: 'linear-gradient(135deg, rgba(52,211,153,0.07), rgba(123,143,245,0.07))',
+        border: '1px solid rgba(52,211,153,0.2)',
         cursor: 'pointer',
         position: 'relative',
         userSelect: 'none',
@@ -117,9 +117,9 @@ export default function OnboardingProgress() {
           width: `${pct}%`,
           height: '100%',
           borderRadius: '999px',
-          background: 'linear-gradient(90deg, #39FF14, #7B8FF5)',
+          background: 'linear-gradient(90deg, #34D399, #7B8FF5)',
           transition: 'width 0.6s ease',
-          boxShadow: '0 0 8px rgba(57,255,20,0.4)',
+          boxShadow: '0 0 8px rgba(52,211,153,0.4)',
         }} />
       </div>
 
@@ -132,9 +132,9 @@ export default function OnboardingProgress() {
             <span key={i} style={{
               fontSize: '11px', fontWeight: 600,
               padding: '3px 10px', borderRadius: '999px',
-              background: completed ? 'rgba(57,255,20,0.12)' : 'rgba(255,255,255,0.05)',
-              border: completed ? '1px solid rgba(57,255,20,0.3)' : '1px solid rgba(255,255,255,0.08)',
-              color: completed ? '#39FF14' : '#5A5375',
+              background: completed ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.05)',
+              border: completed ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(255,255,255,0.08)',
+              color: completed ? '#34D399' : '#5A5375',
               textDecoration: completed ? 'line-through' : 'none',
             }}>
               {q.icon} {q.title}

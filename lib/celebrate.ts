@@ -12,6 +12,7 @@ type ConfettiOptions = {
   origin?: { x: number; y: number }  // 0..1 viewport coords
   colors?: string[]
   duration?: number    // ms
+  zIndex?: number      // canvas stacking — bump above modals when needed
 }
 
 const DEFAULT_COLORS = ['#D4AF37', '#34D399', '#9B7FFF', '#FF7857', '#F0EAFF']
@@ -31,6 +32,7 @@ export function celebrate(opts: ConfettiOptions = {}) {
     origin = { x: 0.5, y: 0.45 },
     colors = DEFAULT_COLORS,
     duration = 1400,
+    zIndex = 9999,
   } = opts
 
   const canvas = document.createElement('canvas')
@@ -39,7 +41,7 @@ export function celebrate(opts: ConfettiOptions = {}) {
   canvas.style.width = '100%'
   canvas.style.height = '100%'
   canvas.style.pointerEvents = 'none'
-  canvas.style.zIndex = '9999'
+  canvas.style.zIndex = String(zIndex)
   const dpr = Math.min(window.devicePixelRatio || 1, 2)
   canvas.width = window.innerWidth * dpr
   canvas.height = window.innerHeight * dpr
@@ -133,8 +135,10 @@ export function buzz(pattern: 'tap' | 'success' | 'match' = 'tap') {
 
 /**
  * Convenience: full match celebration — confetti + match haptic.
+ * Confetti renders at z-index 10001 by default so it lands ABOVE the
+ * MatchCelebration modal backdrop (which sits at z-index 10000).
  */
-export function celebrateMatch() {
-  celebrate({ count: 60, spread: 100 })
+export function celebrateMatch(zIndex: number = 10001) {
+  celebrate({ count: 60, spread: 100, zIndex })
   buzz('match')
 }

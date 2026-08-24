@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { showToast } from '@/components/Toast'
 import {
   QUESTIONS, TYPES, FAMILY, COLLECTIVE, POLES, ELEMENTS, computeKey,
   QUESTIONS_RU, TYPES_RU, FAMILY_RU, COLLECTIVE_RU, POLES_RU, ELEMENTS_RU,
@@ -18,34 +19,38 @@ const MUT = '#A99ECC'
 
 const UI = {
   en: {
-    title: 'Discover your eterotype',
-    lead: '28 questions · about 5 minutes. You’ll learn your eterotype — one of 16 personality types: your family (core values) and collective (how you act). It appears on your Social Passport and powers your matches.',
+    title: 'Discover your Bestie Type',
+    lead: 'A 5-minute test. You’ll learn your Bestie Type — one of 16 personality types: your family (core values) and collective (how you act). It appears on your Social Passport and powers your matches.',
     honest: 'Choose not «what’s right» but how it most often happens by itself. There are no wrong answers.',
     birth: 'Date of birth', optional: '(optional)', start: 'Start →', skip: 'Skip for now',
-    credit: 'The Eterotype test is built on classical socionics — a 16-type personality typology.',
-    yourType: 'YOUR ETEROTYPE', proto: 'prototype in classic socionics',
+    birthBenefit: 'Add your birthday to unlock birthday features',
+    credit: 'The Bestie Type test is built on classical socionics — a 16-type personality typology.',
+    yourType: 'YOUR BESTIE TYPE', proto: 'prototype in classic socionics',
+    flavor: 'Your Bestie Type — we call it your eterotype.',
     family: 'Family', collective: 'Collective',
     values: 'YOUR VALUES · FAMILY', mode: 'YOUR MODE OF ACTION · COLLECTIVE', strengths: 'YOUR STRENGTHS',
     save: 'Save to my passport →', saving: 'Saving…',
     join: 'Join Bestie — save it & meet your matches →',
     kept: 'Your result is kept — it saves to your passport automatically after you sign up.',
     share: '↗ Share my type', shared: '✓ Copied — send it to a friend', retake: 'Retake',
-    shareText: (name: string, fam: string, col: string) => `My eterotype: ${name} 🧭 ${fam} family · ${col} collective. What's yours?`,
+    shareText: (name: string, fam: string, col: string) => `My Bestie Type: ${name} 🧭 ${fam} family · ${col} collective. What's yours?`,
   },
   ru: {
-    title: 'Узнай свой этеротип',
-    lead: '28 вопросов · около 5 минут. Ты узнаешь свой этеротип — один из 16 типов личности: семью — твои глубинные ценности, и коллектив — твою природную форму деятельности. Тип появится в твоём социальном паспорте и будет влиять на подбор людей.',
+    title: 'Узнай свой Bestie Type',
+    lead: 'Тест на 5 минут. Ты узнаешь свой Bestie Type — один из 16 типов личности: семью — твои глубинные ценности, и коллектив — твою природную форму деятельности. Тип появится в твоём социальном паспорте и будет влиять на подбор людей.',
     honest: 'Выбирай не «как правильно», а как чаще всего происходит само. Здесь нет неправильных ответов.',
     birth: 'Дата рождения', optional: '(необязательно)', start: 'Начать →', skip: 'Пропустить',
-    credit: 'Тест «Этеротип» построен на классической соционике — типологии из 16 типов личности.',
-    yourType: 'ТВОЙ ЭТЕРОТИП', proto: 'прототип в классической соционике',
+    birthBenefit: 'Добавь дату рождения, чтобы открыть функции дня рождения',
+    credit: 'Тест Bestie Type построен на классической соционике — типологии из 16 типов личности.',
+    yourType: 'ТВОЙ BESTIE TYPE', proto: 'прототип в классической соционике',
+    flavor: 'Твой Bestie Type — мы называем его этеротип.',
     family: 'Семья', collective: 'Коллектив',
     values: 'ТВОИ ЦЕННОСТИ · СЕМЬЯ', mode: 'ТВОЯ ФОРМА ДЕЯТЕЛЬНОСТИ · КОЛЛЕКТИВ', strengths: 'ТВОЯ СИЛА',
     save: 'Сохранить в паспорт →', saving: 'Сохраняю…',
     join: 'Вступить в Bestie — сохранить и увидеть своих →',
     kept: 'Результат не потеряется — сохранится в паспорт автоматически после регистрации.',
     share: '↗ Поделиться типом', shared: '✓ Скопировано — отправь другу', retake: 'Пройти заново',
-    shareText: (name: string, fam: string, col: string) => `Мой этеротип: ${name} 🧭 Семья: ${fam} · Коллектив: ${col}. А ты кто?`,
+    shareText: (name: string, fam: string, col: string) => `Мой Bestie Type: ${name} 🧭 Семья: ${fam} · Коллектив: ${col}. А ты кто?`,
   },
 }
 
@@ -126,7 +131,7 @@ export default function BestieTypePage() {
       : UI.en.shareText(t.name, ELEMENTS[t.fam].name, ELEMENTS[t.col].name)
     const url = 'https://bestiehere.com/bestie-type'
     if (typeof navigator !== 'undefined' && navigator.share) {
-      try { await navigator.share({ title: 'My eterotype', text, url }); return } catch { return }
+      try { await navigator.share({ title: 'My Bestie Type', text, url }); return } catch { return }
     }
     navigator.clipboard.writeText(`${text}\n${url}`)
     setShared(true); setTimeout(() => setShared(false), 2000)
@@ -149,7 +154,7 @@ export default function BestieTypePage() {
     }).eq('id', userId)
     try { localStorage.removeItem('bestie_pending_type') } catch {}
     setSaving(false)
-    if (error) { alert(`Could not save: ${error.message}`); return }
+    if (error) { console.error(error); showToast("Couldn't save your result — try again", { type: 'error' }); return }
     // Straight to their matches, not an empty dashboard — the moment of intent.
     router.push('/browse?matched=1')
   }
@@ -163,13 +168,6 @@ export default function BestieTypePage() {
         <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '34px', color: TXT, marginBottom: '12px' }}>{T.title}</h1>
         <p style={{ fontSize: '15px', color: MUT, lineHeight: 1.7, marginBottom: '28px' }}>{T.lead}</p>
         <p style={{ fontSize: '13px', color: MUT, lineHeight: 1.6, marginBottom: '28px' }}>{T.honest}</p>
-        <div style={{ marginBottom: '22px', textAlign: 'left' }}>
-          <label style={{ fontSize: '13px', color: MUT, display: 'block', marginBottom: '8px' }}>
-            {T.birth} <span style={{ color: '#6B5EA8' }}>{T.optional}</span>
-          </label>
-          <input type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)}
-            style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: CARD, border: '1px solid rgba(255,255,255,0.1)', color: TXT, outline: 'none', boxSizing: 'border-box', colorScheme: 'dark' }} />
-        </div>
         <button onClick={start} style={{ width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: `linear-gradient(135deg, ${GOLD} 0%, #B8960C 100%)`, color: BG, border: 'none', cursor: 'pointer' }}>
           {T.start}
         </button>
@@ -241,6 +239,7 @@ export default function BestieTypePage() {
             <p style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '2px', color: GOLD, marginBottom: '14px' }}>{T.yourType}</p>
             <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '38px', color: TXT, marginBottom: '4px' }}>{typeName}</h1>
             <p style={{ fontSize: '13px', color: MUT }}>{T.proto} — «{lang === 'ru' ? tr.proto : t.proto}»</p>
+            <p style={{ fontSize: '12px', color: '#6B5EA8', marginTop: '6px' }}>{T.flavor}</p>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '16px', flexWrap: 'wrap' }}>
               <span style={{ padding: '5px 14px', borderRadius: '999px', background: fam.color, color: '#0a0a14', fontSize: '12px', fontWeight: 700 }}>{T.family}: {famName}</span>
               <span style={{ padding: '5px 14px', borderRadius: '999px', background: col.color, color: '#0a0a14', fontSize: '12px', fontWeight: 700 }}>{T.collective}: {colName}</span>
@@ -270,6 +269,23 @@ export default function BestieTypePage() {
             </ul>
           </div>
 
+          <div style={{ background: CARD, border: '1px solid rgba(255,255,255,0.10)', borderRadius: '20px', padding: '20px 24px', marginBottom: '20px' }}>
+            <label style={{ fontSize: '13px', color: MUT, display: 'block', marginBottom: '8px' }}>
+              {T.birth} <span style={{ color: '#6B5EA8' }}>{T.optional}</span>
+            </label>
+            <input type="date" value={birthDate} onChange={e => {
+              const v = e.target.value
+              setBirthDate(v)
+              // Keep the guest-pending result in sync so the birthday survives signup.
+              try {
+                const pending = localStorage.getItem('bestie_pending_type')
+                if (pending) localStorage.setItem('bestie_pending_type', JSON.stringify({ ...JSON.parse(pending), birthDate: v }))
+              } catch {}
+            }}
+              style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: '#0E0E1B', border: '1px solid rgba(255,255,255,0.1)', color: TXT, outline: 'none', boxSizing: 'border-box', colorScheme: 'dark' }} />
+            <p style={{ fontSize: '12px', color: MUT, marginTop: '8px', marginBottom: 0 }}>{T.birthBenefit}</p>
+          </div>
+
           {userId ? (
             <button onClick={handleSave} disabled={saving} style={{ width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: `linear-gradient(135deg, ${GOLD} 0%, #B8960C 100%)`, color: BG, border: 'none', cursor: 'pointer' }}>
               {saving ? T.saving : T.save}
@@ -285,7 +301,7 @@ export default function BestieTypePage() {
           <button onClick={handleShare} style={{ width: '100%', marginTop: '12px', padding: '14px', borderRadius: '14px', fontSize: '14px', fontWeight: 700, background: shared ? 'rgba(52,211,153,0.12)' : '#131323', border: shared ? '1px solid rgba(52,211,153,0.35)' : '1px solid rgba(255,255,255,0.12)', color: shared ? '#34D399' : TXT, cursor: 'pointer' }}>
             {shared ? T.shared : T.share}
           </button>
-          <button onClick={start} style={{ width: '100%', marginTop: '12px', padding: '14px', borderRadius: '14px', fontSize: '14px', background: '#131323', border: '1px solid rgba(255,255,255,0.12)', color: MUT, cursor: 'pointer' }}>
+          <button onClick={start} style={{ display: 'block', margin: '18px auto 0', padding: '4px 8px', background: 'none', border: 'none', fontSize: '13px', color: MUT, textDecoration: 'underline', cursor: 'pointer' }}>
             {T.retake}
           </button>
         </div>

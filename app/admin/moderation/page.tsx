@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
+import { showToast } from '@/components/Toast'
+import { confirmSheet } from '@/components/ConfirmSheet'
 import { ShieldAlert, Ban, Check, RotateCcw } from 'lucide-react'
 
 const GOLD = '#D4AF37'
@@ -39,10 +41,13 @@ export default function AdminModerationPage() {
 
   const setBan = async (report: any, banned: boolean) => {
     const name = report.reported?.full_name || 'this user'
-    if (!confirm(banned ? `Ban ${name}? They will not be able to sign in.` : `Unban ${name}?`)) return
+    const ok = await confirmSheet(banned
+      ? { title: `Ban ${name}?`, body: 'They will not be able to sign in.', confirmLabel: 'Ban', danger: true }
+      : { title: `Unban ${name}?`, confirmLabel: 'Unban' })
+    if (!ok) return
     setBusy(report.id)
     const { error } = await supabase.rpc('admin_set_ban', { p_user_id: report.reported.id, p_banned: banned })
-    if (error) alert(error.message)
+    if (error) { console.error(error); showToast(banned ? "Couldn't ban this user — try again" : "Couldn't unban this user — try again", { type: 'error' }) }
     else setReports(prev => prev.map(r =>
       r.reported?.id === report.reported.id
         ? { ...r, reported: { ...r.reported, is_banned: banned } }
