@@ -231,6 +231,7 @@ export default function HomePage() {
           <Link href="/browse" className="nav-link">Browse</Link>
           <Link href="/events" className="nav-link">Events</Link>
           <Link href="/crews" className="nav-link">Crews</Link>
+          <Link href="/world" className="nav-link" style={{ color: '#D4AF37' }}>World</Link>
           <Link href="/plans" className="nav-link">Plans</Link>
           <Link href="#how-it-works" className="nav-link">How It Works</Link>
           <Link href="#score" className="nav-link">Bestie Score</Link>
@@ -348,6 +349,28 @@ export default function HomePage() {
         </div>
       </section>
       )}
+
+      {/* ── BESTIE WORLD teaser — the door into the living map ── */}
+      <section style={{ padding: '0 20px 64px', overflow: 'hidden' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <Link href="/world" style={{ display: 'block', textDecoration: 'none', borderRadius: '24px', padding: 'clamp(26px, 4vw, 44px)', background: 'radial-gradient(ellipse at 50% 120%, rgba(232,120,60,0.12) 0%, transparent 55%), linear-gradient(to bottom, #071009 0%, #04120B 100%)', border: '1px solid rgba(212,175,55,0.22)', position: 'relative', overflow: 'hidden' }}>
+            {/* embers drifting in the dark */}
+            <div style={{ position: 'absolute', left: '18%', bottom: '18%', width: '5px', height: '5px', borderRadius: '50%', background: '#FFC46B', boxShadow: '0 0 12px 3px rgba(255,180,90,0.5)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', left: '72%', bottom: '30%', width: '4px', height: '4px', borderRadius: '50%', background: '#FFD9A0', boxShadow: '0 0 10px 2px rgba(255,190,110,0.45)', opacity: 0.8, pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', left: '55%', bottom: '60%', width: '3px', height: '3px', borderRadius: '50%', background: '#FFC46B', boxShadow: '0 0 8px 2px rgba(255,180,90,0.4)', opacity: 0.6, pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', top: '-60px', right: '-40px', width: '260px', height: '260px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,150,60,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '48px', flexShrink: 0 }}>🔥</span>
+              <div style={{ flex: 1, minWidth: '220px' }}>
+                <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#D4AF37', marginBottom: '6px' }}>NEW · A LIVING WORLD</p>
+                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(20px, 4vw, 28px)', color: '#F0EAFF', marginBottom: '6px', lineHeight: 1.2 }}>Step into Bestie World</h2>
+                <p style={{ fontSize: '14px', color: '#A99ECC', lineHeight: 1.6, maxWidth: '560px' }}>A map of real crews as campfires — see who's burning tonight, join a fire, or light your own. Burning Man camps have their own city inside.</p>
+              </div>
+              <span style={{ flexShrink: 0, padding: '14px 26px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.45)', color: '#D4AF37', whiteSpace: 'nowrap' }}>Enter the world →</span>
+            </div>
+          </Link>
+        </div>
+      </section>
 
       {/* ── FEATURES ── */}
       <section style={{ padding: '0 20px 64px' }}>
