@@ -304,10 +304,10 @@ export default function GiveSparkContent() {
         </div>
 
         <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-          <div style={{ flex: 1, background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
+          <Link href="/sparks/history" style={{ flex: 1, background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '14px', padding: '14px', textAlign: 'center', textDecoration: 'none', display: 'block' }}>
             <div style={{ fontSize: '22px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>{sparksLeft}</div>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>your balance</div>
-          </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>your balance · history →</div>
+          </Link>
           <div style={{ flex: 1, background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
             <div style={{ fontSize: '22px', fontWeight: 700, color: canGiveMore === 0 ? '#FF6B6B' : 'var(--text-primary)', fontFamily: 'DM Serif Display, serif' }}>{canGiveMore}</div>
             <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>left for this person</div>

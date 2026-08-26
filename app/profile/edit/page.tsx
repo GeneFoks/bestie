@@ -378,6 +378,17 @@ export default function EditProfilePage() {
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: '40px 24px' }}>
         <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '32px' }}>Edit Profile</h1>
 
+        {/* Sparks */}
+        <div style={sectionStyle}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+            <div>
+              <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', marginBottom: '4px' }}>Sparks ✨</h3>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>Every Spark you earn or spend, on the record.</p>
+            </div>
+            <a href="/sparks/history" style={{ flexShrink: 0, padding: '10px 16px', borderRadius: '11px', fontSize: '13px', fontWeight: 700, background: 'rgba(212,175,55,0.10)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', textDecoration: 'none' }}>History →</a>
+          </div>
+        </div>
+
         {/* Appearance */}
         <div style={sectionStyle}>
           <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', marginBottom: '20px' }}>Appearance</h3>
