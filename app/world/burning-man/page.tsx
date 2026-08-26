@@ -271,21 +271,61 @@ export default function BurningManPage() {
                 'radial-gradient(ellipse at center, rgba(255,166,88,0.36) 0%, rgba(214,120,50,0.15) 48%, transparent 74%)',
             }}
           />
-          {/* the beam — a breathing column of light, no effigy, no shapes */}
+          {/* a faint aura column behind the effigy */}
           <div
             className="pm-beam"
             style={{
               position: 'absolute',
               left: 100,
-              top: 16,
-              width: 34,
-              height: 170,
+              top: 26,
+              width: 64,
+              height: 160,
               transform: 'translateX(-50%)',
               background:
-                'linear-gradient(to top, rgba(255,196,107,0.38), rgba(255,196,107,0.14) 52%, rgba(255,196,107,0.03) 82%, transparent 100%)',
-              borderRadius: '50% 50% 0 0 / 10% 10% 0 0',
+                'radial-gradient(ellipse 50% 62% at 50% 68%, rgba(255,196,107,0.16), rgba(255,196,107,0.05) 60%, transparent 85%)',
             }}
           />
+          {/* THE MAN himself — the effigy, arms raised, drawn in light.
+              Three stacked strokes fake a neon glow with zero SVG filters. */}
+          <svg
+            viewBox="0 0 60 130"
+            style={{
+              position: 'absolute',
+              left: 100,
+              top: 24,
+              width: 74,
+              height: 160,
+              transform: 'translateX(-50%)',
+              overflow: 'visible',
+            }}
+          >
+            {[
+              { w: 6.5, c: 'rgba(255,170,80,0.16)', cls: 'pm-beam' },
+              { w: 3, c: 'rgba(255,196,107,0.5)', cls: 'pm-beam' },
+              { w: 1.4, c: '#FFF3D6', cls: '' },
+            ].map((L, i) => (
+              <g
+                key={i}
+                className={L.cls}
+                fill="none"
+                stroke={L.c}
+                strokeWidth={L.w}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                {/* head */}
+                <circle cx="30" cy="12" r="6" />
+                {/* torso */}
+                <path d="M30 20 L30 84" />
+                {/* arms raised in a V, angular like the real effigy */}
+                <path d="M30 34 L17 26 L8 8" />
+                <path d="M30 34 L43 26 L52 8" />
+                {/* legs planted apart */}
+                <path d="M30 84 L19 126" />
+                <path d="M30 84 L41 126" />
+              </g>
+            ))}
+          </svg>
           {/* blazing core — three breathing orbs of white-amber light */}
           {[
             { s: 22, dur: 2.4, o: 0.85, dy: 0 },
