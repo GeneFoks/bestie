@@ -571,7 +571,7 @@ export default function WorldPage() {
                       background: 'rgba(212,175,55,0.08)',
                     }}
                   >
-                    🔥 {fire.streakDays} days burning
+                    {fire.enter ? '♾ Eternal flame' : `🔥 ${fire.streakDays} days burning`}
                   </div>
                 )}
                 {isUnlit && (
@@ -839,7 +839,7 @@ export default function WorldPage() {
                     background: 'rgba(212,175,55,0.08)',
                   }}
                 >
-                  🔥 Burning {selected.streakDays} days straight
+                  {selected.enter ? '♾ Eternal flame — always burning' : `🔥 Burning ${selected.streakDays} days straight`}
                 </span>
               )}
             </div>
@@ -873,7 +873,9 @@ export default function WorldPage() {
 
             {/* How the rewards work — founder earns more than a joiner */}
             <p style={{ fontSize: 12, color: 'var(--text-muted, #A99ECC)', lineHeight: 1.55, margin: '0 0 16px' }}>
-              {selected.state === 'unlit'
+              {selected.enter
+                ? 'A world inside the world. Step in — every camp on the playa is its own fire: who they are, what they host, and how to join them.'
+                : selected.state === 'unlit'
                 ? 'Light a fire and you’re its founder: +15 ✨ Sparks when the crew takes its first step together. Joining someone else’s fire earns +2 ✨.'
                 : selected.state === 'ash'
                 ? 'This fire went cold. Rekindle it and the founder bonus is yours: +15 ✨ when the crew moves again.'
@@ -882,6 +884,8 @@ export default function WorldPage() {
 
             <button
               onClick={() => {
+                // Stations open a world inside the world — for everyone
+                if (selected.enter) { window.location.href = selected.enter; return }
                 // Landmark fires point at a REAL destination (an actual session)
                 if (selected.href) { window.location.href = selected.href; return }
                 // Visitors without an account → the join path starts at signup
@@ -902,7 +906,9 @@ export default function WorldPage() {
                 boxShadow: '0 4px 18px rgba(212,175,55,0.25)',
               }}
             >
-              {selected.href
+              {selected.enter
+                ? 'Enter Black Rock City →'
+                : selected.href
                 ? 'Open the camp →'
                 : !loggedIn
                 ? 'Sign up free to join this fire'
