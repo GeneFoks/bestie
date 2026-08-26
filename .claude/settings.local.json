@@ -112,7 +112,9 @@
       "Bash(echo \"---exit $?---\")",
       "Bash(git commit -q -m 'feat: design-audit round 3 — light theme app-wide, type ceremony, share card, OAuth *)",
       "Bash(cd /c/bestie *)",
-      "Bash(git commit -q -m 'feat: unified gold spark icons + delete meetups from /bookings *)"
+      "Bash(git commit -q -m 'feat: unified gold spark icons + delete meetups from /bookings *)",
+      "Bash(git commit -q -m 'fix: missing SparkIcon import in score-guide *)",
+      "Bash(git commit -q -m 'feat: paid crew events — tickets paid to the crew'\\\\''s Stripe account *)"
     ]
   }
 }

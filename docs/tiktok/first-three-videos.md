@@ -43,9 +43,9 @@
 
 ### Поворот
 
-> **EN:** So here's what I'm doing instead. I'm in my forties, I moved to Austin, and I'm building an app that helps people find friends.
+> **EN:** So here's what I'm doing instead. I'm 37, I moved to Austin, and I'm building an app that helps people find friends.
 >
-> **RU:** Вот чем я занимаюсь теперь. Мне за сорок, я переехал в Остин и строю приложение, которое помогает людям находить друзей.
+> **RU:** Вот чем я занимаюсь теперь. Мне 37, я переехал в Остин и строю приложение, которое помогает людям находить друзей.
 
 > **EN:** I'm not a programmer. I'm building it by talking to an AI.
 >
@@ -92,9 +92,9 @@
 
 ### Поворот
 
-> **EN:** I moved to a new country in my forties. Wife, kid, work — and nobody to call on a Tuesday night.
+> **EN:** I moved to a new country at 37. Wife, kid, work — and nobody to call on a Tuesday night.
 >
-> **RU:** Я переехал в другую страну в сорок. Жена, ребёнок, работа — и некому позвонить во вторник вечером.
+> **RU:** Я переехал в другую страну в 37. Жена, ребёнок, работа — и некому позвонить во вторник вечером.
 
 > **EN:** That's the thing I'm trying to fix.
 >

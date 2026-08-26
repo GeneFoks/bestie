@@ -72,7 +72,7 @@ export default async function CrewPage({ params }) {
       .order('joined_at', { ascending: true }),
     supabase
       .from('crew_events')
-      .select('id, title, datetime, location, is_members_only, max_attendees, attendees:crew_event_attendees(status)')
+      .select('id, title, datetime, location, is_members_only, max_attendees, ticket_price, attendees:crew_event_attendees(status)')
       .eq('crew_id', crew.id)
       .gte('datetime', new Date().toISOString())
       .order('datetime', { ascending: true })
@@ -333,6 +333,7 @@ export default async function CrewPage({ params }) {
                     </div>
                     <EventGoingButton
                       eventId={event.id}
+                      ticketPrice={Number(event.ticket_price || 0)}
                       isFull={!!(event.max_attendees && (event.attendees || []).filter((a: any) => (a.status || 'going') === 'going').length >= event.max_attendees)}
                     />
                   </div>

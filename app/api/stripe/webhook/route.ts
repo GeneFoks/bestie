@@ -99,6 +99,40 @@ export async function POST(req: NextRequest) {
         break
       }
 
+      // ── Crew event ticket (one-time payment, Connect destination charge) ──
+      if (meta.kind === 'crew_event_ticket') {
+        const { event_id, user_id, amount } = meta
+        if (!event_id || !user_id) break
+
+        // Idempotent: unique(event_id, user_id) + pre-check for webhook retries
+        const { data: ticket } = await admin
+          .from('crew_event_tickets')
+          .select('id').eq('event_id', event_id).eq('user_id', user_id).maybeSingle()
+        if (!ticket) {
+          await admin.from('crew_event_tickets').insert({
+            event_id,
+            user_id,
+            amount: Number(amount || 0),
+            stripe_session_id: session.id,
+            status: 'paid',
+          })
+        }
+
+        // RSVP the buyer as going (same columns as EventGoingButton inserts)
+        const { data: attendee } = await admin
+          .from('crew_event_attendees')
+          .select('user_id, status').eq('event_id', event_id).eq('user_id', user_id).maybeSingle()
+        if (!attendee) {
+          await admin.from('crew_event_attendees').insert({ event_id, user_id, status: 'going' })
+        } else if (attendee.status !== 'going') {
+          await admin.from('crew_event_attendees').update({ status: 'going' })
+            .eq('event_id', event_id).eq('user_id', user_id)
+        }
+
+        console.log(`[webhook] crew event ticket: user ${user_id} paid $${amount} for event ${event_id}`)
+        break
+      }
+
       // ── Crew upgrade ──
       const { crew_id, plan } = meta
       if (!crew_id || !plan) break
