@@ -8,7 +8,8 @@ import ProfileNav from '@/components/ProfileNav'
 import { PageLoader } from '@/components/Loading'
 import { EmptyState } from '@/components/EmptyState'
 import { ActivityIcon } from '@/lib/activityIcons'
-import { Search, Compass } from 'lucide-react'
+import { relation } from '@/lib/socionics'
+import { Search, Compass, Flame, Sparkles } from 'lucide-react'
 
 // Prettify an activity_type slug into a human label ("deep_chat" → "Deep Chat").
 const prettify = (s: string) =>
@@ -18,6 +19,7 @@ export default function OffersPage() {
   const [offers, setOffers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [myId, setMyId] = useState<string | null>(null)
+  const [myType, setMyType] = useState<string | null>(null)
   const [q, setQ] = useState('')
   const [type, setType] = useState('all')
 
@@ -25,10 +27,15 @@ export default function OffersPage() {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       setMyId(session?.user?.id || null)
+      if (session?.user?.id) {
+        // My eterotype → per-host compatibility percent on each offer card
+        supabase.from('users').select('eterotype').eq('id', session.user.id).single()
+          .then(({ data: me }) => setMyType(me?.eterotype || null))
+      }
 
       const { data } = await supabase
         .from('activity_packages')
-        .select('id, title, activity_type, description, price_per_session, is_free, user:users!user_id(id, full_name, username, avatar_url, bestie_score, city, hide_from_graph)')
+        .select('id, title, activity_type, description, price_per_session, is_free, user:users!user_id(id, full_name, username, avatar_url, bestie_score, city, eterotype, hide_from_graph)')
         .order('created_at', { ascending: false })
         .limit(300)
 
@@ -114,6 +121,11 @@ export default function OffersPage() {
             {filtered.map(o => {
               const mine = o.user.id === myId
               const price = o.is_free || !o.price_per_session ? 'Free' : `$${o.price_per_session}`
+              // Compatibility percent with this host (needs both types)
+              const rel = !mine && myType ? relation(myType, o.user.eterotype) : null
+              const compat = rel && rel.score >= 50
+                ? { pct: rel.score, color: rel.score >= 85 ? '#34D399' : rel.score >= 65 ? '#D4AF37' : 'var(--text-muted)', Icon: rel.score >= 85 ? Flame : Sparkles }
+                : null
               return (
                 <div key={o.id} style={{ display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: 'var(--surface-1)', border: '1px solid var(--border)' }}>
                   <span style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -134,6 +146,11 @@ export default function OffersPage() {
                         <span style={{ fontSize: '12px', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {o.user.full_name?.split(' ')[0] || 'Bestie'}{o.user.city ? ` · ${o.user.city}` : ''}
                         </span>
+                        {compat && (
+                          <span title={rel.label} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', flexShrink: 0, fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '999px', background: `${compat.color === 'var(--text-muted)' ? 'var(--overlay)' : compat.color + '1A'}`, border: `1px solid ${compat.color === 'var(--text-muted)' ? 'var(--border)' : compat.color + '45'}`, color: compat.color }}>
+                            <compat.Icon size={10} strokeWidth={2} /> {compat.pct}%
+                          </span>
+                        )}
                       </Link>
                       {!mine && (
                         <Link href={`/book/${o.user.username}`} style={{ flexShrink: 0, padding: '8px 16px', borderRadius: '11px', fontSize: '13px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Book</Link>

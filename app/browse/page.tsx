@@ -220,10 +220,12 @@ export default function BrowsePage() {
     setTimeout(() => setInviteCopied(false), 2000)
   }
 
+  // relation() scores run 34–99 — show the percent itself, tiered by color.
   const getCompatLabel = (p) => {
     if (!myProfile || !compatMode || !p._compat) return null
-    if (p._compat >= 7) return { Icon: Flame,    label: 'Great match', color: '#34D399' }
-    if (p._compat >= 4) return { Icon: Sparkles, label: 'Good match',  color: '#D4AF37' }
+    if (p._compat >= 85) return { Icon: Flame,    label: `${p._compat}% match`, color: '#34D399' }
+    if (p._compat >= 65) return { Icon: Sparkles, label: `${p._compat}% match`, color: '#D4AF37' }
+    if (p._compat >= 50) return { Icon: Sparkles, label: `${p._compat}% match`, color: '#A99ECC' }
     return null
   }
 
