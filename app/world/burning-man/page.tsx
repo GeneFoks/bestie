@@ -41,6 +41,39 @@ export default function BurningManPage() {
     supabase.auth.getSession().then(({ data: { session } }) => setLoggedIn(!!session))
   }, [])
 
+  // REAL camps — crews registered through this world (realm = 'burning-man').
+  // They join the demo camps on the map; tapping one opens the real crew page.
+  const [liveCamps, setLiveCamps] = useState([])
+  useEffect(() => {
+    supabase
+      .from('crews')
+      .select('id, name, slug, description, members:crew_members(count)')
+      .eq('realm', 'burning-man')
+      .limit(40)
+      .then(({ data, error }) => { if (!error && data) setLiveCamps(data) })
+  }, [])
+
+  // Place live camps on the free middle arc (r=26) with golden-angle spacing —
+  // deterministic, no collisions with the demo arcs at r=20 and r=32.
+  const LIVE = liveCamps.map((c, i) => {
+    const phi = ((20 + ((i * 137.5) % 140)) * Math.PI) / 180
+    const count = c.members?.[0]?.count || 1
+    return {
+      id: `live-${c.slug}`,
+      name: c.name,
+      vibe: c.description || 'A live camp on the playa.',
+      members: [],
+      events: [],
+      live: true,
+      slug: c.slug,
+      memberCount: count,
+      big: count >= 5,
+      x: Math.min(92, Math.max(8, 50 + 26 * Math.cos(phi))),
+      y: Math.min(88, Math.max(52, 46 + 26 * Math.sin(phi))),
+    }
+  })
+  const ALL_CAMPS = [...CAMPS, ...LIVE]
+
   // Live playa ticker: hold, fade 0.7s, swap — same rhythm as the world page
   useEffect(() => {
     const iv = setInterval(() => {
@@ -61,7 +94,7 @@ export default function BurningManPage() {
     return () => window.removeEventListener('keydown', onKey)
   }, [selected])
 
-  const totalBurners = CAMPS.reduce((s, c) => s + c.members.length, 0) + 40
+  const totalBurners = ALL_CAMPS.reduce((s, c) => s + (c.live ? c.memberCount : c.members.length), 0) + 40
 
   const gate = (msg) => {
     if (!loggedIn) { window.location.href = '/signup'; return }
@@ -401,7 +434,7 @@ export default function BurningManPage() {
       </div>
 
       {/* 6 — CAMPS on the arcs */}
-      {CAMPS.map((camp, idx) => {
+      {ALL_CAMPS.map((camp, idx) => {
         const boost = camp.big ? 1.25 : 1
         const depth = (0.82 + ((camp.y - 52) / 36) * 0.24) * boost
         const n = camp.members.length
@@ -608,6 +641,13 @@ export default function BurningManPage() {
                 }}
               >
                 {camp.name}
+                {camp.live && (
+                  <span style={{ display: 'block', marginTop: 3 }}>
+                    <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.16em', padding: '2px 7px', borderRadius: 999, color: '#7BE6B4', border: '1px solid rgba(123,230,180,0.45)', background: 'rgba(123,230,180,0.08)' }}>
+                      LIVE
+                    </span>
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -687,7 +727,7 @@ export default function BurningManPage() {
           textShadow: '0 1px 6px rgba(0,0,0,0.8)',
         }}
       >
-        {CAMPS.length} camps · {totalBurners} burners on the playa
+        {ALL_CAMPS.length} camps · {totalBurners} burners on the playa
       </div>
 
       {/* 8 — LIVE TICKER (bottom-left) */}
@@ -716,7 +756,7 @@ export default function BurningManPage() {
           A camp IS a crew — members, privacy, its own (even ticketed) events —
           so registration goes straight to the real crew-creation flow. */}
       <button
-        onClick={() => { window.location.href = loggedIn ? '/crews/new' : '/signup?next=%2Fcrews%2Fnew' }}
+        onClick={() => { window.location.href = loggedIn ? '/crews/new?realm=burning-man' : '/signup?next=' + encodeURIComponent('/crews/new?realm=burning-man') }}
         style={{
           position: 'absolute',
           left: '50%',
@@ -784,8 +824,14 @@ export default function BurningManPage() {
                 : selected.vibe}
             </p>
 
+            {selected.live && (
+              <p style={{ fontSize: 12, color: '#7BE6B4', margin: '0 0 14px' }}>
+                ⛺ A real camp · {selected.memberCount} camping here — members, events and joining live on the camp page.
+              </p>
+            )}
+
             {/* members */}
-            {!selected.man && (
+            {!selected.man && !selected.live && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
               {selected.members.map((m, i) => (
                 <span
@@ -815,7 +861,7 @@ export default function BurningManPage() {
             )}
 
             {/* their events */}
-            {!selected.man && (
+            {!selected.man && !selected.live && (
             <div
               style={{
                 fontSize: 10,
@@ -829,7 +875,7 @@ export default function BurningManPage() {
               Camp events
             </div>
             )}
-            {!selected.man && (
+            {!selected.man && !selected.live && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18 }}>
               {selected.events.map((ev, i) => (
                 <div
@@ -904,7 +950,8 @@ export default function BurningManPage() {
 
             <button
               onClick={() => {
-                if (selected.man) { window.location.href = loggedIn ? '/crews/new' : '/signup?next=%2Fcrews%2Fnew'; return }
+                if (selected.man) { window.location.href = loggedIn ? '/crews/new?realm=burning-man' : '/signup?next=' + encodeURIComponent('/crews/new?realm=burning-man'); return }
+                if (selected.live) { window.location.href = `/crews/${selected.slug}`; return }
                 gate('Camps go live soon — this is a concept preview ✨')
               }}
               style={{
@@ -921,7 +968,7 @@ export default function BurningManPage() {
                 boxShadow: '0 4px 18px rgba(212,175,55,0.25)',
               }}
             >
-              {selected.man ? '⛺ Register your camp — free' : loggedIn ? 'Join this camp' : 'Sign up free to join this camp'}
+              {selected.man ? '⛺ Register your camp — free' : selected.live ? 'Open the camp →' : loggedIn ? 'Join this camp' : 'Sign up free to join this camp'}
             </button>
           </div>
         </>

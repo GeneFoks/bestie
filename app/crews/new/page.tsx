@@ -25,6 +25,13 @@ export default function NewCrewPage() {
   const [slugEdited, setSlugEdited] = useState(false)
   const [description, setDescription] = useState('')
   const [isPublic, setIsPublic] = useState(true)
+  // Which world this crew lives in (e.g. 'burning-man' when created via the
+  // playa's Register-your-camp flow) — makes it appear on that world's map.
+  const [realm, setRealm] = useState<string | null>(null)
+  useEffect(() => {
+    const r = new URLSearchParams(window.location.search).get('realm')
+    if (r && /^[a-z0-9-]{1,40}$/.test(r)) setRealm(r)
+  }, [])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -59,7 +66,7 @@ export default function NewCrewPage() {
 
     const { data: crew, error: crewErr } = await supabase
       .from('crews')
-      .insert({ name: name.trim(), slug: slug.trim(), description: description.trim() || null, captain_id: userId, is_public: isPublic })
+      .insert({ name: name.trim(), slug: slug.trim(), description: description.trim() || null, captain_id: userId, is_public: isPublic, ...(realm ? { realm } : {}) })
       .select()
       .single()
 
