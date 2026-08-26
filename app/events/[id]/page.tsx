@@ -104,6 +104,10 @@ export default async function EventPage({ params }) {
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <ShareEventButton eventId={event.id} eventTitle={event.title} />
               {isPast && <span style={{ fontSize: '12px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(155,147,192,0.1)', border: '1px solid rgba(155,147,192,0.2)', color: 'var(--text-muted)', fontWeight: 600 }}>Ended</span>}
+              {Number(event.ticket_price || 0) > 0
+                ? <span style={{ fontSize: '12px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', fontWeight: 700 }}>🎟 ${Number(event.ticket_price)}</span>
+                : <span style={{ fontSize: '12px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: '#34D399', fontWeight: 600 }}>Free</span>
+              }
               {event.is_members_only
                 ? <span style={{ fontSize: '12px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(155,147,192,0.1)', border: '1px solid rgba(155,147,192,0.2)', color: 'var(--text-muted)', fontWeight: 600 }}>🔒 Members only</span>
                 : <span style={{ fontSize: '12px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: '#34D399', fontWeight: 600 }}>🌐 Open</span>
@@ -158,6 +162,7 @@ export default async function EventPage({ params }) {
               captainId={event.crew?.captain_id}
               isMembersOnly={event.is_members_only}
               isFull={spotsLeft !== null && spotsLeft <= 0}
+              ticketPrice={Number(event.ticket_price || 0)}
             />
           )}
           <CheckInButton

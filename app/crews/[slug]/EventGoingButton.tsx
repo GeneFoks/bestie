@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { showToast } from '@/components/Toast'
 import { Check, HelpCircle, X } from 'lucide-react'
 
 type RSVP = 'going' | 'maybe' | 'cant_make'
@@ -11,6 +12,7 @@ type RSVP = 'going' | 'maybe' | 'cant_make'
 type Props = {
   eventId: string
   isFull: boolean
+  ticketPrice?: number
 }
 
 const OPTIONS: { id: RSVP; label: string; Icon: any; color: string; bg: string; border: string }[] = [
@@ -19,7 +21,7 @@ const OPTIONS: { id: RSVP; label: string; Icon: any; color: string; bg: string; 
   { id: 'cant_make', label: "Can't",  Icon: X,          color: '#FF6B35', bg: 'rgba(255,107,53,0.10)',  border: 'rgba(255,107,53,0.30)' },
 ]
 
-export default function EventGoingButton({ eventId, isFull }: Props) {
+export default function EventGoingButton({ eventId, isFull, ticketPrice = 0 }: Props) {
   const [userId, setUserId] = useState<string | null>(null)
   const [rsvp, setRsvp] = useState<RSVP | null>(null)
   const [loading, setLoading] = useState(true)
@@ -57,6 +59,36 @@ export default function EventGoingButton({ eventId, isFull }: Props) {
     setActing(false)
   }
 
+  // Paid event → Stripe Checkout; the webhook confirms attendance.
+  const buyTicket = async () => {
+    if (acting) return
+    setActing(true)
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch('/api/stripe/checkout-crew-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ eventId }),
+    }).then(r => r.json()).catch(() => null)
+    if (res?.url) { window.location.href = res.url; return }
+    console.error('Ticket checkout error:', res?.error)
+    showToast("Couldn't start checkout — try again", { type: 'error' })
+    setActing(false)
+  }
+
+  const isPaid = Number(ticketPrice) > 0
+
+  // Not logged in → paid events go to login, free events link to the event page
+  if (!loading && !userId && isPaid) {
+    return (
+      <Link
+        href="/login"
+        style={{ display: 'block', marginTop: '16px', padding: '13px', borderRadius: '12px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}
+      >
+        🎟 Get a ticket — ${Number(ticketPrice)} · sign in →
+      </Link>
+    )
+  }
+
   // Not logged in → link to event page
   if (!loading && !userId) {
     return (
@@ -85,6 +117,19 @@ export default function EventGoingButton({ eventId, isFull }: Props) {
       >
         Event full · View →
       </Link>
+    )
+  }
+
+  // Paid event and not confirmed going yet → buy a ticket instead of the free RSVP
+  if (isPaid && rsvp !== 'going') {
+    return (
+      <button
+        onClick={buyTicket}
+        disabled={acting}
+        style={{ display: 'block', width: '100%', marginTop: '16px', padding: '13px', borderRadius: '12px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: acting ? 'wait' : 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', opacity: acting ? 0.7 : 1 }}
+      >
+        {acting ? 'Opening checkout…' : `🎟 Get a ticket — $${Number(ticketPrice)}`}
+      </button>
     )
   }
 

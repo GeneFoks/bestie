@@ -6,6 +6,7 @@ import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
+import { showToast } from '@/components/Toast'
 import { Lock, Globe } from 'lucide-react'
 
 export default function NewEventPage() {
@@ -27,13 +28,16 @@ export default function NewEventPage() {
   const [error, setError] = useState<string | null>(null)
   const [otherCrews, setOtherCrews] = useState<Array<{ id: string; name: string }>>([])
   const [coHosts, setCoHosts] = useState<string[]>([])
+  const [ticketPrice, setTicketPrice] = useState('')
+  const [connectReady, setConnectReady] = useState(false)
+  const [connecting, setConnecting] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) { router.push('/login'); return }
       const uid = session.user.id
       const { data: crew, error: crewErr } = await supabase
-        .from('crews').select('id, captain_id').eq('slug', slug).single()
+        .from('crews').select('id, captain_id, stripe_connect_id, connect_charges_enabled').eq('slug', slug).single()
       if (crewErr || !crew) {
         setError('Could not load crew. Please try again.')
         setAuthLoading(false)
@@ -46,6 +50,7 @@ export default function NewEventPage() {
       }
       setUserId(uid)
       setCrewId(crew.id)
+      setConnectReady(!!crew.connect_charges_enabled)
 
       // Other crews this captain is a member of — potential co-hosts
       const { data: memberships } = await supabase
@@ -60,6 +65,21 @@ export default function NewEventPage() {
       setAuthLoading(false)
     })
   }, [slug])
+
+  // Kick off (or resume) the crew's payout onboarding, then bounce to Stripe.
+  const setupPayouts = async () => {
+    setConnecting(true)
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch('/api/stripe/connect/onboard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ crewId }),
+    }).then(r => r.json()).catch(() => null)
+    if (res?.url) { window.location.href = res.url; return }
+    console.error('Payout onboarding failed:', res?.error)
+    showToast("Couldn't start payout setup — try again", { type: 'error' })
+    setConnecting(false)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -78,6 +98,7 @@ export default function NewEventPage() {
         datetime: new Date(datetime).toISOString(),
         max_attendees: maxAttendees ? parseInt(maxAttendees) : null,
         is_members_only: isMembersOnly,
+        ticket_price: connectReady && ticketPrice ? Math.max(0, parseFloat(ticketPrice) || 0) : 0,
       })
       .select()
       .single()
@@ -166,6 +187,35 @@ export default function NewEventPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div>
+            <label style={labelStyle}>TICKET PRICE</label>
+            {connectReady ? (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '18px', fontWeight: 700, color: '#D4AF37' }}>$</span>
+                  <input
+                    type="number" min={0} step="0.5" placeholder="0 = free event"
+                    value={ticketPrice}
+                    onChange={e => setTicketPrice(e.target.value)}
+                    style={{ ...inputStyle, maxWidth: '160px' }}
+                  />
+                </div>
+                <p style={{ fontSize: '11px', color: '#34D399', marginTop: '6px' }}>
+                  ✓ Crew payouts connected. Guests pay to RSVP · Bestie fee 10% · the rest goes to the crew.
+                </p>
+              </div>
+            ) : (
+              <div style={{ padding: '14px 16px', borderRadius: '14px', background: 'rgba(212,175,55,0.05)', border: '1px dashed rgba(212,175,55,0.3)' }}>
+                <p style={{ fontSize: '13px', color: 'var(--text-primary)', marginBottom: '10px' }}>💰 Want to charge for this event? Connect the crew&rsquo;s Stripe account first — guests pay at checkout and the money lands in the crew&rsquo;s account (Bestie keeps 10%).</p>
+                <button type="button" onClick={setupPayouts} disabled={connecting}
+                  style={{ padding: '10px 16px', borderRadius: '11px', fontSize: '13px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: connecting ? 'wait' : 'pointer' }}>
+                  {connecting ? 'Opening Stripe…' : '💳 Set up payouts'}
+                </button>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>Leave this for free events — no setup needed.</p>
+              </div>
+            )}
           </div>
 
           {otherCrews.length > 0 && (

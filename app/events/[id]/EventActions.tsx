@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { showToast } from '@/components/Toast'
 import { Check, HelpCircle, X } from 'lucide-react'
 
 type RSVP = 'going' | 'maybe' | 'cant_make'
@@ -14,6 +15,7 @@ type Props = {
   captainId: string
   isMembersOnly: boolean
   isFull: boolean
+  ticketPrice?: number
 }
 
 const OPTIONS: { id: RSVP; label: string; Icon: any; color: string; bg: string; border: string }[] = [
@@ -22,7 +24,7 @@ const OPTIONS: { id: RSVP; label: string; Icon: any; color: string; bg: string; 
   { id: 'cant_make', label: "Can't make it",   Icon: X,          color: '#FF6B35', bg: 'rgba(255,107,53,0.10)',  border: 'rgba(255,107,53,0.30)' },
 ]
 
-export default function EventActions({ eventId, crewId, captainId, isMembersOnly, isFull }: Props) {
+export default function EventActions({ eventId, crewId, captainId, isMembersOnly, isFull, ticketPrice = 0 }: Props) {
   const router = useRouter()
   const [userId, setUserId] = useState<string | null>(null)
   const [rsvp, setRsvp] = useState<RSVP | null>(null)
@@ -67,6 +69,24 @@ export default function EventActions({ eventId, crewId, captainId, isMembersOnly
     setActing(false)
     router.refresh()
   }
+
+  // Paid event → Stripe Checkout; the webhook confirms attendance.
+  const buyTicket = async () => {
+    if (acting) return
+    setActing(true)
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch('/api/stripe/checkout-crew-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ eventId }),
+    }).then(r => r.json()).catch(() => null)
+    if (res?.url) { window.location.href = res.url; return }
+    console.error('Ticket checkout error:', res?.error)
+    showToast("Couldn't start checkout — try again", { type: 'error' })
+    setActing(false)
+  }
+
+  const isPaid = Number(ticketPrice) > 0
 
   if (loading) return null
 
@@ -113,6 +133,22 @@ export default function EventActions({ eventId, crewId, captainId, isMembersOnly
             )
           })}
         </div>
+      </div>
+    )
+  }
+
+  // Paid event and not confirmed going yet → buy a ticket instead of the free RSVP
+  if (isPaid && rsvp !== 'going') {
+    return (
+      <div>
+        <button
+          onClick={buyTicket}
+          disabled={acting}
+          style={{ display: 'block', width: '100%', padding: '14px', borderRadius: '14px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: acting ? 'wait' : 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', opacity: acting ? 0.7 : 1 }}
+        >
+          {acting ? 'Opening checkout…' : `🎟 Get a ticket — $${Number(ticketPrice)}`}
+        </button>
+        <p style={{ fontSize: '11px', color: 'var(--text-dim)', textAlign: 'center', marginTop: '8px' }}>Secure payment via Stripe · your spot is confirmed after checkout</p>
       </div>
     )
   }
