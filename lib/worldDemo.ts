@@ -8,6 +8,8 @@ export type WorldFire = {
   activityType: string
   faction: 'light' | 'flow' | 'flame'
   state: 'blazing' | 'steady' | 'dim' | 'ash' | 'unlit'
+  epic?: boolean            // landmark fire — rendered larger, with a light column
+  href?: string             // real destination (e.g. an actual session) — join goes here
   members: { name: string; initials: string }[]
   streakDays: number
   x: number // percent, 8-92
@@ -15,6 +17,26 @@ export type WorldFire = {
 }
 
 export const FIRES: WorldFire[] = [
+  // ── THE MAN — landmark fire for the Burning Man crowd ────────────────────
+  // Deep link to share: bestiehere.com/world?fire=burning-man
+  {
+    id: 'burning-man',
+    name: "Burning Man '26 Camp",
+    activityType: 'burning_man',
+    faction: 'flame',
+    state: 'blazing',
+    epic: true,
+    href: '/group-sessions/8e19dc5f-97f2-42d2-8358-e17112150978',
+    members: [
+      { name: 'Gennadii', initials: 'GE' },
+      { name: 'Artem', initials: 'AR' },
+      { name: 'Mila', initials: 'MI' },
+      { name: 'Dan', initials: 'DA' },
+    ],
+    streakDays: 7,
+    x: 55,
+    y: 46,
+  },
   {
     id: 'fire-morning-runners',
     name: 'Morning Runners',

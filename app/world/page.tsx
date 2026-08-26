@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { FIRES, EVENTS, FACTIONS } from '@/lib/worldDemo'
 import { ActivityIcon } from '@/lib/activityIcons'
 import { showToast } from '@/components/Toast'
+import { supabase } from '@/lib/supabase'
 
 // ---------------------------------------------------------------------------
 // Deterministic pseudo-random (same on server & client — no hydration drift)
@@ -73,7 +74,21 @@ const HORIZON = [
 export default function WorldPage() {
   const [selected, setSelected] = useState(null)
   const [hoveredMember, setHoveredMember] = useState(null)
+  const [loggedIn, setLoggedIn] = useState(false)
   const [evIdx, setEvIdx] = useState(0)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => setLoggedIn(!!session))
+  }, [])
+
+  // Deep link: /world?fire=burning-man opens that fire's card on arrival —
+  // share the link and visitors land straight in the story, no signup wall.
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get('fire')
+    if (!id) return
+    const f = FIRES.find((x) => x.id === id)
+    if (f) setTimeout(() => setSelected(f), 600)
+  }, [])
   const [evVisible, setEvVisible] = useState(true)
 
   // Live feed ticker: hold ~3.5s, fade 0.7s (interval well above the 3s floor)
@@ -280,7 +295,8 @@ export default function WorldPage() {
         const cfg = FLAME_CFG[fire.state] || FLAME_CFG.steady
         const isAsh = fire.state === 'ash'
         const isUnlit = fire.state === 'unlit'
-        const depth = 0.72 + ((fire.y - 30) / 58) * 0.46
+        const boost = fire.epic ? 1.45 : 1
+        const depth = (0.72 + ((fire.y - 30) / 58) * 0.46) * boost
         const n = fire.members.length
         return (
           <div
@@ -310,6 +326,25 @@ export default function WorldPage() {
                 transformOrigin: '50% 48%',
               }}
             >
+              {/* epic landmark: a soft column of light rising from the pyre */}
+              {fire.epic && !isAsh && (
+                <div
+                  className="bw-hglow"
+                  style={{
+                    position: 'absolute',
+                    left: 65,
+                    top: -76,
+                    width: 30,
+                    height: 128,
+                    transform: 'translateX(-50%)',
+                    background: 'linear-gradient(to top, rgba(255,196,107,0.30), rgba(255,196,107,0.10) 55%, transparent 100%)',
+                    borderRadius: '50% 50% 0 0 / 12% 12% 0 0',
+                    animationDuration: '5.5s',
+                    pointerEvents: 'none',
+                  }}
+                />
+              )}
+
               {/* warm ground glow */}
               {!isAsh && !isUnlit && (
                 <div
@@ -511,10 +546,11 @@ export default function WorldPage() {
               <div style={{ position: 'absolute', left: 0, right: 0, top: 76, textAlign: 'center', pointerEvents: 'none' }}>
                 <div
                   style={{
-                    fontSize: 10,
+                    fontSize: fire.epic ? 11 : 10,
+                    fontWeight: fire.epic ? 700 : 400,
                     letterSpacing: '0.14em',
                     textTransform: 'uppercase',
-                    color: 'var(--text-muted, #A99ECC)',
+                    color: fire.epic ? '#E8C766' : 'var(--text-muted, #A99ECC)',
                     whiteSpace: 'nowrap',
                     textShadow: '0 1px 6px rgba(0,0,0,0.8)',
                   }}
@@ -845,7 +881,13 @@ export default function WorldPage() {
             </p>
 
             <button
-              onClick={() => showToast('Quests are coming soon — this is a concept preview ✨', { type: 'info' })}
+              onClick={() => {
+                // Landmark fires point at a REAL destination (an actual session)
+                if (selected.href) { window.location.href = selected.href; return }
+                // Visitors without an account → the join path starts at signup
+                if (!loggedIn) { window.location.href = '/signup'; return }
+                showToast('Quests are coming soon — this is a concept preview ✨', { type: 'info' })
+              }}
               style={{
                 width: '100%',
                 padding: '13px 16px',
@@ -860,7 +902,15 @@ export default function WorldPage() {
                 boxShadow: '0 4px 18px rgba(212,175,55,0.25)',
               }}
             >
-              {selected.state === 'ash' ? 'Rekindle from the ashes · +15 ✨' : selected.state === 'unlit' ? 'Light this fire · +15 ✨' : 'Join this fire · +2 ✨'}
+              {selected.href
+                ? 'Open the camp →'
+                : !loggedIn
+                ? 'Sign up free to join this fire'
+                : selected.state === 'ash'
+                ? 'Rekindle from the ashes · +15 ✨'
+                : selected.state === 'unlit'
+                ? 'Light this fire · +15 ✨'
+                : 'Join this fire · +2 ✨'}
             </button>
           </div>
         </>
