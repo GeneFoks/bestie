@@ -117,7 +117,8 @@
       "Bash(git commit -q -m 'feat: paid crew events — tickets paid to the crew'\\\\''s Stripe account *)",
       "Bash(git commit -q -m 'feat: expand all of a person'\\\\''s sessions inline on the browse card *)",
       "Bash(git commit -q -m 'feat: compatibility percent on browse + offers cards *)",
-      "Bash(git commit -q -m 'feat: delete a past meetup with optional cut-ties + visible history entry *)"
+      "Bash(git commit -q -m 'feat: delete a past meetup with optional cut-ties + visible history entry *)",
+      "Bash(git commit -q -m 'fix: heal stale mutual knocks + harden can_message against the stale flag *)"
     ]
   }
 }
