@@ -152,6 +152,14 @@ export default function OnboardingPage() {
     }
     setLoading(false)
     if (error) { console.error(error); showToast("Couldn't save your profile — try again", { type: 'error' }); return }
+    // Carried intent (e.g. "Register your camp" → /crews/new) wins: deliver
+    // the user where they were heading before signup. The test can wait.
+    const next = typeof window !== 'undefined' ? localStorage.getItem('bestie_next') : null
+    if (next && next.startsWith('/') && !next.startsWith('//')) {
+      localStorage.removeItem('bestie_next')
+      router.push(next)
+      return
+    }
     // Un-typed users go take the test (our biggest hook); typed users go home.
     router.push(skip ? '/dashboard' : '/bestie-type')
   }

@@ -667,7 +667,7 @@ export default function BurningManPage() {
           A camp IS a crew — members, privacy, its own (even ticketed) events —
           so registration goes straight to the real crew-creation flow. */}
       <button
-        onClick={() => { window.location.href = loggedIn ? '/crews/new' : '/signup' }}
+        onClick={() => { window.location.href = loggedIn ? '/crews/new' : '/signup?next=%2Fcrews%2Fnew' }}
         style={{
           position: 'absolute',
           left: '50%',

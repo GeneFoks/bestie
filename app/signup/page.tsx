@@ -42,6 +42,13 @@ function SignupForm() {
   useEffect(() => {
     const ref = searchParams.get('ref')
     if (ref) localStorage.setItem('bestie_ref', ref)
+    // Intent carry-through: ?next=/crews/new (e.g. "Register your camp" on the
+    // playa) survives signup + onboarding and lands the user where they meant
+    // to go. Same-site relative paths only.
+    const next = searchParams.get('next')
+    if (next && next.startsWith('/') && !next.startsWith('//')) {
+      localStorage.setItem('bestie_next', next)
+    }
   }, [searchParams])
 
   const handleSignup = async (e) => {
