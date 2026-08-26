@@ -234,7 +234,6 @@ export default function HomePage() {
           <Link href="/world" className="nav-link" style={{ color: '#D4AF37' }}>World</Link>
           <Link href="/plans" className="nav-link">Plans</Link>
           <Link href="#how-it-works" className="nav-link">How It Works</Link>
-          <Link href="#score" className="nav-link">Bestie Score</Link>
         </div>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           {/* My Circle — always visible, desktop & mobile */}
