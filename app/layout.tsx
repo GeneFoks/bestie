@@ -4,7 +4,8 @@ import { AuthProvider } from './providers'
 import BottomNav from '@/components/BottomNav'
 import PWARegister from '@/components/PWARegister'
 import IncomingCall from '@/components/IncomingCall'
-import CompanionWidget from '@/components/CompanionWidget'
+// AI companion is paused for now (stale answers) — re-import CompanionWidget
+// from '@/components/CompanionWidget' to bring it back.
 import AnalyticsProvider from '@/components/AnalyticsProvider'
 import FeedbackWidget from '@/components/FeedbackWidget'
 
@@ -70,7 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <BottomNav />
           <PWARegister />
           <IncomingCall />
-          <CompanionWidget />
+          {/* <CompanionWidget /> — paused */}
           <AnalyticsProvider />
           <FeedbackWidget />
         </AuthProvider>

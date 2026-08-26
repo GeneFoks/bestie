@@ -751,7 +751,8 @@ export default function EditProfilePage() {
           </div>
         </div>
 
-        {/* Companion settings */}
+        {/* Companion settings — AI companion is paused for now; flip to true to bring the section back */}
+        {false && (
         <div style={{ background: 'var(--surface-1)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(52,211,153,0.15)', marginBottom: '16px' }}>
           <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', marginBottom: '4px' }}>AI Companion</h3>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px' }}>Смени тип или имя своего компаньона</p>
@@ -847,6 +848,7 @@ export default function EditProfilePage() {
             )}
           </div>
         </div>
+        )}
 
         <button onClick={handleSave} disabled={saving} style={{ width: '100%', padding: '14px', borderRadius: '14px', fontSize: '15px', fontWeight: 600, background: saved ? 'rgba(52,211,153,0.15)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: saved ? '#34D399' : 'var(--bg)', border: saved ? '1px solid rgba(52,211,153,0.3)' : 'none', cursor: 'pointer' }}>
           {saving ? 'Saving...' : saved ? '✓ Profile saved!' : 'Save all changes'}
