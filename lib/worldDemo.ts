@@ -7,7 +7,7 @@ export type WorldFire = {
   name: string
   activityType: string
   faction: 'light' | 'flow' | 'flame'
-  state: 'blazing' | 'steady' | 'dim' | 'ash'
+  state: 'blazing' | 'steady' | 'dim' | 'ash' | 'unlit'
   members: { name: string; initials: string }[]
   streakDays: number
   x: number // percent, 8-92
@@ -136,6 +136,40 @@ export const FIRES: WorldFire[] = [
     streakDays: 0,
     x: 49,
     y: 81,
+  },
+  // ── Unlit fire pits — waiting for a founder to light them ──────────────
+  {
+    id: 'pit-north',
+    name: 'An unlit fire',
+    activityType: 'coffee_chat',
+    faction: 'flow',
+    state: 'unlit',
+    members: [],
+    streakDays: 0,
+    x: 28,
+    y: 72,
+  },
+  {
+    id: 'pit-east',
+    name: 'An unlit fire',
+    activityType: 'gym_partner',
+    faction: 'flame',
+    state: 'unlit',
+    members: [],
+    streakDays: 0,
+    x: 84,
+    y: 76,
+  },
+  {
+    id: 'pit-west',
+    name: 'An unlit fire',
+    activityType: 'journaling',
+    faction: 'light',
+    state: 'unlit',
+    members: [],
+    streakDays: 0,
+    x: 8,
+    y: 52,
   },
 ]
 

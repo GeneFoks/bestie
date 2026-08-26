@@ -57,6 +57,7 @@ const FLAME_CFG = {
     sparks: 0,
   },
   ash: { glow: 0, glowCore: 0, pool: null, cores: [], sparks: 0 },
+  unlit: { glow: 0, glowCore: 0, pool: null, cores: [], sparks: 0 },
 }
 
 // Static film grain (SVG turbulence tile as data URI — zero runtime cost)
@@ -95,7 +96,7 @@ export default function WorldPage() {
   }, [selected])
 
   const totalMembers = FIRES.reduce((s, f) => s + f.members.length, 0) + 30
-  const burning = FIRES.filter((f) => f.state !== 'ash').length
+  const burning = FIRES.filter((f) => f.state !== 'ash' && f.state !== 'unlit').length
   const factionOf = (id) => FACTIONS.find((f) => f.id === id)
 
   return (
@@ -277,6 +278,7 @@ export default function WorldPage() {
       {FIRES.map((fire, idx) => {
         const cfg = FLAME_CFG[fire.state] || FLAME_CFG.steady
         const isAsh = fire.state === 'ash'
+        const isUnlit = fire.state === 'unlit'
         const depth = 0.72 + ((fire.y - 30) / 58) * 0.46
         const n = fire.members.length
         return (
@@ -308,7 +310,7 @@ export default function WorldPage() {
               }}
             >
               {/* warm ground glow */}
-              {!isAsh && (
+              {!isAsh && !isUnlit && (
                 <div
                   style={{
                     position: 'absolute',
@@ -324,11 +326,36 @@ export default function WorldPage() {
                 />
               )}
 
-              {/* crossed logs */}
+              {/* crossed logs (cold, desaturated on an unlit pit) */}
               {!isAsh && (
                 <>
-                  <div style={{ position: 'absolute', left: 65, top: 52, width: 27, height: 5, borderRadius: 3, background: '#4A2F1D', transform: 'translate(-50%, -50%) rotate(21deg)' }} />
-                  <div style={{ position: 'absolute', left: 65, top: 52, width: 27, height: 5, borderRadius: 3, background: '#3D2716', transform: 'translate(-50%, -50%) rotate(-23deg)' }} />
+                  <div style={{ position: 'absolute', left: 65, top: 52, width: 27, height: 5, borderRadius: 3, background: isUnlit ? '#2A2620' : '#4A2F1D', transform: 'translate(-50%, -50%) rotate(21deg)' }} />
+                  <div style={{ position: 'absolute', left: 65, top: 52, width: 27, height: 5, borderRadius: 3, background: isUnlit ? '#241F1A' : '#3D2716', transform: 'translate(-50%, -50%) rotate(-23deg)' }} />
+                </>
+              )}
+
+              {/* unlit pit: a quiet stone ring waiting for a founder */}
+              {isUnlit && (
+                <>
+                  {[0, 1, 2, 3, 4, 5].map((k) => {
+                    const a = (k / 6) * Math.PI * 2
+                    return (
+                      <div
+                        key={k}
+                        style={{
+                          position: 'absolute',
+                          left: 65 + Math.cos(a) * 17,
+                          top: 53 + Math.sin(a) * 8,
+                          width: 6,
+                          height: 4.5,
+                          transform: 'translate(-50%, -50%)',
+                          borderRadius: '50%',
+                          background: '#3A3F3A',
+                          boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.06)',
+                        }}
+                      />
+                    )
+                  })}
                 </>
               )}
 
@@ -446,7 +473,7 @@ export default function WorldPage() {
                 >
                   {fire.name}
                 </div>
-                {!isAsh && (
+                {!isAsh && !isUnlit && (
                   <div
                     style={{
                       display: 'inline-block',
@@ -460,7 +487,24 @@ export default function WorldPage() {
                       background: 'rgba(212,175,55,0.08)',
                     }}
                   >
-                    Day {fire.streakDays}
+                    🔥 {fire.streakDays} days burning
+                  </div>
+                )}
+                {isUnlit && (
+                  <div
+                    style={{
+                      display: 'inline-block',
+                      marginTop: 4,
+                      fontSize: 9,
+                      lineHeight: 1,
+                      padding: '3px 7px',
+                      borderRadius: 999,
+                      color: 'var(--text-muted, #A99ECC)',
+                      border: '1px dashed rgba(212,175,55,0.45)',
+                      background: 'rgba(212,175,55,0.05)',
+                    }}
+                  >
+                    Light it first · +15 ✨
                   </div>
                 )}
               </div>
@@ -603,12 +647,17 @@ export default function WorldPage() {
           pointerEvents: 'none',
         }}
       >
-        {FACTIONS.map((f) => (
-          <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 11, color: 'var(--text-muted, #A99ECC)' }}>{f.label}</span>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: f.color, boxShadow: `0 0 6px ${f.color}66` }} />
-          </div>
-        ))}
+        {FACTIONS.map((f) => {
+          const meaning = f.id === 'light' ? 'mind' : f.id === 'flow' ? 'people' : 'body'
+          return (
+            <div key={f.id} title={f.blurb} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 11, color: 'var(--text-muted, #A99ECC)' }}>
+                {f.label} <span style={{ opacity: 0.65 }}>· {meaning}</span>
+              </span>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: f.color, boxShadow: `0 0 6px ${f.color}66` }} />
+            </div>
+          )
+        })}
       </div>
 
       {/* 8 — BOTTOM SHEET */}
@@ -670,20 +719,7 @@ export default function WorldPage() {
                   </span>
                 ) : null
               })()}
-              {selected.state !== 'ash' ? (
-                <span
-                  style={{
-                    fontSize: 11,
-                    padding: '4px 10px',
-                    borderRadius: 999,
-                    color: '#D4AF37',
-                    border: '1px solid rgba(212,175,55,0.4)',
-                    background: 'rgba(212,175,55,0.08)',
-                  }}
-                >
-                  Day {selected.streakDays}
-                </span>
-              ) : (
+              {selected.state === 'ash' ? (
                 <span
                   style={{
                     fontSize: 11,
@@ -694,6 +730,32 @@ export default function WorldPage() {
                   }}
                 >
                   Gone to ash
+                </span>
+              ) : selected.state === 'unlit' ? (
+                <span
+                  style={{
+                    fontSize: 11,
+                    padding: '4px 10px',
+                    borderRadius: 999,
+                    color: 'var(--text-muted, #A99ECC)',
+                    border: '1px dashed rgba(212,175,55,0.45)',
+                  }}
+                >
+                  Waiting for a founder
+                </span>
+              ) : (
+                <span
+                  title="Days in a row this crew has checked in"
+                  style={{
+                    fontSize: 11,
+                    padding: '4px 10px',
+                    borderRadius: 999,
+                    color: '#D4AF37',
+                    border: '1px solid rgba(212,175,55,0.4)',
+                    background: 'rgba(212,175,55,0.08)',
+                  }}
+                >
+                  🔥 Burning {selected.streakDays} days straight
                 </span>
               )}
             </div>
@@ -721,9 +783,18 @@ export default function WorldPage() {
                 </span>
               ))}
               <span style={{ fontSize: 12, color: 'var(--text-muted, #A99ECC)', marginLeft: 2 }}>
-                {selected.members.length} around this fire
+                {selected.state === 'unlit' ? 'No one here yet — light it and lead' : `${selected.members.length} around this fire`}
               </span>
             </div>
+
+            {/* How the rewards work — founder earns more than a joiner */}
+            <p style={{ fontSize: 12, color: 'var(--text-muted, #A99ECC)', lineHeight: 1.55, margin: '0 0 16px' }}>
+              {selected.state === 'unlit'
+                ? 'Light a fire and you’re its founder: +15 ✨ Sparks when the crew takes its first step together. Joining someone else’s fire earns +2 ✨.'
+                : selected.state === 'ash'
+                ? 'This fire went cold. Rekindle it and the founder bonus is yours: +15 ✨ when the crew moves again.'
+                : 'Check in together to keep it burning — every shared day counts ×' + Math.max(selected.members.length, 1) + ' for everyone. Joining earns +2 ✨.'}
+            </p>
 
             <button
               onClick={() => showToast('Quests are coming soon — this is a concept preview ✨', { type: 'info' })}
@@ -741,7 +812,7 @@ export default function WorldPage() {
                 boxShadow: '0 4px 18px rgba(212,175,55,0.25)',
               }}
             >
-              {selected.state === 'ash' ? 'Rekindle from the ashes' : 'Join this fire'}
+              {selected.state === 'ash' ? 'Rekindle from the ashes · +15 ✨' : selected.state === 'unlit' ? 'Light this fire · +15 ✨' : 'Join this fire · +2 ✨'}
             </button>
           </div>
         </>

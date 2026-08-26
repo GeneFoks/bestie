@@ -6,6 +6,7 @@ import PWARegister from '@/components/PWARegister'
 import IncomingCall from '@/components/IncomingCall'
 import CompanionWidget from '@/components/CompanionWidget'
 import AnalyticsProvider from '@/components/AnalyticsProvider'
+import FeedbackWidget from '@/components/FeedbackWidget'
 
 export const metadata: Metadata = {
   title: 'Bestie — Your Social Passport',
@@ -71,6 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <IncomingCall />
           <CompanionWidget />
           <AnalyticsProvider />
+          <FeedbackWidget />
         </AuthProvider>
       </body>
     </html>
