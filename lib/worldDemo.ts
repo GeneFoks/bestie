@@ -208,26 +208,26 @@ export const EVENTS: string[] = [
   'Still Minds is fading — two keepers remain',
   'Ridge Walkers went cold. Anyone carrying an ember?',
   'Omar keeps the Pickleball flame alive',
-  'The Flame faction leads the week in sparks',
+  'The Material path leads the week in sparks',
   'Elena passes the torch to Tom for tomorrow',
 ]
 
 export const FACTIONS: { id: 'light' | 'flow' | 'flame'; label: string; color: string; blurb: string }[] = [
   {
     id: 'light',
-    label: 'Light',
+    label: 'Mental',
     color: '#E8C766',
     blurb: 'Keepers of the mind — readers, thinkers, and quiet minds who feed the fire with focus.',
   },
   {
     id: 'flow',
-    label: 'Flow',
+    label: 'Social',
     color: '#5B8DEF',
     blurb: 'The social current — talkers, wanderers, and connectors who keep sparks moving between fires.',
   },
   {
     id: 'flame',
-    label: 'Flame',
+    label: 'Material',
     color: '#E86A5B',
     blurb: 'Body and craft — runners, makers, and movers who stoke the fire with sweat and hands.',
   },

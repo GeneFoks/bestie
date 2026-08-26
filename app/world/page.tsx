@@ -732,7 +732,7 @@ export default function WorldPage() {
         }}
       >
         {FACTIONS.map((f) => {
-          const meaning = f.id === 'light' ? 'mind' : f.id === 'flow' ? 'people' : 'body'
+          const meaning = f.id === 'light' ? 'mind' : f.id === 'flow' ? 'people' : 'body & craft'
           return (
             <div key={f.id} title={f.blurb} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ fontSize: 11, color: 'var(--text-muted, #A99ECC)' }}>
