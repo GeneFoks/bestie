@@ -31,6 +31,9 @@ export default function NewEventPage() {
   const [ticketPrice, setTicketPrice] = useState('')
   const [connectReady, setConnectReady] = useState(false)
   const [connecting, setConnecting] = useState(false)
+  // Existing group sessions of mine that could be attached to this crew
+  const [mySessions, setMySessions] = useState<any[]>([])
+  const [attaching, setAttaching] = useState<string | null>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -61,6 +64,17 @@ export default function NewEventPage() {
         .map((m: any) => m.crew)
         .filter((c: any) => c && c.id !== crew.id)
       setOtherCrews(others)
+
+      // My upcoming group sessions not yet attached to THIS crew — offer to
+      // attach instead of creating a duplicate (participants come along).
+      const { data: sessions } = await supabase
+        .from('group_sessions')
+        .select('id, title, scheduled_at, location, crew_id, participants:group_session_participants(count)')
+        .eq('host_id', uid)
+        .gte('scheduled_at', new Date().toISOString())
+        .order('scheduled_at', { ascending: true })
+        .limit(12)
+      setMySessions((sessions || []).filter((s: any) => s.crew_id !== crew.id))
 
       setAuthLoading(false)
     })
@@ -145,6 +159,46 @@ export default function NewEventPage() {
       <div style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 24px' }}>
         <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', color: 'var(--text-primary)', marginBottom: '8px' }}>Create Event</h1>
         <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '32px' }}>Anyone can join unless you make it members only.</p>
+
+        {/* Attach one of my existing sessions instead of creating a duplicate */}
+        {mySessions.length > 0 && (
+          <div style={{ marginBottom: '28px', padding: '18px', borderRadius: '16px', background: 'rgba(212,175,55,0.05)', border: '1px dashed rgba(212,175,55,0.3)' }}>
+            <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>⛺ Already have a session? Attach it here</p>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '12px' }}>Its participants come along — no duplicate needed.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {mySessions.map((s: any) => {
+                const d = new Date(s.scheduled_at)
+                return (
+                  <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '11px 14px', borderRadius: '12px', background: 'var(--surface-1)', border: '1px solid var(--border)' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.title}</p>
+                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
+                        {d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{s.location ? ` · ${s.location}` : ''} · {s.participants?.[0]?.count || 0} joined
+                        {s.crew_id ? ' · attached to another crew' : ''}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={attaching === s.id}
+                      onClick={async () => {
+                        setAttaching(s.id)
+                        const { error: err } = await supabase.from('group_sessions').update({ crew_id: crewId }).eq('id', s.id)
+                        setAttaching(null)
+                        if (err) { console.error(err); showToast("Couldn't attach the session — try again", { type: 'error' }); return }
+                        showToast('Session attached to the crew ✓', { type: 'success' })
+                        router.push(`/crews/${slug}`)
+                      }}
+                      style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 700, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+                    >
+                      {attaching === s.id ? 'Attaching…' : 'Attach'}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+            <p style={{ fontSize: '11px', color: 'var(--text-dim)', margin: '12px 0 0', textAlign: 'center' }}>— or create a brand-new event below —</p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
