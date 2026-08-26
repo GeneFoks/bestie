@@ -8,7 +8,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Wallet, Crown } from 'lucide-react'
+import { Wallet, Crown, ChevronDown } from 'lucide-react'
 import { showToast } from '@/components/Toast'
 
 export default function CrewMembership({ crew }: { crew: any }) {
@@ -21,6 +21,8 @@ export default function CrewMembership({ crew }: { crew: any }) {
   const [mySub, setMySub] = useState<any>(null)
   const [isMember, setIsMember] = useState(false)
   const [savedMsg, setSavedMsg] = useState('')
+  // Folded by default — most crews don't monetize on day one
+  const [expanded, setExpanded] = useState(false)
 
   const isCaptain = me && me === crew.captain_id
 
@@ -43,6 +45,7 @@ export default function CrewMembership({ crew }: { crew: any }) {
         })
         const j = await res.json()
         if (typeof j.ready === 'boolean') setConnectReady(j.ready)
+        setExpanded(true)
       }
     })
   }, [])
@@ -102,10 +105,26 @@ export default function CrewMembership({ crew }: { crew: any }) {
   if (isCaptain) {
     return (
       <div style={box}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-          <span style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Wallet size={17} color="#D4AF37" strokeWidth={1.9} /></span>
-          <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Paid membership</p>
-        </div>
+        {/* Header doubles as a toggle — the setup UI stays folded until the
+            captain actually wants a paid membership. */}
+        <button
+          type="button"
+          onClick={() => setExpanded(v => !v)}
+          aria-expanded={expanded}
+          style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }}
+        >
+          <span style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Wallet size={17} color="#D4AF37" strokeWidth={1.9} /></span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: 'block', fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>Paid membership</span>
+            <span style={{ display: 'block', fontSize: '11px', color: active ? '#34D399' : 'var(--text-dim)' }}>
+              {active && crew.sub_price ? `Active · $${price || crew.sub_price}/month` : 'Off — tap to set up'}
+            </span>
+          </span>
+          <ChevronDown size={16} color="var(--text-muted)" strokeWidth={2} style={{ flexShrink: 0, transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
+        </button>
+
+        {expanded && (
+        <div style={{ marginTop: '14px' }}>
         <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 14px' }}>Charge a monthly fee. Bestie keeps 10%, the rest is paid out to you.</p>
 
         {!connectReady ? (
@@ -129,6 +148,8 @@ export default function CrewMembership({ crew }: { crew: any }) {
             </label>
             <button onClick={saveSettings} disabled={busy} style={{ ...gold, marginTop: '4px' }}>{busy ? 'Saving…' : savedMsg || 'Save membership settings'}</button>
           </div>
+        )}
+        </div>
         )}
       </div>
     )
