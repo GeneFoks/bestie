@@ -222,16 +222,22 @@ export default function BurningManPage() {
         }}
       />
 
-      {/* 5 — THE MAN: a monument of pure light at the city's center */}
+      {/* 5 — THE MAN: a monument of light — and the city's welcome card */}
       <div
         className="pm-node"
+        role="button"
+        tabIndex={0}
+        aria-label="The Man — tap to learn about the city"
+        onClick={() => setSelected({ id: 'the-man', name: 'The Man', man: true, members: [], events: [], vibe: '' })}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelected({ id: 'the-man', name: 'The Man', man: true, members: [], events: [], vibe: '' }) }}
         style={{
           position: 'absolute',
           left: '50%',
           top: '46%',
           zIndex: 46,
           transform: 'translate(-50%, -50%)',
-          pointerEvents: 'none',
+          cursor: 'pointer',
+          outline: 'none',
         }}
       >
         <div
@@ -427,6 +433,9 @@ export default function BurningManPage() {
                 transformOrigin: '50% 46%',
               }}
             >
+              {/* invisible hit pad — the tap zone matches the visible glow,
+                  not just the tight node box */}
+              <div style={{ position: 'absolute', inset: -26 }} />
               {/* warm ground glow */}
               <div
                 style={{
@@ -763,14 +772,20 @@ export default function BurningManPage() {
             <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.15)', margin: '0 auto 16px' }} />
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-              <span style={{ fontSize: 18 }}>⛺</span>
+              <span style={{ fontSize: 18 }}>{selected.man ? '🔥' : '⛺'}</span>
               <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary, #F0EDF7)' }}>{selected.name}</span>
+              {selected.man && (
+                <span style={{ fontSize: 11, padding: '4px 10px', borderRadius: 999, color: '#D4AF37', border: '1px solid rgba(212,175,55,0.4)', background: 'rgba(212,175,55,0.08)' }}>♾ Eternal flame</span>
+              )}
             </div>
             <p style={{ fontSize: 12.5, color: 'var(--text-muted, #A99ECC)', lineHeight: 1.5, margin: '0 0 14px' }}>
-              {selected.vibe}
+              {selected.man
+                ? 'The eternal heart of the city. Every fire around him is a camp — real people, their vibe, their events. Tap any campfire to meet its crew, or plant your own flag on the playa.'
+                : selected.vibe}
             </p>
 
             {/* members */}
+            {!selected.man && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
               {selected.members.map((m, i) => (
                 <span
@@ -797,8 +812,10 @@ export default function BurningManPage() {
                 {selected.members.length} camping here
               </span>
             </div>
+            )}
 
             {/* their events */}
+            {!selected.man && (
             <div
               style={{
                 fontSize: 10,
@@ -811,6 +828,8 @@ export default function BurningManPage() {
             >
               Camp events
             </div>
+            )}
+            {!selected.man && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18 }}>
               {selected.events.map((ev, i) => (
                 <div
@@ -881,9 +900,13 @@ export default function BurningManPage() {
                 </div>
               ))}
             </div>
+            )}
 
             <button
-              onClick={() => gate('Camps go live soon — this is a concept preview ✨')}
+              onClick={() => {
+                if (selected.man) { window.location.href = loggedIn ? '/crews/new' : '/signup?next=%2Fcrews%2Fnew'; return }
+                gate('Camps go live soon — this is a concept preview ✨')
+              }}
               style={{
                 width: '100%',
                 padding: '13px 16px',
@@ -898,7 +921,7 @@ export default function BurningManPage() {
                 boxShadow: '0 4px 18px rgba(212,175,55,0.25)',
               }}
             >
-              {loggedIn ? 'Join this camp' : 'Sign up free to join this camp'}
+              {selected.man ? '⛺ Register your camp — free' : loggedIn ? 'Join this camp' : 'Sign up free to join this camp'}
             </button>
           </div>
         </>
