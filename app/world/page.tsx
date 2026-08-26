@@ -72,6 +72,7 @@ const HORIZON = [
 
 export default function WorldPage() {
   const [selected, setSelected] = useState(null)
+  const [hoveredMember, setHoveredMember] = useState(null)
   const [evIdx, setEvIdx] = useState(0)
   const [evVisible, setEvVisible] = useState(true)
 
@@ -434,28 +435,75 @@ export default function WorldPage() {
                 </>
               )}
 
-              {/* members — warm dots in an arc in front of the fire */}
+              {/* members — warm dots in an arc; hover shows a passport preview */}
               {fire.members.map((m, j) => {
                 const t = Math.PI * (0.22 + (n > 1 ? (j / (n - 1)) * 0.56 : 0.28))
                 const mx = 65 + Math.cos(t) * 30
                 const my = 55 + Math.sin(t) * 15
+                const hovKey = `${fire.id}:${j}`
+                const isHov = hoveredMember === hovKey
                 return (
                   <div
                     key={j}
-                    title={m.name}
+                    onMouseEnter={() => setHoveredMember(hovKey)}
+                    onMouseLeave={() => setHoveredMember(null)}
+                    onClick={(e) => { e.stopPropagation(); showToast(`${m.name}’s passport opens here when quests go live ✨`, { type: 'info' }) }}
                     style={{
                       position: 'absolute',
                       left: mx,
                       top: my,
-                      width: 7,
-                      height: 7,
-                      transform: 'translate(-50%, -50%)',
-                      borderRadius: '50%',
-                      background: isAsh ? '#6E695E' : 'radial-gradient(circle, #FFE9C8 0%, #FFC98F 70%)',
-                      boxShadow: isAsh ? 'none' : '0 0 9px 2px rgba(255,190,120,0.4)',
-                      opacity: isAsh ? 0.6 : 0.95,
+                      width: 16,
+                      height: 16,
+                      margin: '-8px 0 0 -8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      zIndex: isHov ? 5 : 1,
                     }}
-                  />
+                  >
+                    <div
+                      style={{
+                        width: isHov ? 10 : 7,
+                        height: isHov ? 10 : 7,
+                        borderRadius: '50%',
+                        background: isAsh ? '#6E695E' : 'radial-gradient(circle, #FFE9C8 0%, #FFC98F 70%)',
+                        boxShadow: isAsh ? 'none' : isHov ? '0 0 14px 4px rgba(255,190,120,0.65)' : '0 0 9px 2px rgba(255,190,120,0.4)',
+                        opacity: isAsh ? 0.6 : 0.95,
+                        transition: 'width 0.12s, height 0.12s, box-shadow 0.12s',
+                      }}
+                    />
+                    {/* passport preview */}
+                    {isHov && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: 18,
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          padding: '8px 12px',
+                          borderRadius: 12,
+                          background: 'rgba(13,16,13,0.92)',
+                          border: '1px solid rgba(212,175,55,0.3)',
+                          boxShadow: '0 6px 20px rgba(0,0,0,0.5)',
+                          whiteSpace: 'nowrap',
+                          pointerEvents: 'none',
+                          backdropFilter: 'blur(8px)',
+                        }}
+                      >
+                        <span style={{ width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#FFD9A0', background: 'rgba(255,217,160,0.12)', border: '1px solid rgba(255,217,160,0.4)', flexShrink: 0 }}>
+                          {m.initials}
+                        </span>
+                        <span style={{ textAlign: 'left' }}>
+                          <span style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#F0EAFF', lineHeight: 1.2 }}>{m.name}</span>
+                          <span style={{ display: 'block', fontSize: 9.5, color: '#A99ECC', lineHeight: 1.3 }}>View passport →</span>
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 )
               })}
 
