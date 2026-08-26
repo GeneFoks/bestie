@@ -74,7 +74,9 @@ export default function NewEventPage() {
         .gte('scheduled_at', new Date().toISOString())
         .order('scheduled_at', { ascending: true })
         .limit(12)
-      setMySessions((sessions || []).filter((s: any) => s.crew_id !== crew.id))
+      // Show ALL of them — ones already attached to this crew render with a
+      // check state, so the captain always sees what's linked.
+      setMySessions(sessions || [])
 
       setAuthLoading(false)
     })
@@ -174,24 +176,30 @@ export default function NewEventPage() {
                       <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.title}</p>
                       <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
                         {d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{s.location ? ` · ${s.location}` : ''} · {s.participants?.[0]?.count || 0} joined
-                        {s.crew_id ? ' · attached to another crew' : ''}
+                        {s.crew_id && s.crew_id !== crewId ? ' · attached to another crew' : ''}
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      disabled={attaching === s.id}
-                      onClick={async () => {
-                        setAttaching(s.id)
-                        const { error: err } = await supabase.from('group_sessions').update({ crew_id: crewId }).eq('id', s.id)
-                        setAttaching(null)
-                        if (err) { console.error(err); showToast("Couldn't attach the session — try again", { type: 'error' }); return }
-                        showToast('Session attached to the crew ✓', { type: 'success' })
-                        router.push(`/crews/${slug}`)
-                      }}
-                      style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 700, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
-                    >
-                      {attaching === s.id ? 'Attaching…' : 'Attach'}
-                    </button>
+                    {s.crew_id === crewId ? (
+                      <span style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 700, background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.35)', color: '#34D399' }}>
+                        ✓ Attached
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={attaching === s.id}
+                        onClick={async () => {
+                          setAttaching(s.id)
+                          const { error: err } = await supabase.from('group_sessions').update({ crew_id: crewId }).eq('id', s.id)
+                          setAttaching(null)
+                          if (err) { console.error(err); showToast("Couldn't attach the session — try again", { type: 'error' }); return }
+                          showToast('Session attached to the crew ✓', { type: 'success' })
+                          router.push(`/crews/${slug}`)
+                        }}
+                        style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 700, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+                      >
+                        {attaching === s.id ? 'Attaching…' : 'Attach'}
+                      </button>
+                    )}
                   </div>
                 )
               })}
