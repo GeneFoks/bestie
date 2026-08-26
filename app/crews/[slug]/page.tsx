@@ -80,14 +80,21 @@ export default async function CrewPage({ params }) {
     supabase.from('crew_ratings').select('rating').eq('crew_id', crew.id),
   ])
 
-  // Group sessions attached to this crew/camp (host links them from session Edit)
+  // Group sessions attached to this crew/camp (host links them from session
+  // Edit or the New Event page) — with WHO is going, for the avatar stack.
   const { data: crewSessions } = await supabase
     .from('group_sessions')
-    .select('id, title, scheduled_at, location, activity_type, ticket_price, participants:group_session_participants(count)')
+    .select('id, title, scheduled_at, location, activity_type, ticket_price, participants:group_session_participants(user:users(full_name, avatar_url))')
     .eq('crew_id', crew.id)
     .gte('scheduled_at', new Date().toISOString())
     .order('scheduled_at', { ascending: true })
     .limit(6)
+
+  // One unified, date-sorted happenings list: crew events + attached sessions
+  const happenings = [
+    ...((upcomingEvents || []).map((e: any) => ({ kind: 'event' as const, dt: e.datetime, e }))),
+    ...((crewSessions || []).map((s: any) => ({ kind: 'session' as const, dt: s.scheduled_at, s }))),
+  ].sort((a, b) => new Date(a.dt).getTime() - new Date(b.dt).getTime())
 
   // Active paid subscribers (badge on the members list)
   const { data: subs } = await supabase
@@ -292,36 +299,6 @@ export default async function CrewPage({ params }) {
           )
         })()}
 
-        {/* Attached group sessions — the camp's real happenings */}
-        {crewSessions && crewSessions.length > 0 && (
-          <>
-            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '16px' }}>Sessions</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
-              {crewSessions.map((s: any) => {
-                const d = new Date(s.scheduled_at)
-                const price = Number(s.ticket_price || 0)
-                return (
-                  <Link key={s.id} href={`/group-sessions/${s.id}`} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderRadius: '14px', background: 'var(--surface-1)', border: '1px solid var(--border)', textDecoration: 'none' }}>
-                    <div style={{ flexShrink: 0, width: '42px', textAlign: 'center' }}>
-                      <p style={{ fontSize: '10px', fontWeight: 700, color: '#D4AF37', letterSpacing: '1px', margin: 0 }}>{d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}</p>
-                      <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: 'var(--text-primary)', lineHeight: 1, margin: 0 }}>{d.getDate()}</p>
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.title}</p>
-                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-                        {d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}{s.location ? ` · ${s.location}` : ''} · {s.participants?.[0]?.count || 0} joined
-                      </p>
-                    </div>
-                    <span style={{ flexShrink: 0, fontSize: '12px', fontWeight: 700, color: price > 0 ? '#D4AF37' : '#34D399' }}>
-                      {price > 0 ? `$${price}` : 'Free'}
-                    </span>
-                  </Link>
-                )
-              })}
-            </div>
-          </>
-        )}
-
         {/* Events */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
           <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: 'var(--text-primary)' }}>Events</h2>
@@ -330,13 +307,52 @@ export default async function CrewPage({ params }) {
           </Link>
         </div>
 
-        {!upcomingEvents || upcomingEvents.length === 0 ? (
+        {happenings.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '32px', background: 'var(--surface-1)', borderRadius: '16px', border: '1px solid var(--border)', marginBottom: '24px' }}>
             <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>No upcoming events</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
-            {upcomingEvents.map((event, idx) => {
+            {happenings.map((item, idx) => {
+              // ── Attached group session: card with the avatar stack of who's going
+              if (item.kind === 'session') {
+                const s = item.s
+                const sd = new Date(s.scheduled_at)
+                const price = Number(s.ticket_price || 0)
+                const going = (s.participants || []).map((p: any) => p.user).filter(Boolean)
+                return (
+                  <Link key={`s-${s.id}`} href={`/group-sessions/${s.id}`} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '14px', textDecoration: 'none' }}>
+                    <div style={{ textAlign: 'center', flexShrink: 0, width: '44px', background: 'var(--surface-1b)', borderRadius: '10px', padding: '6px 0', border: '1px solid var(--border)' }}>
+                      <div style={{ fontSize: '10px', fontWeight: 700, color: '#D4AF37', letterSpacing: '1px' }}>{sd.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}</div>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'DM Serif Display, serif', lineHeight: 1 }}>{sd.getDate()}</div>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                        <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.title}</span>
+                        <span style={{ flexShrink: 0, fontSize: '11px', fontWeight: 700, color: price > 0 ? '#D4AF37' : '#34D399' }}>{price > 0 ? `$${price}` : 'Free'}</span>
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: going.length ? '6px' : 0 }}>
+                        {sd.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}{s.location ? ` · ${s.location}` : ''}
+                      </div>
+                      {going.length > 0 && (
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          {going.slice(0, 5).map((u: any, i: number) => (
+                            u.avatar_url
+                              ? <img key={i} src={u.avatar_url} alt={u.full_name || ''} title={u.full_name || ''} style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--surface-1)', marginLeft: i === 0 ? 0 : '-7px' }} />
+                              : <span key={i} title={u.full_name || ''} style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'var(--surface-3)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, color: '#D4AF37', border: '2px solid var(--surface-1)', marginLeft: i === 0 ? 0 : '-7px' }}>{(u.full_name || '?')[0]}</span>
+                          ))}
+                          <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginLeft: '7px' }}>
+                            {going.length} going{going.length > 5 ? ` · +${going.length - 5} more` : ''}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', flexShrink: 0 }}>→</span>
+                  </Link>
+                )
+              }
+
+              const event = item.e
               const d = new Date(event.datetime)
               const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
               const daysUntil = Math.ceil((d.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
