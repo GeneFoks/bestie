@@ -8,6 +8,9 @@ export type WorldFire = {
   activityType: string
   faction: 'light' | 'flow' | 'flame'
   state: 'blazing' | 'steady' | 'dim' | 'ash' | 'unlit'
+  epic?: boolean            // landmark fire — rendered larger, with a light column
+  href?: string             // real destination (e.g. an actual session) — join goes here
+  enter?: string            // a world inside the world — the card button enters it
   members: { name: string; initials: string }[]
   streakDays: number
   x: number // percent, 8-92
@@ -15,6 +18,27 @@ export type WorldFire = {
 }
 
 export const FIRES: WorldFire[] = [
+  // ── BURNING MAN — a permanent station, timeless (not tied to any year).
+  // Entering it opens a world inside the world: Black Rock City, where every
+  // camp is its own fire. Deep link: bestiehere.com/world?fire=burning-man
+  {
+    id: 'burning-man',
+    name: 'Burning Man',
+    activityType: 'burning_man',
+    faction: 'flame',
+    state: 'blazing',
+    epic: true,
+    enter: '/world/burning-man',
+    members: [
+      { name: 'Gennadii', initials: 'GE' },
+      { name: 'Artem', initials: 'AR' },
+      { name: 'Mila', initials: 'MI' },
+      { name: 'Dan', initials: 'DA' },
+    ],
+    streakDays: 365,
+    x: 55,
+    y: 46,
+  },
   {
     id: 'fire-morning-runners',
     name: 'Morning Runners',

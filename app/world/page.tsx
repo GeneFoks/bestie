@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { FIRES, EVENTS, FACTIONS } from '@/lib/worldDemo'
 import { ActivityIcon } from '@/lib/activityIcons'
 import { showToast } from '@/components/Toast'
+import { supabase } from '@/lib/supabase'
 
 // ---------------------------------------------------------------------------
 // Deterministic pseudo-random (same on server & client — no hydration drift)
@@ -72,7 +73,22 @@ const HORIZON = [
 
 export default function WorldPage() {
   const [selected, setSelected] = useState(null)
+  const [hoveredMember, setHoveredMember] = useState(null)
+  const [loggedIn, setLoggedIn] = useState(false)
   const [evIdx, setEvIdx] = useState(0)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => setLoggedIn(!!session))
+  }, [])
+
+  // Deep link: /world?fire=burning-man opens that fire's card on arrival —
+  // share the link and visitors land straight in the story, no signup wall.
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get('fire')
+    if (!id) return
+    const f = FIRES.find((x) => x.id === id)
+    if (f) setTimeout(() => setSelected(f), 600)
+  }, [])
   const [evVisible, setEvVisible] = useState(true)
 
   // Live feed ticker: hold ~3.5s, fade 0.7s (interval well above the 3s floor)
@@ -279,7 +295,8 @@ export default function WorldPage() {
         const cfg = FLAME_CFG[fire.state] || FLAME_CFG.steady
         const isAsh = fire.state === 'ash'
         const isUnlit = fire.state === 'unlit'
-        const depth = 0.72 + ((fire.y - 30) / 58) * 0.46
+        const boost = fire.epic ? 1.45 : 1
+        const depth = (0.72 + ((fire.y - 30) / 58) * 0.46) * boost
         const n = fire.members.length
         return (
           <div
@@ -309,6 +326,25 @@ export default function WorldPage() {
                 transformOrigin: '50% 48%',
               }}
             >
+              {/* epic landmark: a soft column of light rising from the pyre */}
+              {fire.epic && !isAsh && (
+                <div
+                  className="bw-hglow"
+                  style={{
+                    position: 'absolute',
+                    left: 65,
+                    top: -76,
+                    width: 30,
+                    height: 128,
+                    transform: 'translateX(-50%)',
+                    background: 'linear-gradient(to top, rgba(255,196,107,0.30), rgba(255,196,107,0.10) 55%, transparent 100%)',
+                    borderRadius: '50% 50% 0 0 / 12% 12% 0 0',
+                    animationDuration: '5.5s',
+                    pointerEvents: 'none',
+                  }}
+                />
+              )}
+
               {/* warm ground glow */}
               {!isAsh && !isUnlit && (
                 <div
@@ -434,28 +470,75 @@ export default function WorldPage() {
                 </>
               )}
 
-              {/* members — warm dots in an arc in front of the fire */}
+              {/* members — warm dots in an arc; hover shows a passport preview */}
               {fire.members.map((m, j) => {
                 const t = Math.PI * (0.22 + (n > 1 ? (j / (n - 1)) * 0.56 : 0.28))
                 const mx = 65 + Math.cos(t) * 30
                 const my = 55 + Math.sin(t) * 15
+                const hovKey = `${fire.id}:${j}`
+                const isHov = hoveredMember === hovKey
                 return (
                   <div
                     key={j}
-                    title={m.name}
+                    onMouseEnter={() => setHoveredMember(hovKey)}
+                    onMouseLeave={() => setHoveredMember(null)}
+                    onClick={(e) => { e.stopPropagation(); showToast(`${m.name}’s passport opens here when quests go live ✨`, { type: 'info' }) }}
                     style={{
                       position: 'absolute',
                       left: mx,
                       top: my,
-                      width: 7,
-                      height: 7,
-                      transform: 'translate(-50%, -50%)',
-                      borderRadius: '50%',
-                      background: isAsh ? '#6E695E' : 'radial-gradient(circle, #FFE9C8 0%, #FFC98F 70%)',
-                      boxShadow: isAsh ? 'none' : '0 0 9px 2px rgba(255,190,120,0.4)',
-                      opacity: isAsh ? 0.6 : 0.95,
+                      width: 16,
+                      height: 16,
+                      margin: '-8px 0 0 -8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      zIndex: isHov ? 5 : 1,
                     }}
-                  />
+                  >
+                    <div
+                      style={{
+                        width: isHov ? 10 : 7,
+                        height: isHov ? 10 : 7,
+                        borderRadius: '50%',
+                        background: isAsh ? '#6E695E' : 'radial-gradient(circle, #FFE9C8 0%, #FFC98F 70%)',
+                        boxShadow: isAsh ? 'none' : isHov ? '0 0 14px 4px rgba(255,190,120,0.65)' : '0 0 9px 2px rgba(255,190,120,0.4)',
+                        opacity: isAsh ? 0.6 : 0.95,
+                        transition: 'width 0.12s, height 0.12s, box-shadow 0.12s',
+                      }}
+                    />
+                    {/* passport preview */}
+                    {isHov && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: 18,
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          padding: '8px 12px',
+                          borderRadius: 12,
+                          background: 'rgba(13,16,13,0.92)',
+                          border: '1px solid rgba(212,175,55,0.3)',
+                          boxShadow: '0 6px 20px rgba(0,0,0,0.5)',
+                          whiteSpace: 'nowrap',
+                          pointerEvents: 'none',
+                          backdropFilter: 'blur(8px)',
+                        }}
+                      >
+                        <span style={{ width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#FFD9A0', background: 'rgba(255,217,160,0.12)', border: '1px solid rgba(255,217,160,0.4)', flexShrink: 0 }}>
+                          {m.initials}
+                        </span>
+                        <span style={{ textAlign: 'left' }}>
+                          <span style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#F0EAFF', lineHeight: 1.2 }}>{m.name}</span>
+                          <span style={{ display: 'block', fontSize: 9.5, color: '#A99ECC', lineHeight: 1.3 }}>View passport →</span>
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 )
               })}
 
@@ -463,10 +546,11 @@ export default function WorldPage() {
               <div style={{ position: 'absolute', left: 0, right: 0, top: 76, textAlign: 'center', pointerEvents: 'none' }}>
                 <div
                   style={{
-                    fontSize: 10,
+                    fontSize: fire.epic ? 11 : 10,
+                    fontWeight: fire.epic ? 700 : 400,
                     letterSpacing: '0.14em',
                     textTransform: 'uppercase',
-                    color: 'var(--text-muted, #A99ECC)',
+                    color: fire.epic ? '#E8C766' : 'var(--text-muted, #A99ECC)',
                     whiteSpace: 'nowrap',
                     textShadow: '0 1px 6px rgba(0,0,0,0.8)',
                   }}
@@ -487,7 +571,7 @@ export default function WorldPage() {
                       background: 'rgba(212,175,55,0.08)',
                     }}
                   >
-                    🔥 {fire.streakDays} days burning
+                    {fire.enter ? '♾ Eternal flame' : `🔥 ${fire.streakDays} days burning`}
                   </div>
                 )}
                 {isUnlit && (
@@ -755,7 +839,7 @@ export default function WorldPage() {
                     background: 'rgba(212,175,55,0.08)',
                   }}
                 >
-                  🔥 Burning {selected.streakDays} days straight
+                  {selected.enter ? '♾ Eternal flame — always burning' : `🔥 Burning ${selected.streakDays} days straight`}
                 </span>
               )}
             </div>
@@ -789,7 +873,9 @@ export default function WorldPage() {
 
             {/* How the rewards work — founder earns more than a joiner */}
             <p style={{ fontSize: 12, color: 'var(--text-muted, #A99ECC)', lineHeight: 1.55, margin: '0 0 16px' }}>
-              {selected.state === 'unlit'
+              {selected.enter
+                ? 'A world inside the world. Step in — every camp on the playa is its own fire: who they are, what they host, and how to join them.'
+                : selected.state === 'unlit'
                 ? 'Light a fire and you’re its founder: +15 ✨ Sparks when the crew takes its first step together. Joining someone else’s fire earns +2 ✨.'
                 : selected.state === 'ash'
                 ? 'This fire went cold. Rekindle it and the founder bonus is yours: +15 ✨ when the crew moves again.'
@@ -797,7 +883,15 @@ export default function WorldPage() {
             </p>
 
             <button
-              onClick={() => showToast('Quests are coming soon — this is a concept preview ✨', { type: 'info' })}
+              onClick={() => {
+                // Stations open a world inside the world — for everyone
+                if (selected.enter) { window.location.href = selected.enter; return }
+                // Landmark fires point at a REAL destination (an actual session)
+                if (selected.href) { window.location.href = selected.href; return }
+                // Visitors without an account → the join path starts at signup
+                if (!loggedIn) { window.location.href = '/signup'; return }
+                showToast('Quests are coming soon — this is a concept preview ✨', { type: 'info' })
+              }}
               style={{
                 width: '100%',
                 padding: '13px 16px',
@@ -812,7 +906,17 @@ export default function WorldPage() {
                 boxShadow: '0 4px 18px rgba(212,175,55,0.25)',
               }}
             >
-              {selected.state === 'ash' ? 'Rekindle from the ashes · +15 ✨' : selected.state === 'unlit' ? 'Light this fire · +15 ✨' : 'Join this fire · +2 ✨'}
+              {selected.enter
+                ? 'Enter Black Rock City →'
+                : selected.href
+                ? 'Open the camp →'
+                : !loggedIn
+                ? 'Sign up free to join this fire'
+                : selected.state === 'ash'
+                ? 'Rekindle from the ashes · +15 ✨'
+                : selected.state === 'unlit'
+                ? 'Light this fire · +15 ✨'
+                : 'Join this fire · +2 ✨'}
             </button>
           </div>
         </>

@@ -119,7 +119,8 @@
       "Bash(git commit -q -m 'feat: compatibility percent on browse + offers cards *)",
       "Bash(git commit -q -m 'feat: delete a past meetup with optional cut-ties + visible history entry *)",
       "Bash(git commit -q -m 'fix: heal stale mutual knocks + harden can_message against the stale flag *)",
-      "Bash(git commit -q -m 'feat: world — unlit fire pits, founder/joiner rewards, legible streak copy *)"
+      "Bash(git commit -q -m 'feat: world — unlit fire pits, founder/joiner rewards, legible streak copy *)",
+      "Bash(git commit -q -m 'feat: world — pickleball paddle icon + passport preview on member hover *)"
     ]
   }
 }

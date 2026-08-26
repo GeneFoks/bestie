@@ -21,6 +21,31 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
+// Lucide has no paddle/racket — a custom one in the same 24px stroke style.
+// Signature matches LucideIcon so it drops into the map seamlessly.
+function PaddleIcon({ size = 18, color = 'currentColor', strokeWidth = 1.8, className }: any) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      {/* blade */}
+      <ellipse cx="10" cy="9.2" rx="5.4" ry="6.6" transform="rotate(-42 10 9.2)" />
+      {/* handle */}
+      <path d="M14.2 14.6 L18.4 18.8" />
+      {/* ball */}
+      <circle cx="19.4" cy="7.6" r="1.9" />
+    </svg>
+  )
+}
+
 // Centralised activity → Lucide icon mapping.
 // Edit this map whenever a new activity type is added in the database/schema.
 export const ACTIVITY_ICONS: Record<string, LucideIcon> = {
@@ -34,7 +59,7 @@ export const ACTIVITY_ICONS: Record<string, LucideIcon> = {
   yoga:             Sun,
   martial_arts:     Shield,
   climbing:         Mountain,
-  pickleball:       Activity,
+  pickleball:       PaddleIcon as unknown as LucideIcon,
   trail_crew:       Footprints,
   fishing_crew:     Fish,
 
