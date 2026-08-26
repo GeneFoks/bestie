@@ -339,7 +339,7 @@ export default async function CrewPage({ params }) {
                           {going.slice(0, 5).map((u: any, i: number) => (
                             u.avatar_url
                               ? <img key={i} src={u.avatar_url} alt={u.full_name || ''} title={u.full_name || ''} style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--surface-1)', marginLeft: i === 0 ? 0 : '-7px' }} />
-                              : <span key={i} title={u.full_name || ''} style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'var(--surface-3)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, color: '#D4AF37', border: '2px solid var(--surface-1)', marginLeft: i === 0 ? 0 : '-7px' }}>{(u.full_name || '?')[0]}</span>
+                              : <span key={i} title={u.full_name || ''} style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'linear-gradient(135deg, rgba(212,175,55,0.35) 0%, rgba(155,127,255,0.3) 100%)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 800, letterSpacing: '0.02em', color: '#FFF3D6', border: '2px solid var(--surface-1)', marginLeft: i === 0 ? 0 : '-7px' }}>{(u.full_name || '?').split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)}</span>
                           ))}
                           <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginLeft: '7px' }}>
                             {going.length} going{going.length > 5 ? ` · +${going.length - 5} more` : ''}
