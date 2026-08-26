@@ -60,6 +60,7 @@ export default function EditGroupSessionPage({ params }: { params: { id: string 
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
   const [removeCover, setRemoveCover] = useState(false)
   const [connectReady, setConnectReady] = useState(false)
+  const [myCrews, setMyCrews] = useState<any[]>([])
   const [connecting, setConnecting] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -80,9 +81,15 @@ export default function EditGroupSessionPage({ params }: { params: { id: string 
         location: gs.location || '',
         max_participants: gs.max_participants || 6,
         ticket_price: gs.ticket_price ? String(gs.ticket_price) : '',
+        crew_id: gs.crew_id || '',
         cover_image_url: gs.cover_image_url || null,
       })
       if (gs.cover_image_url) setCoverPreview(gs.cover_image_url)
+
+      // Crews this host captains — a session can live under one of them
+      // (shows up on the crew/camp page, e.g. a Burning Man camp).
+      supabase.from('crews').select('id, name').eq('captain_id', user.id).order('name')
+        .then(({ data: crews }) => setMyCrews(crews || []))
 
       // Payout readiness for this host (needed to charge for the session)
       const { data: me } = await supabase.from('users').select('connect_charges_enabled').eq('id', user.id).single()
@@ -156,6 +163,7 @@ export default function EditGroupSessionPage({ params }: { params: { id: string 
       location: form.location || null,
       max_participants: parseInt(form.max_participants) || 6,
       ticket_price: connectReady && form.ticket_price ? Math.max(0, parseFloat(form.ticket_price) || 0) : 0,
+      crew_id: form.crew_id || null,
       cover_image_url,
     }).eq('id', params.id)
     setSaving(false)
@@ -218,6 +226,16 @@ export default function EditGroupSessionPage({ params }: { params: { id: string 
             </select>
             <style>{`select option, select optgroup { background: var(--surface-3); color: var(--text-primary); }`}</style>
           </div>
+
+          {myCrews.length > 0 && (
+            <div>
+              <label style={labelStyle}>Camp / Crew <span style={{ fontWeight: 400 }}>(optional — the session shows on its page)</span></label>
+              <select value={form.crew_id} onChange={e => setForm(f => ({ ...f, crew_id: e.target.value }))} style={{ ...inputStyle, cursor: 'pointer' }}>
+                <option value="">Not attached</option>
+                {myCrews.map(c => <option key={c.id} value={c.id}>⛺ {c.name}</option>)}
+              </select>
+            </div>
+          )}
 
           <div>
             <label style={labelStyle}>Description</label>

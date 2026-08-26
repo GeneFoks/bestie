@@ -80,6 +80,15 @@ export default async function CrewPage({ params }) {
     supabase.from('crew_ratings').select('rating').eq('crew_id', crew.id),
   ])
 
+  // Group sessions attached to this crew/camp (host links them from session Edit)
+  const { data: crewSessions } = await supabase
+    .from('group_sessions')
+    .select('id, title, scheduled_at, location, activity_type, ticket_price, participants:group_session_participants(count)')
+    .eq('crew_id', crew.id)
+    .gte('scheduled_at', new Date().toISOString())
+    .order('scheduled_at', { ascending: true })
+    .limit(6)
+
   // Active paid subscribers (badge on the members list)
   const { data: subs } = await supabase
     .from('crew_subscriptions').select('user_id').eq('crew_id', crew.id).eq('status', 'active')
@@ -282,6 +291,36 @@ export default async function CrewPage({ params }) {
             </div>
           )
         })()}
+
+        {/* Attached group sessions — the camp's real happenings */}
+        {crewSessions && crewSessions.length > 0 && (
+          <>
+            <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '16px' }}>Sessions</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+              {crewSessions.map((s: any) => {
+                const d = new Date(s.scheduled_at)
+                const price = Number(s.ticket_price || 0)
+                return (
+                  <Link key={s.id} href={`/group-sessions/${s.id}`} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderRadius: '14px', background: 'var(--surface-1)', border: '1px solid var(--border)', textDecoration: 'none' }}>
+                    <div style={{ flexShrink: 0, width: '42px', textAlign: 'center' }}>
+                      <p style={{ fontSize: '10px', fontWeight: 700, color: '#D4AF37', letterSpacing: '1px', margin: 0 }}>{d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}</p>
+                      <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: 'var(--text-primary)', lineHeight: 1, margin: 0 }}>{d.getDate()}</p>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.title}</p>
+                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
+                        {d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}{s.location ? ` · ${s.location}` : ''} · {s.participants?.[0]?.count || 0} joined
+                      </p>
+                    </div>
+                    <span style={{ flexShrink: 0, fontSize: '12px', fontWeight: 700, color: price > 0 ? '#D4AF37' : '#34D399' }}>
+                      {price > 0 ? `$${price}` : 'Free'}
+                    </span>
+                  </Link>
+                )
+              })}
+            </div>
+          </>
+        )}
 
         {/* Events */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
