@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
-import { Network } from 'lucide-react'
+import { Network, CalendarCheck } from 'lucide-react'
 
 export default function ProfileNav() {
   const [loggedIn, setLoggedIn] = useState(false)
@@ -34,6 +34,14 @@ export default function ProfileNav() {
             style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '38px', height: '38px', borderRadius: '10px', border: '1px solid rgba(155,127,255,0.25)', background: 'rgba(155,127,255,0.06)', color: '#9B7FFF' }}
           >
             <Network size={16} strokeWidth={1.8} />
+          </Link>
+          <Link
+            href="/sessions"
+            aria-label="My meetups"
+            title="My meetups"
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '38px', height: '38px', borderRadius: '10px', border: '1px solid rgba(212,175,55,0.25)', background: 'rgba(212,175,55,0.06)', color: '#D4AF37' }}
+          >
+            <CalendarCheck size={16} strokeWidth={1.8} />
           </Link>
           <Link
             href="/dashboard"
