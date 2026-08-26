@@ -12,6 +12,8 @@ import { EmptyState } from '@/components/EmptyState'
 import { Calendar } from 'lucide-react'
 import { createNotification } from '@/lib/notifications'
 import { celebrate } from '@/lib/celebrate'
+import { showToast } from '@/components/Toast'
+import { confirmSheet } from '@/components/ConfirmSheet'
 
 export default function SessionsPage() {
   const router = useRouter()
@@ -45,12 +47,31 @@ export default function SessionsPage() {
   }
 
   const deleteSession = async (booking) => {
-    setDeleting(true)
     const { data: { user } } = await supabase.auth.getUser()
-    await supabase.rpc('delete_session', { p_booking_id: booking.id, p_user_id: user.id })
+    if (!user) return
+    const other = booking.seeker_id === user.id ? booking.provider : booking.seeker
+    const firstName = other?.full_name?.split(' ')[0] || 'them'
+    // Second question: sever the connection too? Cancel = delete only.
+    const disconnect = await confirmSheet({
+      title: `Also disconnect from ${firstName}?`,
+      body: 'Removes your match and contact link — the connection disappears from both circles. Either way, Bestie Score points from this meetup are removed for both of you.',
+      confirmLabel: 'Delete + disconnect',
+      danger: true,
+    })
+    setDeleting(true)
+    const { data, error } = await supabase.rpc('delete_session_full', {
+      p_booking_id: booking.id, p_user_id: user.id, p_disconnect: disconnect,
+    })
+    if (error || (data !== 'deleted' && data !== 'deleted_disconnected')) {
+      console.error('delete_session_full failed:', error?.message || data)
+      showToast("Couldn't delete the meetup — try again.", { type: 'error' })
+      setDeleting(false)
+      return
+    }
     setSessions(prev => prev.filter(s => s.id !== booking.id))
     setConfirmDelete(null)
     setDeleting(false)
+    showToast(disconnect ? `Meetup deleted — disconnected from ${firstName}` : 'Meetup deleted', { type: 'success' })
   }
 
   const loadSessions = async (uid) => {

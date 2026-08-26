@@ -85,14 +85,24 @@ export default function BookingsPage() {
     if (!ok) return
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    const { data, error } = await supabase.rpc('delete_session', { p_booking_id: id, p_user_id: user.id })
-    if (error || data !== 'deleted') {
-      console.error('delete_session failed:', error?.message || data)
+    const booking = bookings.find(b => b.id === id)
+    const other = booking?.seeker_id === user.id ? booking?.provider : booking?.seeker
+    const firstName = other?.full_name?.split(' ')[0] || 'them'
+    // Optional: sever the connection too (Cancel = delete only)
+    const disconnect = await confirmSheet({
+      title: `Also disconnect from ${firstName}?`,
+      body: 'Removes your match and contact link — the connection disappears from both circles. Score points from this meetup are removed for both of you either way.',
+      confirmLabel: 'Delete + disconnect',
+      danger: true,
+    })
+    const { data, error } = await supabase.rpc('delete_session_full', { p_booking_id: id, p_user_id: user.id, p_disconnect: disconnect })
+    if (error || (data !== 'deleted' && data !== 'deleted_disconnected')) {
+      console.error('delete_session_full failed:', error?.message || data)
       showToast("Couldn't delete the meetup — try again.", { type: 'error' })
       return
     }
     setBookings(b => b.filter(b2 => b2.id !== id))
-    showToast('Meetup deleted', { type: 'success' })
+    showToast(disconnect ? `Meetup deleted — disconnected from ${firstName}` : 'Meetup deleted', { type: 'success' })
   }
 
   const updateStatus = async (id, status) => {
