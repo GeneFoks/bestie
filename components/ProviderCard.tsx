@@ -2,7 +2,7 @@
 'use client'
 
 import { useState } from 'react'
-import { MapPin, Users, Sparkles } from 'lucide-react'
+import { MapPin, Users, Sparkles, ChevronDown } from 'lucide-react'
 import { getFrameColor } from '@/lib/avatarFrame'
 import { ActivityIcon } from '@/lib/activityIcons'
 import { SparkIcon } from '@/lib/sparkIcons'
@@ -50,6 +50,7 @@ interface ProviderCardProps {
 
 export default function ProviderCard({ provider, featured = false }: ProviderCardProps) {
   const [imgError, setImgError] = useState(false)
+  const [showAllPackages, setShowAllPackages] = useState(false)
   const mainPackage = provider.activity_packages?.[0]
   // Distinct activities this person offers — shown as chips so their breadth is
   // visible in the feed without opening the profile.
@@ -193,16 +194,53 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
         )}
 
         {mainPackage && (
-          <div className="flex items-center justify-between py-2.5 px-3 rounded-xl" style={{ background: 'var(--overlay)', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <p className="text-xs font-medium truncate pr-2" style={{ color: colors.textPrimary }}>{mainPackage.title}</p>
-            {mainPackage.is_free ? (
-              <span className="text-xs font-bold flex-shrink-0" style={{ color: colors.green }}>Free</span>
-            ) : mainPackage.price_per_session ? (
-              <span className="text-xs flex-shrink-0" style={{ color: colors.textPrimary }}>
-                <strong>${mainPackage.price_per_session}</strong>
-                <span style={{ color: colors.textMuted }}>/session</span>
+          <div>
+            {/* Collapsed: the top offering. Tap → all of them inline, no page hop. */}
+            <button
+              type="button"
+              onClick={() => setShowAllPackages(v => !v)}
+              aria-expanded={showAllPackages}
+              className="w-full flex items-center justify-between py-2.5 px-3 rounded-xl"
+              style={{ background: 'var(--overlay)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer', fontFamily: 'inherit' }}
+            >
+              <p className="text-xs font-medium truncate pr-2 text-left" style={{ color: colors.textPrimary, margin: 0 }}>{mainPackage.title}</p>
+              <span className="flex items-center gap-1.5 flex-shrink-0">
+                {mainPackage.is_free ? (
+                  <span className="text-xs font-bold" style={{ color: colors.green }}>Free</span>
+                ) : mainPackage.price_per_session ? (
+                  <span className="text-xs" style={{ color: colors.textPrimary }}>
+                    <strong>${mainPackage.price_per_session}</strong>
+                    <span style={{ color: colors.textMuted }}>/session</span>
+                  </span>
+                ) : null}
+                {(provider.activity_packages?.length || 0) > 1 && (
+                  <span className="text-xs" style={{ color: colors.textMuted }}>+{provider.activity_packages.length - 1}</span>
+                )}
+                <ChevronDown size={13} color={colors.textMuted} strokeWidth={2} style={{ transform: showAllPackages ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
               </span>
-            ) : null}
+            </button>
+
+            {/* Expanded: every session this person offers */}
+            {showAllPackages && (
+              <div className="flex flex-col gap-1 mt-1">
+                {provider.activity_packages.map((pkg: any, i: number) => (
+                  <a
+                    key={pkg.id || i}
+                    href={`/book/${provider.username}`}
+                    className="flex items-center gap-2 py-2 px-3 rounded-xl"
+                    style={{ background: 'var(--overlay)', border: '1px solid rgba(255,255,255,0.06)', textDecoration: 'none' }}
+                  >
+                    <ActivityIcon type={pkg.activity_type} size={13} color="#D4AF37" strokeWidth={1.8} />
+                    <span className="text-xs font-medium truncate flex-1" style={{ color: colors.textPrimary }}>{pkg.title}</span>
+                    {pkg.is_free || !pkg.price_per_session ? (
+                      <span className="text-xs font-bold flex-shrink-0" style={{ color: colors.green }}>Free</span>
+                    ) : (
+                      <span className="text-xs font-bold flex-shrink-0" style={{ color: '#D4AF37' }}>${pkg.price_per_session}</span>
+                    )}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
