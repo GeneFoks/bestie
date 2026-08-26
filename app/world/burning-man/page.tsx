@@ -663,9 +663,11 @@ export default function BurningManPage() {
         </span>
       </div>
 
-      {/* 9 — REGISTER CTA (bottom-center): the acquisition hook */}
+      {/* 9 — REGISTER CTA (bottom-center): the acquisition hook.
+          A camp IS a crew — members, privacy, its own (even ticketed) events —
+          so registration goes straight to the real crew-creation flow. */}
       <button
-        onClick={() => gate('Camp registration opens soon — this is a concept preview ✨')}
+        onClick={() => { window.location.href = loggedIn ? '/crews/new' : '/signup' }}
         style={{
           position: 'absolute',
           left: '50%',
