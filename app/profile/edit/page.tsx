@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
 import ThemeToggle from '@/components/ThemeToggle'
+import LocationPicker from '@/components/LocationPicker'
 
 const ACTIVITY_GROUPS = [
   {
@@ -196,6 +197,18 @@ export default function EditProfilePage() {
     if (!file) return
     setAvatarFile(file)
     setAvatarPreview(URL.createObjectURL(file))
+  }
+
+  // Picker returns a normalized "City, State, Country" string on pick —
+  // split it so `city` stays a clean, matchable value (density depends on it).
+  // Plain typing (no commas) just writes the city field.
+  const handleCityChange = (v) => {
+    const parts = v.split(',').map(p => p.trim()).filter(Boolean)
+    if (parts.length >= 2) {
+      setForm(f => ({ ...f, city: parts[0], country: parts[parts.length - 1] }))
+    } else {
+      setForm(f => ({ ...f, city: v }))
+    }
   }
 
   const toggleLanguage = (lang) => {
@@ -440,7 +453,13 @@ export default function EditProfilePage() {
           <div className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div>
               <label style={labelStyle}>City</label>
-              <input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} placeholder="Austin" style={inputStyle} />
+              <LocationPicker
+                mode="cities"
+                value={form.city}
+                onChange={handleCityChange}
+                placeholder="Austin"
+                style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+              />
             </div>
             <div>
               <label style={labelStyle}>State / Country</label>

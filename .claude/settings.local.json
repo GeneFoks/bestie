@@ -120,7 +120,9 @@
       "Bash(git commit -q -m 'feat: delete a past meetup with optional cut-ties + visible history entry *)",
       "Bash(git commit -q -m 'fix: heal stale mutual knocks + harden can_message against the stale flag *)",
       "Bash(git commit -q -m 'feat: world — unlit fire pits, founder/joiner rewards, legible streak copy *)",
-      "Bash(git commit -q -m 'feat: world — pickleball paddle icon + passport preview on member hover *)"
+      "Bash(git commit -q -m 'feat: world — pickleball paddle icon + passport preview on member hover *)",
+      "Bash(git commit -q -m 'feat: Quests MVP — real fires, check-ins, multipliers, leveled badges + audit quick wins *)",
+      "Bash(git commit -q -m 'feat: shareable subscription deep link — /crews/{slug}?subscribe=1 *)"
     ]
   }
 }

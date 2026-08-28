@@ -12,6 +12,7 @@ import BlockReportButton from '@/components/BlockReportButton'
 import KnockButton from '@/components/KnockButton'
 import PassportScoreCard from '@/components/PassportScoreCard'
 import BadgeCrest from '@/components/BadgeCrest'
+import ActionBadge from '@/components/ActionBadge'
 import { SparkIcon } from '@/lib/sparkIcons'
 import MutualFriends from '@/components/MutualFriends'
 import { getAvatarFrame } from '@/lib/avatarFrame'
@@ -167,6 +168,15 @@ export default async function ProfilePage({ params }) {
       .eq('user_id', profile.id)
       .order('awarded_at', { ascending: true }),
   ])
+
+  // ACTION PORTRAIT — activity_reps badges (levels I/II/III at 10/100/1000 reps)
+  const { data: actionReps } = await supabase
+    .from('activity_reps')
+    .select('activity_type, reps')
+    .eq('user_id', profile.id)
+    .order('reps', { ascending: false })
+    .limit(8)
+  const actionPortrait = (actionReps || []).filter((r) => (r.reps || 0) >= 10)
 
   const sparkCounts: Record<string, number> = {}
   sparks?.forEach(s => { sparkCounts[s.spark_type] = (sparkCounts[s.spark_type] || 0) + 1 })
@@ -417,6 +427,18 @@ export default async function ProfilePage({ params }) {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px' }}>
               {(earnedBadges || []).filter((b) => ['city_pioneer'].includes(b.badge_id)).map((b) => (
                 <BadgeCrest key={b.badge_id} badgeId={b.badge_id} city={b.city} size={64} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ACTION PORTRAIT — activity_reps medallions (what they actually do) */}
+        {actionPortrait.length > 0 && (
+          <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '18px', padding: '20px', marginBottom: '16px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '16px' }}>ACTION PORTRAIT — WHAT THEY ACTUALLY DO</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px' }}>
+              {actionPortrait.map((r) => (
+                <ActionBadge key={r.activity_type} activityType={r.activity_type} reps={r.reps} size={64} />
               ))}
             </div>
           </div>

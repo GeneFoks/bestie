@@ -71,14 +71,140 @@ const HORIZON = [
   { id: 'flame', left: '90%', w: '52vw', h: '30vh', dur: '6.5s' },
 ]
 
+// ---------------------------------------------------------------------------
+// REAL quests → real fires. Data contract: state from the last 2 days of
+// checkins, streak = consecutive days (ending today or yesterday) where EVERY
+// member checked in. Days come from Postgres current_date → compare in UTC.
+// ---------------------------------------------------------------------------
+function utcDay(offset) {
+  const d = new Date()
+  d.setUTCDate(d.getUTCDate() - offset)
+  return d.toISOString().slice(0, 10)
+}
+
+function hashStr(s) {
+  let h = 0
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
+  return h
+}
+
+function initialsOf(name) {
+  const parts = (name || '').trim().split(/\s+/).filter(Boolean)
+  if (!parts.length) return '✦'
+  return parts.slice(0, 2).map((p) => p[0]).join('').toUpperCase()
+}
+
+// Rough activity → faction mapping so real fires join the legend's language
+function factionForActivity(t) {
+  const s = (t || '').toLowerCase()
+  const mental = ['book', 'read', 'journal', 'meditat', 'study', 'language', 'chess', 'learn', 'coach']
+  const social = ['chat', 'coffee', 'talk', 'dinner', 'brunch', 'party', 'network', 'social']
+  if (mental.some((k) => s.includes(k))) return 'light'
+  if (social.some((k) => s.includes(k))) return 'flow'
+  return 'flame'
+}
+
+// Deterministic placement: golden-angle spiral over the clearing (x 10-90,
+// y 34-84), seeded by the quest id, dodging demo fires and earlier real ones.
+function buildRealFires(rows) {
+  const sorted = [...rows].sort((a, b) => (a.id < b.id ? -1 : 1))
+  const occupied = FIRES.map((f) => ({ x: f.x, y: f.y }))
+  const out = []
+  for (const q of sorted) {
+    const members = (q.members || []).map((m) => ({
+      name: m.user?.full_name || 'Bestie',
+      initials: initialsOf(m.user?.full_name) || '✦',
+      avatar: m.user?.avatar_url || null,
+    }))
+    const n = members.length
+    const byDay = {}
+    for (const c of q.checkins || []) {
+      if (!byDay[c.day]) byDay[c.day] = new Set()
+      byDay[c.day].add(c.user_id)
+    }
+    const count = (ds) => (byDay[ds] ? byDay[ds].size : 0)
+    const full = (ds) => n > 0 && count(ds) >= n
+    let state = 'ash'
+    if (full(utcDay(0))) state = 'blazing'
+    else if (count(utcDay(0)) > 0) state = 'steady'
+    else if (count(utcDay(1)) > 0) state = 'dim'
+    let streakDays = 0
+    for (let k = full(utcDay(0)) ? 0 : 1; k <= 14; k++) {
+      if (full(utcDay(k))) streakDays++
+      else break
+    }
+    const seed = hashStr(q.id)
+    let x = 50
+    let y = 59
+    for (let s = 0; s < 48; s++) {
+      const a = seed * 0.0173 + s * 2.39996 // golden angle in radians
+      const r = 7 + s * 1.9
+      x = Math.min(90, Math.max(10, 50 + Math.cos(a) * r * 0.92))
+      y = Math.min(84, Math.max(34, 59 + Math.sin(a) * r * 0.5))
+      const free = occupied.every((p) => {
+        const dx = p.x - x
+        const dy = (p.y - y) * 1.7
+        return dx * dx + dy * dy >= 120
+      })
+      if (free) break
+    }
+    occupied.push({ x, y })
+    out.push({
+      id: q.id,
+      name: q.title,
+      activityType: q.activity_type,
+      faction: factionForActivity(q.activity_type),
+      state,
+      streakDays,
+      members,
+      real: true,
+      x,
+      y,
+    })
+  }
+  return out
+}
+
 export default function WorldPage() {
   const [selected, setSelected] = useState(null)
   const [hoveredMember, setHoveredMember] = useState(null)
   const [loggedIn, setLoggedIn] = useState(false)
   const [evIdx, setEvIdx] = useState(0)
+  const [realFires, setRealFires] = useState([])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setLoggedIn(!!session))
+  }, [])
+
+  // REAL fires: active quests + members + last 14 days of checkins
+  useEffect(() => {
+    let cancelled = false
+    async function load() {
+      try {
+        const { data, error } = await supabase
+          .from('quests')
+          .select('id, title, activity_type, created_at, members:quest_members(user_id, user:users(full_name, avatar_url)), checkins:quest_checkins(user_id, day)')
+          .eq('is_active', true)
+          .gte('checkins.day', utcDay(14))
+        if (error || !data) {
+          if (error) console.error('world quests load:', error)
+          return
+        }
+        const fires = buildRealFires(data)
+        if (cancelled) return
+        setRealFires(fires)
+        // Deep link can also point at a real fire
+        const id = new URLSearchParams(window.location.search).get('fire')
+        if (id && !FIRES.find((x) => x.id === id)) {
+          const rf = fires.find((x) => x.id === id)
+          if (rf) setTimeout(() => { if (!cancelled) setSelected(rf) }, 600)
+        }
+      } catch (e) {
+        console.error('world quests load:', e)
+      }
+    }
+    load()
+    return () => { cancelled = true }
   }, [])
 
   // Deep link: /world?fire=burning-man opens that fire's card on arrival —
@@ -111,8 +237,9 @@ export default function WorldPage() {
     return () => window.removeEventListener('keydown', onKey)
   }, [selected])
 
-  const totalMembers = FIRES.reduce((s, f) => s + f.members.length, 0) + 30
-  const burning = FIRES.filter((f) => f.state !== 'ash' && f.state !== 'unlit').length
+  const allFires = [...FIRES, ...realFires]
+  const totalMembers = allFires.reduce((s, f) => s + f.members.length, 0) + 30
+  const burning = allFires.filter((f) => f.state !== 'ash' && f.state !== 'unlit').length
   const factionOf = (id) => FACTIONS.find((f) => f.id === id)
 
   return (
@@ -290,14 +417,15 @@ export default function WorldPage() {
         }}
       />
 
-      {/* 4 — CAMPFIRES */}
-      {FIRES.map((fire, idx) => {
+      {/* 4 — CAMPFIRES (demo + real quests side by side) */}
+      {allFires.map((fire, idx) => {
         const cfg = FLAME_CFG[fire.state] || FLAME_CFG.steady
         const isAsh = fire.state === 'ash'
         const isUnlit = fire.state === 'unlit'
         const boost = fire.epic ? 1.45 : 1
         const depth = (0.72 + ((fire.y - 30) / 58) * 0.46) * boost
-        const n = fire.members.length
+        const shownMembers = fire.members.slice(0, 6)
+        const n = shownMembers.length
         return (
           <div
             key={fire.id}
@@ -471,7 +599,7 @@ export default function WorldPage() {
               )}
 
               {/* members — warm dots in an arc; hover shows a passport preview */}
-              {fire.members.map((m, j) => {
+              {shownMembers.map((m, j) => {
                 const t = Math.PI * (0.22 + (n > 1 ? (j / (n - 1)) * 0.56 : 0.28))
                 const mx = 65 + Math.cos(t) * 30
                 const my = 55 + Math.sin(t) * 15
@@ -482,7 +610,11 @@ export default function WorldPage() {
                     key={j}
                     onMouseEnter={() => setHoveredMember(hovKey)}
                     onMouseLeave={() => setHoveredMember(null)}
-                    onClick={(e) => { e.stopPropagation(); showToast(`${m.name}’s passport opens here when quests go live ✨`, { type: 'info' }) }}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (fire.real) showToast(`${m.name} keeps this fire burning ✨`, { type: 'info' })
+                      else showToast(`${m.name}’s passport opens here when quests go live ✨`, { type: 'info' })
+                    }}
                     style={{
                       position: 'absolute',
                       left: mx,
@@ -529,12 +661,16 @@ export default function WorldPage() {
                           backdropFilter: 'blur(8px)',
                         }}
                       >
-                        <span style={{ width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#FFD9A0', background: 'rgba(255,217,160,0.12)', border: '1px solid rgba(255,217,160,0.4)', flexShrink: 0 }}>
-                          {m.initials}
-                        </span>
+                        {m.avatar ? (
+                          <img src={m.avatar} alt="" style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(255,217,160,0.4)', flexShrink: 0 }} />
+                        ) : (
+                          <span style={{ width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#FFD9A0', background: 'rgba(255,217,160,0.12)', border: '1px solid rgba(255,217,160,0.4)', flexShrink: 0 }}>
+                            {m.initials}
+                          </span>
+                        )}
                         <span style={{ textAlign: 'left' }}>
                           <span style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#F0EAFF', lineHeight: 1.2 }}>{m.name}</span>
-                          <span style={{ display: 'block', fontSize: 9.5, color: '#A99ECC', lineHeight: 1.3 }}>View passport →</span>
+                          <span style={{ display: 'block', fontSize: 9.5, color: '#A99ECC', lineHeight: 1.3 }}>{fire.real ? 'Keeps this fire burning' : 'View passport →'}</span>
                         </span>
                       </div>
                     )}
@@ -557,7 +693,26 @@ export default function WorldPage() {
                 >
                   {fire.name}
                 </div>
-                {!isAsh && !isUnlit && (
+                {fire.real && (
+                  <div
+                    style={{
+                      display: 'inline-block',
+                      marginTop: 4,
+                      marginRight: 4,
+                      fontSize: 9,
+                      lineHeight: 1,
+                      letterSpacing: '0.08em',
+                      padding: '3px 7px',
+                      borderRadius: 999,
+                      color: '#34D399',
+                      border: '1px solid rgba(52,211,153,0.45)',
+                      background: 'rgba(52,211,153,0.08)',
+                    }}
+                  >
+                    LIVE
+                  </div>
+                )}
+                {!isAsh && !isUnlit && (!fire.real || fire.streakDays > 0) && (
                   <div
                     style={{
                       display: 'inline-block',
@@ -732,7 +887,7 @@ export default function WorldPage() {
         }}
       >
         {FACTIONS.map((f) => {
-          const meaning = f.id === 'light' ? 'mind' : f.id === 'flow' ? 'people' : 'body'
+          const meaning = f.id === 'light' ? 'mind' : f.id === 'flow' ? 'people' : 'body & craft'
           return (
             <div key={f.id} title={f.blurb} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ fontSize: 11, color: 'var(--text-muted, #A99ECC)' }}>
@@ -803,6 +958,21 @@ export default function WorldPage() {
                   </span>
                 ) : null
               })()}
+              {selected.real && (
+                <span
+                  style={{
+                    fontSize: 11,
+                    letterSpacing: '0.08em',
+                    padding: '4px 10px',
+                    borderRadius: 999,
+                    color: '#34D399',
+                    border: '1px solid rgba(52,211,153,0.45)',
+                    background: 'rgba(52,211,153,0.08)',
+                  }}
+                >
+                  LIVE
+                </span>
+              )}
               {selected.state === 'ash' ? (
                 <span
                   style={{
@@ -839,33 +1009,53 @@ export default function WorldPage() {
                     background: 'rgba(212,175,55,0.08)',
                   }}
                 >
-                  {selected.enter ? '♾ Eternal flame — always burning' : `🔥 Burning ${selected.streakDays} days straight`}
+                  {selected.enter
+                    ? '♾ Eternal flame — always burning'
+                    : selected.real && selected.streakDays === 0
+                    ? '🔥 Freshly lit — first full day pending'
+                    : `🔥 Burning ${selected.streakDays} days straight`}
                 </span>
               )}
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
-              {selected.members.map((m, i) => (
-                <span
-                  key={i}
-                  title={m.name}
-                  style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: '50%',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: '#FFD9A0',
-                    background: 'rgba(255,217,160,0.1)',
-                    border: '1px solid rgba(255,217,160,0.35)',
-                  }}
-                >
-                  {m.initials}
-                </span>
-              ))}
+              {selected.members.slice(0, 8).map((m, i) =>
+                m.avatar ? (
+                  <img
+                    key={i}
+                    src={m.avatar}
+                    alt={m.name}
+                    title={m.name}
+                    style={{
+                      width: 30,
+                      height: 30,
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '1px solid rgba(255,217,160,0.35)',
+                    }}
+                  />
+                ) : (
+                  <span
+                    key={i}
+                    title={m.name}
+                    style={{
+                      width: 30,
+                      height: 30,
+                      borderRadius: '50%',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: '#FFD9A0',
+                      background: 'rgba(255,217,160,0.1)',
+                      border: '1px solid rgba(255,217,160,0.35)',
+                    }}
+                  >
+                    {m.initials}
+                  </span>
+                )
+              )}
               <span style={{ fontSize: 12, color: 'var(--text-muted, #A99ECC)', marginLeft: 2 }}>
                 {selected.state === 'unlit' ? 'No one here yet — light it and lead' : `${selected.members.length} around this fire`}
               </span>
@@ -873,7 +1063,11 @@ export default function WorldPage() {
 
             {/* How the rewards work — founder earns more than a joiner */}
             <p style={{ fontSize: 12, color: 'var(--text-muted, #A99ECC)', lineHeight: 1.55, margin: '0 0 16px' }}>
-              {selected.enter
+              {selected.real
+                ? selected.state === 'ash'
+                  ? 'A real fire that went quiet. Open it and check in — the streak restarts the moment the whole crew moves again.'
+                  : 'A real fire, burning live on Bestie. Check in together to keep it alive — a day only counts when every keeper shows up. Joining earns +2 ✨.'
+                : selected.enter
                 ? 'A world inside the world. Step in — every camp on the playa is its own fire: who they are, what they host, and how to join them.'
                 : selected.state === 'unlit'
                 ? 'Light a fire and you’re its founder: +15 ✨ Sparks when the crew takes its first step together. Joining someone else’s fire earns +2 ✨.'
@@ -888,6 +1082,14 @@ export default function WorldPage() {
                 if (selected.enter) { window.location.href = selected.enter; return }
                 // Landmark fires point at a REAL destination (an actual session)
                 if (selected.href) { window.location.href = selected.href; return }
+                // Real quests: join / check-in all live on the quest page
+                if (selected.real) { window.location.href = `/quests/${selected.id}`; return }
+                // Unlit pits (and the cold demo fire) start a real quest
+                if (selected.state === 'unlit' || selected.state === 'ash') {
+                  const dest = `/quests/new?activity=${selected.activityType}`
+                  window.location.href = loggedIn ? dest : '/signup?next=' + encodeURIComponent(dest)
+                  return
+                }
                 // Visitors without an account → the join path starts at signup
                 if (!loggedIn) { window.location.href = '/signup'; return }
                 showToast('Quests are coming soon — this is a concept preview ✨', { type: 'info' })
@@ -910,12 +1112,14 @@ export default function WorldPage() {
                 ? 'Enter Black Rock City →'
                 : selected.href
                 ? 'Open the camp →'
-                : !loggedIn
-                ? 'Sign up free to join this fire'
+                : selected.real
+                ? 'Open this fire →'
                 : selected.state === 'ash'
                 ? 'Rekindle from the ashes · +15 ✨'
                 : selected.state === 'unlit'
                 ? 'Light this fire · +15 ✨'
+                : !loggedIn
+                ? 'Sign up free to join this fire'
                 : 'Join this fire · +2 ✨'}
             </button>
           </div>

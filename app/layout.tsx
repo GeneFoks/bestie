@@ -3,6 +3,7 @@ import './globals.css'
 import { AuthProvider } from './providers'
 import BottomNav from '@/components/BottomNav'
 import PWARegister from '@/components/PWARegister'
+import InstallPrompt from '@/components/InstallPrompt'
 import IncomingCall from '@/components/IncomingCall'
 // AI companion is paused for now (stale answers) — re-import CompanionWidget
 // from '@/components/CompanionWidget' to bring it back.
@@ -70,6 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <BottomNav />
           <PWARegister />
+          <InstallPrompt />
           <IncomingCall />
           {/* <CompanionWidget /> — paused */}
           <AnalyticsProvider />
