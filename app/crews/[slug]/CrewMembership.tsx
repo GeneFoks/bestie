@@ -28,7 +28,15 @@ export default function CrewMembership({ crew }: { crew: any }) {
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) return
+      // Shareable subscription deep link: /crews/{slug}?subscribe=1 jumps
+      // straight into checkout (via login first when logged out).
+      const wantsSub = new URLSearchParams(window.location.search).get('subscribe')
+      if (!user) {
+        if (wantsSub && crew.sub_active && crew.sub_price) {
+          window.location.href = `/login?next=${encodeURIComponent(`/crews/${crew.slug}?subscribe=1`)}`
+        }
+        return
+      }
       setMe(user.id)
       const [{ data }, { data: mem }] = await Promise.all([
         supabase.from('crew_subscriptions').select('status').eq('crew_id', crew.id).eq('user_id', user.id).maybeSingle(),
@@ -36,6 +44,26 @@ export default function CrewMembership({ crew }: { crew: any }) {
       ])
       setMySub(data)
       setIsMember(!!mem)
+      // Deep link continues here for logged-in visitors: not the captain,
+      // membership on, not already subscribed → open Stripe checkout now.
+      if (
+        wantsSub &&
+        user.id !== crew.captain_id &&
+        crew.sub_active && crew.sub_price &&
+        data?.status !== 'active'
+      ) {
+        window.history.replaceState({}, '', `/crews/${crew.slug}`)
+        const { data: { session } } = await supabase.auth.getSession()
+        const res = await fetch('/api/stripe/crew/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+          body: JSON.stringify({ crewId: crew.id }),
+        })
+        const j = await res.json()
+        if (j.url) { window.location.href = j.url; return }
+        console.error('Deep-link subscribe failed:', j.error)
+        showToast("Couldn't start checkout — use the Join button below", { type: 'error' })
+      }
       // If captain just came back from onboarding, sync status
       if (user.id === crew.captain_id && new URLSearchParams(window.location.search).get('connect')) {
         const { data: { session } } = await supabase.auth.getSession()
