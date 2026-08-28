@@ -10,6 +10,9 @@ type Suggestion = {
   lon: string
   place_id: number
   type?: string
+  class?: string
+  addresstype?: string
+  address?: Record<string, string>
 }
 
 type Props = {
@@ -17,13 +20,38 @@ type Props = {
   onChange: (value: string) => void
   placeholder?: string
   style?: React.CSSProperties
+  /** 'cities' restricts suggestions to cities/towns and returns a normalized "City, State, Country" string. */
+  mode?: 'cities'
+}
+
+// What counts as "a city" for mode='cities' — settlements people would name
+// as their home city, nothing narrower (suburbs) or broader (states, POIs).
+const CITY_TYPES = new Set(['city', 'town', 'village', 'municipality', 'borough', 'hamlet', 'locality'])
+
+const isCitySuggestion = (s: Suggestion) => {
+  const t = s.addresstype || (s.class === 'place' ? s.type : null)
+  return t ? CITY_TYPES.has(t) : false
+}
+
+// Normalized "City, State, Country" — density lives and dies on everyone
+// spelling their city the same way, so we build the label ourselves instead
+// of trusting the raw display_name.
+const cityLabel = (s: Suggestion) => {
+  const a = s.address || {}
+  const city = a.city || a.town || a.village || a.municipality || a.borough || a.hamlet || a.locality
+    || s.display_name.split(',')[0].trim()
+  const parts = [city, a.state, a.country].filter(Boolean)
+  // Collapse repeats like city-states ("Singapore, Singapore")
+  return parts.filter((p, i) => p !== parts[i - 1]).join(', ')
 }
 
 /**
  * Debounced location autocomplete backed by OpenStreetMap Nominatim.
  * Free, no API key. Limited to ~1 req/sec — we debounce 350ms.
+ * Degrades to a plain text input if the API is down: typing always
+ * writes through onChange, suggestions are purely additive.
  */
-export default function LocationPicker({ value, onChange, placeholder, style }: Props) {
+export default function LocationPicker({ value, onChange, placeholder, style, mode }: Props) {
   const [query, setQuery] = useState(value)
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const [open, setOpen] = useState(false)
@@ -31,12 +59,16 @@ export default function LocationPicker({ value, onChange, placeholder, style }: 
   const [focused, setFocused] = useState(false)
   const wrapRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
+  // Only fetch after a real keystroke — programmatic value sets (pick, parent
+  // sync) must not reopen the dropdown. The old `query === value` guard broke
+  // for parents that write onChange straight back into `value`.
+  const typedRef = useRef(false)
 
   useEffect(() => { setQuery(value) }, [value])
 
   useEffect(() => {
     if (!focused) return
-    if (query.trim().length < 3 || query === value) { setSuggestions([]); setOpen(false); return }
+    if (query.trim().length < 3 || !typedRef.current) { setSuggestions([]); setOpen(false); return }
 
     const timer = setTimeout(async () => {
       try {
@@ -45,11 +77,23 @@ export default function LocationPicker({ value, onChange, placeholder, style }: 
         abortRef.current = controller
         setLoading(true)
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=6`,
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=${mode === 'cities' ? 10 : 6}${mode === 'cities' ? '&featureType=settlement' : ''}`,
           { signal: controller.signal, headers: { 'Accept-Language': 'en' } }
         )
-        const data: Suggestion[] = await res.json()
-        setSuggestions(data || [])
+        let data: Suggestion[] = (await res.json()) || []
+        if (mode === 'cities') {
+          // Belt and suspenders: featureType filters server-side, this guards
+          // against POIs/regions slipping through, then dedupes by label.
+          const seen = new Set<string>()
+          data = data.filter(s => {
+            if (!isCitySuggestion(s)) return false
+            const label = cityLabel(s)
+            if (seen.has(label)) return false
+            seen.add(label)
+            return true
+          })
+        }
+        setSuggestions(data)
         setOpen(true)
       } catch (e: any) {
         if (e.name !== 'AbortError') { setSuggestions([]); setOpen(false) }
@@ -72,13 +116,16 @@ export default function LocationPicker({ value, onChange, placeholder, style }: 
   }, [])
 
   const pick = (s: Suggestion) => {
-    onChange(s.display_name)
-    setQuery(s.display_name)
+    const label = mode === 'cities' ? cityLabel(s) : s.display_name
+    typedRef.current = false
+    onChange(label)
+    setQuery(label)
     setOpen(false)
     setFocused(false)
   }
 
   const clear = () => {
+    typedRef.current = false
     onChange('')
     setQuery('')
     setSuggestions([])
@@ -98,7 +145,7 @@ export default function LocationPicker({ value, onChange, placeholder, style }: 
         <MapPin size={16} strokeWidth={1.8} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
         <input
           value={query}
-          onChange={e => { setQuery(e.target.value); onChange(e.target.value) }}
+          onChange={e => { typedRef.current = true; setQuery(e.target.value); onChange(e.target.value) }}
           onFocus={() => setFocused(true)}
           placeholder={placeholder || 'Search for a place…'}
           style={inputBase}
@@ -129,7 +176,7 @@ export default function LocationPicker({ value, onChange, placeholder, style }: 
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
               <MapPin size={14} strokeWidth={1.8} color="#D4AF37" style={{ flexShrink: 0, marginTop: '2px' }} />
-              <span style={{ flex: 1, lineHeight: 1.4 }}>{s.display_name}</span>
+              <span style={{ flex: 1, lineHeight: 1.4 }}>{mode === 'cities' ? cityLabel(s) : s.display_name}</span>
             </button>
           ))}
         </div>

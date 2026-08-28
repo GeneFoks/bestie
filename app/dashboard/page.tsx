@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { buzz, celebrate, celebrateMatch } from '@/lib/celebrate'
 import MatchCelebration from '@/components/MatchCelebration'
+import SparkCelebration from '@/components/SparkCelebration'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -42,6 +43,7 @@ export default function DashboardPage() {
   const [togglingFree, setTogglingFree] = useState(false)
   const [freeInCityCount, setFreeInCityCount] = useState(0)
   const [matchPartner, setMatchPartner] = useState<any>(null)
+  const [sparkCeleb, setSparkCeleb] = useState<any>(null)
 
   useEffect(() => {
     const getUser = async () => {
@@ -115,6 +117,7 @@ export default function DashboardPage() {
       // first and the other person knocked back while I was away (they saw the
       // celebration in-app; I never did). The knocks table has no
       // seen_celebration column, so a localStorage guard keeps this one-shot.
+      let matchCelebrating = false
       try {
         const { data: mutuals } = await supabase
           .from('knocks')
@@ -132,9 +135,50 @@ export default function DashboardPage() {
             // then celebrate the most recent one.
             localStorage.setItem('celebrated_matches', JSON.stringify([...celebrated, ...fresh.map((p: any) => p.id)]))
             setMatchPartner(fresh[0])
+            matchCelebrating = true
           }
         }
       } catch {}
+
+      // Celebrate an uncelebrated received Spark — same localStorage guard
+      // pattern as matches. Matches win: if a match modal is queued this
+      // load, sparks wait for the next visit.
+      if (!matchCelebrating) {
+        try {
+          const sevenDaysAgoTs = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+          const { data: sparkNotifs } = await supabase
+            .from('notifications')
+            .select('id, title, body, created_at')
+            .eq('user_id', session.user.id)
+            .eq('type', 'spark_received')
+            .eq('read', false)
+            .gte('created_at', sevenDaysAgoTs)
+            .order('created_at', { ascending: false })
+            .limit(1)
+          const notif = sparkNotifs?.[0]
+          if (notif) {
+            const celebratedSparks: string[] = JSON.parse(localStorage.getItem('celebrated_sparks') || '[]')
+            if (!celebratedSparks.includes(notif.id)) {
+              // Title is "{FirstName} gave you a Spark" / "… N Sparks"
+              const giverName = notif.title?.includes(' gave you') ? notif.title.split(' gave you')[0] : undefined
+              // The notification doesn't store the giver's username — look it
+              // up from the newest spark row so "Send one back" can deep-link.
+              let giverUsername: string | undefined
+              try {
+                const { data: sparkRows } = await supabase
+                  .from('sparks')
+                  .select('created_at, giver:users!giver_id(username, full_name)')
+                  .eq('receiver_id', session.user.id)
+                  .gte('created_at', sevenDaysAgoTs)
+                  .order('created_at', { ascending: false })
+                  .limit(1)
+                giverUsername = sparkRows?.[0]?.giver?.username || undefined
+              } catch {}
+              setSparkCeleb({ id: notif.id, labels: notif.body || '', giverName, giverUsername })
+            }
+          }
+        } catch {}
+      }
 
       // Find confirmed bookings without a memory yet
       if (confirmedBookings?.length) {
@@ -292,6 +336,22 @@ export default function DashboardPage() {
           profileName={matchPartner.full_name}
           profileAvatarUrl={matchPartner.avatar_url}
           onClose={() => setMatchPartner(null)}
+        />
+      )}
+      {!matchPartner && sparkCeleb && (
+        <SparkCelebration
+          labels={sparkCeleb.labels}
+          giverName={sparkCeleb.giverName}
+          giverUsername={sparkCeleb.giverUsername}
+          onClose={() => {
+            try {
+              const celebrated: string[] = JSON.parse(localStorage.getItem('celebrated_sparks') || '[]')
+              if (!celebrated.includes(sparkCeleb.id)) {
+                localStorage.setItem('celebrated_sparks', JSON.stringify([...celebrated, sparkCeleb.id]))
+              }
+            } catch {}
+            setSparkCeleb(null)
+          }}
         />
       )}
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
