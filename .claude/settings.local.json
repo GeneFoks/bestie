@@ -122,7 +122,8 @@
       "Bash(git commit -q -m 'feat: world — unlit fire pits, founder/joiner rewards, legible streak copy *)",
       "Bash(git commit -q -m 'feat: world — pickleball paddle icon + passport preview on member hover *)",
       "Bash(git commit -q -m 'feat: Quests MVP — real fires, check-ins, multipliers, leveled badges + audit quick wins *)",
-      "Bash(git commit -q -m 'feat: shareable subscription deep link — /crews/{slug}?subscribe=1 *)"
+      "Bash(git commit -q -m 'feat: shareable subscription deep link — /crews/{slug}?subscribe=1 *)",
+      "Bash(git commit -q -m 'feat: crew description on the crew page, editable in place by the captain *)"
     ]
   }
 }
