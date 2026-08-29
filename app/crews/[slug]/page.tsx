@@ -9,6 +9,7 @@ import JoinRequestActions from './JoinRequestActions'
 import CrewInviteButton from './CrewInviteButton'
 import CrewMembership from './CrewMembership'
 import CrewNameEditor from './CrewNameEditor'
+import CrewDescriptionEditor from './CrewDescriptionEditor'
 import CrewPrivacyToggle from './CrewPrivacyToggle'
 import CrewRating from './CrewRating'
 import CrewDeleteButton from './CrewDeleteButton'
@@ -181,10 +182,8 @@ export default async function CrewPage({ params }) {
         {/* Streak + badges */}
         <CrewBadgesRow crewId={crew.id} />
 
-        {/* Description + Rating */}
-        {crew.description && (
-          <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: '16px' }}>{crew.description}</p>
-        )}
+        {/* Description — visible to all, editable in place by the captain */}
+        <CrewDescriptionEditor crewId={crew.id} captainId={crew.captain_id} initial={crew.description} />
         <div style={{ marginBottom: '20px' }}>
           <CrewRating crewId={crew.id} avgRating={avgRating} ratingCount={ratingCount} />
         </div>
