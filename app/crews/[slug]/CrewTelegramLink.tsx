@@ -11,6 +11,17 @@ type Props = {
   initialUrl: string | null
 }
 
+// "t.me/x", "@x", "telegram.me/x" → a real absolute URL. Without this the
+// anchor is treated as a relative path and the click goes nowhere.
+function normalizeTg(u: string): string {
+  const s = (u || '').trim()
+  if (!s) return ''
+  if (s.startsWith('@')) return 'https://t.me/' + s.slice(1)
+  if (/^(t\.me|telegram\.me|telegram\.org)\//i.test(s)) return 'https://' + s
+  if (!/^https?:\/\//i.test(s)) return 'https://' + s
+  return s
+}
+
 export default function CrewTelegramLink({ crewId, captainId, initialUrl }: Props) {
   const [userId, setUserId] = useState<string | null>(null)
   const [url, setUrl] = useState(initialUrl || '')
@@ -28,7 +39,7 @@ export default function CrewTelegramLink({ crewId, captainId, initialUrl }: Prop
 
   const save = async () => {
     setSaving(true)
-    const clean = input.trim()
+    const clean = input.trim() ? normalizeTg(input) : ''
     await supabase.from('crews').update({ telegram_url: clean || null }).eq('id', crewId)
     setUrl(clean)
     setEditing(false)
@@ -60,7 +71,7 @@ export default function CrewTelegramLink({ crewId, captainId, initialUrl }: Prop
       <div style={{ marginTop: '12px' }}>
         {url ? (
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <a href={url} target="_blank" rel="noopener noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', borderRadius: '12px', background: 'rgba(39,174,239,0.08)', border: '1px solid rgba(39,174,239,0.2)', textDecoration: 'none' }}>
+            <a href={normalizeTg(url)} target="_blank" rel="noopener noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', borderRadius: '12px', background: 'rgba(39,174,239,0.08)', border: '1px solid rgba(39,174,239,0.2)', textDecoration: 'none' }}>
               <Send size={18} color="#29B6F6" strokeWidth={2} />
               <span style={{ fontSize: '14px', fontWeight: 600, color: '#29B6F6' }}>Join Telegram Community</span>
             </a>
@@ -81,7 +92,7 @@ export default function CrewTelegramLink({ crewId, captainId, initialUrl }: Prop
   if (!url) return null
 
   return (
-    <a href={url} target="_blank" rel="noopener noreferrer" style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', borderRadius: '12px', background: 'rgba(39,174,239,0.08)', border: '1px solid rgba(39,174,239,0.2)', textDecoration: 'none' }}>
+    <a href={normalizeTg(url)} target="_blank" rel="noopener noreferrer" style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', borderRadius: '12px', background: 'rgba(39,174,239,0.08)', border: '1px solid rgba(39,174,239,0.2)', textDecoration: 'none' }}>
       <Send size={18} color="#29B6F6" strokeWidth={2} />
       <span style={{ fontSize: '14px', fontWeight: 600, color: '#29B6F6' }}>Join Telegram Community</span>
       <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#29B6F6' }}>→</span>
