@@ -10,10 +10,11 @@ type Props = {
   userId: string
   crewId: string
   captainId: string
+  shareProfile?: boolean
   onDone?: () => void
 }
 
-export default function JoinRequestActions({ requestId, userId, crewId, captainId, onDone }: Props) {
+export default function JoinRequestActions({ requestId, userId, crewId, captainId, shareProfile, onDone }: Props) {
   const router = useRouter()
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [acting, setActing] = useState(false)
@@ -30,7 +31,7 @@ export default function JoinRequestActions({ requestId, userId, crewId, captainI
   const accept = async () => {
     setActing(true)
     await supabase.from('crew_join_requests').update({ status: 'accepted' }).eq('id', requestId)
-    await supabase.from('crew_members').insert({ crew_id: crewId, user_id: userId })
+    await supabase.from('crew_members').insert({ crew_id: crewId, user_id: userId, share_profile: !!shareProfile })
     await supabase.from('users').update({ crew_id: crewId }).eq('id', userId)
     // Notify the requester
     const { data: crew } = await supabase.from('crews').select('name, slug').eq('id', crewId).single()
