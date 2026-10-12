@@ -4,6 +4,10 @@
 -- joining AGORA means passing the test and leaving your basic data,
 -- with profile sharing to other members opt-in (captains always see it).
 
+-- The live DB was built incrementally and never got users.age (it exists
+-- only in the repo's schema.sql); the gate form writes it, so add it here.
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS age INTEGER;
+
 ALTER TABLE public.crews ADD COLUMN IF NOT EXISTS gate_enabled BOOLEAN NOT NULL DEFAULT FALSE;
 
 -- Application answers (motivation now; more questions later without schema changes)
