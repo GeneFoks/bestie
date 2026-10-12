@@ -17,7 +17,8 @@ import CrewTelegramLink from './CrewTelegramLink'
 import CrewKickButton from './CrewKickButton'
 import JoinRequestsPanel from './JoinRequestsPanel'
 import EventGoingButton from './EventGoingButton'
-import CrewRoleManager, { RoleBadge } from './CrewRoleManager'
+import CrewRoleManager, { RoleBadge, LevelBadge } from './CrewRoleManager'
+import CrewCharter from './CrewCharter'
 import CrewLeaderboard from './CrewLeaderboard'
 import CrewAnniversary from './CrewAnniversary'
 import CrewVibeChip from './CrewVibeChip'
@@ -68,7 +69,7 @@ export default async function CrewPage({ params }) {
   const [{ data: rawMembers }, { data: upcomingEvents }, { data: ratings }] = await Promise.all([
     supabase
       .from('crew_members')
-      .select('user_id, joined_at')
+      .select('user_id, joined_at, role, level')
       .eq('crew_id', crew.id)
       .order('joined_at', { ascending: true }),
     supabase
@@ -121,6 +122,7 @@ export default async function CrewPage({ params }) {
     user: userMap[m.user_id] || null,
   }))
 
+  const modIds = members.filter((m: any) => m.role === 'moderator').map((m: any) => m.user_id)
   const sortedMembers = members.sort((a: any, b: any) => (b.user?.bestie_score || 0) - (a.user?.bestie_score || 0))
   const memberCount = sortedMembers.length
   const avgScore = memberCount > 0
@@ -184,6 +186,7 @@ export default async function CrewPage({ params }) {
 
         {/* Description — visible to all, editable in place by the captain */}
         <CrewDescriptionEditor crewId={crew.id} captainId={crew.captain_id} initial={crew.description} />
+        <CrewCharter crewId={crew.id} captainId={crew.captain_id} initial={crew.charter} />
         <div style={{ marginBottom: '20px' }}>
           <CrewRating crewId={crew.id} avgRating={avgRating} ratingCount={ratingCount} />
         </div>
@@ -435,7 +438,7 @@ export default async function CrewPage({ params }) {
           />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {sortedMembers.map(({ user, joined_at, role }, memberIdx) => {
+            {sortedMembers.map(({ user, joined_at, role, level }, memberIdx) => {
               if (!user) return null
               const sc = user.bestie_score >= 800 ? '#34D399' : user.bestie_score >= 600 ? '#D4AF37' : 'var(--text-muted)'
               const effectiveRole = role || (user.id === crew.captain_id ? 'captain' : 'member')
@@ -458,6 +461,7 @@ export default async function CrewPage({ params }) {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{user.full_name}</span>
                         <RoleBadge role={effectiveRole} />
+                        <LevelBadge level={level} />
                         {subscriberIds.has(user.id) && (
                           <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.5px', padding: '2px 8px', borderRadius: '999px', background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.35)', color: '#34D399', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>💳 MEMBER</span>
                         )}
@@ -476,6 +480,8 @@ export default async function CrewPage({ params }) {
                     memberUserId={user.id}
                     memberName={user.full_name || user.username}
                     currentRole={effectiveRole}
+                    currentLevel={level || 1}
+                    modIds={modIds}
                   />
                   <CrewKickButton crewId={crew.id} captainId={crew.captain_id} memberId={user.id} />
                 </div>
