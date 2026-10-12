@@ -16,9 +16,10 @@ type Props = {
   captainUsername: string
   crewSlug: string
   paid?: boolean
+  gateEnabled?: boolean
 }
 
-function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, crewSlug, paid }: Props) {
+function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, crewSlug, paid, gateEnabled }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [userId, setUserId] = useState<string | null>(null)
@@ -28,6 +29,14 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
   const [loading, setLoading] = useState(true)
   const [acting, setActing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Entry gate (crews with gate_enabled): profile checklist + application
+  const [me, setMe] = useState<any>(null)
+  const [panelOpen, setPanelOpen] = useState(false)
+  const [ageVal, setAgeVal] = useState('')
+  const [cityVal, setCityVal] = useState('')
+  const [motivation, setMotivation] = useState('')
+  const [shareProfile, setShareProfile] = useState(false)
+  const [savingProfile, setSavingProfile] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -46,12 +55,13 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
       setUserId(uid)
 
       const [{ data: profile }, { data: membership }, { data: request }] = await Promise.all([
-        supabase.from('users').select('crew_id').eq('id', uid).single(),
+        supabase.from('users').select('crew_id, bestie_type_completed, age, birth_date, city').eq('id', uid).single(),
         supabase.from('crew_members').select('crew_id').eq('crew_id', crewId).eq('user_id', uid).maybeSingle(),
         supabase.from('crew_join_requests').select('status').eq('crew_id', crewId).eq('user_id', uid).maybeSingle(),
       ])
 
       setUserCrewId(profile?.crew_id ?? null)
+      setMe(profile ?? null)
       setRequestStatus(request ? request.status : 'none')
 
       // Auto-join via invite if not already a member
@@ -75,10 +85,37 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
     })
   }, [crewId])
 
+  // Gate checklist state (only meaningful when gateEnabled)
+  const testOk = !!me?.bestie_type_completed
+  const ageOk = me?.age != null || !!me?.birth_date
+  const cityOk = !!(me?.city || '').trim()
+  const gateOk = testOk && ageOk && cityOk
+
+  const friendly = (m: string | null) =>
+    m && m.includes('crew_gate_profile_required')
+      ? 'Finish the checklist above first — this crew requires a completed profile.'
+      : m
+
+  const saveProfileBits = async () => {
+    setSavingProfile(true)
+    setError(null)
+    const patch: any = {}
+    if (!ageOk && ageVal) patch.age = parseInt(ageVal, 10) || null
+    if (!cityOk && cityVal.trim()) patch.city = cityVal.trim()
+    const { error: err } = await supabase.from('users').update(patch).eq('id', userId)
+    if (err) setError(err.message)
+    else setMe((p: any) => ({ ...p, ...patch }))
+    setSavingProfile(false)
+  }
+
   const join = async () => {
     setActing(true)
     setError(null)
-    const { error: err } = await supabase.from('crew_members').insert({ crew_id: crewId, user_id: userId })
+    const { error: err } = await supabase.from('crew_members').insert({
+      crew_id: crewId,
+      user_id: userId,
+      ...(gateEnabled ? { share_profile: shareProfile } : {}),
+    })
     if (err) { setError(err.message); setActing(false); return }
     // Set as featured only if user has no featured crew yet
     if (!userCrewId) {
@@ -111,7 +148,11 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
     setActing(true)
     setError(null)
     const { error: err } = await supabase
-      .from('crew_join_requests').insert({ crew_id: crewId, user_id: userId })
+      .from('crew_join_requests').insert({
+        crew_id: crewId,
+        user_id: userId,
+        ...(gateEnabled ? { answers: { motivation: motivation.trim() }, share_profile: shareProfile } : {}),
+      })
     if (err) { setError(err.message); setActing(false); return }
     setRequestStatus('pending')
     // Notify the captain
@@ -133,6 +174,57 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
     setRequestStatus('none')
     setActing(false)
   }
+
+  // The entry-gate panel: profile checklist → short application → confirm.
+  // Used by both the open-join and request-to-join paths when gateEnabled.
+  const inp = { padding: '10px 12px', borderRadius: '10px', fontSize: '14px', background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--text-primary)', outline: 'none' } as const
+  const gatePanel = (onConfirm: () => void, confirmLabel: string) => (
+    <div style={{ padding: '14px', borderRadius: '14px', background: 'var(--surface-1b)', border: '1px solid rgba(212,175,55,0.25)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div style={{ fontSize: '13px', fontWeight: 700, color: '#D4AF37' }}>This crew asks you to complete your profile first</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+        <span style={{ fontSize: '13px', color: testOk ? '#34D399' : 'var(--text-primary)' }}>{testOk ? '✓ Bestie Type test' : 'Bestie Type test'}</span>
+        {!testOk && <Link href="/bestie-type" style={{ fontSize: '12px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none', flexShrink: 0 }}>Take the test →</Link>}
+      </div>
+      {(!ageOk || !cityOk) ? (
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {!ageOk && <input type="number" min={16} max={99} placeholder="Age" value={ageVal} onChange={(e) => setAgeVal(e.target.value)} style={{ ...inp, width: '72px' }} />}
+          {!cityOk && <input placeholder="City" value={cityVal} onChange={(e) => setCityVal(e.target.value)} style={{ ...inp, flex: 1, minWidth: 0 }} />}
+          <button
+            onClick={saveProfileBits}
+            disabled={savingProfile || (!ageOk && !ageVal) || (!cityOk && !cityVal.trim())}
+            style={{ padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', cursor: 'pointer', flexShrink: 0 }}
+          >
+            {savingProfile ? '…' : 'Save'}
+          </button>
+        </div>
+      ) : (
+        <span style={{ fontSize: '13px', color: '#34D399' }}>✓ Age & city</span>
+      )}
+      {gateOk && (
+        <>
+          <textarea
+            placeholder="Why do you want to join?"
+            value={motivation}
+            onChange={(e) => setMotivation(e.target.value)}
+            rows={3}
+            style={{ ...inp, resize: 'vertical', fontFamily: 'inherit' }}
+          />
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--text-muted)', cursor: 'pointer', lineHeight: 1.5 }}>
+            <input type="checkbox" checked={shareProfile} onChange={(e) => setShareProfile(e.target.checked)} style={{ marginTop: '2px' }} />
+            Share my age, city & type with crew members (captains always see them)
+          </label>
+          <button
+            onClick={onConfirm}
+            disabled={acting || !motivation.trim()}
+            style={{ width: '100%', padding: '13px', borderRadius: '12px', textAlign: 'center', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: acting || !motivation.trim() ? 'not-allowed' : 'pointer', opacity: acting || !motivation.trim() ? 0.6 : 1 }}
+          >
+            {acting ? '…' : confirmLabel}
+          </button>
+        </>
+      )}
+      {error && <p style={{ fontSize: '12px', color: '#FF6B35', margin: 0 }}>{friendly(error)}</p>}
+    </div>
+  )
 
   if (loading) return null
 
@@ -225,23 +317,27 @@ function CrewActions({ crewId, captainId, isPublic, isFull, captainUsername, cre
       )
     }
 
+    if (gateEnabled && panelOpen) return gatePanel(requestJoin, 'Send application')
+
     return (
       <div>
-        <button onClick={requestJoin} disabled={acting} style={{ display: 'block', width: '100%', padding: '14px', borderRadius: '14px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: acting ? 'not-allowed' : 'pointer', opacity: acting ? 0.7 : 1 }}>
+        <button onClick={gateEnabled ? () => setPanelOpen(true) : requestJoin} disabled={acting} style={{ display: 'block', width: '100%', padding: '14px', borderRadius: '14px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: acting ? 'not-allowed' : 'pointer', opacity: acting ? 0.7 : 1 }}>
           {acting ? 'Sending…' : 'Request to Join'}
         </button>
-        {error && <p style={{ fontSize: '12px', color: '#FF6B35', marginTop: '8px', textAlign: 'center' }}>{error}</p>}
+        {error && <p style={{ fontSize: '12px', color: '#FF6B35', marginTop: '8px', textAlign: 'center' }}>{friendly(error)}</p>}
       </div>
     )
   }
 
   // Open crew
+  if (gateEnabled && panelOpen) return gatePanel(join, 'Join Crew')
+
   return (
     <div>
-      <button onClick={join} disabled={acting} style={{ display: 'block', width: '100%', padding: '14px', borderRadius: '14px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', cursor: acting ? 'not-allowed' : 'pointer', opacity: acting ? 0.7 : 1, border: 'none' }}>
+      <button onClick={gateEnabled ? () => setPanelOpen(true) : join} disabled={acting} style={{ display: 'block', width: '100%', padding: '14px', borderRadius: '14px', textAlign: 'center', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', cursor: acting ? 'not-allowed' : 'pointer', opacity: acting ? 0.7 : 1, border: 'none' }}>
         {acting ? 'Joining…' : 'Join Crew'}
       </button>
-      {error && <p style={{ fontSize: '12px', color: '#FF6B35', marginTop: '8px', textAlign: 'center' }}>{error}</p>}
+      {error && <p style={{ fontSize: '12px', color: '#FF6B35', marginTop: '8px', textAlign: 'center' }}>{friendly(error)}</p>}
     </div>
   )
 }
