@@ -19,6 +19,7 @@ import JoinRequestsPanel from './JoinRequestsPanel'
 import EventGoingButton from './EventGoingButton'
 import CrewRoleManager, { RoleBadge, LevelBadge } from './CrewRoleManager'
 import CrewCharter from './CrewCharter'
+import LevelProfileHint from './LevelProfileHint'
 import CrewLeaderboard from './CrewLeaderboard'
 import CrewAnniversary from './CrewAnniversary'
 import CrewVibeChip from './CrewVibeChip'
@@ -187,6 +188,7 @@ export default async function CrewPage({ params }) {
         {/* Description — visible to all, editable in place by the captain */}
         <CrewDescriptionEditor crewId={crew.id} captainId={crew.captain_id} initial={crew.description} />
         <CrewCharter crewId={crew.id} captainId={crew.captain_id} initial={crew.charter} />
+        <LevelProfileHint crewId={crew.id} gated={!!crew.gate_enabled} />
         <div style={{ marginBottom: '20px' }}>
           <CrewRating crewId={crew.id} avgRating={avgRating} ratingCount={ratingCount} />
         </div>
@@ -230,7 +232,7 @@ export default async function CrewPage({ params }) {
             <MessageCircle size={16} strokeWidth={2} /> Crew Chat
           </Link>
           <div style={{ flex: 1 }}>
-            <CrewActions crewId={crew.id} captainId={crew.captain_id} isPublic={crew.is_public} isFull={spotsLeft <= 0} captainUsername={crew.captain?.username} crewSlug={params.slug} paid={!!(crew.sub_active && crew.sub_price)} gateEnabled={!!crew.gate_enabled} />
+            <CrewActions crewId={crew.id} captainId={crew.captain_id} isPublic={crew.is_public} isFull={spotsLeft <= 0} captainUsername={crew.captain?.username} crewSlug={params.slug} paid={!!(crew.sub_active && crew.sub_price)} />
           </div>
         </div>
 

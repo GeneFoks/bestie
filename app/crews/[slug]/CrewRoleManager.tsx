@@ -63,7 +63,13 @@ export default function CrewRoleManager({ crewId, captainId, memberUserId, membe
     setOpen(false)
     if (error) {
       console.error('Level change failed:', error)
-      showToast("Couldn't change the level — try again", { type: 'error' })
+      const needsProfile = (error.message || '').includes('level_requires_profile')
+      showToast(
+        needsProfile
+          ? `Levels 2+ need a completed profile — ${memberName} hasn't finished the test, age or city yet.`
+          : "Couldn't change the level — try again",
+        { type: 'error' }
+      )
       return
     }
     showToast(`${memberName} → Level ${lvl} ✓`, { type: 'success' })
