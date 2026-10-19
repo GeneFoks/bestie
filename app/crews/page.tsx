@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import ProfileNav from '@/components/ProfileNav'
-import { Users, Plus, Star, Flame, Lock, Sparkles, MapPin, Zap } from 'lucide-react'
+import { Users, Plus, Lock, MapPin, Zap, CalendarDays } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 import { compatPercent, compatTone } from '@/lib/crewCompat'
 
@@ -100,14 +100,14 @@ export default async function CrewsPage() {
     <span style={{
       ...(float ? { position: 'absolute', top: '14px', left: '14px', backdropFilter: 'blur(8px)' } : {}),
       display: 'inline-flex', alignItems: 'center', gap: '4px',
-      padding: float ? '5px 12px' : '1px 7px', borderRadius: '999px',
-      fontSize: float ? '11px' : '9px', fontWeight: 800, letterSpacing: float ? '1px' : '0.5px',
+      padding: float ? '5px 12px' : '3px 8px', borderRadius: '999px',
+      fontSize: '11px', fontWeight: 800, letterSpacing: float ? '1px' : '0.5px',
       color: '#C4B5FD', background: 'rgba(124,92,255,0.18)',
       border: '1px solid rgba(155,127,255,0.55)',
       boxShadow: '0 0 12px rgba(124,92,255,0.45)',
       animation: 'swarmPulse 2.4s ease-in-out infinite',
     }}>
-      <Zap size={float ? 11 : 9} strokeWidth={2.4} /> AI SWARM
+      <Zap size={11} strokeWidth={2.4} /> AI SWARM
     </span>
   )
 
@@ -136,8 +136,10 @@ export default async function CrewsPage() {
             <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: 'var(--text-primary)', marginBottom: '4px' }}>Crews</h1>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Your inner circles · {crews?.length || 0} active</p>
           </div>
-          <Link href="/crews/new" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 18px', borderRadius: '14px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-            <Plus size={14} strokeWidth={2.5} /> New crew
+          {/* Secondary action — the featured card's "Join crew" is this screen's
+              single gold CTA (the empty state carries its own CTA). */}
+          <Link href="/crews/new" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', minHeight: '44px', padding: '10px 16px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'var(--surface-3)', border: '1px solid var(--border-strong)', color: 'var(--text-primary)', textDecoration: 'none', whiteSpace: 'nowrap', boxSizing: 'border-box' }}>
+            <Plus size={16} strokeWidth={2.5} /> New crew
           </Link>
         </div>
 
@@ -153,7 +155,7 @@ export default async function CrewsPage() {
           <>
             {/* ── FEATURED CARD ── */}
             {featured && (
-              <Link href={`/crews/${featured.slug}`} style={{ display: 'block', borderRadius: '24px', overflow: 'hidden', textDecoration: 'none', marginBottom: '28px', background: 'var(--surface-1)', border: featuredHasSwarm ? '1px solid rgba(155,127,255,0.5)' : '1px solid var(--border)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', ...(featuredHasSwarm ? { animation: 'swarmCardGlow 2.8s ease-in-out infinite' } : {}) }}>
+              <Link href={`/crews/${featured.slug}`} style={{ display: 'block', borderRadius: '20px', overflow: 'hidden', textDecoration: 'none', marginBottom: '28px', background: 'var(--surface-1)', border: featuredHasSwarm ? '1px solid rgba(155,127,255,0.5)' : '1px solid var(--border)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', ...(featuredHasSwarm ? { animation: 'swarmCardGlow 2.8s ease-in-out infinite' } : {}) }}>
 
                 {/* Cover image */}
                 <div style={{ position: 'relative', height: '200px', overflow: 'hidden', background: 'linear-gradient(135deg, #1A1A2E 0%, #0d0d22 100%)' }}>
@@ -166,19 +168,19 @@ export default async function CrewsPage() {
                   {/* Gradient overlay */}
                   <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, var(--surface-1) 0%, rgba(15,15,30,0.2) 60%, transparent 100%)' }} />
 
-                  {/* FEATURED badge */}
-                  <div style={{ position: 'absolute', top: '14px', left: '14px', padding: '5px 12px', borderRadius: '999px', background: '#D4AF37', color: '#09090F', fontSize: '11px', fontWeight: 800, letterSpacing: '1px' }}>
+                  {/* FEATURED badge — glass label, so the only solid gold on the
+                      card is the "Join crew" CTA below. */}
+                  <div style={{ position: 'absolute', top: '14px', left: '14px', padding: '5px 12px', borderRadius: '999px', background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(212,175,55,0.45)', color: '#D4AF37', fontSize: '11px', fontWeight: 800, letterSpacing: '1px', backdropFilter: 'blur(8px)' }}>
                     FEATURED
                   </div>
 
-                  {/* Status badges top-right */}
+                  {/* Status badges top-right — capped: AI Swarm (paid) + one
+                      Open/Private status. Hot/Elite live in the meta line. */}
                   <div style={{ position: 'absolute', top: '14px', right: '14px', display: 'flex', gap: '6px' }}>
                     {featuredHasSwarm && <SwarmBadge />}
-                    {featured.avg_bestie_score >= 700 && <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '999px', background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37', fontWeight: 700, backdropFilter: 'blur(8px)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Sparkles size={10} strokeWidth={2} /> Elite</span>}
-                    {featured.member_count >= 15 && <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '999px', background: 'rgba(255,107,53,0.2)', border: '1px solid rgba(255,107,53,0.4)', color: '#FF6B35', fontWeight: 700, backdropFilter: 'blur(8px)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Flame size={10} strokeWidth={2} /> Hot</span>}
                     {featured.is_public
-                      ? <span style={{ fontSize: '10px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(52,211,153,0.16)', border: '1px solid rgba(52,211,153,0.4)', color: '#34D399', fontWeight: 700, backdropFilter: 'blur(8px)' }}>Open</span>
-                      : <span style={{ fontSize: '10px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)', color: '#A99ECC', fontWeight: 600, backdropFilter: 'blur(8px)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Lock size={10} strokeWidth={2} /> Private</span>}
+                      ? <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(52,211,153,0.16)', border: '1px solid rgba(52,211,153,0.4)', color: '#34D399', fontWeight: 700, backdropFilter: 'blur(8px)' }}>Open</span>
+                      : <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '999px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)', color: '#A99ECC', fontWeight: 600, backdropFilter: 'blur(8px)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Lock size={11} strokeWidth={2} /> Private</span>}
                   </div>
                 </div>
 
@@ -188,6 +190,8 @@ export default async function CrewsPage() {
                   <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: featured.description ? '12px' : '0' }}>
                     {featured.member_count} members
                     {featured.avg_bestie_score ? ` · Avg score ${featured.avg_bestie_score}` : ''}
+                    {featured.member_count >= 15 ? ' · Hot' : ''}
+                    {featured.avg_bestie_score >= 700 ? ' · Elite' : ''}
                   </p>
                   {featured.description && (
                     <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '14px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{featured.description}</p>
@@ -200,11 +204,11 @@ export default async function CrewsPage() {
                     const dateNum = d.getDate()
                     const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
                     return (
-                      <div style={{ background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: '14px', padding: '12px 14px', marginBottom: '16px' }}>
-                        <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '1.5px', color: '#34D399', marginBottom: '6px' }}>✦ NEXT EVENT</p>
+                      <div style={{ background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px' }}>
+                        <p style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', color: '#34D399', marginBottom: '6px' }}><CalendarDays size={12} strokeWidth={2.2} /> NEXT EVENT</p>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <div style={{ background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: '10px', padding: '6px 10px', textAlign: 'center', flexShrink: 0 }}>
-                            <p style={{ fontSize: '10px', fontWeight: 700, color: '#34D399', lineHeight: 1 }}>{day}</p>
+                          <div style={{ background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: '8px', padding: '6px 10px', textAlign: 'center', flexShrink: 0 }}>
+                            <p style={{ fontSize: '11px', fontWeight: 700, color: '#34D399', lineHeight: 1 }}>{day}</p>
                             <p style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'DM Serif Display, serif', lineHeight: 1.1 }}>{dateNum}</p>
                           </div>
                           <div>
@@ -219,14 +223,14 @@ export default async function CrewsPage() {
                   })()}
 
                   {/* Bottom row: member avatars + join button */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                     {/* Member avatar stack */}
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                       {featured.members.slice(0, 4).map((m, i) => (
                         <div key={i} style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--surface-1)', marginLeft: i === 0 ? 0 : '-8px', background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 4 - i }}>
                           {m.user?.avatar_url
                             ? <img src={m.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            : <span style={{ fontSize: '12px', fontWeight: 700, color: '#D4AF37' }}>{m.user?.full_name?.[0]}</span>
+                            : <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)' }}>{m.user?.full_name?.[0]}</span>
                           }
                         </div>
                       ))}
@@ -235,7 +239,8 @@ export default async function CrewsPage() {
                       )}
                     </div>
 
-                    <div style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F' }}>
+                    {/* The screen's single gold CTA */}
+                    <div style={{ display: 'inline-flex', alignItems: 'center', minHeight: '44px', padding: '12px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', boxSizing: 'border-box', whiteSpace: 'nowrap', flexShrink: 0 }}>
                       Join crew →
                     </div>
                   </div>
@@ -249,13 +254,24 @@ export default async function CrewsPage() {
                 <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '14px' }}>DISCOVER MORE</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {rest.map((crew, idx) => {
-                    const scoreColor = crew.avg_bestie_score >= 800 ? '#34D399' : crew.avg_bestie_score >= 600 ? '#D4AF37' : 'var(--text-muted)'
                     const compat = compatFor(crew.crew_id)
                     const hasSwarm = swarmCrewIds.has(crew.crew_id)
+                    // Two visible signals per row: the primary metric on the right
+                    // (% match when we have one, otherwise member count) + ONE
+                    // Open/Private status. Everything else drops into a single
+                    // muted meta line.
+                    const showMatch = !!(compat && compat.pct >= 35)
+                    const meta = [
+                      showMatch ? `${crew.member_count} members` : null,
+                      crew.avg_bestie_score ? `Avg score ${crew.avg_bestie_score}` : null,
+                      crew.member_count >= 15 ? 'Hot' : null,
+                      crew.avg_bestie_score >= 700 ? 'Elite' : null,
+                      hasSwarm ? 'AI Swarm' : null,
+                    ].filter(Boolean).join(' · ')
                     return (
                       <Link key={crew.crew_id} href={`/crews/${crew.slug}`} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', background: hasSwarm ? 'linear-gradient(135deg, rgba(124,92,255,0.10), var(--surface-1) 60%)' : 'var(--surface-1)', border: hasSwarm ? '1px solid rgba(155,127,255,0.45)' : compat && compat.pct >= 60 ? `1px solid ${compat.tone.color}40` : '1px solid var(--border)', borderRadius: '16px', textDecoration: 'none', ...(hasSwarm ? { animation: 'swarmCardGlow 2.8s ease-in-out infinite' } : {}) }}>
                         {/* Thumbnail */}
-                        <div style={{ width: '64px', height: '64px', borderRadius: '14px', overflow: 'hidden', flexShrink: 0, background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ width: '64px', height: '64px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {crew.avatar_url
                             ? <img src={crew.avatar_url} alt={crew.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             : <Users size={26} color="var(--text-muted)" strokeWidth={1.6} />
@@ -264,27 +280,30 @@ export default async function CrewsPage() {
 
                         {/* Info */}
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>{crew.name}</span>
-                            {hasSwarm && <SwarmBadge />}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px', minWidth: 0 }}>
+                            <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>{crew.name}</span>
                             {crew.is_public
-                              ? <span style={{ fontSize: '9px', padding: '2px 7px', borderRadius: '999px', background: 'rgba(52,211,153,0.12)', color: '#34D399', fontWeight: 700, border: '1px solid rgba(52,211,153,0.3)' }}>Open</span>
-                              : <span style={{ fontSize: '9px', padding: '2px 7px', borderRadius: '999px', background: 'rgba(155,147,192,0.12)', color: 'var(--text-muted)', fontWeight: 700, border: '1px solid rgba(155,147,192,0.3)', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Lock size={9} strokeWidth={2} /> Private</span>}
-                            {crew.avg_bestie_score >= 700 && <span style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '999px', background: 'rgba(212,175,55,0.1)', color: '#D4AF37', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Sparkles size={9} strokeWidth={2} /> Elite</span>}
-                            {crew.member_count >= 15 && <span style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '999px', background: 'rgba(255,107,53,0.1)', color: '#FF6B35', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Flame size={9} strokeWidth={2} /> Hot</span>}
-                            {compat && compat.pct >= 35 && (
-                              <span style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '999px', background: `${compat.tone.color}1A`, color: compat.tone.color, fontWeight: 700, border: `1px solid ${compat.tone.color}40` }}>
-                                {compat.pct}% match
-                              </span>
-                            )}
+                              ? <span style={{ flexShrink: 0, fontSize: '11px', padding: '2px 8px', borderRadius: '999px', background: 'rgba(52,211,153,0.12)', color: '#34D399', fontWeight: 700, border: '1px solid rgba(52,211,153,0.3)' }}>Open</span>
+                              : <span style={{ flexShrink: 0, fontSize: '11px', padding: '2px 8px', borderRadius: '999px', background: 'rgba(155,147,192,0.12)', color: 'var(--text-muted)', fontWeight: 700, border: '1px solid rgba(155,147,192,0.3)', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Lock size={11} strokeWidth={2} /> Private</span>}
                           </div>
-                          <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{crew.member_count} members</p>
+                          {meta && (
+                            <p style={{ fontSize: '12px', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{meta}</p>
+                          )}
                         </div>
 
-                        {/* Score */}
+                        {/* Primary metric */}
                         <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                          <div style={{ fontSize: '18px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif' }}>{crew.avg_bestie_score ?? '—'}</div>
-                          <div style={{ fontSize: '9px', color: 'var(--text-muted)', letterSpacing: '1px' }}>Avg score</div>
+                          {showMatch ? (
+                            <>
+                              <div style={{ fontSize: '18px', fontWeight: 700, color: compat.tone.color, fontFamily: 'DM Serif Display, serif' }}>{compat.pct}%</div>
+                              <div style={{ fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.5px' }}>match</div>
+                            </>
+                          ) : (
+                            <>
+                              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'DM Serif Display, serif' }}>{crew.member_count ?? 0}</div>
+                              <div style={{ fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.5px' }}>{crew.member_count === 1 ? 'member' : 'members'}</div>
+                            </>
+                          )}
                         </div>
                       </Link>
                     )

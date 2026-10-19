@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { ArrowLeft, Sparkles } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { showToast } from '@/components/Toast'
 import { celebrate, buzz } from '@/lib/celebrate'
@@ -18,6 +19,14 @@ const BG = '#09090F'
 const CARD = '#111120'
 const TXT = '#F0EAFF'
 const MUT = '#A99ECC'
+const MINT = '#34D399'
+const PURPLE = '#9B7FFF'
+
+// The test runs in 4 equal stretches (7 questions each for 28). After each of
+// the first three stretches a short encouragement line fades in and out.
+const STRETCHES = 4
+const MILESTONES = [1, 2, 3].map(k => Math.round((k * QUESTIONS.length) / STRETCHES))
+const CHEER_MS = 1400
 
 const UI = {
   en: {
@@ -36,6 +45,8 @@ const UI = {
     kept: 'Your result is kept — it saves to your passport automatically after you sign up.',
     share: '↗ Share my type', sharePreparing: 'Preparing your card…', shared: 'Link copied ✓', retake: 'Retake',
     reading: 'Reading your answers…',
+    back: 'Back',
+    cheers: ['Your type is taking shape…', 'Halfway — the pattern is getting clear', 'Almost there — one last stretch'],
     shareText: (name: string) => `I’m a ${name} on Bestie — what’s your friendship type? bestiehere.com/bestie-type`,
   },
   ru: {
@@ -54,6 +65,8 @@ const UI = {
     kept: 'Результат не потеряется — сохранится в паспорт автоматически после регистрации.',
     share: '↗ Поделиться типом', sharePreparing: 'Готовлю карточку…', shared: '✓ Скопировано — отправь другу', retake: 'Пройти заново',
     reading: 'Читаю твои ответы…',
+    back: 'Назад',
+    cheers: ['Твой тип начинает проявляться…', 'Половина пути — картина проясняется', 'Почти у цели — последний рывок'],
     shareText: (name: string, fam: string, col: string) => `Мой Bestie Type: ${name} 🧭 Семья: ${fam} · Коллектив: ${col}. А ты кто?`,
   },
 }
@@ -70,6 +83,14 @@ export default function BestieTypePage() {
   const [shared, setShared] = useState(false)
   const [sharing, setSharing] = useState(false)
   const [lang, setLang] = useState<'en' | 'ru'>('en')
+  // Mid-flight encouragement: { i: index into T.cheers, n: restart key }.
+  const [cheer, setCheer] = useState<{ i: number; n: number } | null>(null)
+
+  useEffect(() => {
+    if (!cheer) return
+    const id = setTimeout(() => setCheer(null), CHEER_MS)
+    return () => clearTimeout(id)
+  }, [cheer])
 
   useEffect(() => {
     try {
@@ -86,10 +107,10 @@ export default function BestieTypePage() {
   const LangToggle = () => (
     <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '18px' }}>
       {(['en', 'ru'] as const).map(l => (
-        <button key={l} onClick={() => switchLang(l)} style={{ padding: '5px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase', fontFamily: 'Plus Jakarta Sans, sans-serif',
-          background: lang === l ? GOLD : 'rgba(255,255,255,0.06)',
-          border: lang === l ? 'none' : '1px solid rgba(255,255,255,0.12)',
-          color: lang === l ? BG : MUT }}>
+        <button key={l} onClick={() => switchLang(l)} aria-pressed={lang === l} style={{ minHeight: '44px', minWidth: '56px', padding: '10px 18px', borderRadius: '999px', fontSize: '12px', fontWeight: 700, letterSpacing: '0.6px', cursor: 'pointer', textTransform: 'uppercase', fontFamily: 'Plus Jakarta Sans, sans-serif',
+          background: lang === l ? 'rgba(155,127,255,0.16)' : 'rgba(255,255,255,0.06)',
+          border: lang === l ? '1px solid rgba(155,127,255,0.45)' : '1px solid rgba(255,255,255,0.12)',
+          color: lang === l ? TXT : MUT }}>
           {l}
         </button>
       ))}
@@ -115,11 +136,17 @@ export default function BestieTypePage() {
     })
   }, [])
 
-  const start = () => { setAnswers([]); setCurrentQ(0); setStep('quiz') }
+  const start = () => { setAnswers([]); setCurrentQ(0); setCheer(null); setStep('quiz') }
 
   const handleAnswer = (pole: number) => {
+    const firstTime = answers[currentQ] === undefined
     const next = [...answers]; next[currentQ] = pole; setAnswers(next)
-    if (currentQ < QUESTIONS.length - 1) setCurrentQ(currentQ + 1)
+    if (currentQ < QUESTIONS.length - 1) {
+      setCurrentQ(currentQ + 1)
+      // Finished a stretch (7 / 14 / 21) for the first time — a quick, non-blocking cheer.
+      const m = MILESTONES.indexOf(currentQ + 1)
+      if (m !== -1 && firstTime) setCheer({ i: m, n: Date.now() })
+    }
     else {
       const key = computeKey(next)
       setResult(key)
@@ -213,11 +240,11 @@ export default function BestieTypePage() {
         <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '34px', color: TXT, marginBottom: '12px' }}>{T.title}</h1>
         <p style={{ fontSize: '15px', color: MUT, lineHeight: 1.7, marginBottom: '28px' }}>{T.lead}</p>
         <p style={{ fontSize: '13px', color: MUT, lineHeight: 1.6, marginBottom: '28px' }}>{T.honest}</p>
-        <button onClick={start} style={{ width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: `linear-gradient(135deg, ${GOLD} 0%, #B8960C 100%)`, color: BG, border: 'none', cursor: 'pointer' }}>
+        <button onClick={start} style={{ width: '100%', padding: '16px', borderRadius: '16px', fontSize: '15px', fontWeight: 700, background: `linear-gradient(135deg, ${GOLD} 0%, #B8960C 100%)`, color: BG, border: 'none', cursor: 'pointer' }}>
           {T.start}
         </button>
-        <Link href="/dashboard" style={{ display: 'block', marginTop: '16px', fontSize: '13px', color: MUT, textDecoration: 'none' }}>{T.skip}</Link>
-        <p style={{ fontSize: '11px', color: '#6B5EA8', marginTop: '24px' }}>{T.credit}</p>
+        <Link href="/dashboard" style={{ display: 'block', marginTop: '4px', padding: '13px 0', lineHeight: '18px', fontSize: '13px', color: MUT, textDecoration: 'none' }}>{T.skip}</Link>
+        <p style={{ fontSize: '11px', color: '#6B5EA8', marginTop: '12px' }}>{T.credit}</p>
       </div>
     </div>
   )
@@ -232,20 +259,43 @@ export default function BestieTypePage() {
     const optB = swap ? q.a : q.b
     const poleA = swap ? 1 : 0
     const poleB = swap ? 0 : 1
-    const progress = (currentQ / QUESTIONS.length) * 100
-    const blocks: Record<string, string> = lang === 'ru'
-      ? { LF: 'Логика', SN: 'Восприятие', EI: 'Энергия', RX: 'Ритм' }
-      : { LF: 'Logic', SN: 'Sensing', EI: 'Energy', RX: 'Rhythm' }
+    // 4 slim segments, one per stretch. Each fills as its questions get answered.
+    const segLen = QUESTIONS.length / STRETCHES
+    const segFill = (i: number) => Math.max(0, Math.min(1, (currentQ - i * segLen) / segLen))
     return (
       <div style={{ minHeight: '100vh', background: BG, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+        <style>{`
+          @keyframes btCheer {
+            0% { opacity: 0; transform: translateY(4px); }
+            18% { opacity: 1; transform: translateY(0); }
+            72% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(0); }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            @keyframes btCheer { 0% { opacity: 0; } 18% { opacity: 1; } 72% { opacity: 1; } 100% { opacity: 0; } }
+          }
+        `}</style>
         <div style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 24px' }}>
           <div style={{ marginBottom: '30px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <span style={{ fontSize: '12px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.4)', color: GOLD }}>{blocks[q.scale]}</span>
-              <span style={{ fontSize: '13px', color: MUT }}>{currentQ + 1} / {QUESTIONS.length}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', marginBottom: '12px', minHeight: '20px' }}>
+              {/* Encouragement slot — fixed single line so nothing below shifts while it fades. */}
+              <div aria-live="polite" style={{ flex: 1, minWidth: 0 }}>
+                {cheer && (
+                  <span key={cheer.n} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', maxWidth: '100%', fontSize: '13px', fontWeight: 600, color: MINT, whiteSpace: 'nowrap', animation: `btCheer ${CHEER_MS}ms ease-out forwards` }}>
+                    <Sparkles size={14} strokeWidth={2.2} style={{ flexShrink: 0 }} aria-hidden="true" />
+                    <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>{T.cheers[cheer.i]}</span>
+                  </span>
+                )}
+              </div>
+              <span style={{ fontSize: '13px', color: MUT, flexShrink: 0 }}>{currentQ + 1} / {QUESTIONS.length}</span>
             </div>
-            <div style={{ height: '4px', borderRadius: '999px', background: 'rgba(255,255,255,0.10)', overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${progress}%`, borderRadius: '999px', background: `linear-gradient(90deg, ${GOLD}, #34D399)`, transition: 'width 0.3s' }} />
+            <div role="progressbar" aria-valuemin={0} aria-valuemax={QUESTIONS.length} aria-valuenow={currentQ}
+              style={{ display: 'flex', gap: '4px' }}>
+              {Array.from({ length: STRETCHES }).map((_, i) => (
+                <div key={i} style={{ flex: 1, height: '4px', borderRadius: '999px', background: 'rgba(255,255,255,0.10)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${segFill(i) * 100}%`, borderRadius: '999px', background: `linear-gradient(90deg, ${PURPLE}, ${MINT})`, transition: 'width 0.3s' }} />
+                </div>
+              ))}
             </div>
           </div>
           <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '25px', color: TXT, marginBottom: '28px', lineHeight: 1.4 }}>{q.q}</h2>
@@ -253,14 +303,17 @@ export default function BestieTypePage() {
             {[[optA, poleA], [optB, poleB]].map(([text, pole], i) => (
               <button key={i} onClick={() => handleAnswer(pole as number)}
                 style={{ padding: '18px 20px', borderRadius: '16px', fontSize: '15px', textAlign: 'left', background: CARD, border: '1px solid rgba(255,255,255,0.12)', color: TXT, cursor: 'pointer', transition: 'all 0.15s', lineHeight: 1.5 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.border = '1px solid rgba(212,175,55,0.4)'; (e.currentTarget as HTMLElement).style.background = 'rgba(212,175,55,0.06)' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.border = '1px solid rgba(155,127,255,0.45)'; (e.currentTarget as HTMLElement).style.background = 'rgba(155,127,255,0.08)' }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.border = '1px solid rgba(255,255,255,0.12)'; (e.currentTarget as HTMLElement).style.background = CARD }}>
                 {text as string}
               </button>
             ))}
           </div>
           {currentQ > 0 && (
-            <button onClick={() => setCurrentQ(currentQ - 1)} style={{ marginTop: '24px', background: 'none', border: 'none', fontSize: '13px', color: MUT, cursor: 'pointer' }}>← Back</button>
+            <button onClick={() => setCurrentQ(currentQ - 1)} style={{ marginTop: '12px', minHeight: '44px', padding: '12px 4px', display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', fontSize: '13px', color: MUT, cursor: 'pointer' }}>
+              <ArrowLeft size={15} strokeWidth={2} aria-hidden="true" />
+              {T.back}
+            </button>
           )}
         </div>
       </div>
@@ -363,21 +416,21 @@ export default function BestieTypePage() {
           </div>
 
           {userId ? (
-            <button onClick={handleSave} disabled={saving} style={{ width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: `linear-gradient(135deg, ${GOLD} 0%, #B8960C 100%)`, color: BG, border: 'none', cursor: 'pointer' }}>
+            <button onClick={handleSave} disabled={saving} style={{ width: '100%', padding: '16px', borderRadius: '16px', fontSize: '15px', fontWeight: 700, background: `linear-gradient(135deg, ${GOLD} 0%, #B8960C 100%)`, color: BG, border: 'none', cursor: 'pointer' }}>
               {saving ? T.saving : T.save}
             </button>
           ) : (
             <>
-              <Link href="/signup" style={{ display: 'block', textAlign: 'center', width: '100%', padding: '16px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: `linear-gradient(135deg, ${GOLD} 0%, #B8960C 100%)`, color: BG, textDecoration: 'none', boxSizing: 'border-box' }}>
+              <Link href="/signup" style={{ display: 'block', textAlign: 'center', width: '100%', padding: '16px', borderRadius: '16px', fontSize: '15px', fontWeight: 700, background: `linear-gradient(135deg, ${GOLD} 0%, #B8960C 100%)`, color: BG, textDecoration: 'none', boxSizing: 'border-box' }}>
                 {T.join}
               </Link>
               <p style={{ fontSize: '12px', color: MUT, textAlign: 'center', marginTop: '10px' }}>{T.kept}</p>
             </>
           )}
-          <button onClick={handleShare} disabled={sharing} style={{ width: '100%', marginTop: '12px', padding: '14px', borderRadius: '14px', fontSize: '14px', fontWeight: 700, background: shared ? 'rgba(52,211,153,0.12)' : '#131323', border: shared ? '1px solid rgba(52,211,153,0.35)' : '1px solid rgba(255,255,255,0.12)', color: shared ? '#34D399' : TXT, cursor: sharing ? 'wait' : 'pointer', opacity: sharing ? 0.75 : 1 }}>
+          <button onClick={handleShare} disabled={sharing} style={{ width: '100%', marginTop: '12px', padding: '14px', borderRadius: '16px', fontSize: '14px', fontWeight: 700, background: shared ? 'rgba(52,211,153,0.12)' : '#131323', border: shared ? '1px solid rgba(52,211,153,0.35)' : '1px solid rgba(255,255,255,0.12)', color: shared ? '#34D399' : TXT, cursor: sharing ? 'wait' : 'pointer', opacity: sharing ? 0.75 : 1 }}>
             {sharing ? T.sharePreparing : shared ? T.shared : T.share}
           </button>
-          <button onClick={start} style={{ display: 'block', margin: '18px auto 0', padding: '4px 8px', background: 'none', border: 'none', fontSize: '13px', color: MUT, textDecoration: 'underline', cursor: 'pointer' }}>
+          <button onClick={start} style={{ display: 'block', margin: '10px auto 0', minHeight: '44px', padding: '12px 16px', background: 'none', border: 'none', fontSize: '13px', color: MUT, textDecoration: 'underline', cursor: 'pointer' }}>
             {T.retake}
           </button>
         </div>

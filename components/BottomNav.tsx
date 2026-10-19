@@ -5,79 +5,22 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-
-const HomeIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 12L12 3l9 9v9a1 1 0 01-1 1h-5v-5H9v5H4a1 1 0 01-1-1v-9z"/>
-  </svg>
-)
-
-const DashboardIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="7" height="7" rx="1"/>
-    <rect x="14" y="3" width="7" height="7" rx="1"/>
-    <rect x="3" y="14" width="7" height="7" rx="1"/>
-    <rect x="14" y="14" width="7" height="7" rx="1"/>
-  </svg>
-)
-
-const BrowseIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="7"/>
-    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-  </svg>
-)
-
-const EventsIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="4" width="18" height="18" rx="2"/>
-    <line x1="16" y1="2" x2="16" y2="6"/>
-    <line x1="8" y1="2" x2="8" y2="6"/>
-    <line x1="3" y1="10" x2="21" y2="10"/>
-    <line x1="8" y1="14" x2="8" y2="14" strokeWidth="3" strokeLinecap="round"/>
-    <line x1="12" y1="14" x2="12" y2="14" strokeWidth="3" strokeLinecap="round"/>
-    <line x1="16" y1="14" x2="16" y2="14" strokeWidth="3" strokeLinecap="round"/>
-  </svg>
-)
-
-const CrewsIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-    <circle cx="9" cy="7" r="4"/>
-    <path d="M23 21v-2a4 4 0 00-3-3.87"/>
-    <path d="M16 3.13a4 4 0 010 7.75"/>
-  </svg>
-)
-
-const BookingsIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="4" width="18" height="18" rx="2"/>
-    <line x1="16" y1="2" x2="16" y2="6"/>
-    <line x1="8" y1="2" x2="8" y2="6"/>
-    <line x1="3" y1="10" x2="21" y2="10"/>
-  </svg>
-)
-
-const MessagesIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
-  </svg>
-)
+import { Home, LayoutDashboard, Search, CalendarDays, CalendarCheck, Users, MessageCircle } from 'lucide-react'
 
 const GUEST_LINKS = [
-  { href: '/', label: 'Home', Icon: HomeIcon, match: (p: string) => p === '/' },
-  { href: '/browse', label: 'Browse', Icon: BrowseIcon, match: (p: string) => p.startsWith('/browse') },
-  { href: '/events', label: 'Events', Icon: EventsIcon, match: (p: string) => p.startsWith('/events') || p.startsWith('/group-sessions') || p.startsWith('/pulse') },
-  { href: '/crews', label: 'Crews', Icon: CrewsIcon, match: (p: string) => p.startsWith('/crews') },
-  { href: '/bookings', label: 'Bookings', Icon: BookingsIcon, match: (p: string) => p.startsWith('/bookings') },
+  { href: '/', label: 'Home', Icon: Home, match: (p: string) => p === '/' },
+  { href: '/browse', label: 'Browse', Icon: Search, match: (p: string) => p.startsWith('/browse') },
+  { href: '/events', label: 'Events', Icon: CalendarDays, match: (p: string) => p.startsWith('/events') || p.startsWith('/group-sessions') || p.startsWith('/pulse') },
+  { href: '/crews', label: 'Crews', Icon: Users, match: (p: string) => p.startsWith('/crews') },
+  { href: '/bookings', label: 'Bookings', Icon: CalendarCheck, match: (p: string) => p.startsWith('/bookings') },
 ]
 
 const AUTH_LINKS = [
-  { href: '/dashboard', label: 'Dashboard', Icon: DashboardIcon, match: (p: string) => p.startsWith('/dashboard') },
-  { href: '/browse', label: 'Browse', Icon: BrowseIcon, match: (p: string) => p.startsWith('/browse') },
-  { href: '/events', label: 'Events', Icon: EventsIcon, match: (p: string) => p.startsWith('/events') || p.startsWith('/group-sessions') || p.startsWith('/pulse') },
-  { href: '/crews', label: 'Crews', Icon: CrewsIcon, match: (p: string) => p.startsWith('/crews') },
-  { href: '/messages', label: 'Messages', Icon: MessagesIcon, match: (p: string) => p.startsWith('/messages') },
+  { href: '/dashboard', label: 'Dashboard', Icon: LayoutDashboard, match: (p: string) => p.startsWith('/dashboard') },
+  { href: '/browse', label: 'Browse', Icon: Search, match: (p: string) => p.startsWith('/browse') },
+  { href: '/events', label: 'Events', Icon: CalendarDays, match: (p: string) => p.startsWith('/events') || p.startsWith('/group-sessions') || p.startsWith('/pulse') },
+  { href: '/crews', label: 'Crews', Icon: Users, match: (p: string) => p.startsWith('/crews') },
+  { href: '/messages', label: 'Messages', Icon: MessageCircle, match: (p: string) => p.startsWith('/messages') },
 ]
 
 export default function BottomNav() {
@@ -122,43 +65,66 @@ export default function BottomNav() {
           display: none;
         }
         @media (max-width: 768px) {
-          .bottom-nav-wrap {
+          /* Total nav height, exposed so fixed bars (sticky CTAs, sheets) can sit
+             on top of the nav instead of underneath it:
+             1px border + 6px top pad + 53px item + bottom pad (safe-area aware).
+             Keep in sync with the .bn-item box below. */
+          :root {
+            --bottom-nav-h: calc(60px + max(10px, env(safe-area-inset-bottom)));
+          }
+          nav.bottom-nav-wrap {
             display: flex;
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
             z-index: 100;
-            background: rgba(8, 8, 16, 0.97);
+            background: var(--nav-bg);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            border-top: 1px solid rgba(255,255,255,0.07);
-            padding: 6px 4px;
-            padding-bottom: max(10px, env(safe-area-inset-bottom));
+            border-top: 1px solid var(--border);
+            /* !important + higher specificity beats the global mobile
+               "nav { padding: 12px 16px !important }" rule, so the
+               home-indicator safe area is actually honoured. */
+            padding: 6px 4px max(10px, env(safe-area-inset-bottom)) !important;
             justify-content: space-around;
             align-items: center;
           }
           .bn-item {
+            flex: 1 1 0;
+            min-width: 0;
+            max-width: 88px;
+            min-height: 44px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             gap: 3px;
-            padding: 6px 14px;
-            border-radius: 14px;
-            font-size: 10px;
+            padding: 6px 4px;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            font-size: 11px;
             font-weight: 500;
-            color: #5A5480;
+            color: var(--text-dim);
             text-decoration: none;
             transition: all 0.15s ease;
             font-family: 'Plus Jakarta Sans', sans-serif;
             letter-spacing: 0.3px;
-            min-width: 52px;
+          }
+          .bn-label {
+            display: block;
+            max-width: 100%;
+            line-height: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
           .bn-item.active {
-            color: #D4AF37;
-            background: rgba(212,175,55,0.1);
+            color: var(--text-primary);
+            background: var(--surface-3);
+            border-color: var(--border-strong);
           }
-          body { padding-bottom: 72px; }
+          body { padding-bottom: calc(var(--bottom-nav-h) + 4px); }
         }
       `}</style>
       <nav className="bottom-nav-wrap">
@@ -166,20 +132,26 @@ export default function BottomNav() {
           const active = match(path)
           const showDot = href === '/messages' && unread > 0
           return (
-            <Link key={href} href={href} className={`bn-item${active ? ' active' : ''}`}>
+            <Link
+              key={href}
+              href={href}
+              className={`bn-item${active ? ' active' : ''}`}
+              aria-current={active ? 'page' : undefined}
+              aria-label={showDot ? `${label}, unread messages` : undefined}
+            >
               <span style={{ position: 'relative', display: 'inline-flex' }}>
-                <Icon />
+                <Icon size={22} strokeWidth={1.8} aria-hidden="true" />
                 {showDot && (
                   <span
                     style={{
                       position: 'absolute', top: '-2px', right: '-3px',
                       width: '8px', height: '8px', borderRadius: '50%',
-                      background: '#D4AF37', boxShadow: '0 0 0 2px rgba(8,8,16,0.97)',
+                      background: '#D4AF37', boxShadow: '0 0 0 2px var(--bg)',
                     }}
                   />
                 )}
               </span>
-              {label}
+              <span className="bn-label">{label}</span>
             </Link>
           )
         })}

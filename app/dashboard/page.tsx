@@ -18,6 +18,7 @@ import {
   Camera, Pencil, MapPin, Sparkles, Mail, Inbox, Users, Calendar,
   UsersRound, Globe, Network, Search, Zap, Settings, Share2,
   TrendingUp, Hand, Star, Crown, PartyPopper, Target,
+  CheckCircle2, ChevronDown, ChevronRight,
 } from 'lucide-react'
 import { buzz, celebrate, celebrateMatch } from '@/lib/celebrate'
 import MatchCelebration from '@/components/MatchCelebration'
@@ -44,6 +45,7 @@ export default function DashboardPage() {
   const [freeInCityCount, setFreeInCityCount] = useState(0)
   const [matchPartner, setMatchPartner] = useState<any>(null)
   const [sparkCeleb, setSparkCeleb] = useState<any>(null)
+  const [showMoreActions, setShowMoreActions] = useState(false)
 
   useEffect(() => {
     const getUser = async () => {
@@ -328,6 +330,20 @@ export default function DashboardPage() {
     { Icon: Settings,    label: 'Edit profile',     sub: 'Bio, photo, city, activities',        href: '/profile/edit' },
   ]
 
+  // Brand-new users (no confirmed meetup yet) see only the actions that work
+  // without history; the rest sit behind a "More" disclosure. Anything with a
+  // live badge (unread message, booking request, knock…) is always promoted.
+  const totalSessions = profile?.total_sessions || 0
+  const hasHistory = totalSessions > 0
+  const STARTER_HREFS = ['/browse', '/pulse', '/crews', '/profile/edit']
+  const primaryActions = hasHistory
+    ? actions
+    : [
+        ...actions.filter(a => (a.badge || 0) > 0 && !STARTER_HREFS.includes(a.href)),
+        ...STARTER_HREFS.map(h => actions.find(a => a.href === h)).filter(Boolean),
+      ]
+  const moreActions = hasHistory ? [] : actions.filter(a => !primaryActions.includes(a))
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       {matchPartner && (
@@ -357,11 +373,13 @@ export default function DashboardPage() {
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <Link href="/browse" style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none' }}>Browse</Link>
+          <Link href="/browse" className="dash-tap" style={{ display: 'inline-flex', alignItems: 'center', padding: '0 4px', fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none' }}>Browse</Link>
           {user && <NotificationBell userId={user.id} />}
-          <button onClick={handleLogout} style={{ fontSize: '14px', color: 'var(--text-muted)', background: 'none', border: '1px solid var(--border)', padding: '6px 16px', borderRadius: '10px', cursor: 'pointer' }}>Log out</button>
+          <button onClick={handleLogout} className="dash-tap" style={{ display: 'inline-flex', alignItems: 'center', fontSize: '14px', color: 'var(--text-muted)', background: 'none', border: '1px solid var(--border)', padding: '6px 16px', borderRadius: '12px', cursor: 'pointer' }}>Log out</button>
         </div>
       </nav>
+      {/* Touch devices: every chip / button / row gets a 44px tap target */}
+      <style>{`@media (pointer: coarse) { .dash-tap { min-height: 44px; } }`}</style>
 
       <div style={{ maxWidth: '960px', margin: '0 auto', padding: '40px 24px' }}>
 
@@ -371,7 +389,7 @@ export default function DashboardPage() {
             users (no confirmed meetup yet): don't sell before they've felt value */}
         {profile && (profile.total_sessions || 0) > 0 && !(profile.subscription_tier === 'plus' && (!profile.plus_expires_at || new Date(profile.plus_expires_at) > new Date())) && (
           <Link href="/plus" style={{ textDecoration: 'none', display: 'block', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '18px 20px', borderRadius: '18px', background: 'linear-gradient(135deg, rgba(155,127,255,0.16), rgba(124,92,255,0.08))', border: '1px solid rgba(155,127,255,0.35)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '18px 20px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(155,127,255,0.16), rgba(124,92,255,0.08))', border: '1px solid rgba(155,127,255,0.35)' }}>
               <div style={{ fontSize: '30px', lineHeight: 1 }}>✦</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 3px' }}>Upgrade to Bestie Plus — $8/mo</p>
@@ -391,10 +409,10 @@ export default function DashboardPage() {
           </div>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             <CreateEventButton variant="compact" />
-            <button onClick={handleShare} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: copied ? 'rgba(52,211,153,0.15)' : 'linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0.08) 100%)', border: copied ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(212,175,55,0.3)', color: copied ? '#34D399' : '#D4AF37', cursor: 'pointer' }}>
+            <button onClick={handleShare} className="dash-tap" style={{ display: 'inline-flex', alignItems: 'center', padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: copied ? 'rgba(52,211,153,0.15)' : 'linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0.08) 100%)', border: copied ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(212,175,55,0.3)', color: copied ? '#34D399' : '#D4AF37', cursor: 'pointer' }}>
               {copied ? '✓ Copied!' : (<><Share2 size={14} strokeWidth={2} style={{ verticalAlign: 'middle', marginRight: '6px' }} />Share my Passport</>)}
             </button>
-            <Link href={`/${profile?.username}`} style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'var(--border)', border: '1px solid var(--border)', color: 'var(--text-primary)', textDecoration: 'none' }}>
+            <Link href={`/${profile?.username}`} className="dash-tap" style={{ display: 'inline-flex', alignItems: 'center', padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'var(--border)', border: '1px solid var(--border)', color: 'var(--text-primary)', textDecoration: 'none' }}>
               View my profile →
             </Link>
           </div>
@@ -411,10 +429,10 @@ export default function DashboardPage() {
 
           if (showBestieType) {
             return (
-              <Link href="/bestie-type" style={{ display: 'block', marginBottom: '20px', padding: '28px 28px', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(155,127,255,0.10) 100%)', border: '1px solid rgba(212,175,55,0.30)', textDecoration: 'none', position: 'relative', overflow: 'hidden' }}>
+              <Link href="/bestie-type" style={{ display: 'block', marginBottom: '20px', padding: '28px 28px', borderRadius: '20px', background: 'linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(155,127,255,0.10) 100%)', border: '1px solid rgba(212,175,55,0.30)', textDecoration: 'none', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '180px', height: '180px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%)', pointerEvents: 'none' }} />
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-                  <span style={{ width: '64px', height: '64px', borderRadius: '18px', background: 'rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Sparkles size={30} color="#D4AF37" strokeWidth={1.6} /></span>
+                  <span style={{ width: '64px', height: '64px', borderRadius: '16px', background: 'rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Sparkles size={30} color="#D4AF37" strokeWidth={1.6} /></span>
                   <div style={{ flex: 1, minWidth: '140px' }}>
                     <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#D4AF37', marginBottom: '4px' }}>START HERE</p>
                     <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '4px', lineHeight: 1.2 }}>Discover your Bestie Type</h2>
@@ -429,12 +447,12 @@ export default function DashboardPage() {
           if (showKnocks) {
             const first = pendingKnocks.slice(0, 3)
             return (
-              <Link href={`/${first[0].sender?.username}`} style={{ display: 'block', marginBottom: '20px', padding: '24px 28px', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(212,175,55,0.14) 0%, rgba(212,175,55,0.06) 100%)', border: '1px solid rgba(212,175,55,0.30)', textDecoration: 'none', position: 'relative', overflow: 'hidden' }}>
+              <Link href={`/${first[0].sender?.username}`} style={{ display: 'block', marginBottom: '20px', padding: '24px 28px', borderRadius: '20px', background: 'linear-gradient(135deg, rgba(212,175,55,0.14) 0%, rgba(212,175,55,0.06) 100%)', border: '1px solid rgba(212,175,55,0.30)', textDecoration: 'none', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: '-30px', right: '-30px', width: '160px', height: '160px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.16) 0%, transparent 70%)', pointerEvents: 'none' }} />
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '18px', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', flexShrink: 0 }}>
                     {first.map((k: any, i: number) => (
-                      <div key={k.id} style={{ width: '50px', height: '50px', borderRadius: '14px', overflow: 'hidden', background: 'var(--surface-3)', border: '2px solid var(--surface-1b)', marginLeft: i === 0 ? 0 : '-12px', flexShrink: 0 }}>
+                      <div key={k.id} style={{ width: '50px', height: '50px', borderRadius: '12px', overflow: 'hidden', background: 'var(--surface-3)', border: '2px solid var(--surface-1b)', marginLeft: i === 0 ? 0 : '-12px', flexShrink: 0 }}>
                         {k.sender?.avatar_url
                           ? <img src={k.sender.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: 700, color: '#D4AF37' }}>{k.sender?.full_name?.[0]}</div>
@@ -456,7 +474,7 @@ export default function DashboardPage() {
           if (showMemories) {
             const first = pendingMemories[0]
             return (
-              <Link href={`/sessions/${first.id}/memory`} style={{ display: 'block', marginBottom: '20px', padding: '24px 28px', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(155,127,255,0.14) 0%, rgba(155,127,255,0.06) 100%)', border: '1px solid rgba(155,127,255,0.30)', textDecoration: 'none', position: 'relative', overflow: 'hidden' }}>
+              <Link href={`/sessions/${first.id}/memory`} style={{ display: 'block', marginBottom: '20px', padding: '24px 28px', borderRadius: '20px', background: 'linear-gradient(135deg, rgba(155,127,255,0.14) 0%, rgba(155,127,255,0.06) 100%)', border: '1px solid rgba(155,127,255,0.30)', textDecoration: 'none', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: '-30px', right: '-30px', width: '160px', height: '160px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(155,127,255,0.16) 0%, transparent 70%)', pointerEvents: 'none' }} />
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '18px', flexWrap: 'wrap' }}>
                   <span style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(155,127,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Sparkles size={26} color="#9B7FFF" strokeWidth={1.6} /></span>
@@ -474,10 +492,10 @@ export default function DashboardPage() {
           if (showWelcome) {
             const firstName = profile?.full_name?.split(' ')[0] || 'Bestie'
             return (
-              <Link href="/browse" style={{ display: 'block', marginBottom: '20px', padding: '28px', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(52,211,153,0.10) 0%, rgba(212,175,55,0.08) 100%)', border: '1px solid rgba(52,211,153,0.25)', textDecoration: 'none', position: 'relative', overflow: 'hidden' }}>
+              <Link href="/browse" style={{ display: 'block', marginBottom: '20px', padding: '28px', borderRadius: '20px', background: 'linear-gradient(135deg, rgba(52,211,153,0.10) 0%, rgba(212,175,55,0.08) 100%)', border: '1px solid rgba(52,211,153,0.25)', textDecoration: 'none', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(52,211,153,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-                  <span style={{ width: '64px', height: '64px', borderRadius: '18px', background: 'rgba(52,211,153,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Users size={30} color="#34D399" strokeWidth={1.6} /></span>
+                  <span style={{ width: '64px', height: '64px', borderRadius: '16px', background: 'rgba(52,211,153,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Users size={30} color="#34D399" strokeWidth={1.6} /></span>
                   <div style={{ flex: 1, minWidth: '140px' }}>
                     <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2px', color: '#34D399', marginBottom: '4px' }}>WELCOME, {firstName.toUpperCase()}</p>
                     <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '4px', lineHeight: 1.2 }}>Find your first Bestie</h2>
@@ -496,7 +514,7 @@ export default function DashboardPage() {
           // Free Today as hero (default)
           if (showFreeToday) {
             return (
-              <div style={{ marginBottom: '20px', padding: '28px', borderRadius: '24px', background: iAmFree ? 'linear-gradient(135deg, rgba(52,211,153,0.12) 0%, rgba(52,211,153,0.04) 100%)' : 'linear-gradient(135deg, var(--overlay) 0%, rgba(212,175,55,0.04) 100%)', border: iAmFree ? '1px solid rgba(52,211,153,0.30)' : '1px solid rgba(212,175,55,0.20)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ marginBottom: '20px', padding: '28px', borderRadius: '20px', background: iAmFree ? 'linear-gradient(135deg, rgba(52,211,153,0.12) 0%, rgba(52,211,153,0.04) 100%)' : 'linear-gradient(135deg, var(--overlay) 0%, rgba(212,175,55,0.04) 100%)', border: iAmFree ? '1px solid rgba(52,211,153,0.30)' : '1px solid rgba(212,175,55,0.20)', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '180px', height: '180px', borderRadius: '50%', background: iAmFree ? 'radial-gradient(circle, rgba(52,211,153,0.16) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(212,175,55,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
                   <span style={{ width: '64px', height: '64px', borderRadius: '50%', background: iAmFree ? 'rgba(52,211,153,0.18)' : 'var(--overlay-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
@@ -513,7 +531,7 @@ export default function DashboardPage() {
                       }
                     </p>
                   </div>
-                  <button onClick={toggleFree} disabled={togglingFree} style={{ padding: '14px 28px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.12)' : 'linear-gradient(135deg, #34D399 0%, #2AAA75 100%)', border: iAmFree ? '1px solid rgba(255,107,53,0.35)' : 'none', color: iAmFree ? '#FF6B35' : 'var(--bg)', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: 'Plus Jakarta Sans, sans-serif', boxShadow: iAmFree ? 'none' : '0 4px 16px rgba(52,211,153,0.25)' }}>
+                  <button onClick={toggleFree} disabled={togglingFree} style={{ padding: '14px 28px', borderRadius: '12px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.12)' : 'linear-gradient(135deg, #34D399 0%, #2AAA75 100%)', border: iAmFree ? '1px solid rgba(255,107,53,0.35)' : 'none', color: iAmFree ? '#FF6B35' : 'var(--bg)', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: 'Plus Jakarta Sans, sans-serif', boxShadow: iAmFree ? 'none' : '0 4px 16px rgba(52,211,153,0.25)' }}>
                     {togglingFree ? '…' : iAmFree ? 'Turn off' : "I'm free!"}
                   </button>
                 </div>
@@ -525,12 +543,42 @@ export default function DashboardPage() {
         })()}
 
         {/* Streak strip */}
-        <StreakStrip weeks={profile?.streak_weeks || 0} totalSessions={profile?.total_sessions || 0} />
+        <StreakStrip weeks={profile?.streak_weeks || 0} totalSessions={profile?.total_sessions || 0} userId={user?.id} />
 
         {/* Suggested crews — hidden if user is already in a crew or no match */}
         <SuggestedCrews />
 
-        {/* Stats */}
+        {/* Stats — brand-new users (0 confirmed sessions) get a forward-looking
+            strip instead of an empty trophy room full of zeros */}
+        {!hasHistory ? (
+          <div style={{ marginBottom: '24px', background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '20px 24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '14px' }}>
+              <span style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(52,211,153,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <TrendingUp size={20} color="#34D399" strokeWidth={1.8} />
+              </span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '2px', lineHeight: 1.3 }}>Your Bestie Score grows with every real meetup</p>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                  You're at <span style={{ color: scoreColor, fontWeight: 700 }}>{score}</span> — three steps to your first one
+                </p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {[
+                { n: 1, Icon: Hand,         label: 'Knock someone',   href: '/browse' },
+                { n: 2, Icon: UsersRound,   label: 'Join a session',  href: '/events' },
+                { n: 3, Icon: CheckCircle2, label: 'Confirm you met', href: '/sessions' },
+              ].map(step => (
+                <Link key={step.href} href={step.href} className="dash-tap" style={{ flex: '1 1 150px', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '12px', background: 'var(--surface-1b)', border: '1px solid var(--border)', textDecoration: 'none' }}>
+                  <span style={{ width: '22px', height: '22px', borderRadius: '999px', background: 'var(--surface-3)', color: 'var(--text-muted)', fontSize: '11px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{step.n}</span>
+                  <step.Icon size={16} color="var(--text-muted)" strokeWidth={1.8} style={{ flexShrink: 0 }} />
+                  <span style={{ flex: 1, minWidth: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{step.label}</span>
+                  <ChevronRight size={14} color="var(--text-dim)" strokeWidth={2} style={{ flexShrink: 0 }} />
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', marginBottom: '24px' }}>
           <div style={{ background: 'var(--surface-1)', border: `1px solid ${scoreColor}25`, borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '8px' }}>BESTIE SCORE</p>
@@ -557,6 +605,7 @@ export default function DashboardPage() {
             <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{profile?.country || 'Add your city'}</p>
           </div>
         </div>
+        )}
 
         {/* Eterotype result */}
         {profile?.eterotype && (
@@ -570,7 +619,7 @@ export default function DashboardPage() {
                 </p>
               </div>
             </div>
-            <Link href="/bestie-type" style={{ padding: '8px 18px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'var(--border)', border: '1px solid var(--border)', color: 'var(--text-muted)', textDecoration: 'none' }}>
+            <Link href="/bestie-type" className="dash-tap" style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 18px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'var(--border)', border: '1px solid var(--border)', color: 'var(--text-muted)', textDecoration: 'none' }}>
               Retake test
             </Link>
           </div>
@@ -578,7 +627,7 @@ export default function DashboardPage() {
 
         {/* Compact Free Today — only shown when Free Today is NOT the hero (i.e. hero is currently knocks or memories) */}
         {profile?.bestie_type_completed && (pendingKnocks.length > 0 || pendingMemories.length > 0) && (
-          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: iAmFree ? 'rgba(52,211,153,0.06)' : 'var(--surface-1)', border: iAmFree ? '1px solid rgba(52,211,153,0.25)' : '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '16px', background: iAmFree ? 'rgba(52,211,153,0.06)' : 'var(--surface-1)', border: iAmFree ? '1px solid rgba(52,211,153,0.25)' : '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span style={{ display: 'inline-flex', width: '12px', height: '12px', borderRadius: '50%', background: iAmFree ? '#34D399' : 'transparent', border: iAmFree ? 'none' : '2px solid var(--text-muted)', boxShadow: iAmFree ? '0 0 12px rgba(52,211,153,0.7)' : 'none' }} />
               <div>
@@ -591,7 +640,7 @@ export default function DashboardPage() {
                 </p>
               </div>
             </div>
-            <button onClick={toggleFree} disabled={togglingFree} style={{ padding: '8px 18px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.1)' : 'rgba(52,211,153,0.12)', border: iAmFree ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(52,211,153,0.35)', color: iAmFree ? '#FF6B35' : '#34D399', whiteSpace: 'nowrap' }}>
+            <button onClick={toggleFree} disabled={togglingFree} className="dash-tap" style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 18px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.1)' : 'rgba(52,211,153,0.12)', border: iAmFree ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(52,211,153,0.35)', color: iAmFree ? '#FF6B35' : '#34D399', whiteSpace: 'nowrap' }}>
               {togglingFree ? '…' : iAmFree ? 'Turn off' : "I'm free!"}
             </button>
           </div>
@@ -603,11 +652,11 @@ export default function DashboardPage() {
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Hand size={13} color="#D4AF37" strokeWidth={2} /> NEW KNOCKS</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
               {pendingKnocks.map((k: any) => (
-                <Link key={k.id} href={`/${k.sender?.username}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', borderRadius: '12px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', textDecoration: 'none' }}>
+                <Link key={k.id} href={`/${k.sender?.username}`} className="dash-tap" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', borderRadius: '12px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', textDecoration: 'none' }}>
                   <div style={{ width: '28px', height: '28px', borderRadius: '8px', overflow: 'hidden', background: 'var(--surface-3)', flexShrink: 0 }}>
                     {k.sender?.avatar_url
                       ? <img src={k.sender.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: '#D4AF37' }}>{k.sender?.full_name?.[0]}</div>
+                      : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#D4AF37' }}>{k.sender?.full_name?.[0]}</div>
                     }
                   </div>
                   <span style={{ fontSize: '13px', fontWeight: 600, color: '#D4AF37' }}>{k.sender?.full_name?.split(' ')[0]}</span>
@@ -624,7 +673,7 @@ export default function DashboardPage() {
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Sparkles size={13} color="#9B7FFF" strokeWidth={2} /> HOW DID IT GO?</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {pendingMemories.map((b: any) => (
-                <Link key={b.id} href={`/sessions/${b.id}/memory`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '12px', background: 'rgba(155,143,255,0.07)', border: '1px solid rgba(155,143,255,0.15)', textDecoration: 'none' }}>
+                <Link key={b.id} href={`/sessions/${b.id}/memory`} className="dash-tap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '12px', background: 'rgba(155,143,255,0.07)', border: '1px solid rgba(155,143,255,0.15)', textDecoration: 'none' }}>
                   <p style={{ fontSize: '13px', color: 'var(--text-primary)' }}>
                     Session with <span style={{ fontWeight: 700, color: '#9B7FFF' }}>{b.partner?.full_name?.split(' ')[0] || 'someone'}</span>
                   </p>
@@ -644,7 +693,7 @@ export default function DashboardPage() {
           <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)' }}>My Crews</h3>
-              <Link href="/crews" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>Browse →</Link>
+              <Link href="/crews" className="dash-tap" style={{ display: 'inline-flex', alignItems: 'center', fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>Browse →</Link>
             </div>
             {myCrews.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '24px 0' }}>
@@ -658,8 +707,8 @@ export default function DashboardPage() {
                   const newEvents = crewNewEvents[crew.id] || 0
                   const isFeatured = profile?.crew_id === crew.id
                   return (
-                    <Link key={crew.id} href={`/crews/${crew.slug}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', background: isFeatured ? 'rgba(212,175,55,0.06)' : 'var(--surface-1)', border: isFeatured ? '1px solid rgba(212,175,55,0.2)' : '1px solid var(--border)', textDecoration: 'none' }}>
-                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: 'var(--surface-3)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Link key={crew.id} href={`/crews/${crew.slug}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '12px', background: isFeatured ? 'rgba(212,175,55,0.06)' : 'var(--surface-1)', border: isFeatured ? '1px solid rgba(212,175,55,0.2)' : '1px solid var(--border)', textDecoration: 'none' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '12px', overflow: 'hidden', background: 'var(--surface-3)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {crew.avatar_url
                           ? <img src={crew.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           : <Users size={16} color="var(--text-muted)" strokeWidth={1.8} />}
@@ -676,7 +725,7 @@ export default function DashboardPage() {
                     </Link>
                   )
                 })}
-                <Link href="/crews/new" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', background: 'transparent', border: '1px dashed var(--border)', textDecoration: 'none', marginTop: '4px' }}>
+                <Link href="/crews/new" className="dash-tap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', background: 'transparent', border: '1px dashed var(--border)', textDecoration: 'none', marginTop: '4px' }}>
                   + Create a crew
                 </Link>
               </div>
@@ -688,14 +737,14 @@ export default function DashboardPage() {
             <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)' }}>Group Sessions</h3>
-                <Link href="/group-sessions/new" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>+ New →</Link>
+                <Link href="/group-sessions/new" className="dash-tap" style={{ display: 'inline-flex', alignItems: 'center', fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>+ New →</Link>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {upcomingGroupSessions.map((gs: any) => {
                   const d = new Date(gs.scheduled_at)
                   return (
-                    <Link key={gs.id} href={`/group-sessions/${gs.id}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', background: 'var(--surface-1)', border: '1px solid var(--border)', textDecoration: 'none' }}>
-                      <span style={{ width: '38px', height: '38px', borderRadius: '11px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><UsersRound size={20} color="#D4AF37" strokeWidth={1.7} /></span>
+                    <Link key={gs.id} href={`/group-sessions/${gs.id}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '12px', background: 'var(--surface-1)', border: '1px solid var(--border)', textDecoration: 'none' }}>
+                      <span style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><UsersRound size={20} color="#D4AF37" strokeWidth={1.7} /></span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{gs.title}</p>
                         <p style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -714,9 +763,9 @@ export default function DashboardPage() {
           <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '24px' }}>
             <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', marginBottom: '16px' }}>Quick actions</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {actions.map((action) => (
-                <Link key={action.label} href={action.href} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', background: action.badge > 0 ? 'rgba(212,175,55,0.06)' : 'var(--surface-1)', border: action.badge > 0 ? '1px solid rgba(212,175,55,0.2)' : '1px solid var(--border)', textDecoration: 'none' }}>
-                  <span style={{ width: '36px', height: '36px', borderRadius: '10px', background: action.badge > 0 ? 'rgba(212,175,55,0.10)' : 'var(--surface-1b)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              {[...primaryActions, ...(showMoreActions ? moreActions : [])].map((action) => (
+                <Link key={action.label} href={action.href} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '12px', background: action.badge > 0 ? 'rgba(212,175,55,0.06)' : 'var(--surface-1)', border: action.badge > 0 ? '1px solid rgba(212,175,55,0.2)' : '1px solid var(--border)', textDecoration: 'none' }}>
+                  <span style={{ width: '36px', height: '36px', borderRadius: '12px', background: action.badge > 0 ? 'rgba(212,175,55,0.10)' : 'var(--surface-1b)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <action.Icon size={18} color={action.badge > 0 ? '#D4AF37' : 'var(--text-muted)'} strokeWidth={1.8} />
                   </span>
                   <div style={{ flex: 1 }}>
@@ -729,6 +778,18 @@ export default function DashboardPage() {
                   <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>→</span>
                 </Link>
               ))}
+              {moreActions.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowMoreActions(v => !v)}
+                  aria-expanded={showMoreActions}
+                  className="dash-tap"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '10px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', background: 'transparent', border: '1px dashed var(--border)', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+                >
+                  {showMoreActions ? 'Show less' : `More (${moreActions.length})`}
+                  <ChevronDown size={14} strokeWidth={2} style={{ transform: showMoreActions ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -737,12 +798,12 @@ export default function DashboardPage() {
           <div style={{ marginTop: '20px', background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(52,211,153,0.04) 100%)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '20px', padding: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}><TrendingUp size={20} color="#D4AF37" strokeWidth={1.8} /> Boost your Bestie Score</h3>
-              <Link href="/score-guide" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>How it works →</Link>
+              <Link href="/score-guide" className="dash-tap" style={{ display: 'inline-flex', alignItems: 'center', fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>How it works →</Link>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
               {remainingBoost.map(tip => (
                 <Link key={tip.label} href={tip.href} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', borderRadius: '12px', background: 'var(--surface-1b)', textDecoration: 'none' }}>
-                  <span style={{ width: '32px', height: '32px', borderRadius: '9px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(212,175,55,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <tip.Icon size={16} color="#D4AF37" strokeWidth={1.8} />
                   </span>
                   <div>
@@ -776,7 +837,7 @@ export default function DashboardPage() {
               <Button onClick={handleShareRef} variant="primary" size="sm" style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
                 <Share2 size={15} strokeWidth={2.2} /> Share
               </Button>
-              <button onClick={handleCopyRef} style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: refCopied ? 'rgba(52,211,153,0.15)' : 'var(--overlay)', border: refCopied ? '1px solid rgba(52,211,153,0.3)' : '1px solid var(--border-strong)', color: refCopied ? '#34D399' : 'var(--text-muted)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+              <button onClick={handleCopyRef} className="dash-tap" style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: refCopied ? 'rgba(52,211,153,0.15)' : 'var(--overlay)', border: refCopied ? '1px solid rgba(52,211,153,0.3)' : '1px solid var(--border-strong)', color: refCopied ? '#34D399' : 'var(--text-muted)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
                 {refCopied ? '✓ Copied!' : 'Copy'}
               </button>
             </div>
@@ -792,7 +853,7 @@ export default function DashboardPage() {
                 <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Keep earning sessions and Sparks to grow your Score</p>
               </div>
             </div>
-            <Link href="/score-guide" style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(212,175,55,0.3)', whiteSpace: 'nowrap' }}>
+            <Link href="/score-guide" className="dash-tap" style={{ display: 'inline-flex', alignItems: 'center', fontSize: '13px', color: '#D4AF37', textDecoration: 'none', padding: '8px 16px', borderRadius: '12px', border: '1px solid rgba(212,175,55,0.3)', whiteSpace: 'nowrap' }}>
               How it works →
             </Link>
           </div>

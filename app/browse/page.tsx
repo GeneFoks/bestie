@@ -9,7 +9,7 @@ import ProfileNav from '@/components/ProfileNav'
 import { ActivityIcon } from '@/lib/activityIcons'
 import { EmptyState } from '@/components/EmptyState'
 import { CardSkeleton } from '@/components/Loading'
-import { Search, Sparkles, Flame, X, Zap, Gamepad2, BookOpen, Palette, Heart, Moon, Coffee, Users } from 'lucide-react'
+import { Search, Sparkles, Flame, X, Zap, Gamepad2, BookOpen, Palette, Heart, Moon, Coffee, Users, Compass, ArrowRight } from 'lucide-react'
 import { relation, TYPES } from '@/lib/socionics'
 
 const FILTER_GROUPS = [
@@ -37,6 +37,11 @@ const FILTER_GROUPS = [
 ]
 
 const ALL_FILTERS = FILTER_GROUPS.flatMap(g => g.filters)
+
+// Filter chip states. Selected = neutral-elevated, never gold — gold is
+// reserved for the screen's single primary CTA.
+const CHIP_ON  = { background: 'var(--surface-3)', border: '1px solid var(--border-strong)', color: 'var(--text-primary)' }
+const CHIP_OFF = { background: 'var(--surface-1b)', border: '1px solid var(--border)', color: 'var(--text-muted)' }
 
 const SPARK_TYPES = [
   { id: 'kind', emoji: '💛', label: 'Kind' },
@@ -250,12 +255,12 @@ export default function BrowsePage() {
             <p style={{ fontSize: '15px', color: 'var(--text-muted)' }}>
               {loading ? 'Loading...' : `${providers.length} Bestie${providers.length !== 1 ? 's' : ''} available`}
             </p>
-            <Link href="/offers" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '8px', fontSize: '13px', fontWeight: 600, color: '#D4AF37', textDecoration: 'none' }}>
-              🧭 Browse all offers →
+            <Link href="/offers" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', minHeight: '44px', marginTop: '2px', fontSize: '13px', fontWeight: 600, color: '#9B7FFF', textDecoration: 'none' }}>
+              <Compass size={14} strokeWidth={2} /> Browse all offers <ArrowRight size={14} strokeWidth={2} />
             </Link>
           </div>
           {myProfile?.eterotype && (
-            <button onClick={() => setCompatMode(!compatMode)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', background: compatMode ? 'rgba(52,211,153,0.12)' : 'var(--surface-1b)', border: compatMode ? '1px solid rgba(52,211,153,0.35)' : '1px solid var(--border)', color: compatMode ? '#34D399' : 'var(--text-muted)', transition: 'all 0.2s' }}>
+            <button onClick={() => setCompatMode(!compatMode)} style={{ display: 'flex', alignItems: 'center', gap: '8px', minHeight: '44px', padding: '10px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', background: compatMode ? 'rgba(52,211,153,0.12)' : 'var(--surface-1b)', border: compatMode ? '1px solid rgba(52,211,153,0.35)' : '1px solid var(--border)', color: compatMode ? '#34D399' : 'var(--text-muted)', transition: 'all 0.2s' }}>
               <Sparkles size={14} strokeWidth={1.8} />
               {compatMode ? 'Compatibility ON' : 'Compatibility'}
             </button>
@@ -274,49 +279,62 @@ export default function BrowsePage() {
         )}
 
         {myProfile?.eterotype && compatMode && !justMatched && (
-          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.2)', fontSize: '13px', color: 'var(--text-muted)' }}>
-            Showing people compatible with your Bestie Type <span style={{ color: '#34D399', fontWeight: 600 }}>🧭 {myProfile.eterotype_name || myProfile.eterotype}</span> — best matches first
+          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '16px', background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.2)', fontSize: '13px', color: 'var(--text-muted)' }}>
+            Showing people compatible with your Bestie Type <span style={{ color: '#34D399', fontWeight: 600, whiteSpace: 'nowrap' }}><Compass size={13} strokeWidth={2} style={{ display: 'inline', verticalAlign: '-2px', marginRight: '3px' }} />{myProfile.eterotype_name || myProfile.eterotype}</span> — best matches first
           </div>
         )}
 
         {!myProfile?.eterotype && (
-          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', fontSize: '13px', color: 'var(--text-muted)' }}>
-            <Link href="/bestie-type" style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>🧭 Take the Bestie Type test →</Link> and we'll show the most compatible people first
+          /* The screen's primary nudge while the viewer has no type, so it keeps the gold accent */
+          <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '16px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', fontSize: '13px', color: 'var(--text-muted)' }}>
+            <Link href="/bestie-type" style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 600, whiteSpace: 'nowrap' }}><Compass size={13} strokeWidth={2} style={{ display: 'inline', verticalAlign: '-2px', marginRight: '4px' }} />Take the Bestie Type test →</Link> and we'll show the most compatible people first
           </div>
         )}
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '14px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '12px', marginBottom: '16px' }}>
           <Search size={18} color="var(--text-muted)" strokeWidth={2} />
           <input type="text" placeholder="Search by name, city, or activity..." aria-label="Search Besties" value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px', color: 'var(--text-primary)', padding: '6px 0', minWidth: 0 }} />
           {search && (
-            <button onClick={() => setSearch('')} aria-label="Clear search" style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}>
+            /* 44px hit area; negative margins keep the bar's height unchanged */
+            <button onClick={() => setSearch('')} aria-label="Clear search" style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '44px', minHeight: '44px', margin: '-10px -12px -10px 0', padding: 0, flexShrink: 0 }}>
               <X size={16} strokeWidth={2} />
             </button>
           )}
         </div>
 
-        {/* Group tabs */}
+        {/* Group tabs — selected = neutral-elevated (gold is reserved for the primary CTA) */}
         <div className="filters-scroll" style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '12px' }}>
-          <button onClick={() => { setActiveGroup(null); setFilter('all') }} style={{ padding: '8px 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: !activeGroup && filter === 'all' ? 'rgba(212,175,55,0.15)' : 'var(--surface-1b)', border: !activeGroup && filter === 'all' ? '1px solid rgba(212,175,55,0.4)' : '1px solid var(--border-strong)', color: !activeGroup && filter === 'all' ? '#D4AF37' : 'var(--text-muted)' }}>
-            All
-          </button>
-          {FILTER_GROUPS.map(group => (
-            <button key={group.id} onClick={() => toggleGroup(group.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: activeGroup === group.id ? 'rgba(212,175,55,0.15)' : 'var(--surface-1b)', border: activeGroup === group.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid var(--border-strong)', color: activeGroup === group.id ? '#D4AF37' : 'var(--text-muted)' }}>
-              <group.Icon size={13} strokeWidth={1.8} />
-              {group.label}
-            </button>
-          ))}
+          {(() => {
+            const on = !activeGroup && filter === 'all'
+            return (
+              <button onClick={() => { setActiveGroup(null); setFilter('all') }} aria-pressed={on} style={{ display: 'inline-flex', alignItems: 'center', minHeight: '44px', padding: '10px 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, boxSizing: 'border-box', ...(on ? CHIP_ON : CHIP_OFF) }}>
+                All
+              </button>
+            )
+          })()}
+          {FILTER_GROUPS.map(group => {
+            const on = activeGroup === group.id
+            return (
+              <button key={group.id} onClick={() => toggleGroup(group.id)} aria-pressed={on} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', minHeight: '44px', padding: '10px 14px', borderRadius: '999px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, boxSizing: 'border-box', ...(on ? CHIP_ON : CHIP_OFF) }}>
+                <group.Icon size={14} strokeWidth={1.8} />
+                {group.label}
+              </button>
+            )
+          })}
         </div>
 
         {/* Sub-filters when group selected */}
         {currentGroup && (
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px', padding: '16px', background: 'var(--surface-1)', borderRadius: '14px', border: '1px solid var(--border)' }}>
-            {currentGroup.filters.map(f => (
-              <button key={f.id} onClick={() => setFilter(f.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', background: filter === f.id ? 'rgba(212,175,55,0.15)' : 'var(--surface-1b)', border: filter === f.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid var(--border)', color: filter === f.id ? '#D4AF37' : 'var(--text-muted)' }}>
-                <ActivityIcon type={f.id} size={12} color={filter === f.id ? '#D4AF37' : 'var(--text-muted)'} strokeWidth={1.8} />
-                {f.label}
-              </button>
-            ))}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px', padding: '16px', background: 'var(--surface-1)', borderRadius: '16px', border: '1px solid var(--border)' }}>
+            {currentGroup.filters.map(f => {
+              const on = filter === f.id
+              return (
+                <button key={f.id} onClick={() => setFilter(f.id)} aria-pressed={on} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', minHeight: '44px', padding: '10px 14px', borderRadius: '999px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', boxSizing: 'border-box', ...(on ? CHIP_ON : CHIP_OFF) }}>
+                  <ActivityIcon type={f.id} size={14} color={on ? 'var(--text-primary)' : 'var(--text-muted)'} strokeWidth={1.8} />
+                  {f.label}
+                </button>
+              )
+            })}
           </div>
         )}
 
@@ -352,10 +370,11 @@ export default function BrowsePage() {
               Founding Besties set the tone — here's how to start:
             </p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
-              <button onClick={handleInvite} style={{ padding: '11px 22px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', whiteSpace: 'nowrap' }}>
+              {/* This state's single gold CTA */}
+              <button onClick={handleInvite} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: '44px', padding: '11px 22px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', border: 'none', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', whiteSpace: 'nowrap', boxSizing: 'border-box' }}>
                 {inviteCopied ? 'Link copied ✓' : 'Invite a friend (+10 ⚡ each)'}
               </button>
-              <Link href="/group-sessions/new" style={{ padding: '11px 22px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'var(--overlay)', border: '1px solid var(--border-strong)', color: 'var(--text-muted)', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+              <Link href="/group-sessions/new" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: '44px', padding: '11px 22px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'var(--overlay)', border: '1px solid var(--border-strong)', color: 'var(--text-muted)', textDecoration: 'none', whiteSpace: 'nowrap', boxSizing: 'border-box' }}>
                 Host a session
               </Link>
             </div>

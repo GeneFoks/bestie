@@ -9,6 +9,7 @@ import { PageLoader } from '@/components/Loading'
 import { ActivityIcon } from '@/lib/activityIcons'
 import { showToast } from '@/components/Toast'
 import { confirmSheet } from '@/components/ConfirmSheet'
+import { Calendar, MapPin, Users, Link2, Trash2, Crown, Check, Repeat, Ticket, PartyPopper, SearchX, ArrowLeft, Star } from 'lucide-react'
 
 export default function GroupSessionPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -141,9 +142,11 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
   if (!session) return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ textAlign: 'center' }}>
-        <p style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</p>
+        <SearchX size={48} strokeWidth={1.5} color="var(--text-dim)" aria-hidden="true" style={{ display: 'block', margin: '0 auto 16px' }} />
         <p style={{ fontSize: '18px', color: 'var(--text-primary)' }}>Session not found</p>
-        <Link href="/dashboard" style={{ fontSize: '14px', color: '#D4AF37', textDecoration: 'none', marginTop: '16px', display: 'block' }}>← Dashboard</Link>
+        <Link href="/dashboard" style={{ fontSize: '14px', color: '#D4AF37', textDecoration: 'none', marginTop: '4px', padding: '12px 8px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <ArrowLeft size={14} strokeWidth={2} aria-hidden="true" /> Dashboard
+        </Link>
       </div>
     </div>
   )
@@ -164,17 +167,31 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
   // Sticky conversion bar — only for visitors who can actually join.
   const showStickyCTA = !isHost && !isParticipant && !isFull && !isPast && !isCancelled && !isCompleted
 
+  // One gold-gradient CTA per screen: while the sticky bar is up it owns the
+  // gradient, so the in-card join button drops to a gold-outline secondary.
+  const inCardJoinStyle = isFull
+    ? { background: 'var(--surface-1b)', border: 'none', color: 'var(--text-dim)', cursor: 'not-allowed' }
+    : showStickyCTA
+      ? { background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', cursor: 'pointer' }
+      : { background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', border: 'none', color: 'var(--bg)', cursor: 'pointer' }
+
+  const metaIcon = { flexShrink: 0 }
+  const btnFlex = { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', minHeight: '44px' }
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <Link href="/dashboard" style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid var(--border)' }}>← Dashboard</Link>
+        {/* 44px tap target; the -4px margin keeps the header height unchanged */}
+        <Link href="/dashboard" style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none', padding: '12px 16px', margin: '-4px 0', borderRadius: '12px', border: '1px solid var(--border)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <ArrowLeft size={14} strokeWidth={2} aria-hidden="true" /> Dashboard
+        </Link>
       </nav>
 
       <div style={{ maxWidth: '600px', margin: '0 auto', padding: showStickyCTA ? '40px 24px 130px' : '40px 24px' }}>
 
         {/* Header card */}
-        <div style={{ background: 'linear-gradient(135deg, var(--surface-1) 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '24px', overflow: 'hidden', marginBottom: '20px' }}>
+        <div style={{ background: 'linear-gradient(135deg, var(--surface-1) 0%, #141428 100%)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '20px', overflow: 'hidden', marginBottom: '20px' }}>
           {session.cover_image_url && (
             <div style={{ width: '100%', aspectRatio: '16/9', background: '#0A0A14', position: 'relative' }}>
               <img src={session.cover_image_url} alt={session.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
@@ -191,13 +208,15 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
             </div>
             <span style={{ display: 'inline-flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
               {session.recurrence && session.recurrence !== 'none' && (
-                <span style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px', borderRadius: '999px', background: 'rgba(155,127,255,0.12)', border: '1px solid rgba(155,127,255,0.4)', color: '#9B7FFF' }}>
-                  🔁 {session.recurrence === 'weekly' ? 'Weekly' : session.recurrence === 'biweekly' ? 'Every 2 wks' : 'Monthly'}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 700, padding: '4px 12px', borderRadius: '999px', background: 'rgba(155,127,255,0.12)', border: '1px solid rgba(155,127,255,0.4)', color: '#9B7FFF' }}>
+                  <Repeat size={12} strokeWidth={2.2} aria-hidden="true" />
+                  <span>{session.recurrence === 'weekly' ? 'Weekly' : session.recurrence === 'biweekly' ? 'Every 2 wks' : 'Monthly'}</span>
                 </span>
               )}
               {Number(session.ticket_price || 0) > 0 && (
-                <span style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37' }}>
-                  🎟 ${Number(session.ticket_price)}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 700, padding: '4px 12px', borderRadius: '999px', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37' }}>
+                  <Ticket size={12} strokeWidth={2.2} aria-hidden="true" />
+                  <span>${Number(session.ticket_price)}</span>
                 </span>
               )}
               <span style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px', borderRadius: '999px', background: `rgba(${statusColor === '#34D399' ? '52,211,153' : statusColor === '#FF6B6B' ? '255,107,107' : statusColor === '#FF6B35' ? '255,107,53' : '155,147,192'},0.12)`, border: `1px solid ${statusColor}40`, color: statusColor }}>
@@ -213,19 +232,19 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
           {/* Meta */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '14px' }}>📅</span>
+              <Calendar size={16} strokeWidth={1.8} color="#D4AF37" aria-hidden="true" style={metaIcon} />
               <span style={{ fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>
                 {d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} · {d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
             {session.location && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '14px' }}>📍</span>
+                <MapPin size={16} strokeWidth={1.8} color="#D4AF37" aria-hidden="true" style={metaIcon} />
                 <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{session.location}</span>
               </div>
             )}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '14px' }}>👥</span>
+              <Users size={16} strokeWidth={1.8} color="#D4AF37" aria-hidden="true" style={metaIcon} />
               <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
                 {participants.length} / {session.max_participants} joined
                 {!isFull && !isCancelled && !isCompleted && ` · ${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}
@@ -235,15 +254,22 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
 
           {/* Host */}
           {host && (
-            <Link href={`/${host.username}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', borderRadius: '14px', background: 'var(--surface-1b)', border: '1px solid var(--border)', textDecoration: 'none', marginBottom: '16px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', background: 'var(--surface-3)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Link href={`/${host.username}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', borderRadius: '12px', background: 'var(--surface-1b)', border: '1px solid var(--border)', textDecoration: 'none', marginBottom: '16px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '12px', overflow: 'hidden', background: 'var(--surface-3)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {host.avatar_url ? <img src={host.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{host.full_name?.[0]}</span>}
               </div>
               <div>
                 <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{host.full_name}</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Host · ★ {host.bestie_score || 0}</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span>Host ·</span>
+                  <Star size={11} strokeWidth={2} fill="currentColor" aria-hidden="true" />
+                  <span>{host.bestie_score || 0}</span>
+                </p>
               </div>
-              <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#D4AF37' }}>👑 Host</span>
+              <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#D4AF37', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <Crown size={14} strokeWidth={1.8} aria-hidden="true" />
+                <span>Host</span>
+              </span>
             </Link>
           )}
 
@@ -252,35 +278,45 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
             <div style={{ display: 'flex', gap: '10px' }}>
               {isHost ? (
                 <>
-                  <button onClick={handleShare} style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', cursor: 'pointer' }}>
-                    {copied ? '✓ Copied!' : '🔗 Share link'}
+                  <button onClick={handleShare} style={{ ...btnFlex, flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', cursor: 'pointer' }}>
+                    {copied
+                      ? <><Check size={16} strokeWidth={2.2} aria-hidden="true" /><span>Copied!</span></>
+                      : <><Link2 size={16} strokeWidth={1.8} aria-hidden="true" /><span>Share link</span></>}
                   </button>
                   {!isPast && (
-                    <Link href={`/group-sessions/${params.id}/edit`} style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'var(--surface-1b)', border: '1px solid var(--border-strong)', color: 'var(--text-muted)', cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+                    <Link href={`/group-sessions/${params.id}/edit`} style={{ ...btnFlex, padding: '12px 16px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'var(--surface-1b)', border: '1px solid var(--border-strong)', color: 'var(--text-muted)', cursor: 'pointer', textDecoration: 'none' }}>
                       Edit
                     </Link>
                   )}
-                  <button onClick={handleDelete} style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.2)', color: '#FF6B6B', cursor: 'pointer' }}>
-                    🗑 Delete
+                  <button onClick={handleDelete} style={{ ...btnFlex, padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.2)', color: '#FF6B6B', cursor: 'pointer' }}>
+                    <Trash2 size={16} strokeWidth={1.8} aria-hidden="true" />
+                    <span>Delete</span>
                   </button>
                 </>
               ) : isParticipant ? (
                 <>
-                  <div style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: '#34D399', textAlign: 'center' }}>
-                    ✓ You're in!
+                  <div style={{ ...btnFlex, flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: '#34D399', textAlign: 'center' }}>
+                    <Check size={16} strokeWidth={2.2} aria-hidden="true" />
+                    <span>You're in!</span>
                   </div>
-                  <button onClick={handleLeave} style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: 'var(--surface-1b)', border: '1px solid var(--border-strong)', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                  <button onClick={handleLeave} style={{ ...btnFlex, padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: 'var(--surface-1b)', border: '1px solid var(--border-strong)', color: 'var(--text-muted)', cursor: 'pointer' }}>
                     Leave
                   </button>
                 </>
               ) : (
                 <>
                   <button onClick={handleJoin} disabled={joining || isFull}
-                    style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: isFull ? 'var(--surface-1b)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', border: 'none', color: isFull ? '#555' : 'var(--bg)', cursor: isFull ? 'not-allowed' : 'pointer' }}>
-                    {joining ? 'Joining...' : isFull ? 'Session full' : Number(session.ticket_price || 0) > 0 ? `🎟 Get a ticket — $${Number(session.ticket_price)}` : '🎉 Join session'}
+                    style={{ ...btnFlex, ...inCardJoinStyle, flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 700 }}>
+                    {joining
+                      ? 'Joining...'
+                      : isFull
+                        ? 'Session full'
+                        : price > 0
+                          ? <><Ticket size={16} strokeWidth={1.8} aria-hidden="true" /><span>Get a ticket — ${price}</span></>
+                          : <><PartyPopper size={16} strokeWidth={1.8} aria-hidden="true" /><span>Join session</span></>}
                   </button>
-                  <button onClick={handleShare} style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: 'var(--surface-1b)', border: '1px solid var(--border-strong)', color: 'var(--text-muted)', cursor: 'pointer' }}>
-                    {copied ? '✓' : '🔗'}
+                  <button onClick={handleShare} aria-label={copied ? 'Link copied' : 'Share link'} title="Share link" style={{ ...btnFlex, minWidth: '44px', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: 'var(--surface-1b)', border: '1px solid var(--border-strong)', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                    {copied ? <Check size={16} strokeWidth={2.2} aria-hidden="true" /> : <Link2 size={16} strokeWidth={1.8} aria-hidden="true" />}
                   </button>
                 </>
               )}
@@ -299,7 +335,7 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
               {participants.map(p => (
                 <div key={p.user_id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <Link href={`/${p.user?.username}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none', flex: 1, minWidth: 0 }}>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', background: 'var(--surface-3)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', overflow: 'hidden', background: 'var(--surface-3)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {p.user?.avatar_url ? <img src={p.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{p.user?.full_name?.[0]}</span>}
                     </div>
                     <div style={{ minWidth: 0 }}>
@@ -308,11 +344,16 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
                     </div>
                   </Link>
                   {isHost && !isPast && (
+                    // Invisible 8px padding / -8px margin → 44px tap target without
+                    // growing the chip or the 40px participant row.
                     <button
                       onClick={() => handleTransferHost(p)}
-                      style={{ flexShrink: 0, padding: '6px 12px', borderRadius: '9px', fontSize: '11px', fontWeight: 700, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', whiteSpace: 'nowrap' }}
+                      style={{ flexShrink: 0, display: 'inline-flex', padding: '8px 0', margin: '-8px 0', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
                     >
-                      👑 Make host
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', whiteSpace: 'nowrap' }}>
+                        <Crown size={12} strokeWidth={2} aria-hidden="true" />
+                        <span>Make host</span>
+                      </span>
                     </button>
                   )}
                 </div>
@@ -320,8 +361,8 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
               {/* Empty spots */}
               {spotsLeft > 0 && !isFull && Array.from({ length: Math.min(spotsLeft, 4) }).map((_, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--surface-1)', border: '1px dashed var(--border)', flexShrink: 0 }} />
-                  <p style={{ fontSize: '13px', color: '#333' }}>Open spot</p>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--surface-1)', border: '1px dashed var(--border)', flexShrink: 0 }} />
+                  <p style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Open spot</p>
                 </div>
               ))}
             </div>
@@ -337,8 +378,20 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
               from { transform: translateY(100%); opacity: 0; }
               to { transform: translateY(0); opacity: 1; }
             }
+            .gs-sticky-cta {
+              bottom: 0;
+              padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+            }
+            @media (max-width: 768px) {
+              /* Sit on top of the mobile BottomNav (z-index 100) instead of
+                 being hidden underneath it; the nav already pads the safe area. */
+              .gs-sticky-cta {
+                bottom: var(--bottom-nav-h, 0px);
+                padding-bottom: 12px;
+              }
+            }
           `}</style>
-          <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 60, background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid var(--border)', padding: '12px 20px calc(12px + env(safe-area-inset-bottom))', animation: 'ctaSlideUp 0.3s ease' }}>
+          <div className="gs-sticky-cta" style={{ position: 'fixed', left: 0, right: 0, zIndex: 60, background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid var(--border)', animation: 'ctaSlideUp 0.3s ease' }}>
             <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '14px' }}>
               <div style={{ flexShrink: 0 }}>
                 <p style={{ fontSize: '17px', fontWeight: 800, color: price > 0 ? '#D4AF37' : '#34D399', lineHeight: 1.2, margin: 0 }}>
@@ -349,8 +402,19 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
                 </p>
               </div>
               <button onClick={handleJoin} disabled={joining}
-                style={{ flex: 1, padding: '14px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', border: 'none', color: '#09090F', cursor: joining ? 'wait' : 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {joining ? 'Joining...' : price > 0 ? `🎟 Get a ticket — $${price}` : '🎉 Join session'}
+                style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '14px', borderRadius: '12px', fontSize: '15px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', border: 'none', color: '#09090F', cursor: joining ? 'wait' : 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                {joining ? (
+                  <span>Joining...</span>
+                ) : (
+                  <>
+                    {price > 0
+                      ? <Ticket size={18} strokeWidth={1.8} aria-hidden="true" style={{ flexShrink: 0 }} />
+                      : <PartyPopper size={18} strokeWidth={1.8} aria-hidden="true" style={{ flexShrink: 0 }} />}
+                    <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {price > 0 ? `Get a ticket — $${price}` : 'Join session'}
+                    </span>
+                  </>
+                )}
               </button>
             </div>
           </div>
