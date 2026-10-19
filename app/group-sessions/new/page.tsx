@@ -64,6 +64,9 @@ export default function NewGroupSessionPage() {
   const [connecting, setConnecting] = useState(false)
   const [coverFile, setCoverFile] = useState<File | null>(null)
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
+  // "Host it again" (?from=<id>) → reuse the old session's cover unless a new one is picked
+  const [prefillCoverUrl, setPrefillCoverUrl] = useState<string | null>(null)
+  const [repeatOf, setRepeatOf] = useState<string | null>(null)
   // Inline validation — shown only after a submit attempt, cleared as the field is filled
   const [errors, setErrors] = useState<{ title?: boolean; date?: boolean }>({})
   const fileRef = useRef<HTMLInputElement>(null)
@@ -77,7 +80,7 @@ export default function NewGroupSessionPage() {
     setCoverPreview(URL.createObjectURL(f))
   }
   const clearCover = () => {
-    setCoverFile(null); setCoverPreview(null)
+    setCoverFile(null); setCoverPreview(null); setPrefillCoverUrl(null)
     if (fileRef.current) fileRef.current.value = ''
   }
 
@@ -89,8 +92,30 @@ export default function NewGroupSessionPage() {
       setIsAmbassador(!!(data?.is_ambassador || data?.is_admin))
       setConnectReady(!!data?.connect_charges_enabled)
 
-      // Returning from Stripe onboarding → confirm payout readiness
       const qs = new URLSearchParams(window.location.search)
+
+      // "Host it again" → copy everything from your past session except the date
+      const fromId = qs.get('from')
+      if (fromId) {
+        const { data: prev } = await supabase.from('group_sessions')
+          .select('title, activity_type, description, location, max_participants, ticket_price, cover_image_url')
+          .eq('id', fromId).eq('host_id', user.id).maybeSingle()
+        if (prev) {
+          setForm(f => ({
+            ...f,
+            title: prev.title || '',
+            activity_type: prev.activity_type || '',
+            description: prev.description || '',
+            location: prev.location || '',
+            max_participants: prev.max_participants || 6,
+            ticket_price: prev.ticket_price ? String(prev.ticket_price) : '',
+          }))
+          if (prev.cover_image_url) { setPrefillCoverUrl(prev.cover_image_url); setCoverPreview(prev.cover_image_url) }
+          setRepeatOf(prev.title || 'your last session')
+        }
+      }
+
+      // Returning from Stripe onboarding → confirm payout readiness
       if (qs.get('connect') === 'done') {
         const { data: { session } } = await supabase.auth.getSession()
         const res = await fetch('/api/stripe/connect/refresh', {
@@ -146,7 +171,7 @@ export default function NewGroupSessionPage() {
     }
     setErrors({})
     setSaving(true)
-    let cover_image_url: string | null = null
+    let cover_image_url: string | null = coverFile ? null : prefillCoverUrl
     if (coverFile && userId) {
       const ext = coverFile.name.split('.').pop()?.toLowerCase() || 'jpg'
       const path = `${userId}/${Date.now()}.${ext}`
@@ -224,7 +249,13 @@ export default function NewGroupSessionPage() {
       <div style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 24px' }}>
         <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '8px' }}>GROUP SESSION</p>
         <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '28px', color: 'var(--text-primary)', marginBottom: '8px' }}>Host a group meetup</h1>
-        <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '32px' }}>Invite multiple Besties to one event. Share the link, let them join.</p>
+        <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: repeatOf ? '16px' : '32px' }}>Invite multiple Besties to one event. Share the link, let them join.</p>
+        {repeatOf && (
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '12px 14px', marginBottom: '24px', borderRadius: '12px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)' }}>
+            <Repeat size={16} strokeWidth={2} color="#D4AF37" style={{ flexShrink: 0, marginTop: '2px' }} />
+            <p style={{ fontSize: '13px', color: 'var(--text-primary)', margin: 0 }}>Copied from <strong>{repeatOf}</strong> — just pick a new date.</p>
+          </div>
+        )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>

@@ -10,7 +10,7 @@ import { ActivityIcon } from '@/lib/activityIcons'
 import { showToast } from '@/components/Toast'
 import { confirmSheet } from '@/components/ConfirmSheet'
 import { SparkIcon } from '@/lib/sparkIcons'
-import { Calendar, MapPin, Users, Link2, Trash2, Crown, Check, Repeat, Ticket, PartyPopper, SearchX, ArrowLeft } from 'lucide-react'
+import { Calendar, MapPin, Users, Link2, Trash2, Crown, Check, Repeat, Ticket, PartyPopper, SearchX, ArrowLeft, Sparkles } from 'lucide-react'
 
 // The Bestie Score is private to its owner. Others see only what grows and is
 // positive: the person's top sparks ("Known for") and how many people they've met.
@@ -174,8 +174,13 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
   const d = new Date(session.scheduled_at)
   const isPast = d < new Date()
 
-  const statusColor = isCancelled ? '#FF6B6B' : isCompleted ? 'var(--text-muted)' : isFull ? '#FF6B35' : '#34D399'
-  const statusLabel = isCancelled ? 'Cancelled' : isCompleted ? 'Completed' : isFull ? 'Full' : 'Open'
+  // The date has passed but nobody marked it completed — still "happened".
+  const isEnded = isPast && !isCancelled && !isCompleted
+  const statusColor = isCancelled ? '#FF6B6B' : (isCompleted || isEnded) ? 'var(--text-muted)' : isFull ? '#FF6B35' : '#34D399'
+  const statusLabel = isCancelled ? 'Cancelled' : isCompleted ? 'Completed' : isEnded ? 'Ended' : isFull ? 'Full' : 'Open'
+  // After the event: the people who came can thank each other with Sparks
+  const canSpark = isEnded || isCompleted
+  const amIn = isHost || isParticipant
 
   const price = Number(session.ticket_price || 0)
   // Sticky conversion bar — only for visitors who can actually join.
@@ -248,7 +253,8 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Calendar size={16} strokeWidth={1.8} color="#D4AF37" aria-hidden="true" style={metaIcon} />
               <span style={{ fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>
-                {d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} · {d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                {isEnded || isCompleted ? 'Happened on ' : ''}
+                {d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', ...(d.getFullYear() !== new Date().getFullYear() ? { year: 'numeric' } : {}) })} · {d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
             {session.location && (
@@ -260,8 +266,12 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Users size={16} strokeWidth={1.8} color="#D4AF37" aria-hidden="true" style={metaIcon} />
               <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
-                {participants.length} / {session.max_participants} joined
-                {!isFull && !isCancelled && !isCompleted && ` · ${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}
+                {isEnded || isCompleted
+                  ? `${participants.length} ${participants.length === 1 ? 'person' : 'people'} came`
+                  : <>
+                      {participants.length} / {session.max_participants} joined
+                      {!isFull && !isCancelled && ` · ${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}
+                    </>}
               </span>
             </div>
           </div>
@@ -296,9 +306,42 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
               </span>
             </Link>
           )}
+          {host && canSpark && isParticipant && !isHost && host.username && (
+            <Link href={`/sparks/give?to=${host.username}`} style={{ ...btnFlex, width: '100%', margin: '-6px 0 16px', padding: '10px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.22)', color: '#D4AF37', textDecoration: 'none' }}>
+              <Sparkles size={14} strokeWidth={2} aria-hidden="true" />
+              <span>Thank {host.full_name?.split(' ')[0] || 'the host'} with a Spark</span>
+            </Link>
+          )}
 
-          {/* Actions */}
-          {!isCancelled && !isCompleted && (
+          {/* Actions — after the event */}
+          {(isEnded || isCompleted) && (
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              {isHost ? (
+                <>
+                  <Link href={`/group-sessions/new?from=${params.id}`} style={{ ...btnFlex, flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
+                    <Repeat size={16} strokeWidth={2} aria-hidden="true" />
+                    <span>Host it again</span>
+                  </Link>
+                  <button onClick={handleDelete} style={{ ...btnFlex, padding: '12px 16px', borderRadius: '12px', fontSize: '14px', background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.2)', color: '#FF6B6B', cursor: 'pointer' }}>
+                    <Trash2 size={16} strokeWidth={1.8} aria-hidden="true" />
+                    <span>Delete</span>
+                  </button>
+                </>
+              ) : isParticipant ? (
+                <div style={{ ...btnFlex, flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: '#34D399' }}>
+                  <Check size={16} strokeWidth={2.2} aria-hidden="true" />
+                  <span>You were there — thank the others below ✨</span>
+                </div>
+              ) : (
+                <Link href="/events" style={{ ...btnFlex, flex: 1, padding: '12px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: 'var(--surface-1b)', border: '1px solid var(--border-strong)', color: 'var(--text-primary)', textDecoration: 'none' }}>
+                  <span>This session has ended — see what's coming up</span>
+                </Link>
+              )}
+            </div>
+          )}
+
+          {/* Actions — before the event */}
+          {!isCancelled && !isCompleted && !isEnded && (
             <div style={{ display: 'flex', gap: '10px' }}>
               {isHost ? (
                 <>
@@ -353,8 +396,13 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
         {participants.length > 0 && (
           <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '20px' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '14px' }}>
-              PARTICIPANTS · {participants.length}/{session.max_participants}
+              {canSpark ? `WHO CAME · ${participants.length}` : `PARTICIPANTS · ${participants.length}/${session.max_participants}`}
             </p>
+            {canSpark && amIn && (
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '-6px 0 14px', lineHeight: 1.5 }}>
+                Who made it great? Give them a Spark — it's how people here get known for the good stuff.
+              </p>
+            )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {participants.map(p => (
                 <div key={p.user_id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -367,6 +415,17 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
                       <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>@{p.user?.username}</p>
                     </div>
                   </Link>
+                  {canSpark && amIn && p.user_id !== myId && p.user?.username && (
+                    <Link
+                      href={`/sparks/give?to=${p.user.username}`}
+                      style={{ flexShrink: 0, display: 'inline-flex', padding: '8px 0', margin: '-8px 0', textDecoration: 'none' }}
+                    >
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', whiteSpace: 'nowrap' }}>
+                        <Sparkles size={12} strokeWidth={2} aria-hidden="true" />
+                        <span>Spark</span>
+                      </span>
+                    </Link>
+                  )}
                   {isHost && !isPast && (
                     // Invisible 8px padding / -8px margin → 44px tap target without
                     // growing the chip or the 40px participant row.
@@ -383,7 +442,7 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
                 </div>
               ))}
               {/* Empty spots */}
-              {spotsLeft > 0 && !isFull && Array.from({ length: Math.min(spotsLeft, 4) }).map((_, i) => (
+              {spotsLeft > 0 && !isFull && !canSpark && !isCancelled && Array.from({ length: Math.min(spotsLeft, 4) }).map((_, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--surface-1)', border: '1px dashed var(--border)', flexShrink: 0 }} />
                   <p style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Open spot</p>
