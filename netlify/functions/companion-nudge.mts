@@ -25,6 +25,7 @@ export default async (req: Request) => {
   return new Response(body, { status: res.status, headers: { 'content-type': 'application/json' } })
 }
 
-export const config: Config = {
-  schedule: '0 18 * * *', // every day at 18:00 UTC (good evening nudge time)
-}
+// Schedule removed while the AI companion is paused — otherwise users get
+// daily pushes about a companion they can no longer see. Restore with:
+//   schedule: '0 18 * * *'
+export const config: Config = {}
