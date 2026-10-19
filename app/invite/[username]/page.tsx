@@ -64,7 +64,7 @@ export async function generateMetadata({ params, searchParams }) {
 export default async function InvitePage({ params, searchParams }) {
   const { data: profile } = await supabase
     .from('users')
-    .select('id, full_name, username, avatar_url, bestie_score, bio, city, country, eterotype, eterotype_name, activity_packages(*)')
+    .select('id, full_name, username, avatar_url, bestie_score, bio, city, country, eterotype, eterotype_name, referral_code, activity_packages(*)')
     .eq('username', params.username)
     .single()
 
@@ -90,7 +90,9 @@ export default async function InvitePage({ params, searchParams }) {
   const score = profile.bestie_score || 0
   const scoreColor = score >= 800 ? '#34D399' : score >= 600 ? '#D4AF37' : '#A99ECC'
 
-  const signupUrl = `/signup?next=/${profile.username}${activityKey ? `&activity=${activityKey}` : ''}`
+  // Carry the inviter's referral code so "you both get +10 ✨" is actually
+  // credited (signup stores ?ref, the dashboard applies it).
+  const signupUrl = `/signup?next=/${profile.username}${activityKey ? `&activity=${activityKey}` : ''}${profile.referral_code ? `&ref=${encodeURIComponent(profile.referral_code)}` : ''}`
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>

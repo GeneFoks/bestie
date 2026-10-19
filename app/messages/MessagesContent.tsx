@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import CallButton from '@/components/CallButton'
 import { PageLoader } from '@/components/Loading'
-import { MessageCircle } from 'lucide-react'
+import { MessageCircle, ArrowLeft, ChevronLeft, Lock } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 import { createNotification } from '@/lib/notifications'
 import { showToast } from '@/components/Toast'
@@ -28,6 +28,25 @@ export default function MessagesPage() {
   const messagesEndRef = useRef(null)
   const activeConvRef = useRef(null)
   const userIdRef = useRef(null)
+  const composerRef = useRef(null)
+
+  // Composer auto-grow: fit content up to ~4 rows, then scroll inside.
+  // Works off computed styles so it stays correct even though globals.css
+  // forces textarea font-size to 16px (iOS zoom guard).
+  const COMPOSER_MAX_ROWS = 4
+  const autoGrow = (el) => {
+    if (!el || typeof window === 'undefined') return
+    el.style.height = 'auto'
+    const cs = window.getComputedStyle(el)
+    const fontSize = parseFloat(cs.fontSize) || 16
+    const line = parseFloat(cs.lineHeight) || fontSize * 1.5
+    const pad = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0)
+    const border = (parseFloat(cs.borderTopWidth) || 0) + (parseFloat(cs.borderBottomWidth) || 0)
+    const max = line * COMPOSER_MAX_ROWS + pad + border
+    const full = el.scrollHeight + border // border-box: scrollHeight excludes borders
+    el.style.height = `${Math.min(full, max)}px`
+    el.style.overflowY = full > max ? 'auto' : 'hidden'
+  }
 
   useEffect(() => {
     const init = async () => {
@@ -123,6 +142,10 @@ export default function MessagesPage() {
   }
 
   useEffect(() => { scrollToBottom() }, [messages])
+
+  // Re-measure the composer whenever its value changes programmatically
+  // (cleared after send, draft restored on failure) or it (re)mounts.
+  useEffect(() => { autoGrow(composerRef.current) }, [newMessage, activeConv, canDM])
 
   const scrollToBottom = () => {
     setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
@@ -237,7 +260,7 @@ export default function MessagesPage() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', flexDirection: 'column' }}>
       <nav style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
         <Link href="/" style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: '#D4AF37', textDecoration: 'none' }}>BESTIE</Link>
-        <Link href="/dashboard" style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1px solid var(--border)' }}>← Dashboard</Link>
+        <Link href="/dashboard" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', minHeight: '44px', fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none', padding: '8px 16px', borderRadius: '12px', border: '1px solid var(--border)' }}><ArrowLeft size={16} strokeWidth={2} aria-hidden="true" /> Dashboard</Link>
       </nav>
 
       <div className="messages-layout" data-view={activeConv ? 'thread' : 'inbox'} style={{ flex: 1, display: 'flex', maxWidth: '1100px', width: '100%', margin: '0 auto', padding: '24px', gap: '20px', height: 'calc(100dvh - 65px)' }}>
@@ -260,13 +283,13 @@ export default function MessagesPage() {
                 />
               </div>
             ) : conversations.map(conv => (
-              <button key={conv.user.id} onClick={() => setActiveConv(conv)} style={{ width: '100%', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px', background: activeConv?.user.id === conv.user.id ? 'rgba(212,175,55,0.08)' : 'transparent', border: 'none', borderBottom: '1px solid var(--surface-1b)', cursor: 'pointer', textAlign: 'left' }}>
+              <button key={conv.user.id} onClick={() => setActiveConv(conv)} aria-current={activeConv?.user.id === conv.user.id ? 'true' : undefined} style={{ width: '100%', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px', background: activeConv?.user.id === conv.user.id ? 'var(--surface-3)' : 'transparent', boxShadow: activeConv?.user.id === conv.user.id ? 'inset 3px 0 0 #9B7FFF' : 'none', border: 'none', borderBottom: '1px solid var(--surface-1b)', cursor: 'pointer', textAlign: 'left' }}>
                 <div style={{ position: 'relative', flexShrink: 0 }}>
-                  <div style={{ width: '44px', height: '44px', borderRadius: '14px', overflow: 'hidden', background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '44px', height: '44px', borderRadius: '12px', overflow: 'hidden', background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {conv.user.avatar_url ? <img src={conv.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700, fontSize: '14px' }}>{initials(conv.user.full_name)}</span>}
                   </div>
                   {conv.unread > 0 && (
-                    <div style={{ position: 'absolute', top: '-4px', right: '-4px', width: '18px', height: '18px', borderRadius: '50%', background: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: '#09090F' }}>
+                    <div style={{ position: 'absolute', top: '-5px', right: '-5px', minWidth: '20px', height: '20px', padding: '0 5px', borderRadius: '999px', background: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, lineHeight: 1, color: '#09090F' }}>
                       {conv.unread > 9 ? '9+' : conv.unread}
                     </div>
                   )}
@@ -293,7 +316,7 @@ export default function MessagesPage() {
                 <MessageCircle size={32} color="#D4AF37" strokeWidth={2} />
               </div>
               <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', color: 'var(--text-primary)' }}>Select a conversation</h3>
-              <Link href="/browse" style={{ fontSize: '14px', fontWeight: 600, padding: '10px 24px', borderRadius: '12px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>Browse Besties</Link>
+              <Link href="/browse" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: '44px', fontSize: '14px', fontWeight: 600, padding: '10px 24px', borderRadius: '12px', background: 'var(--surface-3)', border: '1px solid var(--border-strong)', color: 'var(--text-primary)', textDecoration: 'none' }}>Browse Besties</Link>
             </div>
           ) : (
             <>
@@ -302,20 +325,20 @@ export default function MessagesPage() {
                   onClick={() => setActiveConv(null)}
                   className="messages-back"
                   aria-label="Back to inbox"
-                  style={{ display: 'none', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px 8px', fontSize: '18px', lineHeight: 1 }}
+                  style={{ display: 'none', alignItems: 'center', justifyContent: 'center', minWidth: '44px', minHeight: '44px', marginLeft: '-10px', marginRight: '-4px', background: 'none', border: 'none', borderRadius: '12px', color: 'var(--text-muted)', cursor: 'pointer', padding: 0, lineHeight: 1 }}
                 >
-                  ←
+                  <ChevronLeft size={22} strokeWidth={2} aria-hidden="true" />
                 </button>
-                <div style={{ width: '40px', height: '40px', borderRadius: '12px', overflow: 'hidden', background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '40px', height: '40px', flexShrink: 0, borderRadius: '12px', overflow: 'hidden', background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {activeConv.user.avatar_url ? <img src={activeConv.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700, fontSize: '13px' }}>{initials(activeConv.user.full_name)}</span>}
                 </div>
-                <div>
-                  <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>{activeConv.user.full_name}</p>
-                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>@{activeConv.user.username}</p>
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activeConv.user.full_name}</p>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>@{activeConv.user.username}</p>
                 </div>
-                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ marginLeft: 'auto', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <CallButton toUserId={activeConv.user.id} toUserName={activeConv.user.full_name} variant="icon" />
-                  <Link href={`/${activeConv.user.username}`} style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none', padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border)' }}>View profile</Link>
+                  <Link href={`/${activeConv.user.username}`} style={{ display: 'inline-flex', alignItems: 'center', minHeight: '44px', fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none', padding: '6px 12px', borderRadius: '12px', border: '1px solid var(--border)', whiteSpace: 'nowrap' }}>View profile</Link>
                 </div>
               </div>
 
@@ -326,7 +349,7 @@ export default function MessagesPage() {
                   return (
                     <div key={msg.id} style={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start', opacity: msg.pending ? 0.55 : 1, transition: 'opacity 0.2s ease' }}>
                       <div style={{ maxWidth: '70%' }}>
-                        <div style={{ padding: '10px 14px', borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: isMine ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.11)', color: isMine ? '#09090F' : 'var(--text-primary)', fontSize: '14px', lineHeight: 1.5 }}>
+                        <div style={{ padding: '10px 14px', borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: isMine ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'var(--bubble-in, rgba(255,255,255,0.11))', color: isMine ? '#09090F' : 'var(--text-primary)', fontSize: '14px', lineHeight: 1.5, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
                           {msg.content}
                         </div>
                         <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', textAlign: isMine ? 'right' : 'left' }}>{msg.pending ? 'sending…' : formatTime(msg.created_at)}</p>
@@ -339,19 +362,19 @@ export default function MessagesPage() {
 
               {canDM ? (
                 <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border)', display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
-                  <textarea value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }} placeholder={`Message ${activeConv.user.full_name?.split(' ')[0]}...`} aria-label={`Message ${activeConv.user.full_name || ''}`} rows={1} style={{ flex: 1, padding: '12px 16px', borderRadius: '14px', fontSize: '14px', outline: 'none', background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--text-primary)', resize: 'none', fontFamily: 'Plus Jakarta Sans, sans-serif', lineHeight: 1.5 }} />
-                  <button onClick={sendMessage} disabled={sending || !newMessage.trim()} style={{ padding: '12px 20px', borderRadius: '14px', fontSize: '14px', fontWeight: 600, background: newMessage.trim() ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'rgba(255,255,255,0.10)', color: newMessage.trim() ? '#09090F' : 'var(--text-muted)', border: 'none', cursor: newMessage.trim() ? 'pointer' : 'not-allowed', flexShrink: 0 }}>
+                  <textarea ref={composerRef} value={newMessage} onChange={e => setNewMessage(e.target.value)} onInput={e => autoGrow(e.currentTarget)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }} placeholder={`Message ${activeConv.user.full_name?.split(' ')[0]}...`} aria-label={`Message ${activeConv.user.full_name || ''}`} rows={1} style={{ flex: 1, minWidth: 0, padding: '12px 16px', borderRadius: '12px', fontSize: '14px', outline: 'none', background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--text-primary)', resize: 'none', overflowY: 'hidden', fontFamily: 'Plus Jakarta Sans, sans-serif', lineHeight: 1.5 }} />
+                  <button onClick={sendMessage} disabled={sending || !newMessage.trim()} style={{ minHeight: '50px', padding: '12px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, background: newMessage.trim() ? 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)' : 'var(--surface-3)', color: newMessage.trim() ? '#09090F' : 'var(--text-muted)', border: 'none', cursor: newMessage.trim() ? 'pointer' : 'not-allowed', flexShrink: 0 }}>
                     {sending ? '...' : 'Send'}
                   </button>
                 </div>
               ) : (
                 <div style={{ padding: '20px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', textAlign: 'center' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>🔒</div>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Lock size={20} color="#D4AF37" strokeWidth={2} aria-hidden="true" /></div>
                   <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>Match first to start chatting</p>
                   <p style={{ fontSize: '13px', color: 'var(--text-muted)', maxWidth: '320px', lineHeight: 1.5 }}>
                     You can message {activeConv.user.full_name?.split(' ')[0]} once you both knock, or after a session together.
                   </p>
-                  <Link href={`/${activeConv.user.username}`} style={{ marginTop: '4px', fontSize: '13px', fontWeight: 600, padding: '10px 20px', borderRadius: '12px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
+                  <Link href={`/${activeConv.user.username}`} style={{ marginTop: '4px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: '44px', fontSize: '13px', fontWeight: 600, padding: '10px 20px', borderRadius: '12px', background: 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: '#09090F', textDecoration: 'none' }}>
                     Knock on {activeConv.user.full_name?.split(' ')[0]}
                   </Link>
                 </div>

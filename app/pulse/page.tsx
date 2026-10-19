@@ -14,6 +14,17 @@ function isToday(ts: string | null): boolean {
   return new Date(ts).toDateString() === new Date().toDateString()
 }
 
+// Free Today expires at local midnight — a live countdown ("5h", "40m")
+// makes the window feel real. Computed client-side from the viewer's clock.
+function freeLeftLabel(now: number): string {
+  const midnight = new Date(now)
+  midnight.setHours(24, 0, 0, 0)
+  const mins = Math.max(1, Math.ceil((midnight.getTime() - now) / 60000))
+  return mins >= 60 ? `${Math.floor(mins / 60)}h` : `${mins}m`
+}
+
+const WORLDWIDE_PREVIEW = 12
+
 export default function PulsePage() {
   const [myCity, setMyCity] = useState<string | null>(null)
   const [myId, setMyId] = useState<string | null>(null)
@@ -22,6 +33,16 @@ export default function PulsePage() {
   const [loading, setLoading] = useState(true)
   const [iAmFree, setIAmFree] = useState(false)
   const [toggling, setToggling] = useState(false)
+
+  // Ticks once a minute so the "free for Xh more" countdown stays fresh.
+  const [now, setNow] = useState(() => Date.now())
+  const [loadedDay] = useState(() => new Date().toDateString())
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60000)
+    return () => clearInterval(t)
+  }, [])
+  // After midnight the loaded list is yesterday's — hide the countdown then.
+  const freeLeft = new Date(now).toDateString() === loadedDay ? freeLeftLabel(now) : null
 
   useEffect(() => {
     const init = async () => {
@@ -72,9 +93,23 @@ export default function PulsePage() {
     setToggling(false)
   }
 
-  const todayFree = freeToday.filter(u => u.id !== myId)
-  const cityFree = myCity ? todayFree.filter(u => u.city?.toLowerCase().includes(myCity.toLowerCase())) : []
-  const otherFree = myCity ? todayFree.filter(u => !u.city?.toLowerCase().includes(myCity.toLowerCase())) : todayFree
+  // One deduplicated list of free people (excluding me), split city-first.
+  // The two groups are disjoint, so nobody shows up in both sections.
+  const todayFree = (() => {
+    const seen = new Set<string>()
+    return freeToday.filter(u => {
+      if (!u?.id || u.id === myId || seen.has(u.id)) return false
+      seen.add(u.id)
+      return true
+    })
+  })()
+  const isInMyCity = (u: any) => !!myCity && !!u.city?.toLowerCase().includes(myCity.toLowerCase())
+  const cityFree = myCity ? todayFree.filter(isInMyCity) : []
+  const otherFree = myCity ? todayFree.filter(u => !isInMyCity(u)) : todayFree
+  const otherRemainder = Math.max(0, otherFree.length - WORLDWIDE_PREVIEW)
+
+  // Header text links: enlarge the tap area to ~44px without shifting layout.
+  const headerLink = { fontSize: '12px', color: '#D4AF37', textDecoration: 'none', padding: '14px 0', margin: '-14px 0' }
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
@@ -104,10 +139,12 @@ export default function PulsePage() {
                 {iAmFree ? 'You\'re free today' : 'Are you free today?'}
               </p>
               <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                {iAmFree ? 'Others can see you\'re available for a meetup' : 'Let others know you\'re up for a spontaneous meetup'}
+                {iAmFree
+                  ? <>Others can see you're available until midnight{freeLeft && <> · <span style={{ color: '#34D399', fontWeight: 600 }}>free for {freeLeft} more</span></>}</>
+                  : 'Let others know you\'re up for a spontaneous meetup'}
               </p>
             </div>
-            <button onClick={toggleFree} disabled={toggling} style={{ padding: '10px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.1)' : 'rgba(52,211,153,0.12)', border: iAmFree ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(52,211,153,0.35)', color: iAmFree ? '#FF6B35' : '#34D399', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <button onClick={toggleFree} disabled={toggling} style={{ minHeight: '44px', padding: '0 22px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', background: iAmFree ? 'rgba(255,107,53,0.1)' : 'rgba(52,211,153,0.12)', border: iAmFree ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(52,211,153,0.35)', color: iAmFree ? '#FF6B35' : '#34D399', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
               {toggling ? '…' : iAmFree ? 'Turn off' : (<><span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34D399', display: 'inline-block' }} />I'm free today!</>)}
             </button>
           </div>
@@ -125,14 +162,19 @@ export default function PulsePage() {
                   FREE TODAY {myCity ? `· ${myCity.toUpperCase()}` : ''}
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                  {cityFree.map(u => <FreePill key={u.id} user={u} />)}
+                  {cityFree.map(u => <FreePill key={u.id} user={u} left={freeLeft} />)}
                   {cityFree.length === 0 && (
+                    /* Only reachable when I'm free and nobody else in my city is */
                     <div style={{ width: '100%' }}>
                       <EmptyState
                         Icon={MapPin}
-                        title="Your city is quiet right now"
-                        description="Flip 'I'm free today' to be the first lit pin in your area."
-                        primaryCTA={{ label: 'Try Pulse →', href: '/pulse' }}
+                        title={myCity ? `You're the first one free in ${myCity}` : 'Add your city to see who’s free near you'}
+                        description={myCity
+                          ? 'Others nearby can see you until midnight. Start something small and see who joins.'
+                          : 'Without a city we can’t tell who’s nearby — free people everywhere are listed below.'}
+                        primaryCTA={myCity
+                          ? { label: 'Host a group session', href: '/group-sessions/new' }
+                          : { label: 'Add your city', href: '/profile/edit' }}
                         accent="green"
                       />
                     </div>
@@ -149,18 +191,26 @@ export default function PulsePage() {
                   FREE TODAY · WORLDWIDE
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                  {otherFree.slice(0, 12).map(u => <FreePill key={u.id} user={u} />)}
+                  {otherFree.slice(0, WORLDWIDE_PREVIEW).map(u => <FreePill key={u.id} user={u} left={freeLeft} />)}
+                  {otherRemainder > 0 && (
+                    <Link href="/events?tab=free" style={{ display: 'inline-flex', alignItems: 'center', minHeight: '44px', padding: '0 14px', borderRadius: '16px', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', background: 'var(--surface-1b)', border: '1px solid var(--border-strong)', textDecoration: 'none' }}>
+                      +{otherRemainder} more
+                    </Link>
+                  )}
                 </div>
               </section>
             )}
 
-            {freeToday.length === 0 && (
+            {/* Nobody free (and I'm not either) — the toggle above is the fix */}
+            {todayFree.length === 0 && !iAmFree && (
               <section style={{ marginBottom: '36px' }}>
                 <EmptyState
                   Icon={Sparkles}
                   title="No Besties free yet today"
                   description="Be the first to flip Free Today — you'll show up on the map for everyone nearby."
-                  primaryCTA={{ label: "I'm free today", href: '/dashboard' }}
+                  primaryCTA={myId
+                    ? { label: toggling ? '…' : "I'm free today", onClick: toggleFree }
+                    : { label: 'Join Bestie', href: '/signup' }}
                   accent="green"
                 />
               </section>
@@ -171,7 +221,7 @@ export default function PulsePage() {
               <section style={{ marginBottom: '36px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                   <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '8px' }}><PartyPopper size={12} color="#D4AF37" strokeWidth={2} /> UPCOMING GROUP SESSIONS</p>
-                  <Link href="/group-sessions/new" style={{ fontSize: '12px', color: '#D4AF37', textDecoration: 'none' }}>+ Host one →</Link>
+                  <Link href="/group-sessions/new" style={headerLink}>+ Host one →</Link>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {groupSessions.map(gs => <GroupSessionCard key={gs.id} session={gs} />)}
@@ -186,13 +236,13 @@ export default function PulsePage() {
   )
 }
 
-function FreePill({ user }: { user: any }) {
+function FreePill({ user, left }: { user: any; left?: string | null }) {
   const initials = user.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
   const scoreColor = (user.bestie_score || 0) >= 800 ? '#34D399' : (user.bestie_score || 0) >= 600 ? '#D4AF37' : '#A99ECC'
   return (
-    <Link href={`/${user.username}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '14px', background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.18)', textDecoration: 'none', transition: 'all 0.15s' }}>
+    <Link href={`/${user.username}`} title={left ? `Free until midnight · ${left} left` : undefined} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '16px', background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.18)', textDecoration: 'none', transition: 'all 0.15s' }}>
       <div style={{ position: 'relative' }}>
-        <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: 'var(--surface-3)', border: `1.5px solid ${scoreColor}50`, flexShrink: 0 }}>
+        <div style={{ width: '36px', height: '36px', borderRadius: '12px', overflow: 'hidden', background: 'var(--surface-3)', border: `1.5px solid ${scoreColor}50`, flexShrink: 0 }}>
           {user.avatar_url
             ? <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: scoreColor }}>{initials}</div>
@@ -202,7 +252,13 @@ function FreePill({ user }: { user: any }) {
       </div>
       <div>
         <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{user.full_name?.split(' ')[0]}</p>
-        {user.city && <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{user.city}</p>}
+        {(user.city || left) && (
+          <p style={{ fontSize: '11px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+            {user.city}
+            {user.city && left ? ' · ' : ''}
+            {left && <span style={{ color: '#34D399' }}>{left} left</span>}
+          </p>
+        )}
       </div>
     </Link>
   )
@@ -215,10 +271,10 @@ function GroupSessionCard({ session }: { session: any }) {
   const host = session.host
   return (
     <Link href={`/group-sessions/${session.id}`} style={{ display: 'flex', gap: '14px', padding: '16px', borderRadius: '16px', background: 'var(--surface-1)', border: '1px solid var(--border)', textDecoration: 'none', transition: 'all 0.15s' }}>
-      <div style={{ flexShrink: 0, width: '48px', textAlign: 'center' }}>
+      <div style={{ flexShrink: 0, width: '52px', textAlign: 'center' }}>
         <p style={{ fontSize: '11px', fontWeight: 700, color: '#D4AF37', letterSpacing: '1px' }}>{d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}</p>
         <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.1 }}>{d.getDate()}</p>
-        <p style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+        <p style={{ fontSize: '11px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{session.title}</p>
@@ -230,7 +286,7 @@ function GroupSessionCard({ session }: { session: any }) {
           <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 8px', borderRadius: '999px', background: isFull ? 'rgba(255,107,53,0.1)' : 'rgba(52,211,153,0.08)', border: isFull ? '1px solid rgba(255,107,53,0.25)' : '1px solid rgba(52,211,153,0.2)', color: isFull ? '#FF6B35' : '#34D399' }}>
             {isFull ? 'Full' : 'Open'}
           </span>
-          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{participantCount}/{session.max_participants} joined</span>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{participantCount}{session.max_participants ? `/${session.max_participants}` : ''} joined</span>
         </div>
       </div>
     </Link>

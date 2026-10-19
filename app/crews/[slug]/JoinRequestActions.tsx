@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { createNotification } from '@/lib/notifications'
+import { showToast } from '@/components/Toast'
 
 type Props = {
   requestId: string
@@ -30,8 +31,24 @@ export default function JoinRequestActions({ requestId, userId, crewId, captainI
 
   const accept = async () => {
     setActing(true)
+    // Membership FIRST. If the crew gate (or anything else) blocks the insert,
+    // the request must stay pending — otherwise the person silently vanishes.
+    const { error: memberErr } = await supabase
+      .from('crew_members')
+      .insert({ crew_id: crewId, user_id: userId, share_profile: !!shareProfile })
+    const alreadyMember = memberErr && (memberErr.code === '23505' || (memberErr.message || '').includes('duplicate'))
+    if (memberErr && !alreadyMember) {
+      setActing(false)
+      const gated = (memberErr.message || '').includes('crew_gate_profile_required')
+      showToast(
+        gated
+          ? 'Can’t accept yet — their profile is incomplete (Bestie Type test, age or city). Ask them to finish it, then accept again.'
+          : 'Couldn’t accept — try again',
+        { type: 'error' }
+      )
+      return
+    }
     await supabase.from('crew_join_requests').update({ status: 'accepted' }).eq('id', requestId)
-    await supabase.from('crew_members').insert({ crew_id: crewId, user_id: userId, share_profile: !!shareProfile })
     await supabase.from('users').update({ crew_id: crewId }).eq('id', userId)
     // Notify the requester
     const { data: crew } = await supabase.from('crews').select('name, slug').eq('id', crewId).single()
