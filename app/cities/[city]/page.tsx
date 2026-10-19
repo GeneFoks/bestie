@@ -7,6 +7,9 @@ import { createClient } from '@supabase/supabase-js'
 import ProfileNav from '@/components/ProfileNav'
 import { MapPin, Users, Sprout } from 'lucide-react'
 import { ActivityIcon } from '@/lib/activityIcons'
+import { SparkIcon } from '@/lib/sparkIcons'
+
+const sparkLabel = (t: string) => { const s = t.replace(/_/g, ' '); return s.charAt(0).toUpperCase() + s.slice(1) }
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -16,7 +19,7 @@ const supabase = createClient(
 export async function generateMetadata({ params }) {
   const city = decodeURIComponent(params.city)
   const title = `Find Friends & Things to Do in ${city} · Bestie`
-  const description = `Meet new people in ${city}. Discover top Besties, join local crews, find activities and upcoming events near you — make real connections in ${city} on Bestie.`
+  const description = `Meet new people in ${city}. Discover local Besties, join local crews, find activities and upcoming events near you — make real connections in ${city} on Bestie.`
   const url = `https://bestiehere.com/cities/${encodeURIComponent(city)}`
   return {
     title,
@@ -42,9 +45,9 @@ export default async function CityHubPage({ params }) {
     { data: activityPkgs },
     { data: crews },
   ] = await Promise.all([
-    // Top 6 besties in this city
+    // 6 besties in this city (ordered by score under the hood; the score itself is never shown)
     supabase.from('users')
-      .select('id, username, full_name, avatar_url, bestie_score, eterotype_name, bio')
+      .select('id, username, full_name, avatar_url, total_sessions, eterotype_name, bio')
       .ilike('city', city)
       .order('bestie_score', { ascending: false })
       .limit(6),
@@ -84,7 +87,22 @@ export default async function CityHubPage({ params }) {
         .limit(5)
     : { data: [] }
 
-  const scoreColor = (s: number) => s >= 800 ? '#34D399' : s >= 600 ? '#D4AF37' : 'var(--text-muted)'
+  // "Known for": each person's top 1-3 sparks — the positive, only-grows
+  // signal shown in place of the private Bestie Score.
+  const bestieIds = topBesties?.map(u => u.id) || []
+  const { data: sparkRows } = bestieIds.length > 0
+    ? await supabase.from('sparks').select('receiver_id, spark_type').in('receiver_id', bestieIds)
+    : { data: [] }
+  const sparkCounts: Record<string, Record<string, number>> = {}
+  sparkRows?.forEach(s => {
+    if (!s?.receiver_id || !s?.spark_type) return
+    const byType = sparkCounts[s.receiver_id] || (sparkCounts[s.receiver_id] = {})
+    byType[s.spark_type] = (byType[s.spark_type] || 0) + 1
+  })
+  const knownFor = (id: string) => Object.entries(sparkCounts[id] || {})
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([t]) => t)
 
   const cityUrl = `https://bestiehere.com/cities/${encodeURIComponent(city)}`
   const jsonLd = {
@@ -167,30 +185,46 @@ export default async function CityHubPage({ params }) {
           </div>
         )}
 
-        {/* Top Besties */}
+        {/* Besties — no ranks or scores; each row shows what only grows */}
         {topBesties && topBesties.length > 0 && (
           <div style={{ marginBottom: '36px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: 'var(--text-primary)' }}>Top Besties in {city}</h2>
+              <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: 'var(--text-primary)' }}>Besties in {city}</h2>
               <Link href={`/browse?city=${encodeURIComponent(city)}`} style={{ fontSize: '13px', color: '#D4AF37', textDecoration: 'none' }}>See all →</Link>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {topBesties.map((u, i) => {
-                const sc = scoreColor(u.bestie_score || 0)
+              {topBesties.map(u => {
                 const initials = u.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
+                const met = u.total_sessions || 0
+                const sparks = knownFor(u.id)
                 return (
                   <Link key={u.id} href={`/${u.username}`} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '16px', textDecoration: 'none' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: i === 0 ? '#D4AF37' : 'var(--text-muted)', minWidth: '20px' }}>#{i + 1}</span>
                     <div style={{ width: '44px', height: '44px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, background: 'var(--surface-3)', border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {u.avatar_url
                         ? <img src={u.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         : <span style={{ fontSize: '16px', fontWeight: 700, color: '#D4AF37' }}>{initials}</span>}
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{u.full_name}</p>
-                      <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>@{u.username}{u.eterotype_name ? ` · 🧭 ${u.eterotype_name}` : ''}</p>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.full_name}</p>
+                      <p style={{ fontSize: '12px', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>@{u.username}{u.eterotype_name ? ` · 🧭 ${u.eterotype_name}` : ''}</p>
+                      {sparks.length > 0 && (
+                        <p style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', marginTop: '4px' }}>
+                          <span>Known for:</span>
+                          {sparks.map((t, i) => (
+                            <span key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', color: 'var(--text-primary)' }}>
+                              {i > 0 && <span style={{ color: 'var(--text-dim)' }}>·</span>}
+                              <SparkIcon type={t} size={12} />
+                              <span>{sparkLabel(t)}</span>
+                            </span>
+                          ))}
+                        </p>
+                      )}
                     </div>
-                    <span style={{ fontSize: '16px', fontWeight: 700, color: sc }}>{u.bestie_score || 0}</span>
+                    {met > 0 && (
+                      <span style={{ flexShrink: 0, fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', padding: '4px 10px', borderRadius: '999px', background: 'var(--surface-1b)', border: '1px solid var(--border)', whiteSpace: 'nowrap' }}>
+                        Met {met} {met === 1 ? 'person' : 'people'}
+                      </span>
+                    )}
                   </Link>
                 )
               })}

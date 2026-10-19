@@ -1,7 +1,7 @@
 ﻿// @ts-nocheck
 export const revalidate = 0
 import Link from 'next/link'
-import { MapPin, Lock, Search, Calendar, Clock, Trophy, Medal, BadgeCheck, Crown, Gem, Flame, Target, Sparkles as SparklesIcon, Star, Sprout, Waves, Zap, Users, Compass } from 'lucide-react'
+import { MapPin, Lock, Search, Calendar, Clock, BadgeCheck, Crown, Gem, Flame, Target, Sparkles as SparklesIcon, Star, Sprout, Waves, Zap, Users, Compass, Handshake } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 import ProfileNav from '@/components/ProfileNav'
 import SocialPassportCTA from '@/components/SocialPassportCTA'
@@ -11,6 +11,7 @@ import EditActivitiesLink from '@/components/EditActivitiesLink'
 import BlockReportButton from '@/components/BlockReportButton'
 import KnockButton from '@/components/KnockButton'
 import PassportScoreCard from '@/components/PassportScoreCard'
+import OwnerOnly from '@/components/OwnerOnly'
 import BadgeCrest from '@/components/BadgeCrest'
 import ActionBadge from '@/components/ActionBadge'
 import { SparkIcon } from '@/lib/sparkIcons'
@@ -66,12 +67,11 @@ const ACTIVITY_DURATION = {
   real_talk: '1h', festival_crew: 'Full day', epic_journey: 'Multi-day', fishing_crew: '4–6h',
 }
 
-function getTier(score: number, sessions: number) {
-  if (score >= 800 || sessions >= 25) return { label: 'PLATINUM', color: '#C9B8FF', bg: 'rgba(155,143,255,0.15)', border: 'rgba(155,143,255,0.45)', glow: '155,143,255' }
-  if (score >= 600 || sessions >= 10) return { label: 'GOLD', color: '#D4AF37', bg: 'rgba(212,175,55,0.15)', border: 'rgba(212,175,55,0.45)', glow: '212,175,55' }
-  if (score >= 400 || sessions >= 5) return { label: 'SILVER', color: '#C0C8D8', bg: 'rgba(192,200,216,0.12)', border: 'rgba(192,200,216,0.35)', glow: '192,200,216' }
-  return { label: 'BRONZE', color: '#CD8F4A', bg: 'rgba(205,143,74,0.12)', border: 'rgba(205,143,74,0.35)', glow: '205,143,74' }
-}
+// Product rule (2026-10-18): other people never see anyone's score, rank or
+// score-based tier. The hero glow and avatar ring are the same neutral gold
+// for everyone, so color can't leak rank either.
+const HERO_GLOW = '212,175,55'
+const AVATAR_RING = 'rgba(212,175,55,0.45)'
 
 function getMemberBadge(createdAt: string | null) {
   if (!createdAt) return null
@@ -102,23 +102,25 @@ function StarRating({ rating, count }: { rating: number; count?: number }) {
 
 export async function generateMetadata({ params }) {
   const { data: profile } = await supabase
-    .from('users').select('full_name, username, bio, bestie_score, avatar_url').eq('username', params.username).single()
+    .from('users').select('full_name, username, bio, avatar_url').eq('username', params.username).single()
   if (!profile) return { title: 'Bestie' }
+  // No score in titles/descriptions — the Bestie Score is private to its owner.
+  const description = profile.bio || 'Check my Social Passport on Bestie.'
   return {
-    title: `${profile.full_name} — ★ ${profile.bestie_score || 0} · Bestie`,
-    description: `${profile.bio || 'Check my Social Passport on Bestie.'} · Bestie Score: ${profile.bestie_score || 0}`,
+    title: `${profile.full_name} · Bestie`,
+    description,
     // NOTE: we intentionally do NOT set `images` here. The file-based
     // `opengraph-image.tsx` in this folder generates a branded 1200×630 card
     // that Next.js wires into both OpenGraph and Twitter automatically.
     openGraph: {
-      title: `${profile.full_name} — Bestie Score ${profile.bestie_score || 0}`,
-      description: profile.bio || 'Check my Social Passport on Bestie.',
+      title: `${profile.full_name} · Bestie`,
+      description,
       url: `https://bestiehere.com/${profile.username}`,
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${profile.full_name} — ★ ${profile.bestie_score || 0}`,
-      description: profile.bio || 'Check my Social Passport on Bestie.',
+      title: `${profile.full_name} · Bestie`,
+      description,
     },
   }
 }
@@ -148,8 +150,6 @@ export default async function ProfilePage({ params }) {
   const [
     { data: sparks },
     { count: confirmedSessions },
-    { count: usersAbove },
-    { count: totalUsers },
     { data: ratedBookings },
     { count: mutualKnocks },
     { data: earnedBadges },
@@ -160,11 +160,8 @@ export default async function ProfilePage({ params }) {
       .or(`seeker_id.eq.${profile.id},provider_id.eq.${profile.id}`)
       .eq('confirmed_by_seeker', true)
       .eq('confirmed_by_provider', true),
-    supabase.from('users')
-      .select('id', { count: 'exact', head: true })
-      .gt('bestie_score', profile.bestie_score || 0),
-    supabase.from('users')
-      .select('id', { count: 'exact', head: true }),
+    // (Rank/percentile queries removed: "Top 1% / Top 10%" is no longer shown
+    // to anyone — the score is private to its owner.)
     supabase.from('bookings')
       .select('rating_seeker, rating_provider')
       .or(`and(provider_id.eq.${profile.id},rating_seeker.not.is.null),and(seeker_id.eq.${profile.id},rating_provider.not.is.null)`),
@@ -195,25 +192,25 @@ export default async function ProfilePage({ params }) {
     .filter(s => s.count > 0)
     .sort((a, b) => b.count - a.count)
 
+  // Score stays private: it only feeds the owner-only PassportScoreCard —
+  // it is never rendered for, or inferable by, other viewers.
   const score = profile.bestie_score || 0
-  const scoreColor = score >= 800 ? '#34D399' : score >= 600 ? '#D4AF37' : 'var(--text-muted)'
-  const scoreLabel = score >= 800 ? 'Excellent' : score >= 600 ? 'Good' : score >= 400 ? 'Fair' : 'New'
   const initials = profile.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
   const memberBadge = getMemberBadge(profile.created_at)
   const memberSince = profile.created_at ? new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : null
   const sessionCount = confirmedSessions || 0
-  const rankPct = totalUsers ? (usersAbove || 0) / totalUsers : 1
+  // Public, only-grows signals that replace the score for other viewers.
+  const metCount = Math.max(sessionCount, profile.total_sessions || 0)
+  const knownFor = topSparks.slice(0, 3)
   const ratingValues = ratedBookings?.map(b => b.rating_seeker ?? b.rating_provider).filter(Boolean) || []
   const avgRating = ratingValues.length > 0 ? ratingValues.reduce((a: number, b: number) => a + b, 0) / ratingValues.length : 0
   const ageMs = profile.created_at ? Date.now() - new Date(profile.created_at).getTime() : Infinity
   const ageDays = ageMs / (1000 * 60 * 60 * 24)
   const streakWeeks = profile.streak_weeks || 0
-  const tier = getTier(score, sessionCount)
   const firstName = profile.full_name?.split(' ')[0] || 'them'
 
+  // Public achievements — no rank/percentile badges (Top 1% / Top 10% removed).
   const BADGES = [
-    rankPct <= 0.01 && { id: 'top1', Icon: Trophy, label: 'Top 1%', desc: 'Bestie Score in the top 1%', color: '#34D399' },
-    rankPct <= 0.10 && rankPct > 0.01 && { id: 'top10', Icon: Medal, label: 'Top 10%', desc: 'Bestie Score in the top 10%', color: '#D4AF37' },
     profile.is_verified && { id: 'verified', Icon: BadgeCheck, label: 'Verified', desc: 'Verified by 3+ real meetups', color: '#34D399' },
     sessionCount >= 25 && { id: 'session_king', Icon: Crown, label: 'Session King', desc: '25+ confirmed sessions', color: '#D4AF37' },
     sessionCount >= 10 && sessionCount < 25 && { id: 'pro', Icon: Gem, label: 'Pro', desc: '10+ confirmed sessions', color: '#9B7FFF' },
@@ -222,7 +219,8 @@ export default async function ProfilePage({ params }) {
     totalSparks >= 50 && { id: 'spark_icon', Icon: SparklesIcon, label: 'Spark Icon', desc: '50+ sparks received', color: '#D4AF37' },
     totalSparks >= 10 && totalSparks < 50 && { id: 'spark_magnet', Icon: SparklesIcon, label: 'Spark Magnet', desc: '10+ sparks received', color: 'var(--text-muted)' },
     ratingValues.length >= 3 && avgRating >= 4.8 && { id: 'five_star', Icon: Star, label: '5-Star', desc: 'Near-perfect average rating', color: '#D4AF37' },
-    ageDays < 30 && score > 200 && { id: 'rising_star', Icon: Sprout, label: 'Rising Star', desc: 'New member with high score', color: '#34D399' },
+    // Rising Star uses only-grows signals (meetups/sparks), never the score.
+    ageDays < 30 && (sessionCount >= 3 || totalSparks >= 5) && { id: 'rising_star', Icon: Sprout, label: 'Rising Star', desc: 'Off to a strong start', color: '#34D399' },
     streakWeeks >= 12 && { id: 'streak_12', Icon: Waves, label: `${streakWeeks}w Streak`, desc: '12+ week streak', color: '#34D399' },
     streakWeeks >= 8 && streakWeeks < 12 && { id: 'streak_8', Icon: Zap, label: `${streakWeeks}w Streak`, desc: '8+ week streak', color: '#D4AF37' },
     streakWeeks >= 4 && streakWeeks < 8 && { id: 'streak_4', Icon: Flame, label: `${streakWeeks}w Streak`, desc: '4+ week streak', color: '#FF6B35' },
@@ -241,16 +239,11 @@ export default async function ProfilePage({ params }) {
       {/* COVER HERO — overflow:hidden только для градиентов, аватар снаружи */}
       <div style={{ position: 'relative', height: '180px', overflow: 'hidden' }}>
         {/* Cover gradient */}
-        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 30% 50%, rgba(${tier.glow},0.35) 0%, rgba(8,8,16,0.0) 70%)` }} />
+        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 30% 50%, rgba(${HERO_GLOW},0.28) 0%, rgba(8,8,16,0.0) 70%)` }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(8,8,16,0) 0%, var(--nav-bg) 100%)' }} />
         {/* Decorative orbs */}
-        <div style={{ position: 'absolute', top: '-30px', right: '15%', width: '220px', height: '220px', borderRadius: '50%', background: `radial-gradient(circle, rgba(${tier.glow},0.12) 0%, transparent 70%)` }} />
+        <div style={{ position: 'absolute', top: '-30px', right: '15%', width: '220px', height: '220px', borderRadius: '50%', background: `radial-gradient(circle, rgba(${HERO_GLOW},0.10) 0%, transparent 70%)` }} />
         <div style={{ position: 'absolute', bottom: '-20px', left: '40%', width: '160px', height: '160px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(155,143,255,0.08) 0%, transparent 70%)' }} />
-
-        {/* Tier badge — top right */}
-        <div style={{ position: 'absolute', top: '16px', right: '20px', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '999px', background: tier.bg, border: `1px solid ${tier.border}`, backdropFilter: 'blur(8px)' }}>
-          <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '1.5px', color: tier.color }}>{tier.label} TIER</span>
-        </div>
 
         {/* Share button — top left */}
         <div style={{ position: 'absolute', top: '16px', left: '20px', display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -262,10 +255,10 @@ export default async function ProfilePage({ params }) {
 
         {/* AVATAR — вынесен из cover чтобы не обрезался overflow:hidden */}
         <div style={{ marginTop: '-44px', marginBottom: '0', position: 'relative', zIndex: 10 }}>
-          <div style={{ width: '88px', height: '88px', borderRadius: '50%', overflow: 'hidden', border: `3px solid ${tier.color}`, background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 24px rgba(${tier.glow},0.4)`, ...getAvatarFrame(sessionCount) }}>
+          <div style={{ width: '88px', height: '88px', borderRadius: '50%', overflow: 'hidden', border: `3px solid ${AVATAR_RING}`, background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 24px rgba(${HERO_GLOW},0.22)`, ...getAvatarFrame(sessionCount) }}>
             {profile.avatar_url
               ? <img src={profile.avatar_url} alt={profile.full_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : <span style={{ fontSize: '30px', fontWeight: 700, color: tier.color, fontFamily: 'DM Serif Display, serif' }}>{initials}</span>
+              : <span style={{ fontSize: '30px', fontWeight: 700, color: '#D4AF37', fontFamily: 'DM Serif Display, serif' }}>{initials}</span>
             }
           </div>
         </div>
@@ -317,6 +310,30 @@ export default async function ProfilePage({ params }) {
               <BlockReportButton profileUserId={profile.id} />
             </div>
           </div>
+
+          {/* KNOWN FOR — public, only-grows signals (top sparks + people met).
+              Replaces the score/tier for other viewers; renders nothing when
+              both are empty, so a newcomer never sees a zero. */}
+          {(knownFor.length > 0 || metCount > 0) && (
+            <div style={{ marginTop: '16px', padding: '12px 16px', borderRadius: '12px', background: 'var(--surface-1)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px 20px' }}>
+              {knownFor.length > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px 14px', minWidth: 0 }}>
+                  <span style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Known for</span>
+                  {knownFor.map(s => (
+                    <span key={s.id} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
+                      <SparkIcon type={s.id} size={14} strokeWidth={2} />{s.label}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {metCount > 0 && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                  <Handshake size={14} strokeWidth={2} color="#34D399" />
+                  <span>Met <strong style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{metCount}</strong> {metCount === 1 ? 'person' : 'people'}</span>
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Eterotype pills */}
           {profile.eterotype && (
@@ -419,19 +436,22 @@ export default async function ProfilePage({ params }) {
           </div>
         )}
 
-        {/* PASSPORT SCORE CARD — credibility, below the meeting CTAs */}
-        <div style={{ marginBottom: '16px' }}>
-          <PassportScoreCard
-            score={score}
-            rating={avgRating || null}
-            sessions={sessionCount}
-            sparks={totalSparks}
-            fullName={profile.full_name}
-            username={profile.username}
-            city={profile.city}
-            avatarUrl={profile.avatar_url}
-          />
-        </div>
+        {/* PASSPORT SCORE CARD — OWNER ONLY. The score is private progress:
+            visitors never see it (they see "Known for" + "Met N people"). */}
+        <OwnerOnly ownerId={profile.id}>
+          <div style={{ marginBottom: '16px' }}>
+            <PassportScoreCard
+              score={score}
+              rating={avgRating || null}
+              sessions={sessionCount}
+              sparks={totalSparks}
+              fullName={profile.full_name}
+              username={profile.username}
+              city={profile.city}
+              avatarUrl={profile.avatar_url}
+            />
+          </div>
+        </OwnerOnly>
 
         {/* EARNED BADGES — unique crests awarded by the platform (user_badges) */}
         {(earnedBadges || []).filter((b) => ['city_pioneer'].includes(b.badge_id)).length > 0 && (

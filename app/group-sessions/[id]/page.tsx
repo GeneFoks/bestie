@@ -9,13 +9,25 @@ import { PageLoader } from '@/components/Loading'
 import { ActivityIcon } from '@/lib/activityIcons'
 import { showToast } from '@/components/Toast'
 import { confirmSheet } from '@/components/ConfirmSheet'
-import { Calendar, MapPin, Users, Link2, Trash2, Crown, Check, Repeat, Ticket, PartyPopper, SearchX, ArrowLeft, Star } from 'lucide-react'
+import { SparkIcon } from '@/lib/sparkIcons'
+import { Calendar, MapPin, Users, Link2, Trash2, Crown, Check, Repeat, Ticket, PartyPopper, SearchX, ArrowLeft } from 'lucide-react'
+
+// The Bestie Score is private to its owner. Others see only what grows and is
+// positive: the person's top sparks ("Known for") and how many people they've met.
+function topSparkTypes(rows: any[] | null, max = 3): string[] {
+  const counts: Record<string, number> = {}
+  ;(rows || []).forEach(r => { if (r?.spark_type) counts[r.spark_type] = (counts[r.spark_type] || 0) + 1 })
+  return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, max).map(([t]) => t)
+}
+const sparkLabel = (t: string) => { const s = t.replace(/_/g, ' '); return s.charAt(0).toUpperCase() + s.slice(1) }
+const metLabel = (n: number) => `Met ${n} ${n === 1 ? 'person' : 'people'}`
 
 export default function GroupSessionPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const [session, setSession] = useState<any>(null)
   const [participants, setParticipants] = useState<any[]>([])
   const [host, setHost] = useState<any>(null)
+  const [hostSparks, setHostSparks] = useState<string[]>([])
   const [myId, setMyId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
@@ -34,11 +46,13 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
     if (!gs) { setLoading(false); return }
     setSession(gs)
 
-    const [{ data: hostData }, { data: parts }] = await Promise.all([
-      supabase.from('users').select('id, full_name, username, avatar_url, bestie_score').eq('id', gs.host_id).single(),
+    const [{ data: hostData }, { data: parts }, { data: hostSparkRows }] = await Promise.all([
+      supabase.from('users').select('id, full_name, username, avatar_url, total_sessions').eq('id', gs.host_id).single(),
       supabase.from('group_session_participants').select('user_id, joined_at').eq('session_id', params.id),
+      supabase.from('sparks').select('spark_type').eq('receiver_id', gs.host_id),
     ])
     setHost(hostData)
+    setHostSparks(topSparkTypes(hostSparkRows))
 
     if (parts && parts.length > 0) {
       const userIds = parts.map(p => p.user_id)
@@ -258,15 +272,25 @@ export default function GroupSessionPage({ params }: { params: { id: string } })
               <div style={{ width: '40px', height: '40px', borderRadius: '12px', overflow: 'hidden', background: 'var(--surface-3)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {host.avatar_url ? <img src={host.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{host.full_name?.[0]}</span>}
               </div>
-              <div>
+              <div style={{ minWidth: 0 }}>
                 <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{host.full_name}</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span>Host ·</span>
-                  <Star size={11} strokeWidth={2} fill="currentColor" aria-hidden="true" />
-                  <span>{host.bestie_score || 0}</span>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                  {(host.total_sessions || 0) > 0 ? `Host · ${metLabel(host.total_sessions)}` : 'Host'}
                 </p>
+                {hostSparks.length > 0 && (
+                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', marginTop: '2px' }}>
+                    <span>Known for:</span>
+                    {hostSparks.map((t, i) => (
+                      <span key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', color: 'var(--text-primary)' }}>
+                        {i > 0 && <span style={{ color: 'var(--text-dim)' }}>·</span>}
+                        <SparkIcon type={t} size={11} />
+                        <span>{sparkLabel(t)}</span>
+                      </span>
+                    ))}
+                  </p>
+                )}
               </div>
-              <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#D4AF37', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ marginLeft: 'auto', flexShrink: 0, fontSize: '12px', color: '#D4AF37', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                 <Crown size={14} strokeWidth={1.8} aria-hidden="true" />
                 <span>Host</span>
               </span>

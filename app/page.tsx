@@ -7,9 +7,23 @@ import { supabase } from '@/lib/supabase'
 import ProviderCard from '@/components/ProviderCard'
 import {
   Contact, Trophy, Flame, CalendarDays, Bell, Users, Map, Globe,
-  Camera, Sparkles, ShieldCheck, Search, UserCheck, Network,
+  Camera, Sparkles, ShieldCheck, Search, UserCheck, Network, Lock,
 } from 'lucide-react'
 import { LAUNCH_CITY, CITY_FOCUS } from '@/lib/launchCity'
+import { SparkIcon } from '@/lib/sparkIcons'
+
+// Spark type → display label (mirrors SPARK_TYPES on /browse and the passport).
+const SPARK_LABELS = {
+  kind: 'Kind', fun: 'Fun', reliable: 'Reliable', genuine: 'Genuine', safe: 'Safe',
+  energetic: 'Energetic', good_listener: 'Good listener', social: 'Social',
+  punctual: 'Punctual', open: 'Open', focused: 'Focused', insightful: 'Insightful',
+  motivating: 'Motivating', supportive: 'Supportive', creative: 'Creative',
+  inspiring: 'Inspiring', professional: 'Professional', articulate: 'Articulate',
+  calming: 'Calming', high_energy: 'High energy', worldly: 'Worldly',
+  knowledgeable: 'Knowledgeable',
+}
+const sparkLabel = (t) =>
+  SPARK_LABELS[t] || (t ? t.charAt(0).toUpperCase() + t.slice(1).replace(/_/g, ' ') : '')
 
 // Bestie World is in development — hidden from the public. Flip to true to
 // bring back the nav link and the landing teaser.
@@ -17,7 +31,7 @@ const SHOW_WORLD = false
 
 const FEATURES = [
   { Icon: Contact,      title: 'Social Passport',       desc: 'One page that proves you\'re real, active, and easy to meet.' },
-  { Icon: Trophy,      title: 'Bestie Score & Badges', desc: 'Every real meetup makes you more trusted — and more invited.' },
+  { Icon: Trophy,      title: 'Bestie Score & Badges', desc: 'Private progress only you see — every real meetup grows it. Others see what you\'re known for.' },
   { Icon: Flame,       title: 'Weekly Streak',         desc: 'Meet someone every week and watch your consistency pay off.' },
   { Icon: CalendarDays,title: 'Availability Calendar', desc: 'People see when you\'re free, so plans actually happen.' },
   { Icon: Bell,        title: 'Knock',                 desc: 'Show interest anonymously — no rejection, no awkward first message.' },
@@ -73,7 +87,33 @@ export default function HomePage() {
       .order('bestie_score', { ascending: false })
       .gt('bestie_score', 0)
       .limit(6)
-      .then(({ data }) => setTopProviders(data || []))
+      .then(async ({ data }) => {
+        const list = data || []
+        setTopProviders(list)
+        // "Known for": attach each person's top 1-3 sparks (same shape as
+        // /browse) so the cards show character, never a score or a rank.
+        if (list.length === 0) return
+        try {
+          const { data: sparksData } = await supabase
+            .from('sparks').select('receiver_id, spark_type').in('receiver_id', list.map(p => p.id))
+          if (!sparksData?.length) return
+          const byUser = {}
+          sparksData.forEach(s => {
+            if (!s?.spark_type) return
+            if (!byUser[s.receiver_id]) byUser[s.receiver_id] = {}
+            byUser[s.receiver_id][s.spark_type] = (byUser[s.receiver_id][s.spark_type] || 0) + 1
+          })
+          setTopProviders(list.map(p => ({
+            ...p,
+            top_sparks: Object.entries(byUser[p.id] || {})
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 3)
+              .map(([id, count]) => ({ id, label: sparkLabel(id), count })),
+          })))
+        } catch (err) {
+          console.error('Landing sparks fetch failed:', err)
+        }
+      })
 
     // Upcoming events (group sessions + birthdays), merged & sorted by date.
     // The section renders only when there's something real to show.
@@ -316,7 +356,7 @@ export default function HomePage() {
                 { num: '01', Icon: Contact,    title: 'Create your passport',  desc: 'Photo, city, favorite activities, and the times you\'re free each week.' },
                 { num: '02', Icon: Search,    title: 'Find your people',      desc: 'Browse compatible people nearby, or knock anonymously — names reveal only on a mutual match.' },
                 { num: '03', Icon: UserCheck, title: 'Meet in real life',     desc: 'Coffee, a hike, the gym — one-on-one or in a group session.' },
-                { num: '04', Icon: Camera,    title: 'Show up again',         desc: 'Both confirm the meetup. Your score grows and real friendships stack up.' },
+                { num: '04', Icon: Camera,    title: 'Show up again',         desc: 'Both confirm the meetup. Your private score grows and real friendships stack up.' },
               ].map((step, idx) => (
                 <div key={step.num} className={`how-card reveal-delay-${idx + 1}`}>
                   <div style={{ fontSize: '52px', fontWeight: 800, color: 'rgba(212,175,55,0.08)', fontFamily: 'DM Serif Display, serif', lineHeight: 1, marginBottom: '-8px' }}>{step.num}</div>
@@ -408,7 +448,7 @@ export default function HomePage() {
                 Proof you <em style={{ color: '#D4AF37', fontStyle: 'italic' }}>show up.</em>
               </h2>
               <p style={{ fontSize: '15px', color: 'var(--text-muted)', marginBottom: '24px', lineHeight: 1.75 }}>
-                Your score grows with every confirmed meetup, rating, and week of consistency — real-life reliability, not follower counts.
+                Your score is private — only you see it. It grows with every real meetup. Others see what you're known for.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '32px' }}>
                 {[
@@ -427,9 +467,14 @@ export default function HomePage() {
               <Link href="/score-guide" className="btn-gold">Build your score →</Link>
             </div>
 
-            {/* Right: score card */}
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <div className="score-card" style={{ width: '280px', padding: '32px 28px', borderRadius: '28px', textAlign: 'center', background: 'var(--surface-1)', border: '1px solid rgba(52,211,153,0.2)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
+            {/* Right: score card (the owner's private view) + what others see */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
+              <div className="score-card" style={{ width: '280px', maxWidth: '100%', padding: '24px 28px 32px', borderRadius: '28px', textAlign: 'center', background: 'var(--surface-1)', border: '1px solid rgba(52,211,153,0.2)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '14px' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 11px', borderRadius: '999px', fontSize: '11px', fontWeight: 600, background: 'var(--surface-1b)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+                    <Lock size={11} strokeWidth={2.2} /> Only you see this
+                  </span>
+                </div>
                 <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>BESTIE SCORE</p>
                 <div style={{ fontSize: '80px', fontWeight: 700, color: '#34D399', fontFamily: 'DM Serif Display, serif', lineHeight: 1, margin: '4px 0 16px', textShadow: '0 0 40px rgba(52,211,153,0.4)' }}>874</div>
                 {/* Progress bar */}
@@ -450,6 +495,21 @@ export default function HomePage() {
                     </div>
                   ))}
                 </div>
+              </div>
+              {/* What everyone else sees instead of the number */}
+              <div style={{ width: '280px', maxWidth: '100%', padding: '16px 18px', borderRadius: '20px', background: 'var(--surface-1)', border: '1px solid var(--border)' }}>
+                <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase' }}>What others see</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', marginRight: '2px' }}>Known for</span>
+                  {['kind', 'reliable', 'fun'].map(id => (
+                    <span key={id} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 9px', borderRadius: '999px', fontSize: '11px', fontWeight: 600, background: 'var(--surface-1b)', border: '1px solid var(--border)', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
+                      <SparkIcon type={id} size={11} strokeWidth={2} /> {sparkLabel(id)}
+                    </span>
+                  ))}
+                </div>
+                <p style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                  <Users size={12} strokeWidth={2} /> Met 43 people
+                </p>
               </div>
             </div>
           </div>
@@ -491,35 +551,25 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* ── TOP BESTIES (only when there is real data) ── */}
+      {/* ── MEET BESTIES (only when there is real data) ──
+          The query still orders by bestie_score under the hood, but the score is
+          private: no rank badges, no numbers — cards show "Known for" + "Met N". */}
       {topProviders.length > 0 && (
         <section style={{ padding: '0 20px 64px', overflow: 'hidden' }}>
           <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '28px' }}>
               <div>
-                <p className="section-label">LEADERBOARD</p>
-                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 700, color: 'var(--text-primary)' }}>{CITY_FOCUS ? `Top Besties in ${LAUNCH_CITY.name}` : 'Top Besties'}</h2>
+                <p className="section-label">THE COMMUNITY</p>
+                <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 700, color: 'var(--text-primary)' }}>{CITY_FOCUS ? `Meet Besties in ${LAUNCH_CITY.name}` : 'Meet some Besties'}</h2>
               </div>
               <Link href="/browse" style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none', marginBottom: '2px', transition: 'color 0.2s' }} onMouseEnter={e=>e.target.style.color='#D4AF37'} onMouseLeave={e=>e.target.style.color='var(--text-muted)'}>See all →</Link>
             </div>
             <div className="providers-grid">
-              {topProviders.map((provider, i) => {
-                const badge = i === 0
-                  ? { label: '👑 #1 Top Bestie', bg: 'linear-gradient(135deg, #D4AF37, #B8960C)', color: '#09090F', border: 'none' }
-                  : i === 1
-                  ? { label: '🥈 #2', bg: 'rgba(155,147,192,0.2)', color: 'var(--text-muted)', border: '1px solid rgba(155,147,192,0.3)' }
-                  : i === 2
-                  ? { label: '🥉 #3', bg: 'rgba(180,100,40,0.2)', color: '#CD7F32', border: '1px solid rgba(180,100,40,0.3)' }
-                  : { label: `#${i + 1}`, bg: 'var(--surface-1b)', color: 'var(--text-muted)', border: '1px solid var(--border)' }
-                return (
-                  <div key={provider.id} style={{ position: 'relative', paddingTop: '16px', width: '100%', boxSizing: 'border-box' }}>
-                    <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', zIndex: 10, background: badge.bg, border: badge.border, borderRadius: '999px', padding: '4px 14px', fontSize: '11px', fontWeight: 700, color: badge.color, whiteSpace: 'nowrap', maxWidth: 'calc(100% - 24px)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {badge.label}
-                    </div>
-                    <ProviderCard provider={provider} featured={i === 0} />
-                  </div>
-                )
-              })}
+              {topProviders.map((provider) => (
+                <div key={provider.id} style={{ width: '100%', boxSizing: 'border-box' }}>
+                  <ProviderCard provider={provider} />
+                </div>
+              ))}
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '32px' }}>
               <Link href="/browse" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '14px 28px', borderRadius: '14px', fontSize: '15px', fontWeight: 700, background: 'rgba(212,175,55,0.10)', border: '1px solid rgba(212,175,55,0.35)', color: '#D4AF37', textDecoration: 'none', transition: 'all 0.2s' }} onMouseEnter={e=>{e.currentTarget.style.background='rgba(212,175,55,0.18)'; e.currentTarget.style.borderColor='rgba(212,175,55,0.6)'}} onMouseLeave={e=>{e.currentTarget.style.background='rgba(212,175,55,0.10)'; e.currentTarget.style.borderColor='rgba(212,175,55,0.35)'}}>

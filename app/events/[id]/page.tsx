@@ -52,7 +52,7 @@ export default async function EventPage({ params }) {
 
   const { data: attendees } = await supabase
     .from('crew_event_attendees')
-    .select('joined_at, status, user:users(id, username, full_name, avatar_url, bestie_score)')
+    .select('joined_at, status, user:users(id, username, full_name, avatar_url, total_sessions)')
     .eq('event_id', event.id)
     .order('joined_at', { ascending: true })
 
@@ -195,7 +195,9 @@ export default async function EventPage({ params }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {goingList.map(({ user }) => {
               if (!user) return null
-              const sc = user.bestie_score >= 800 ? '#34D399' : user.bestie_score >= 600 ? '#D4AF37' : 'var(--text-muted)'
+              // The Bestie Score is private to its owner — others see only how
+              // many people this person has met (never a zero).
+              const met = user.total_sessions || 0
               return (
                 <Link key={user.id} href={`/${user.username}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '14px', textDecoration: 'none' }}>
                   <div style={{ width: '40px', height: '40px', borderRadius: '12px', overflow: 'hidden', background: 'var(--surface-3)', flexShrink: 0, border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -204,11 +206,15 @@ export default async function EventPage({ params }) {
                       : <span style={{ fontSize: '16px', fontWeight: 700, color: '#D4AF37' }}>{user.full_name?.[0]}</span>
                     }
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{user.full_name}</span>
-                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>@{user.username}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.full_name}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>@{user.username}</div>
                   </div>
-                  <span style={{ fontSize: '15px', fontWeight: 700, color: sc }}>{user.bestie_score}</span>
+                  {met > 0 && (
+                    <span style={{ flexShrink: 0, fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', padding: '4px 10px', borderRadius: '999px', background: 'var(--surface-1b)', border: '1px solid var(--border)', whiteSpace: 'nowrap' }}>
+                      Met {met} {met === 1 ? 'person' : 'people'}
+                    </span>
+                  )}
                 </Link>
               )
             })}

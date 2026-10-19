@@ -102,7 +102,7 @@ export default function EventsPage() {
           .limit(20),
 
         supabase.from('users')
-          .select('id, full_name, username, avatar_url, bestie_score, city, free_today_at')
+          .select('id, full_name, username, avatar_url, city, free_today_at')
           .gte('free_today_at', todayStart.toISOString())
           .order('bestie_score', { ascending: false })
           .limit(24),
@@ -543,14 +543,14 @@ function InviteBanner({ username }: { username: string | null }) {
 
 function FreePill({ user, left }: { user: any; left?: string | null }) {
   const initials = user.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
-  const sc = (user.bestie_score || 0) >= 800 ? '#34D399' : (user.bestie_score || 0) >= 600 ? '#D4AF37' : 'var(--text-muted)'
+  // Same neutral ring for everyone — a score-tinted ring would leak rank to others.
   return (
     <Link href={`/${user.username}`} title={left ? `Free until midnight · ${left} left` : undefined} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', borderRadius: '12px', background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.16)', textDecoration: 'none' }}>
       <div style={{ position: 'relative', flexShrink: 0 }}>
-        <div style={{ width: '32px', height: '32px', borderRadius: '8px', overflow: 'hidden', background: 'var(--surface-3)', border: `1.5px solid ${sc}40` }}>
+        <div style={{ width: '32px', height: '32px', borderRadius: '8px', overflow: 'hidden', background: 'var(--surface-3)', border: '1.5px solid rgba(212,175,55,0.25)' }}>
           {user.avatar_url
             ? <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: sc }}>{initials}</div>
+            : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#D4AF37' }}>{initials}</div>
           }
         </div>
         <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '9px', height: '9px', borderRadius: '50%', background: '#34D399', border: '1.5px solid var(--bg)' }} />

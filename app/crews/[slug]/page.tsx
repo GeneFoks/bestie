@@ -24,8 +24,12 @@ import CrewLeaderboard from './CrewLeaderboard'
 import CrewAnniversary from './CrewAnniversary'
 import CrewVibeChip from './CrewVibeChip'
 import CrewBadgesRow from './CrewBadgesRow'
-import { Search, Lock, MessageCircle, Plus, Clock, MapPin, Flame, Zap, Trophy, Medal, Award, Users } from 'lucide-react'
+import { Search, Lock, MessageCircle, Plus, Clock, MapPin, Flame, Zap, Users } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
+import { SparkIcon } from '@/lib/sparkIcons'
+
+// 'good_listener' → 'Good listener'
+const sparkLabel = (t: string) => t ? t.charAt(0).toUpperCase() + t.slice(1).replace(/_/g, ' ') : ''
 
 // Server component — use service role key to bypass RLS for public data reads
 const supabase = createClient(
@@ -49,7 +53,7 @@ export async function generateMetadata({ params }) {
 export default async function CrewPage({ params }) {
   const { data: crew } = await supabase
     .from('crews')
-    .select('*, captain:users!captain_id(id, username, full_name, avatar_url, bestie_score)')
+    .select('*, captain:users!captain_id(id, username, full_name, avatar_url, bestie_score, total_sessions)')
     .eq('slug', params.slug)
     .single()
 
@@ -110,9 +114,28 @@ export default async function CrewPage({ params }) {
   if (memberUserIds.length > 0) {
     const { data: profiles } = await supabase
       .from('users')
-      .select('id, username, full_name, avatar_url, bestie_score, city, free_today_at')
+      .select('id, username, full_name, avatar_url, bestie_score, total_sessions, city, free_today_at')
       .in('id', memberUserIds)
     userProfiles = profiles || []
+  }
+
+  // Positive public signals (score stays private): each member's top spark.
+  const topSparkByUser: Record<string, string> = {}
+  if (memberUserIds.length > 0) {
+    const { data: sparkRows } = await supabase
+      .from('sparks')
+      .select('receiver_id, spark_type')
+      .in('receiver_id', memberUserIds)
+    const counts: Record<string, Record<string, number>> = {}
+    ;(sparkRows || []).forEach((s: any) => {
+      if (!s?.receiver_id || !s?.spark_type) return
+      const c = counts[s.receiver_id] || (counts[s.receiver_id] = {})
+      c[s.spark_type] = (c[s.spark_type] || 0) + 1
+    })
+    Object.entries(counts).forEach(([uid, c]) => {
+      const top = Object.entries(c).sort((a, b) => b[1] - a[1])[0]
+      if (top) topSparkByUser[uid] = top[0]
+    })
   }
 
   const userMap = Object.fromEntries(userProfiles.map((u: any) => [u.id, u]))
@@ -124,17 +147,17 @@ export default async function CrewPage({ params }) {
   }))
 
   const modIds = members.filter((m: any) => m.role === 'moderator').map((m: any) => m.user_id)
+  // Ordering by score is kept under the hood, but no rank / score is shown —
+  // the Bestie Score is private to its owner.
   const sortedMembers = members.sort((a: any, b: any) => (b.user?.bestie_score || 0) - (a.user?.bestie_score || 0))
   const memberCount = sortedMembers.length
-  const avgScore = memberCount > 0
-    ? Math.round(sortedMembers.reduce((sum, m) => sum + (m.user?.bestie_score || 0), 0) / memberCount)
-    : 0
   const ratingCount = ratings?.length || 0
   const avgRating = ratingCount > 0
     ? Math.round(ratings.reduce((s, r) => s + r.rating, 0) / ratingCount * 10) / 10
     : 0
-  const scoreColor = avgScore >= 800 ? '#34D399' : avgScore >= 600 ? '#D4AF37' : 'var(--text-muted)'
   const spotsLeft = (crew.max_members || 108) - memberCount
+  const captainMet = crew.captain?.total_sessions || 0
+  const captainSpark = crew.captain ? topSparkByUser[crew.captain.id] : null
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Plus Jakarta Sans, sans-serif', paddingBottom: '88px' }}>
@@ -167,7 +190,7 @@ export default async function CrewPage({ params }) {
             </span>
           </div>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
-            {memberCount} members{avgScore > 0 ? ` · Avg score ${avgScore}` : ''}
+            {memberCount} {memberCount === 1 ? 'member' : 'members'}
           </p>
         </div>
       </div>
@@ -194,11 +217,8 @@ export default async function CrewPage({ params }) {
         </div>
 
         {/* Stats row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', marginBottom: '20px' }}>
-          <div style={{ background: 'var(--surface-1)', borderRadius: '14px', padding: '14px', border: `1px solid ${scoreColor}20` }}>
-            <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: '6px' }}>AVG SCORE</p>
-            <div style={{ fontSize: '26px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif' }}>{avgScore || '—'}</div>
-          </div>
+        {/* AVG SCORE tile removed — scores are private to their owner. */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px', marginBottom: '20px' }}>
           <div style={{ background: 'var(--surface-1)', borderRadius: '14px', padding: '14px', border: '1px solid var(--border)' }}>
             <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: '6px' }}>MEMBERS</p>
             <div style={{ fontSize: '26px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'DM Serif Display, serif' }}>{memberCount}</div>
@@ -218,11 +238,23 @@ export default async function CrewPage({ params }) {
                 : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D4AF37', fontWeight: 700, fontSize: '14px' }}>{crew.captain.full_name?.[0]}</div>
               }
             </div>
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ fontSize: '10px', color: '#D4AF37', fontWeight: 600, letterSpacing: '1px', marginBottom: '1px' }}>CAPTAIN</p>
               <Link href={`/${crew.captain.username}`} style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', textDecoration: 'none' }}>{crew.captain.full_name}</Link>
             </div>
-            <span style={{ fontSize: '13px', fontWeight: 700, color: '#D4AF37' }}>★ {crew.captain.bestie_score}</span>
+            {/* Positive signals only — the captain's score stays private. */}
+            {(captainSpark || captainMet > 0) && (
+              <div style={{ flexShrink: 0, textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                {captainSpark && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
+                    <SparkIcon type={captainSpark} size={12} /> {sparkLabel(captainSpark)}
+                  </span>
+                )}
+                {captainMet > 0 && (
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Met {captainMet} {captainMet === 1 ? 'person' : 'people'}</span>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -424,7 +456,7 @@ export default async function CrewPage({ params }) {
           <JoinRequestsPanel crewId={crew.id} captainId={crew.captain_id} />
         )}
 
-        {/* Top contributors */}
+        {/* Most active (no ranks / points) */}
         <CrewLeaderboard crewId={crew.id} />
 
         {/* Members */}
@@ -442,17 +474,15 @@ export default async function CrewPage({ params }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {sortedMembers.map(({ user, joined_at, role, level }, memberIdx) => {
               if (!user) return null
-              const sc = user.bestie_score >= 800 ? '#34D399' : user.bestie_score >= 600 ? '#D4AF37' : 'var(--text-muted)'
+              const met = user.total_sessions || 0
+              const topSpark = topSparkByUser[user.id] || null
               const effectiveRole = role || (user.id === crew.captain_id ? 'captain' : 'member')
               const isCaptain = effectiveRole === 'captain'
               const isMod = effectiveRole === 'moderator'
               return (
                 <div key={user.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', background: 'var(--surface-1)', border: isCaptain ? '1px solid rgba(212,175,55,0.2)' : isMod ? '1px solid rgba(155,127,255,0.2)' : '1px solid var(--border)', borderRadius: '14px' }}>
                   <Link href={`/${user.username}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0, textDecoration: 'none' }}>
-                    {/* Rank number */}
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', width: '20px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {memberIdx === 0 ? <Trophy size={14} color="#FFD700" strokeWidth={2} /> : memberIdx === 1 ? <Medal size={14} color="#C0C0C0" strokeWidth={2} /> : memberIdx === 2 ? <Award size={14} color="#CD7F32" strokeWidth={2} /> : `#${memberIdx + 1}`}
-                    </span>
+                    {/* No rank number / trophies — the list never ranks people by score. */}
                     <div style={{ width: '40px', height: '40px', borderRadius: '12px', overflow: 'hidden', background: 'var(--surface-3)', flexShrink: 0, border: isCaptain ? '2px solid rgba(212,175,55,0.4)' : isMod ? '2px solid rgba(155,127,255,0.4)' : '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {user.avatar_url
                         ? <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -470,11 +500,22 @@ export default async function CrewPage({ params }) {
                       </div>
                       <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>{user.city ? <><MapPin size={11} strokeWidth={2} /> {user.city}</> : `@${user.username}`}</span>
                     </div>
-                    {/* Score circle */}
-                    <div style={{ width: '44px', height: '44px', borderRadius: '50%', border: `2px solid ${sc}40`, background: `${sc}10`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <span style={{ fontSize: '12px', fontWeight: 800, color: sc, lineHeight: 1 }}>{user.bestie_score >= 1000 ? '1k' : user.bestie_score}</span>
-                      <span style={{ fontSize: '7px', color: 'var(--text-muted)', letterSpacing: '0.5px', lineHeight: 1, marginTop: '1px' }}>★</span>
-                    </div>
+                    {/* Positive signals instead of the score: top spark + meetups.
+                        Nothing to show yet → a gentle "New" chip, never a zero. */}
+                    {topSpark || met > 0 ? (
+                      <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', maxWidth: '96px' }}>
+                        {topSpark && (
+                          <span title={`Known for: ${sparkLabel(topSpark)}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
+                            <SparkIcon type={topSpark} size={12} /> {sparkLabel(topSpark)}
+                          </span>
+                        )}
+                        {met > 0 && (
+                          <span style={{ fontSize: '11px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Met {met}</span>
+                        )}
+                      </div>
+                    ) : (
+                      <span style={{ flexShrink: 0, fontSize: '10px', fontWeight: 600, padding: '3px 8px', borderRadius: '999px', background: 'var(--surface-3)', border: '1px solid var(--border)', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>New to Bestie</span>
+                    )}
                   </Link>
                   <CrewRoleManager
                     crewId={crew.id}

@@ -2,7 +2,9 @@
 export const revalidate = 0
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+import { Users, Sprout } from 'lucide-react'
 import ProfileNav from '@/components/ProfileNav'
+import { SparkIcon } from '@/lib/sparkIcons'
 import InviteCTA from './InviteCTA'
 
 const supabase = createClient(
@@ -19,6 +21,19 @@ const ACTIVITY_LABELS = {
   breathwork: 'do breathwork', book_club: 'discuss books',
   cooking_together: 'cook together', dance: 'dance', climbing: 'go climbing',
 }
+
+// Spark type → display label (mirrors SPARK_TYPES on the passport page).
+const SPARK_LABELS = {
+  kind: 'Kind', fun: 'Fun', reliable: 'Reliable', genuine: 'Genuine', safe: 'Safe',
+  energetic: 'Energetic', good_listener: 'Good listener', social: 'Social',
+  punctual: 'Punctual', open: 'Open', focused: 'Focused', insightful: 'Insightful',
+  motivating: 'Motivating', supportive: 'Supportive', creative: 'Creative',
+  inspiring: 'Inspiring', professional: 'Professional', articulate: 'Articulate',
+  calming: 'Calming', high_energy: 'High energy', worldly: 'Worldly',
+  knowledgeable: 'Knowledgeable',
+}
+const sparkLabel = (t) =>
+  SPARK_LABELS[t] || (t ? t.charAt(0).toUpperCase() + t.slice(1).replace(/_/g, ' ') : '')
 
 export async function generateMetadata({ params, searchParams }) {
   const { data: profile } = await supabase
@@ -64,7 +79,7 @@ export async function generateMetadata({ params, searchParams }) {
 export default async function InvitePage({ params, searchParams }) {
   const { data: profile } = await supabase
     .from('users')
-    .select('id, full_name, username, avatar_url, bestie_score, bio, city, country, eterotype, eterotype_name, referral_code, activity_packages(*)')
+    .select('id, full_name, username, avatar_url, bio, city, country, total_sessions, eterotype, eterotype_name, referral_code, activity_packages(*)')
     .eq('username', params.username)
     .single()
 
@@ -87,8 +102,23 @@ export default async function InvitePage({ params, searchParams }) {
     : null
   const activityLabel = ACTIVITY_LABELS[activityKey] || 'connect'
   const initials = profile.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
-  const score = profile.bestie_score || 0
-  const scoreColor = score >= 800 ? '#34D399' : score >= 600 ? '#D4AF37' : '#A99ECC'
+
+  // Bestie Score is private progress — the invitee never sees the host's
+  // number. Instead: what the host is known for (top 1-3 sparks) + who they've met.
+  const { data: sparks } = await supabase
+    .from('sparks')
+    .select('spark_type')
+    .eq('receiver_id', profile.id)
+  const sparkCounts = {}
+  ;(sparks || []).forEach((s) => {
+    if (s?.spark_type) sparkCounts[s.spark_type] = (sparkCounts[s.spark_type] || 0) + 1
+  })
+  const knownFor = Object.entries(sparkCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([id]) => ({ id, label: sparkLabel(id) }))
+  const metCount = profile.total_sessions || 0
+  const isNew = knownFor.length === 0 && metCount === 0
 
   // Carry the inviter's referral code so "you both get +10 ✨" is actually
   // credited (signup stores ?ref, the dashboard applies it).
@@ -137,13 +167,36 @@ export default async function InvitePage({ params, searchParams }) {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', marginBottom: profile.bio ? '16px' : '0' }}>
-            <div style={{ flex: 1, padding: '12px', borderRadius: '12px', background: 'rgba(0,0,0,0.3)', border: `1px solid ${scoreColor}20`, textAlign: 'center' }}>
-              <p style={{ fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '1px', marginBottom: '4px' }}>BESTIE SCORE</p>
-              <p style={{ fontSize: '22px', fontWeight: 700, color: scoreColor, fontFamily: 'DM Serif Display, serif' }}>{score}</p>
-            </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Known for + Met N people — only what grows; never a score, never a zero */}
+            {isNew ? (
+              <div>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '5px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 600, background: 'var(--surface-1b)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+                  <Sprout size={12} strokeWidth={2} /> New to Bestie
+                </span>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {knownFor.length > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', marginRight: '2px' }}>Known for</span>
+                    {knownFor.map((s) => (
+                      <span key={s.id} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '5px 11px', borderRadius: '999px', fontSize: '12px', fontWeight: 600, background: 'var(--surface-1b)', border: '1px solid var(--border)', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
+                        <SparkIcon type={s.id} size={12} strokeWidth={2} /> {s.label}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {metCount > 0 && (
+                  <p style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>
+                    <Users size={13} strokeWidth={2} /> Met {metCount} {metCount === 1 ? 'person' : 'people'} on Bestie
+                  </p>
+                )}
+              </div>
+            )}
+
             {activityPkg && (
-              <div style={{ flex: 2, padding: '12px', borderRadius: '12px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ fontSize: '24px' }}>🎯</span>
                 <div>
                   <p style={{ fontSize: '12px', color: '#D4AF37', fontWeight: 600 }}>{activityPkg.title}</p>
@@ -151,11 +204,11 @@ export default async function InvitePage({ params, searchParams }) {
                 </div>
               </div>
             )}
-          </div>
 
-          {profile.bio && (
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6 }}>{profile.bio}</p>
-          )}
+            {profile.bio && (
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6 }}>{profile.bio}</p>
+            )}
+          </div>
         </div>
 
         {/* CTAs — client component handles logged-in vs logged-out state */}

@@ -2,7 +2,7 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
-import { Sparkles, Trophy } from 'lucide-react'
+import { Lock } from 'lucide-react'
 
 type Props = {
   score: number
@@ -15,20 +15,23 @@ type Props = {
   avatarUrl?: string | null
 }
 
-// Canonical tier ladder — same thresholds as getTier() in app/[username]/page.tsx.
-// Keep the two in sync: PLATINUM / GOLD / SILVER / BRONZE.
+// Progress tone for the owner's private view. The score is never shown to
+// other people (product rule 2026-10-18), so tier names are not displayed —
+// only a soft progress label and color for the owner's own reference.
 function scoreTone(s: number, sessions: number) {
-  if (s >= 800 || sessions >= 25) return { color: '#C9B8FF', glow: 'rgba(155,143,255,0.40)', label: 'Excellent', tier: 'PLATINUM' }
-  if (s >= 600 || sessions >= 10) return { color: '#D4AF37', glow: 'rgba(212,175,55,0.45)', label: 'Good',      tier: 'GOLD' }
-  if (s >= 400 || sessions >= 5)  return { color: '#C0C8D8', glow: 'rgba(192,200,216,0.35)', label: 'Fair',      tier: 'SILVER' }
-  return                             { color: '#CD8F4A', glow: 'rgba(205,143,74,0.30)', label: 'New',       tier: 'BRONZE' }
+  if (s >= 800 || sessions >= 25) return { color: '#C9B8FF', glow: 'rgba(155,143,255,0.40)', label: 'Excellent' }
+  if (s >= 600 || sessions >= 10) return { color: '#D4AF37', glow: 'rgba(212,175,55,0.45)', label: 'Good' }
+  if (s >= 400 || sessions >= 5)  return { color: '#C0C8D8', glow: 'rgba(192,200,216,0.35)', label: 'Fair' }
+  return                             { color: '#CD8F4A', glow: 'rgba(205,143,74,0.30)', label: 'Getting started' }
 }
 
 /**
- * Premium passport-style score card.
+ * Premium passport-style score card — OWNER ONLY.
+ * Render it inside <OwnerOnly ownerId={...}>: the score is private progress,
+ * visible only to the person it belongs to.
  * - Animated tick-up of the score on first paint
- * - Parallax tilt on mobile (devicemotion) and desktop (mouse)
- * - Glow intensity scales with score tier
+ * - Parallax tilt on desktop (mouse)
+ * - Glow intensity scales with progress
  */
 export default function PassportScoreCard({ score, rating, sessions, sparks, fullName, username, city, avatarUrl }: Props) {
   const cardRef = useRef<HTMLDivElement>(null)
@@ -124,7 +127,7 @@ export default function PassportScoreCard({ score, rating, sessions, sparks, ful
         pointerEvents: 'none',
       }} />
 
-      {/* Top row — profile + tier badge */}
+      {/* Top row — profile + private badge */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', position: 'relative' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
           <div style={{
@@ -148,26 +151,32 @@ export default function PassportScoreCard({ score, rating, sessions, sparks, ful
             </p>
           </div>
         </div>
-        <span style={{
-          fontSize: '10px',
-          fontWeight: 700,
-          letterSpacing: '1.5px',
-          color: tone.color,
-          padding: '5px 10px',
-          borderRadius: '8px',
-          background: `${tone.color}1A`,
-          border: `1px solid ${tone.color}55`,
-          whiteSpace: 'nowrap',
-          flexShrink: 0,
-          marginLeft: '8px',
-        }}>
-          {tone.tier}
+        <span
+          title="Only you can see your score"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '5px',
+            fontSize: '10px',
+            fontWeight: 700,
+            letterSpacing: '1.5px',
+            color: '#A99ECC',
+            padding: '5px 10px',
+            borderRadius: '8px',
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
+            marginLeft: '8px',
+          }}
+        >
+          <Lock size={10} strokeWidth={2.4} /> PRIVATE
         </span>
       </div>
 
       {/* Score */}
       <div style={{ textAlign: 'center', marginBottom: '14px', position: 'relative' }}>
-        <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '2.5px', color: '#A99ECC', marginBottom: '4px' }}>BESTIE SCORE</p>
+        <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '2.5px', color: '#A99ECC', marginBottom: '4px' }}>YOUR BESTIE SCORE</p>
         <div style={{
           fontFamily: 'DM Serif Display, serif',
           fontSize: 'clamp(64px, 14vw, 88px)',
@@ -215,6 +224,16 @@ export default function PassportScoreCard({ score, rating, sessions, sparks, ful
             <div style={{ fontSize: '10px', color: '#A99ECC', fontWeight: 600, letterSpacing: '0.5px' }}>{s.label}</div>
           </div>
         ))}
+      </div>
+
+      {/* Private-progress caption — the score is never shown to others */}
+      <div style={{ marginTop: '16px', textAlign: 'center', position: 'relative' }}>
+        <p style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, color: '#F0EAFF', margin: 0 }}>
+          <Lock size={12} strokeWidth={2.2} color="#A99ECC" /> Only you can see your score
+        </p>
+        <p style={{ fontSize: '11px', color: '#A99ECC', margin: '4px 0 0', lineHeight: 1.5 }}>
+          Others see what you're known for and how many people you've met.
+        </p>
       </div>
     </div>
   )

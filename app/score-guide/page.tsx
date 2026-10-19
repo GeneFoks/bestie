@@ -2,6 +2,7 @@
 'use client'
 
 import Link from 'next/link'
+import { Lock } from 'lucide-react'
 import { SparkIcon } from '@/lib/sparkIcons'
 
 export default function ScoreGuidePage() {
@@ -14,7 +15,7 @@ export default function ScoreGuidePage() {
 
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: '40px 24px' }}>
 
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div style={{ fontSize: '64px', marginBottom: '16px' }}>⭐</div>
           <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: '#D4AF37', marginBottom: '12px' }}>BESTIE SCORE</p>
           <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '36px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '12px' }}>How the system works</h1>
@@ -23,11 +24,25 @@ export default function ScoreGuidePage() {
           </p>
         </div>
 
+        {/* Privacy note — the score is the owner's private progress */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.22)', borderRadius: '20px', padding: '18px 20px', marginBottom: '20px' }}>
+          <div style={{ flexShrink: 0, width: '36px', height: '36px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.22)' }}>
+            <Lock size={17} color="#34D399" strokeWidth={2} />
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>Only you can see your score</p>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.65, margin: 0 }}>
+              It's your private progress — never a ranking. Other people see what you're known for (your top Sparks) and how many people you've met.
+            </p>
+          </div>
+        </div>
+
         {/* Score ranges */}
         <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '24px', marginBottom: '20px' }}>
-          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: 'var(--text-primary)', marginBottom: '20px' }}>Score tiers</h2>
+          <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: 'var(--text-primary)', marginBottom: '6px' }}>Score tiers</h2>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>Your tier is private too — it's for tracking your own progress.</p>
           {[
-            { range: '800–1000', label: 'Platinum', color: '#C9B8FF', rgb: '155,143,255', desc: 'Top Bestie. High trust, active, verified.' },
+            { range: '800–1000', label: 'Platinum', color: '#C9B8FF', rgb: '155,143,255', desc: 'Deeply trusted, active, verified.' },
             { range: '600–799', label: 'Gold', color: '#D4AF37', rgb: '212,175,55', desc: 'Reliable and social. Strong track record.' },
             { range: '400–599', label: 'Silver', color: '#C0C8D8', rgb: '192,200,216', desc: 'In progress. Keep completing sessions.' },
             { range: '50–399', label: 'Bronze', color: '#CD8F4A', rgb: '205,143,74', desc: 'Just started. Fill your profile — Score will grow fast.' },
@@ -128,7 +143,7 @@ export default function ScoreGuidePage() {
         <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '24px', marginBottom: '20px' }}>
           <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: 'var(--text-primary)', marginBottom: '12px' }}>✨ What are Sparks?</h2>
           <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: '16px' }}>
-            Sparks are rare tokens of trust. Every user gets <span style={{ color: '#D4AF37', fontWeight: 600 }}>30 Sparks</span> on signup. You can give max <span style={{ color: '#D4AF37', fontWeight: 600 }}>3 Sparks</span> to one person — each for a different quality.
+            Sparks are rare tokens of trust. Every user gets <span style={{ color: '#D4AF37', fontWeight: 600 }}>30 Sparks</span> on signup. You can give max <span style={{ color: '#D4AF37', fontWeight: 600 }}>3 Sparks</span> to one person — each for a different quality. The ones you receive most show on your passport as “Known for”.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '8px' }}>
             {[

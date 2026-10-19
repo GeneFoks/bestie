@@ -18,7 +18,7 @@ import {
   Camera, Pencil, MapPin, Sparkles, Mail, Inbox, Users, Calendar,
   UsersRound, Globe, Network, Search, Zap, Settings, Share2,
   TrendingUp, Hand, Star, Crown, PartyPopper, Target,
-  CheckCircle2, ChevronDown, ChevronRight,
+  CheckCircle2, ChevronDown, ChevronRight, Lock,
 } from 'lucide-react'
 import { buzz, celebrate, celebrateMatch } from '@/lib/celebrate'
 import MatchCelebration from '@/components/MatchCelebration'
@@ -561,6 +561,9 @@ export default function DashboardPage() {
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                   You're at <span style={{ color: scoreColor, fontWeight: 700 }}>{score}</span> — three steps to your first one
                 </p>
+                <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Lock size={10} strokeWidth={2.2} style={{ flexShrink: 0 }} /> Your private progress — only you see this
+                </p>
               </div>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -587,6 +590,9 @@ export default function DashboardPage() {
               <div style={{ height: '100%', width: `${score / 10}%`, borderRadius: '999px', background: `linear-gradient(90deg, ${scoreColor} 0%, #D4AF37 100%)` }} />
             </div>
             <p style={{ fontSize: '12px', fontWeight: 600, color: scoreColor }}>{scoreLabel}</p>
+            <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+              <Lock size={10} strokeWidth={2.2} style={{ flexShrink: 0 }} /> Only you see this
+            </p>
           </div>
           <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: '8px' }}>SESSIONS</p>

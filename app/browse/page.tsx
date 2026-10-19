@@ -344,7 +344,7 @@ export default function BrowsePage() {
           </div>
         ) : providers.length > 0 ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-            {providers.map((p, i) => {
+            {providers.map((p) => {
               const compat = getCompatLabel(p)
               return (
                 <div key={p.id} style={{ position: 'relative' }}>
@@ -354,7 +354,9 @@ export default function BrowsePage() {
                       {compat.label}
                     </div>
                   )}
-                  <ProviderCard provider={p} featured={i === 0 && !compatMode} />
+                  {/* No "featured" highlight: the list is ordered by Bestie Score, so
+                      singling out the first card would leak rank to viewers. */}
+                  <ProviderCard provider={p} />
                 </div>
               )
             })}

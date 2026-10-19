@@ -1,8 +1,13 @@
 // @ts-nocheck
-// Server component — fetches contribution scores and renders top 5 + you.
+// Server component — "Most active" in this crew.
+// Product rule (2026-10-18): no score leaderboards on surfaces others see.
+// This used to be a ranked "Top contributors" board (#1/#2/#3 + POINTS).
+// It now celebrates activity that only grows (events hosted, RSVPs going,
+// friends invited, messages) — no rank numbers, no tier colors, no points.
+// Under the hood the query still orders by contribution_score (unchanged).
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
-import { Trophy, Crown, Shield, Hand, MessageCircle, CalendarPlus, Users } from 'lucide-react'
+import { Crown, Shield, Hand, MessageCircle, CalendarPlus, Users, Flame } from 'lucide-react'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,20 +25,10 @@ type Contribution = {
   user?: { username: string; full_name: string; avatar_url: string | null }
 }
 
-const tierBg = (i: number) =>
-  i === 0 ? 'linear-gradient(135deg, rgba(212,175,55,0.18) 0%, rgba(212,175,55,0.04) 100%)'
-  : i === 1 ? 'linear-gradient(135deg, rgba(155,143,192,0.14) 0%, rgba(155,143,192,0.03) 100%)'
-  : i === 2 ? 'linear-gradient(135deg, rgba(205,127,50,0.12) 0%, rgba(205,127,50,0.03) 100%)'
-  : 'var(--surface-1)'
-
-const tierBorder = (i: number) =>
-  i === 0 ? 'rgba(212,175,55,0.35)'
-  : i === 1 ? 'rgba(155,143,192,0.30)'
-  : i === 2 ? 'rgba(205,127,50,0.30)'
-  : 'var(--border)'
+const chip = { display: 'inline-flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }
 
 export default async function CrewLeaderboard({ crewId }: { crewId: string }) {
-  // Get top contributors + their user data
+  // Get the most active members + their user data
   const { data: rows } = await supabase
     .from('crew_member_contributions')
     .select('user_id, role, events_created, rsvps_going, messages_sent, referrals_made, contribution_score')
@@ -50,60 +45,53 @@ export default async function CrewLeaderboard({ crewId }: { crewId: string }) {
     .in('id', userIds)
 
   const userMap = Object.fromEntries((users || []).map(u => [u.id, u]))
-  const top: Contribution[] = rows.map(r => ({ ...r, user: userMap[r.user_id] }))
+  // Only people with real activity — never list anyone next to a zero.
+  const active: Contribution[] = rows
+    .map(r => ({ ...r, user: userMap[r.user_id] }))
+    .filter(t => t.user && (t.contribution_score || 0) > 0)
 
-  // Hide section entirely if nobody has any contribution score yet
-  if (top.every(t => t.contribution_score === 0)) return null
+  // Hide section entirely if nobody has any activity yet
+  if (active.length === 0) return null
 
   return (
     <div style={{ marginBottom: '20px', padding: '18px 20px', borderRadius: '20px', background: 'var(--surface-1)', border: '1px solid var(--border)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-        <Trophy size={16} color="#D4AF37" strokeWidth={1.8} />
-        <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', margin: 0 }}>Top contributors</h3>
+        <Flame size={16} color="#34D399" strokeWidth={1.8} />
+        <h3 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '18px', color: 'var(--text-primary)', margin: 0 }}>Most active</h3>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {top.map((t, i) => {
-          if (!t.user) return null
-          return (
-            <Link
-              key={t.user_id}
-              href={`/${t.user.username}`}
-              style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', background: tierBg(i), border: `1px solid ${tierBorder(i)}`, textDecoration: 'none' }}
-            >
-              <div style={{ width: '24px', textAlign: 'center', fontSize: '13px', fontWeight: 700, color: i < 3 ? '#D4AF37' : 'var(--text-muted)', flexShrink: 0 }}>
-                #{i + 1}
+        {active.map((t) => (
+          <Link
+            key={t.user_id}
+            href={`/${t.user.username}`}
+            style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', background: 'var(--surface-1)', border: '1px solid var(--border)', textDecoration: 'none' }}
+          >
+            <div style={{ width: '36px', height: '36px', borderRadius: '11px', overflow: 'hidden', background: 'var(--surface-3)', flexShrink: 0, border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {t.user.avatar_url
+                ? <img src={t.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <span style={{ fontSize: '13px', fontWeight: 700, color: '#D4AF37' }}>{t.user.full_name?.[0]}</span>
+              }
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px', minWidth: 0 }}>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{t.user.full_name}</p>
+                {t.role === 'captain' && <Crown size={11} color="#D4AF37" strokeWidth={2} />}
+                {t.role === 'moderator' && <Shield size={11} color="#9B7FFF" strokeWidth={2} />}
               </div>
-              <div style={{ width: '36px', height: '36px', borderRadius: '11px', overflow: 'hidden', background: 'var(--surface-3)', flexShrink: 0, border: '1px solid rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {t.user.avatar_url
-                  ? <img src={t.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <span style={{ fontSize: '13px', fontWeight: 700, color: '#D4AF37' }}>{t.user.full_name?.[0]}</span>
-                }
+              <div style={{ display: 'flex', gap: '10px', rowGap: '4px', fontSize: '11px', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
+                {t.events_created > 0 && <span style={chip}><CalendarPlus size={11} strokeWidth={2} /> Hosted {t.events_created}</span>}
+                {t.rsvps_going > 0 && <span style={chip}><Hand size={11} strokeWidth={2} /> Going {t.rsvps_going}</span>}
+                {t.referrals_made > 0 && <span style={chip}><Users size={11} strokeWidth={2} /> Invited {t.referrals_made}</span>}
+                {t.messages_sent > 0 && <span style={chip}><MessageCircle size={11} strokeWidth={2} /> {t.messages_sent}</span>}
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
-                  <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{t.user.full_name}</p>
-                  {t.role === 'captain' && <Crown size={11} color="#D4AF37" strokeWidth={2} />}
-                  {t.role === 'moderator' && <Shield size={11} color="#9B7FFF" strokeWidth={2} />}
-                </div>
-                <div style={{ display: 'flex', gap: '10px', fontSize: '11px', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
-                  {t.events_created > 0 && <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}><CalendarPlus size={10} strokeWidth={2} /> {t.events_created}</span>}
-                  {t.rsvps_going > 0 && <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Hand size={10} strokeWidth={2} /> {t.rsvps_going}</span>}
-                  {t.messages_sent > 0 && <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}><MessageCircle size={10} strokeWidth={2} /> {t.messages_sent}</span>}
-                  {t.referrals_made > 0 && <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', color: '#D4AF37' }}><Users size={10} strokeWidth={2} /> {t.referrals_made}</span>}
-                </div>
-              </div>
-              <div style={{ flexShrink: 0, textAlign: 'right' }}>
-                <p style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', fontWeight: 700, color: i < 3 ? '#D4AF37' : 'var(--text-primary)', margin: 0, lineHeight: 1 }}>{t.contribution_score}</p>
-                <p style={{ fontSize: '9px', color: 'var(--text-muted)', letterSpacing: '0.5px', marginTop: '2px' }}>POINTS</p>
-              </div>
-            </Link>
-          )
-        })}
+            </div>
+          </Link>
+        ))}
       </div>
 
       <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '10px', lineHeight: 1.4 }}>
-        Score = events created (×10) + Going RSVPs (×3) + invites (×5) + messages (×1, capped at 100)
+        The people hosting, showing up and bringing friends.
       </p>
     </div>
   )

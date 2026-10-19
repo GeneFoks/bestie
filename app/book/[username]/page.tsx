@@ -8,11 +8,22 @@ import { supabase } from '@/lib/supabase'
 import { createNotification } from '@/lib/notifications'
 import { PageLoader } from '@/components/Loading'
 import { ActivityIcon } from '@/lib/activityIcons'
+import { SparkIcon } from '@/lib/sparkIcons'
 import { showToast } from '@/components/Toast'
+
+// The Bestie Score is private to its owner. Others see only what grows and is
+// positive: the person's top sparks ("Known for") and how many people they've met.
+function topSparkTypes(rows, max = 3) {
+  const counts = {}
+  ;(rows || []).forEach(r => { if (r?.spark_type) counts[r.spark_type] = (counts[r.spark_type] || 0) + 1 })
+  return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, max).map(([t]) => t)
+}
+const sparkLabel = (t) => { const s = t.replace(/_/g, ' '); return s.charAt(0).toUpperCase() + s.slice(1) }
 
 export default function BookPage({ params }) {
   const router = useRouter()
   const [provider, setProvider] = useState(null)
+  const [providerSparks, setProviderSparks] = useState([])
   const [userId, setUserId] = useState(null)
   const [myProfile, setMyProfile] = useState(null)
   const [selectedPackage, setSelectedPackage] = useState(null)
@@ -38,6 +49,9 @@ export default function BookPage({ params }) {
 
       setProvider(providerData)
       setMyProfile(meData)
+      // Non-blocking: "Known for" fills in when it arrives; the page never waits on it.
+      supabase.from('sparks').select('spark_type').eq('receiver_id', providerData.id)
+        .then(({ data }) => setProviderSparks(topSparkTypes(data)))
       if (providerData.activity_packages?.length > 0) setSelectedPackage(providerData.activity_packages[0])
       setLoading(false)
     }
@@ -130,13 +144,31 @@ export default function BookPage({ params }) {
               : <span style={{ color: '#D4AF37', fontWeight: 700 }}>{provider.full_name?.[0]}</span>
             }
           </div>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>{provider.full_name}</p>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-              {provider.city && `📍 ${provider.city} · `}
-              ★ {provider.bestie_score || 0}
-              {provider.avg_rating > 0 && ` · ⭐ ${Number(provider.avg_rating).toFixed(1)}`}
-            </p>
+            {(() => {
+              const met = provider.total_sessions || 0
+              const parts = [
+                provider.city && `📍 ${provider.city}`,
+                met > 0 && `Met ${met} ${met === 1 ? 'person' : 'people'}`,
+                provider.avg_rating > 0 && `⭐ ${Number(provider.avg_rating).toFixed(1)}`,
+              ].filter(Boolean)
+              return parts.length > 0
+                ? <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{parts.join(' · ')}</p>
+                : null
+            })()}
+            {providerSparks.length > 0 && (
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', marginTop: '4px' }}>
+                <span>Known for:</span>
+                {providerSparks.map((t, i) => (
+                  <span key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', color: 'var(--text-primary)' }}>
+                    {i > 0 && <span style={{ color: 'var(--text-dim)' }}>·</span>}
+                    <SparkIcon type={t} size={12} />
+                    <span>{sparkLabel(t)}</span>
+                  </span>
+                ))}
+              </p>
+            )}
           </div>
         </div>
 

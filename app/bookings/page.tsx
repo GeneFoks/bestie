@@ -37,7 +37,7 @@ export default function BookingsPage() {
       ...bookingRows.map(b => b.seeker_id),
       ...bookingRows.map(b => b.provider_id),
     ].filter(Boolean))]
-    const { data: users } = await supabase.from('users').select('id, full_name, username, avatar_url, bestie_score, city').in('id', userIds)
+    const { data: users } = await supabase.from('users').select('id, full_name, username, avatar_url, city').in('id', userIds)
     const userMap = {}
     users?.forEach(u => { userMap[u.id] = u })
     setBookings(bookingRows.map(b => ({ ...b, seeker: userMap[b.seeker_id] || null, provider: userMap[b.provider_id] || null })))

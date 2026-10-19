@@ -188,10 +188,10 @@ export default async function CrewsPage() {
                 <div style={{ padding: '18px 20px 20px' }}>
                   <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '20px', color: 'var(--text-primary)', marginBottom: '4px' }}>{featured.name}</h2>
                   <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: featured.description ? '12px' : '0' }}>
+                    {/* Score stays private (only its owner sees it) — no
+                        "Avg score" / score-tier labels on crew cards. */}
                     {featured.member_count} members
-                    {featured.avg_bestie_score ? ` · Avg score ${featured.avg_bestie_score}` : ''}
                     {featured.member_count >= 15 ? ' · Hot' : ''}
-                    {featured.avg_bestie_score >= 700 ? ' · Elite' : ''}
                   </p>
                   {featured.description && (
                     <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '14px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{featured.description}</p>
@@ -263,9 +263,7 @@ export default async function CrewsPage() {
                     const showMatch = !!(compat && compat.pct >= 35)
                     const meta = [
                       showMatch ? `${crew.member_count} members` : null,
-                      crew.avg_bestie_score ? `Avg score ${crew.avg_bestie_score}` : null,
                       crew.member_count >= 15 ? 'Hot' : null,
-                      crew.avg_bestie_score >= 700 ? 'Elite' : null,
                       hasSwarm ? 'AI Swarm' : null,
                     ].filter(Boolean).join(' · ')
                     return (

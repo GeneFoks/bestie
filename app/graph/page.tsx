@@ -149,7 +149,7 @@ export default function GraphPage() {
         name: u.full_name || 'Bestie',
         username: u.username,
         avatar: u.avatar_url,
-        score: u.bestie_score || 0,
+        score: u.bestie_score || 0, // kept in data only — never rendered or used for visuals
         sessions: sessionsByUser[u.id] || 0,
         city: u.city,
         isMe: u.id === currentUserId,
@@ -233,11 +233,15 @@ export default function GraphPage() {
     document.head.appendChild(script)
   }
 
+  // Node size grows with confirmed meetups (same tiers as the frame colour),
+  // never with Bestie Score — the score is private and must not be encoded
+  // visually for others. Range kept at 12–30px.
   const nodeRadius = (d: any) => {
-    if (d.score >= 800) return 30
-    if (d.score >= 600) return 24
-    if (d.score >= 400) return 19
-    if (d.score >= 200) return 15
+    const s = d.sessions || 0
+    if (s >= 25) return 30
+    if (s >= 10) return 24
+    if (s >= 5)  return 19
+    if (s >= 1)  return 15
     return 12
   }
 
@@ -333,7 +337,8 @@ export default function GraphPage() {
       .force('link', d3.forceLink(links).id((d: any) => d.id)
         .distance((d: any) => (d.type === 'contact' || d.type === 'knock') ? 120 : 60 + 40 / Math.sqrt(Math.max(d.weight, 0.1)))
         .strength((d: any) => (d.type === 'contact' || d.type === 'knock') ? 0.08 : 0.25))
-      .force('charge', d3.forceManyBody().strength((d: any) => d.floating ? -26 : -80 - d.score * 0.05))
+      // Spacing scales with meetups (capped), not score — keeps rank out of the layout.
+      .force('charge', d3.forceManyBody().strength((d: any) => d.floating ? -26 : -80 - Math.min(d.sessions || 0, 25) * 2))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force('x', d3.forceX(width / 2).strength((d: any) => d.floating ? 0.008 : 0))
       .force('y', d3.forceY(height / 2).strength((d: any) => d.floating ? 0.008 : 0))
@@ -454,7 +459,7 @@ export default function GraphPage() {
       }
     })
 
-    // Name label (visible for score >= 300)
+    // Name label (visible for you and anyone with at least one meetup)
     node.append('text')
       .text((d: any) => d.name.split(' ')[0])
       .attr('text-anchor', 'middle')
@@ -463,7 +468,7 @@ export default function GraphPage() {
       .attr('fill', '#A99ECC')
       .attr('font-family', 'Plus Jakarta Sans, sans-serif')
       .attr('pointer-events', 'none')
-      .attr('opacity', (d: any) => d.score >= 300 ? 0.85 : 0)
+      .attr('opacity', (d: any) => (d.isMe || (d.sessions || 0) >= 1) ? 0.85 : 0)
 
     // Hover
     node.on('mouseenter', function(event: any, d: any) {
@@ -588,7 +593,7 @@ export default function GraphPage() {
               <span style={{ fontSize: '11px', color: '#F0EAFF' }}>others nearby</span>
             </div>
           </div>
-          <p className="graph-legend-hint" style={{ fontSize: '10px', color: '#A99ECC', marginTop: '8px' }}>Size = Score · Drag · Pinch to zoom</p>
+          <p className="graph-legend-hint" style={{ fontSize: '10px', color: '#A99ECC', marginTop: '8px' }}>Size = Meetups · Drag · Pinch to zoom</p>
         </div>
       )}
 
@@ -608,9 +613,15 @@ export default function GraphPage() {
         }}>
           <p style={{ fontSize: '13px', fontWeight: 700, color: '#F0EAFF', marginBottom: '2px' }}>{hovered.name}</p>
           <p style={{ fontSize: '11px', color: '#A99ECC', marginBottom: '4px' }}>@{hovered.username}{hovered.city ? ` · ${hovered.city}` : ''}</p>
+          {/* Only what grows and is positive — never the private Bestie Score. */}
           <div style={{ display: 'flex', gap: '10px' }}>
-            <span style={{ fontSize: '11px', color: scoreColor(hovered.score), fontWeight: 700 }}>★ {hovered.score}</span>
-            <span style={{ fontSize: '11px', color: '#A99ECC' }}>{hovered.sessions} meetups</span>
+            {(hovered.sessions || 0) > 0 ? (
+              <span style={{ fontSize: '11px', color: '#F0EAFF', fontWeight: 600 }}>
+                Met up {hovered.sessions} {hovered.sessions === 1 ? 'time' : 'times'}
+              </span>
+            ) : (
+              <span style={{ fontSize: '11px', color: '#A99ECC' }}>New to Bestie</span>
+            )}
           </div>
         </div>
       )}
@@ -643,10 +654,4 @@ function frameColor(sessions: number): string {
   if (sessions >= 5)  return '#9B7FFF'
   if (sessions >= 1)  return '#A99ECC'
   return 'rgba(255,255,255,0.2)'
-}
-
-function scoreColor(score: number): string {
-  if (score >= 800) return '#34D399'
-  if (score >= 600) return '#D4AF37'
-  return '#A99ECC'
 }
