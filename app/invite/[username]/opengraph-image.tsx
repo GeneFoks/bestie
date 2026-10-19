@@ -20,6 +20,21 @@ const ACTIVITY_LABELS: Record<string, string> = {
   walk_meet: 'go for a walk', vibe_call: 'have a vibe call',
 }
 
+// Spark type → display label (mirrors SPARK_TYPES on the passport page).
+const SPARK_LABELS: Record<string, string> = {
+  kind: 'Kind', fun: 'Fun', reliable: 'Reliable', genuine: 'Genuine', safe: 'Safe',
+  energetic: 'Energetic', good_listener: 'Good listener', social: 'Social',
+  punctual: 'Punctual', open: 'Open', focused: 'Focused', insightful: 'Insightful',
+  motivating: 'Motivating', supportive: 'Supportive', creative: 'Creative',
+  inspiring: 'Inspiring', professional: 'Professional', articulate: 'Articulate',
+  calming: 'Calming', high_energy: 'High energy', worldly: 'Worldly',
+  knowledgeable: 'Knowledgeable',
+}
+const sparkLabel = (t: string) =>
+  SPARK_LABELS[t] || (t ? t.charAt(0).toUpperCase() + t.slice(1).replace(/_/g, ' ') : '')
+
+// Bestie Score is private progress — the invite card is seen by the invitee,
+// so it shows what the host is known for + who they've met, never a score.
 export default async function OGImage(
   { params, searchParams }: { params: { username: string }; searchParams?: { activity?: string } }
 ) {
@@ -30,14 +45,35 @@ export default async function OGImage(
 
   const { data: profile } = await supabase
     .from('users')
-    .select('full_name, username, avatar_url, bestie_score, bio, city, country, total_sessions')
+    .select('id, full_name, username, avatar_url, bio, city, country, total_sessions')
     .eq('username', params.username)
     .single()
 
+  // "Known for": the host's top 1-3 sparks by count (labels only, no counts).
+  let knownFor: string[] = []
+  if (profile?.id) {
+    try {
+      const { data: sparks } = await supabase
+        .from('sparks')
+        .select('spark_type')
+        .eq('receiver_id', profile.id)
+      const counts: Record<string, number> = {}
+      ;(sparks || []).forEach((s: { spark_type: string }) => {
+        if (s?.spark_type) counts[s.spark_type] = (counts[s.spark_type] || 0) + 1
+      })
+      knownFor = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([t]) => sparkLabel(t))
+        .filter(Boolean)
+    } catch (err) {
+      console.error('OG sparks fetch failed:', err)
+      knownFor = []
+    }
+  }
+
   const activity = searchParams?.activity
   const activityLabel = activity ? (ACTIVITY_LABELS[activity] || 'connect') : 'connect'
-  const score = profile?.bestie_score || 0
-  const scoreColor = score >= 800 ? '#34D399' : score >= 600 ? '#D4AF37' : '#A99ECC'
   const sessions = profile?.total_sessions || 0
   const initials = profile?.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '??'
 
@@ -121,16 +157,26 @@ export default async function OGImage(
             </div>
           </div>
 
-          {/* Stats row */}
+          {/* Stats row — Known for + Met N people in one box (keeps the card's
+              height bounded under the activity block); never a score, never a zero */}
           <div style={{ display: 'flex', gap: '12px', marginBottom: '32px' }}>
-            <div style={{ padding: '12px 20px', background: 'rgba(0,0,0,0.4)', border: `1px solid ${scoreColor}30`, borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ fontSize: '11px', color: '#A99ECC', marginBottom: '4px', letterSpacing: '1px', display: 'flex' }}>BESTIE SCORE</div>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: scoreColor, display: 'flex' }}>{score}</div>
-            </div>
-            {sessions > 0 && (
-              <div style={{ padding: '12px 20px', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ fontSize: '11px', color: '#A99ECC', marginBottom: '4px', letterSpacing: '1px', display: 'flex' }}>SESSIONS</div>
-                <div style={{ fontSize: '28px', fontWeight: 700, color: '#F0EAFF', display: 'flex' }}>{sessions}</div>
+            {(knownFor.length > 0 || sessions > 0) ? (
+              <div style={{ padding: '12px 20px', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '12px', display: 'flex', flexDirection: 'column' }}>
+                {knownFor.length > 0 && (
+                  <div style={{ fontSize: '11px', color: '#A99ECC', marginBottom: '4px', letterSpacing: '1px', display: 'flex' }}>KNOWN FOR</div>
+                )}
+                {knownFor.length > 0 && (
+                  <div style={{ fontSize: '22px', fontWeight: 700, color: '#F0EAFF', display: 'flex' }}>{knownFor.join(' · ')}</div>
+                )}
+                {sessions > 0 && (
+                  <div style={{ fontSize: knownFor.length > 0 ? '15px' : '20px', fontWeight: knownFor.length > 0 ? 500 : 700, color: knownFor.length > 0 ? '#A99ECC' : '#F0EAFF', marginTop: knownFor.length > 0 ? '6px' : '0', display: 'flex' }}>
+                    {`Met ${sessions} ${sessions === 1 ? 'person' : 'people'} on Bestie`}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div style={{ padding: '10px 18px', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '999px', fontSize: '16px', fontWeight: 600, color: '#A99ECC', display: 'flex' }}>
+                New to Bestie
               </div>
             )}
           </div>

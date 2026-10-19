@@ -7,9 +7,24 @@ export const alt = 'Bestie profile'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
+// Spark type → display label (mirrors SPARK_TYPES on the passport page).
+const SPARK_LABELS: Record<string, string> = {
+  kind: 'Kind', fun: 'Fun', reliable: 'Reliable', genuine: 'Genuine', safe: 'Safe',
+  energetic: 'Energetic', good_listener: 'Good listener', social: 'Social',
+  punctual: 'Punctual', open: 'Open', focused: 'Focused', insightful: 'Insightful',
+  motivating: 'Motivating', supportive: 'Supportive', creative: 'Creative',
+  inspiring: 'Inspiring', professional: 'Professional', articulate: 'Articulate',
+  calming: 'Calming', high_energy: 'High energy', worldly: 'Worldly',
+  knowledgeable: 'Knowledgeable',
+}
+const sparkLabel = (t: string) =>
+  SPARK_LABELS[t] || (t ? t.charAt(0).toUpperCase() + t.slice(1).replace(/_/g, ' ') : '')
+
 // Branded 1200×630 share card for a public profile. This is the link people
 // share most (referral / match / "check my profile"), so it gets a rich card
 // instead of a bare avatar thumbnail.
+// Bestie Score is private progress — this card is seen by everyone else, so it
+// shows only what grows and is positive: what they're known for + who they've met.
 export default async function OGImage({ params }: { params: { username: string } }) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,15 +33,35 @@ export default async function OGImage({ params }: { params: { username: string }
 
   const { data: profile } = await supabase
     .from('users')
-    .select('full_name, username, avatar_url, bestie_score, bio, city, country, total_sessions, activities')
+    .select('id, full_name, username, avatar_url, bio, city, country, total_sessions, activities')
     .eq('username', params.username)
     .single()
 
-  const score = profile?.bestie_score || 0
-  const scoreColor = score >= 800 ? '#34D399' : score >= 600 ? '#D4AF37' : '#A99ECC'
+  // "Known for": the person's top 1-3 sparks by count (labels only, no counts).
+  let knownFor: string[] = []
+  if (profile?.id) {
+    try {
+      const { data: sparks } = await supabase
+        .from('sparks')
+        .select('spark_type')
+        .eq('receiver_id', profile.id)
+      const counts: Record<string, number> = {}
+      ;(sparks || []).forEach((s: { spark_type: string }) => {
+        if (s?.spark_type) counts[s.spark_type] = (counts[s.spark_type] || 0) + 1
+      })
+      knownFor = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([t]) => sparkLabel(t))
+        .filter(Boolean)
+    } catch (err) {
+      console.error('OG sparks fetch failed:', err)
+      knownFor = []
+    }
+  }
+
   const sessions = profile?.total_sessions || 0
   const initials = profile?.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '??'
-  const tier = score >= 800 ? 'Platinum' : score >= 600 ? 'Gold' : 'Member'
   const topActivities: string[] = Array.isArray(profile?.activities) ? profile.activities.slice(0, 3) : []
 
   // Serif display font for the title line; a failed fetch falls back to sans-serif.
@@ -105,20 +140,23 @@ export default async function OGImage({ params }: { params: { username: string }
             </div>
           )}
 
-          {/* Stats row */}
-          <div style={{ display: 'flex', gap: '12px', marginBottom: '32px' }}>
-            <div style={{ padding: '12px 20px', background: 'rgba(0,0,0,0.4)', border: `1px solid ${scoreColor}30`, borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ fontSize: '11px', color: '#A99ECC', marginBottom: '4px', letterSpacing: '1px', display: 'flex' }}>BESTIE SCORE</div>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: scoreColor, display: 'flex' }}>{score}</div>
-            </div>
-            <div style={{ padding: '12px 20px', background: 'rgba(0,0,0,0.4)', border: `1px solid ${scoreColor}30`, borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ fontSize: '11px', color: '#A99ECC', marginBottom: '4px', letterSpacing: '1px', display: 'flex' }}>TIER</div>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: scoreColor, display: 'flex' }}>{tier}</div>
-            </div>
+          {/* Stats row — Known for + Met N people (never a score, never a zero) */}
+          <div style={{ display: 'flex', gap: '12px', marginBottom: '32px', flexWrap: 'wrap' }}>
+            {knownFor.length > 0 && (
+              <div style={{ padding: '12px 20px', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '12px', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ fontSize: '11px', color: '#A99ECC', marginBottom: '4px', letterSpacing: '1px', display: 'flex' }}>KNOWN FOR</div>
+                <div style={{ fontSize: '24px', fontWeight: 700, color: '#F0EAFF', display: 'flex' }}>{knownFor.join(' · ')}</div>
+              </div>
+            )}
             {sessions > 0 && (
-              <div style={{ padding: '12px 20px', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ fontSize: '11px', color: '#A99ECC', marginBottom: '4px', letterSpacing: '1px', display: 'flex' }}>SESSIONS</div>
-                <div style={{ fontSize: '28px', fontWeight: 700, color: '#F0EAFF', display: 'flex' }}>{sessions}</div>
+              <div style={{ padding: '12px 20px', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '12px', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ fontSize: '11px', color: '#A99ECC', marginBottom: '4px', letterSpacing: '1px', display: 'flex' }}>MET</div>
+                <div style={{ fontSize: '24px', fontWeight: 700, color: '#F0EAFF', display: 'flex' }}>{`${sessions} ${sessions === 1 ? 'person' : 'people'}`}</div>
+              </div>
+            )}
+            {knownFor.length === 0 && sessions === 0 && (
+              <div style={{ padding: '10px 18px', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '999px', fontSize: '16px', fontWeight: 600, color: '#A99ECC', display: 'flex' }}>
+                New to Bestie
               </div>
             )}
           </div>

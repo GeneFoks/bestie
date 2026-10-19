@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Search, Share2, Pencil, Lock, AlertTriangle, Sprout, Check, Copy } from 'lucide-react'
+import { Search, Share2, Pencil, Lock, AlertTriangle, Sprout, Check, Copy, ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 interface MatchedUser {
@@ -97,12 +97,9 @@ export default function FindFriends() {
     await runImport(contacts)
   }
 
-  function tierColor(score: number) {
-    if (score >= 800) return '#FFFFFF'
-    if (score >= 600) return '#D4AF37'
-    if (score >= 400) return '#9B8FFF'
-    return '#9B93C0'
-  }
+  // Bestie Score is private to its owner — matched friends are other people,
+  // so their avatar ring is one neutral gold for everyone (no score tiers).
+  const RING = 'rgba(212,175,55,0.45)'
 
   return (
     <div style={{ background: 'var(--overlay)', border: '1px solid var(--border)', borderRadius: '18px', padding: '20px', marginBottom: '24px' }}>
@@ -138,7 +135,7 @@ export default function FindFriends() {
               <Share2 size={16} strokeWidth={2} /> Share via Telegram, WhatsApp, iMessage…
             </button>
             <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '8px 0 0', textAlign: 'center' }}>
-              Friends get a pretty card with your Bestie Score
+              Friends get a personal invite card from you
             </p>
           </div>
 
@@ -219,10 +216,10 @@ export default function FindFriends() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {matchedUsers.map(u => (
                 <Link key={u.id} href={`/${u.username}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '12px', background: 'var(--overlay)', border: '1px solid var(--border)', textDecoration: 'none' }}>
-                  <div style={{ width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0, overflow: 'hidden', border: `2px solid ${tierColor(u.bestie_score)}`, background: 'var(--surface-1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0, overflow: 'hidden', border: `2px solid ${RING}`, background: 'var(--surface-1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {u.photo
                       ? <img src={u.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      : <span style={{ fontSize: '16px', fontWeight: 700, color: tierColor(u.bestie_score) }}>
+                      : <span style={{ fontSize: '16px', fontWeight: 700, color: '#D4AF37' }}>
                           {u.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'}
                         </span>
                     }
@@ -235,9 +232,9 @@ export default function FindFriends() {
                       @{u.username}{u.city ? ` · ${u.city}` : ''}
                     </p>
                   </div>
-                  <div style={{ flexShrink: 0, padding: '4px 10px', borderRadius: '8px', background: `${tierColor(u.bestie_score)}18`, border: `1px solid ${tierColor(u.bestie_score)}40` }}>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: tierColor(u.bestie_score) }}>★ {u.bestie_score}</span>
-                  </div>
+                  <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: '2px', fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>
+                    View <ChevronRight size={14} strokeWidth={2} />
+                  </span>
                 </Link>
               ))}
             </div>

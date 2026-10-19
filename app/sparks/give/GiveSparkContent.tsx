@@ -73,7 +73,8 @@ export default function GiveSparkContent() {
 
         const [{ data: myData }, { data: recipientData }] = await Promise.all([
           supabase.from('users').select('sparks_balance, full_name, username, bestie_score').eq('id', session.user.id).single(),
-          supabase.from('users').select('id, full_name, username, avatar_url, bestie_score').eq('username', toUsername).single(),
+          // Recipient's Bestie Score is private — not fetched or shown.
+          supabase.from('users').select('id, full_name, username, avatar_url').eq('username', toUsername).single(),
         ])
 
         setMyProfile(myData)
@@ -145,7 +146,7 @@ export default function GiveSparkContent() {
       console.error('Spark insert failed:', { code: err.code, message: err.message, details: err.details, hint: err.hint })
       const msg =
         err.code === '23505' ? 'You already gave one of these Sparks.'
-        : (err.message || '').includes('spark_score_too_low') ? `Reach a Bestie Score of ${MIN_SPARK_SCORE} (complete your profile) to give Sparks.`
+        : (err.message || '').includes('spark_score_too_low') ? 'Complete your profile to give Sparks.'
         : (err.message || '').includes('spark_no_relationship') ? 'You can only Spark someone you matched with (mutual knock) or had a session with.'
         : err.code === '23514' ? 'One of these Spark types isn’t enabled yet. Try a different one.'
         // Surface the real reason while we debug this.
@@ -224,12 +225,16 @@ export default function GiveSparkContent() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <div style={{ textAlign: 'center', maxWidth: '380px', padding: '0 24px' }}>
         <p style={{ fontSize: '48px', marginBottom: '16px' }}>🔒</p>
-        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '8px' }}>Reach Bestie Score {MIN_SPARK_SCORE} to give Sparks</h2>
+        <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '8px' }}>Complete your profile to give Sparks</h2>
         <p style={{ fontSize: '15px', color: 'var(--text-muted)', marginBottom: '12px', lineHeight: 1.5 }}>
-          Sparks are a trust signal, so only members with an established profile can give them. Complete your profile — photo, bio, city and your Bestie Type — to get there.
+          Sparks are a trust signal, so only members with an established profile can give them. Add your photo, bio, city and your Bestie Type to get there.
         </p>
-        <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '28px' }}>
-          Your Bestie Score: <span style={{ color: '#D4AF37', fontWeight: 700 }}>{myProfile?.bestie_score ?? 0}</span> / {MIN_SPARK_SCORE}
+        {/* Self-view only: the giver's own private progress toward the gate. */}
+        <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '4px' }}>
+          Your Bestie Score: <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{myProfile?.bestie_score ?? 0}</span> / {MIN_SPARK_SCORE}
+        </p>
+        <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '28px' }}>
+          Only you can see this.
         </p>
         <ButtonLink href="/profile/edit" variant="primary">
           Complete your profile →

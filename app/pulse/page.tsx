@@ -60,7 +60,7 @@ export default function PulsePage() {
 
       const [{ data: freePeople }, { data: sessions }] = await Promise.all([
         supabase.from('users')
-          .select('id, full_name, username, avatar_url, bestie_score, city, free_today_at')
+          .select('id, full_name, username, avatar_url, city, free_today_at')
           .gte('free_today_at', todayStart.toISOString())
           .order('bestie_score', { ascending: false })
           .limit(20),
@@ -238,14 +238,14 @@ export default function PulsePage() {
 
 function FreePill({ user, left }: { user: any; left?: string | null }) {
   const initials = user.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
-  const scoreColor = (user.bestie_score || 0) >= 800 ? '#34D399' : (user.bestie_score || 0) >= 600 ? '#D4AF37' : '#A99ECC'
+  // Same neutral ring for everyone — a score-tinted ring would leak rank to others.
   return (
     <Link href={`/${user.username}`} title={left ? `Free until midnight · ${left} left` : undefined} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '16px', background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.18)', textDecoration: 'none', transition: 'all 0.15s' }}>
       <div style={{ position: 'relative' }}>
-        <div style={{ width: '36px', height: '36px', borderRadius: '12px', overflow: 'hidden', background: 'var(--surface-3)', border: `1.5px solid ${scoreColor}50`, flexShrink: 0 }}>
+        <div style={{ width: '36px', height: '36px', borderRadius: '12px', overflow: 'hidden', background: 'var(--surface-3)', border: '1.5px solid rgba(212,175,55,0.25)', flexShrink: 0 }}>
           {user.avatar_url
             ? <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: scoreColor }}>{initials}</div>
+            : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: '#D4AF37' }}>{initials}</div>
           }
         </div>
         <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '10px', height: '10px', borderRadius: '50%', background: '#34D399', border: '1.5px solid var(--bg)' }} />

@@ -83,9 +83,10 @@ export default function MessagesPage() {
         return
       }
       // Если нет — загружаем пользователя напрямую
+      // Partner's Bestie Score is private — not fetched or shown here.
       const { data: toUser } = await supabase
         .from('users')
-        .select('id, full_name, username, avatar_url, bestie_score')
+        .select('id, full_name, username, avatar_url')
         .eq('username', toUsername)
         .single()
       if (toUser) {
@@ -164,7 +165,7 @@ export default function MessagesPage() {
 
     const { data: users } = await supabase
       .from('users')
-      .select('id, full_name, username, avatar_url, bestie_score')
+      .select('id, full_name, username, avatar_url')
       .in('id', partnerIds)
 
     const convs = await Promise.all((users || []).map(async (user) => {

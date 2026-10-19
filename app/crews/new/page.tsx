@@ -123,13 +123,16 @@ export default function NewCrewPage() {
             <p style={{ fontSize: '13px', fontWeight: 600, color: atLimit ? '#FF6B35' : '#D4AF37' }}>
               {atLimit ? 'Crew limit reached' : `Crew slots: ${captainedCount} / ${maxCrews}`}
             </p>
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{isPlus ? `★ ${myScore} · Plus` : `★ ${myScore}`}</span>
+            <span title="Your Bestie Score — only you can see this" style={{ fontSize: '12px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{isPlus ? `★ ${myScore} · Plus` : `★ ${myScore}`}</span>
           </div>
           <div style={{ display: 'flex', gap: '6px' }}>
             {[1,2,3,4,5].map(i => (
               <div key={i} style={{ flex: 1, height: '4px', borderRadius: '999px', background: i <= captainedCount ? '#D4AF37' : i <= maxCrews ? 'rgba(212,175,55,0.2)' : 'var(--overlay-2)' }} />
             ))}
           </div>
+          <p style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: 'var(--text-muted)', marginTop: '10px' }}>
+            <Lock size={11} strokeWidth={2} /> Your Bestie Score is private progress — only you can see this.
+          </p>
           {blockedByPlan && (
             <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '10px' }}>
               Free members can lead one crew. <Link href="/plus" style={{ color: '#D4AF37', fontWeight: 700, textDecoration: 'none' }}>Upgrade to Bestie Plus</Link> to create more.
@@ -220,7 +223,7 @@ export default function NewCrewPage() {
               disabled={submitting || atLimit}
               style={{ padding: '16px', borderRadius: '14px', fontSize: '16px', fontWeight: 700, background: atLimit ? 'var(--overlay-2)' : 'linear-gradient(135deg, #D4AF37 0%, #B8960C 100%)', color: atLimit ? 'var(--text-muted)' : '#09090F', border: atLimit ? '1px solid var(--border)' : 'none', cursor: submitting || atLimit ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1 }}
             >
-              {submitting ? 'Creating…' : atLimit ? `Limit reached · ★ ${nextThreshold} to unlock` : (<span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}><Swords size={18} strokeWidth={2} /> Create Crew</span>)}
+              {submitting ? 'Creating…' : atLimit ? (nextThreshold ? `Limit reached · ★ ${nextThreshold} to unlock` : 'Crew limit reached') : (<span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}><Swords size={18} strokeWidth={2} /> Create Crew</span>)}
             </button>
           )}
         </form>

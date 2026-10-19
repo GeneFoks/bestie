@@ -2,7 +2,7 @@
 'use client'
 
 import { useState } from 'react'
-import { MapPin, Users, Sparkles, ChevronDown } from 'lucide-react'
+import { MapPin, Users, Sparkles, ChevronDown, Sprout } from 'lucide-react'
 import { getFrameColor } from '@/lib/avatarFrame'
 import { ActivityIcon } from '@/lib/activityIcons'
 import { SparkIcon } from '@/lib/sparkIcons'
@@ -56,11 +56,23 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
   // visible in the feed without opening the profile.
   const activityTypes = Array.from(new Set((provider.activity_packages || []).map((p: any) => p.activity_type))).slice(0, 4)
   const extraActivities = (provider.activity_packages?.length || 0) - activityTypes.length
-  const score = provider.bestie_score || 0
-  const scoreColor = score >= 800 ? colors.green : score >= 600 ? '#D4AF37' : colors.textMuted
+  // Bestie Score is private progress — only its owner sees it. Cards are
+  // always viewed by someone else, so the number (and any score-tinted color)
+  // never renders here. Instead: what only grows and is positive.
   const initials = provider.full_name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || '??'
   const totalSessions = provider.total_sessions ?? 0
   const sparksReceived = provider.sparks_received ?? 0
+  const rating = provider.avg_rating ?? provider.average_rating ?? 0
+  const ratingCount = provider.rating_count ?? 0
+  // "Known for": the person's top 1-3 sparks by count (labels only — no counts,
+  // so it reads as character, not as a leaderboard).
+  const knownFor = (provider.top_sparks || [])
+    .filter((s) => (s?.count ?? 0) > 0)
+    .slice()
+    .sort((a, b) => (b.count || 0) - (a.count || 0))
+    .slice(0, 3)
+  const hasStats = totalSessions > 0 || sparksReceived > 0 || rating > 0
+  const isNew = !hasStats && knownFor.length === 0
   const frameColor = getFrameColor(totalSessions)
   const frameGlow = totalSessions >= 25
     ? `0 0 0 1.5px rgba(255,255,255,0.3), 0 8px 32px rgba(255,255,255,0.08)`
@@ -75,9 +87,10 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
       className="group relative rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
       style={{
         background: 'var(--surface-1)',
-        boxShadow: featured
-          ? '0 0 0 1px rgba(212,175,55,0.25), 0 20px 60px rgba(0,0,0,0.5)'
-          : frameGlow,
+        // `featured` is still accepted for callers, but callers pass it to the
+        // top-by-score card — a gold ring there would leak rank, so every card
+        // gets the same meetup-based frame.
+        boxShadow: frameGlow,
       }}
     >
       {totalSessions >= 1 && (
@@ -116,51 +129,65 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 px-4 pb-3 pt-6">
-          <div className="flex items-end justify-between">
-            <div>
-              <h3 className="text-base font-semibold leading-tight" style={{ color: colors.textPrimary, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-                {provider.full_name}
-              </h3>
-              {provider.city && (
-                <p className="text-xs mt-0.5" style={{ color: colors.textMuted, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <MapPin size={11} strokeWidth={2} /> {provider.city}{provider.country ? `, ${provider.country}` : ''}
-                </p>
-              )}
-            </div>
-            {score > 0 && (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold flex-shrink-0" style={{ background: 'rgba(8,8,16,0.8)', border: `1px solid ${scoreColor}35`, color: scoreColor }}>
-                <span style={{ fontSize: '9px', opacity: 0.8 }}>★</span>
-                <span>{score}</span>
-              </div>
+          <div>
+            <h3 className="text-base font-semibold leading-tight" style={{ color: colors.textPrimary, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+              {provider.full_name}
+            </h3>
+            {provider.city && (
+              <p className="text-xs mt-0.5" style={{ color: colors.textMuted, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <MapPin size={11} strokeWidth={2} /> {provider.city}{provider.country ? `, ${provider.country}` : ''}
+              </p>
             )}
           </div>
         </div>
       </div>
 
       <div className="px-4 pb-4 pt-3 space-y-3">
-        {/* Stats row: BS · met · sparks · rating */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '11px', fontWeight: 700, color: scoreColor }}>★ {score}</span>
-          {totalSessions > 0 && (
-            <span style={{ fontSize: '11px', color: colors.textMuted, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>· <Users size={11} strokeWidth={2} /> {totalSessions} met</span>
-          )}
-          {sparksReceived > 0 && (
-            <span style={{ fontSize: '11px', color: colors.textMuted, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>· <Sparkles size={11} strokeWidth={2} /> {sparksReceived}</span>
-          )}
-          {(() => {
-            const rating = provider.avg_rating ?? provider.average_rating ?? 0
-            const count = provider.rating_count ?? 0
-            return rating > 0 ? (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                <span style={{ fontSize: '10px', color: '#D4AF37' }}>★</span>
-                <span style={{ fontSize: '11px', color: colors.textMuted }}>
-                  {Number(rating).toFixed(1)}
-                  {count > 0 && <span style={{ color: 'rgba(155,147,192,0.6)' }}> ({count})</span>}
+        {/* Stats row: Met N · sparks · rating — only things that grow, never a zero.
+            Brand-new people get a gentle muted chip instead of empty numbers. */}
+        {hasStats ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', fontSize: '11px', color: 'var(--text-muted)' }}>
+            {[
+              totalSessions > 0 && (
+                <span key="met" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                  <Users size={11} strokeWidth={2} /> Met {totalSessions}
                 </span>
+              ),
+              sparksReceived > 0 && (
+                <span key="sparks" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                  <Sparkles size={11} strokeWidth={2} /> {sparksReceived} spark{sparksReceived === 1 ? '' : 's'}
+                </span>
+              ),
+              rating > 0 && (
+                <span key="rating" style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                  <span style={{ fontSize: '10px', color: '#D4AF37' }}>★</span>
+                  {Number(rating).toFixed(1)}
+                  {ratingCount > 0 && <span style={{ opacity: 0.7 }}> ({ratingCount})</span>}
+                </span>
+              ),
+            ]
+              .filter(Boolean)
+              .flatMap((item, i) => (i === 0 ? [item] : [<span key={`dot-${i}`} aria-hidden="true" style={{ opacity: 0.6 }}>·</span>, item]))}
+          </div>
+        ) : isNew ? (
+          <div>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 9px', borderRadius: '999px', fontSize: '10px', fontWeight: 600, background: 'var(--overlay)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+              <Sprout size={11} strokeWidth={2} /> New to Bestie
+            </span>
+          </div>
+        ) : null}
+
+        {/* Known for — the person's top sparks, promoted above the bio */}
+        {knownFor.length > 0 && (
+          <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-muted)', marginRight: '2px' }}>Known for</span>
+            {knownFor.map(s => (
+              <span key={s.id} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 9px', borderRadius: '999px', fontSize: '10px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.18)', color: '#D4AF37', whiteSpace: 'nowrap' }}>
+                <SparkIcon type={s.id} size={11} strokeWidth={2} /> {s.label}
               </span>
-            ) : null
-          })()}
-        </div>
+            ))}
+          </div>
+        )}
 
         {provider.bio && (
           <p className="text-xs leading-relaxed line-clamp-2" style={{ color: colors.textMuted, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
@@ -179,17 +206,6 @@ export default function ProviderCard({ provider, featured = false }: ProviderCar
             {extraActivities > 0 && (
               <span style={{ fontSize: '10px', color: colors.textMuted }}>+{extraActivities} more</span>
             )}
-          </div>
-        )}
-
-        {/* Spark tags with counts */}
-        {provider.top_sparks && provider.top_sparks.length > 0 && (
-          <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-            {provider.top_sparks.map(s => (
-              <span key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 9px', borderRadius: '999px', fontSize: '10px', fontWeight: 600, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.18)', color: '#D4AF37', whiteSpace: 'nowrap' }}>
-                <SparkIcon type={s.id} size={11} strokeWidth={2} /> {s.label} <span style={{ opacity: 0.7, fontWeight: 500 }}>{s.count}</span>
-              </span>
-            ))}
           </div>
         )}
 
