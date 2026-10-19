@@ -11,6 +11,10 @@ import {
 } from 'lucide-react'
 import { LAUNCH_CITY, CITY_FOCUS } from '@/lib/launchCity'
 
+// Bestie World is in development — hidden from the public. Flip to true to
+// bring back the nav link and the landing teaser.
+const SHOW_WORLD = false
+
 const FEATURES = [
   { Icon: Contact,      title: 'Social Passport',       desc: 'One page that proves you\'re real, active, and easy to meet.' },
   { Icon: Trophy,      title: 'Bestie Score & Badges', desc: 'Every real meetup makes you more trusted — and more invited.' },
@@ -231,7 +235,7 @@ export default function HomePage() {
           <Link href="/browse" className="nav-link">Browse</Link>
           <Link href="/events" className="nav-link">Events</Link>
           <Link href="/crews" className="nav-link">Crews</Link>
-          <Link href="/world" className="nav-link" style={{ color: '#D4AF37' }}>World</Link>
+          {SHOW_WORLD && <Link href="/world" className="nav-link" style={{ color: '#D4AF37' }}>World</Link>}
           <Link href="#how-it-works" className="nav-link">How It Works</Link>
         </div>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -348,7 +352,8 @@ export default function HomePage() {
       </section>
       )}
 
-      {/* ── BESTIE WORLD teaser — the door into the living map ── */}
+      {/* ── BESTIE WORLD teaser — hidden while the World is in development ── */}
+      {SHOW_WORLD && (
       <section style={{ padding: '0 20px 64px', overflow: 'hidden' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <Link href="/world" style={{ display: 'block', textDecoration: 'none', borderRadius: '24px', padding: 'clamp(26px, 4vw, 44px)', background: 'radial-gradient(ellipse at 50% 120%, rgba(232,120,60,0.12) 0%, transparent 55%), linear-gradient(to bottom, #071009 0%, #04120B 100%)', border: '1px solid rgba(212,175,55,0.22)', position: 'relative', overflow: 'hidden' }}>
@@ -369,6 +374,7 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+      )}
 
       {/* ── FEATURES ── */}
       <section style={{ padding: '0 20px 64px' }}>
