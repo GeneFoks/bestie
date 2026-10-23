@@ -79,24 +79,42 @@ export function setAnalyticsUser(id: string | null) {
   userResolved = true
 }
 
+// Drop the query string and hash so tokens that sometimes ride in URLs
+// (magic links, password resets) never land in analytics.
+export function stripUrl(u: string | null | undefined): string | null {
+  if (!u) return null
+  return String(u).split(/[?#]/)[0]
+}
+
+// Clamp a string field so a crafted value can't bloat a row.
+function cap(s: any, n: number) {
+  return typeof s === 'string' ? s.slice(0, n) : s
+}
+
 // Fire-and-forget event logger.
 export async function track(event_type: string, props: Record<string, any> = {}): Promise<void> {
   if (typeof window === 'undefined') return
   try {
     const { device_type, browser, os } = deviceInfo()
     const user_id = await resolveUser()
-    await supabase.from('analytics_events').insert({
+    const row: Record<string, any> = {
       session_id: getSessionId(),
       user_id,
-      event_type,
-      path: window.location.pathname,
+      event_type: cap(event_type, 40),
+      path: cap(window.location.pathname, 300),
       device_type,
       browser,
       os,
-      referrer: typeof document !== 'undefined' ? (document.referrer || null) : null,
+      referrer: typeof document !== 'undefined' ? stripUrl(document.referrer) : null,
       screen_w: window.innerWidth || null,
       ...props,
-    })
+    }
+    // Sanitize/clamp any caller-supplied fields (element, href, referrer…).
+    row.element = cap(row.element, 120)
+    row.href = cap(stripUrl(row.href), 300)
+    row.referrer = cap(stripUrl(row.referrer), 300)
+    row.path = cap(row.path, 300)
+    await supabase.from('analytics_events').insert(row)
   } catch {
     // Swallow — analytics must never surface an error to the user.
   }
