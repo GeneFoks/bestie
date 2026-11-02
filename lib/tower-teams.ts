@@ -1259,7 +1259,10 @@ async function sendReviewsOf(viewer, targetId) {
 const PRIVATE_COMMANDS = {
   '/profile': 'profile', '/профиль': 'profile',
   '/myteam': 'myteam', '/team': 'myteam', '/команда': 'myteam',
-  '/crew': 'crew',
+  '/crew': 'crew', '/бригада': 'crew',
+  // «/crewcreate» typed together, or picked from an old menu
+  '/crewcreate': 'crew_create', '/createcrew': 'crew_create',
+  '/crewjoin': 'crew_join', '/joincrew': 'crew_join',
   '/review': 'review', '/отзыв': 'review',
   '/reviews': 'reviews', '/отзывы': 'reviews',
   '/help': 'help', '/помощь': 'help',
@@ -1302,6 +1305,8 @@ export async function handleTeamsPrivate(msg, cmd, words) {
     if (kind === 'profile') { await sendOwnProfile(from); return true }
     if (kind === 'myteam') { await sendMyTeam(from); return true }
     if (kind === 'crew') { await crewCommand(from, rest); return true }
+    if (kind === 'crew_create') { await crewCommand(from, ('create ' + rest).trim()); return true }
+    if (kind === 'crew_join') { await crewCommand(from, ('join ' + rest).trim()); return true }
     if (kind === 'review') { await reviewCommand(from, rest); return true }
     if (kind === 'reviews') { await sendReviewsOf(from, from.id); return true }
     if (kind === 'help') { await dm(from.id, HELP_TEXT); return true }
@@ -1310,6 +1315,11 @@ export async function handleTeamsPrivate(msg, cmd, words) {
       const p = String(words?.[1] || '')
       // From the group: «эта команда работает в личке» → t.me/<bot>?start=help
       if (p === 'help') { await dm(from.id, HELP_TEXT); return true }
+      // Buttons under the group's «this works in the DM» replies
+      if (p === 'crew_create') { await crewCommand(from, 'create'); return true }
+      if (p === 'crew') { await crewCommand(from, ''); return true }
+      if (p === 'myteam') { await sendMyTeam(from); return true }
+      if (p === 'myreviews') { await sendReviewsOf(from, from.id); return true }
       let m = /^review_(\d{1,15})$/.exec(p)
       if (m) { await beginReview(from, Number(m[1])); return true }
       m = /^reviews_(\d{1,15})$/.exec(p)
@@ -1380,10 +1390,12 @@ export async function handleCallback(cq) {
 // The bot is an admin, so it gets EVERY group message. This is the fast path:
 // a pure string check, no network, no DB.
 const GROUP_CMD_RE = /^\/(review|отзыв|profile|профиль)(?:@([A-Za-z0-9_]{3,64}))?(?=\s|$)/i
-// Private-chat commands sent in the group WITH the @bot suffix (the «/» menu,
-// a tap on a command) → a pointer to the private chat. Without the suffix
-// they may belong to another bot, so they're ignored.
-const GROUP_DM_RE = /^\/(crew|myteam|team|reviews|help|start|status|manage)@([A-Za-z0-9_]{3,64})(?=\s|$)/i
+// Our private-chat commands typed in the group (with or without @bot) → a
+// pointer to the private chat with a button that starts the right action.
+// People type «/crew create» right in the group; silence there is a dead end.
+const GROUP_DM_RE = /^\/(crew|бригада|crewcreate|createcrew|crewjoin|joincrew|myteam|team|команда|reviews|отзывы|help|помощь)(?:@([A-Za-z0-9_]{3,64}))?(?=\s|$)/i
+// Generic names other bots also use → only with our @bot suffix.
+const GROUP_DM_SUFFIX_RE = /^\/(start|status|manage)@([A-Za-z0-9_]{3,64})(?=\s|$)/i
 export function parseGroupCommand(text) {
   if (typeof text !== 'string' || text.charCodeAt(0) !== 47) return null // '/'
   let m = GROUP_CMD_RE.exec(text)
@@ -1395,8 +1407,8 @@ export function parseGroupCommand(text) {
       rest: text.slice(m[0].length).trim(),
     }
   }
-  m = GROUP_DM_RE.exec(text)
-  if (m) return { cmd: 'dm_only', bot: m[2], rest: text.slice(m[0].length).trim() }
+  m = GROUP_DM_RE.exec(text) || GROUP_DM_SUFFIX_RE.exec(text)
+  if (m) return { cmd: 'dm_only', name: m[1].toLowerCase(), bot: m[2] || '', rest: text.slice(m[0].length).trim() }
   return null
 }
 
@@ -1480,6 +1492,11 @@ async function rememberGroupMessage(res, chatId, sent) {
 export async function handleGroupCommand(msg) {
   const gc = parseGroupCommand(msg?.text)
   if (!gc || !msg.from) return
+  // «/help@SomeOtherBot» is not for us.
+  if (gc.bot) {
+    const me = String((await botUsername()) || '').toLowerCase()
+    if (me && gc.bot.toLowerCase() !== me) return
+  }
   const from = msg.from
   const replied = repliedMessage(msg)
   // A forwarded message: replied.from is whoever forwarded it, not the author.
@@ -1505,7 +1522,7 @@ export async function handleGroupCommand(msg) {
   }
   ctx.replyTo = (id) => (ctx.deleted ? id : msg.message_id)
   try {
-    if (gc.cmd === 'dm_only') await groupDmOnly(ctx)
+    if (gc.cmd === 'dm_only') await groupDmOnly(ctx, gc)
     else if (gc.cmd === 'profile') await groupProfile(ctx)
     else await groupReview(ctx, gc.rest)
   } catch (e) {
@@ -1569,13 +1586,38 @@ async function groupProfile(ctx) {
   await groupSend(msg, profileText(who.id, d, who), ctx.replyTo(target ? replied.message_id : null), [row])
 }
 
-// /crew@bot, /myteam@bot, /help@bot … in the group → «it works in the DM».
-async function groupDmOnly(ctx) {
+// /crew create, /myteam, /help … in the group → «it works in the DM» + a
+// button that opens the bot right at that action.
+function dmOnlyTarget(name, rest) {
+  const sub = String(rest || '').split(/\s+/)[0].toLowerCase()
+  if (name === 'crewcreate' || name === 'createcrew' ||
+      ((name === 'crew' || name === 'бригада') && (sub === 'create' || sub === 'new' || sub === 'создать'))) {
+    return { what: 'создать команду можно в личке со мной', start: 'crew_create', button: '👷 Создать команду' }
+  }
+  if (name === 'crewjoin' || name === 'joincrew' ||
+      ((name === 'crew' || name === 'бригада') && (sub === 'join' || sub === 'вступить'))) {
+    return {
+      what: 'вступить в команду можно в личке со мной: напиши там <code>/crew join Название</code>',
+      start: 'crew', button: '👷 Открыть бота',
+    }
+  }
+  if (name === 'crew' || name === 'бригада') return { what: 'команды — в личке со мной', start: 'crew', button: '👷 Команды' }
+  if (name === 'myteam' || name === 'team' || name === 'команда') {
+    return { what: 'твоя команда — в личке со мной', start: 'myteam', button: '👷 Моя команда' }
+  }
+  if (name === 'reviews' || name === 'отзывы') {
+    return { what: 'отзывы о тебе — в личке со мной', start: 'myreviews', button: '📝 Мои отзывы' }
+  }
+  return { what: 'все команды бота — в личке со мной', start: 'help', button: '💬 Открыть бота' }
+}
+
+async function groupDmOnly(ctx, gc) {
   const { msg, from } = ctx
   const bot = await botUsername()
+  const t = dmOnlyTarget(gc?.name || '', gc?.rest || '')
   await ctx.clean()
-  await groupSend(msg, `${mention(from)}, эта команда работает в личке с ботом 👇`, ctx.replyTo(null),
-    [[{ text: '💬 Открыть бота', url: `https://t.me/${bot}?start=help` }]])
+  await groupSend(msg, `${mention(from)}, ${t.what} 👇`, ctx.replyTo(null),
+    [[{ text: t.button, url: `https://t.me/${bot}?start=${t.start}` }]])
 }
 
 // ── Admin (/admin/tower) ────────────────────────────────────────────────────

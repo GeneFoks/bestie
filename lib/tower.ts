@@ -90,10 +90,15 @@ export const TOWER_COMMANDS = [
   { command: 'reviews', description: 'Отзывы обо мне' },
   { command: 'help', description: 'Все команды бота' },
 ]
-// Menu inside the group: only what works there.
+// Menu inside the group (the «/» button): a cheat sheet of what the bot does.
+// review/profile work right here; the rest answer with a button into the DM.
 export const TOWER_GROUP_COMMANDS = [
-  { command: 'review', description: 'Ответь на сообщение: /review 5 текст — отзыв человеку' },
-  { command: 'profile', description: 'Профиль (ответом на сообщение — профиль человека)' },
+  { command: 'review', description: 'Отзыв: ответь на сообщение — /review 5 текст' },
+  { command: 'profile', description: 'Профиль: рейтинг и отзывы (ответом — профиль человека)' },
+  { command: 'crew', description: 'Команды: создать, вступить (откроет бота)' },
+  { command: 'myteam', description: 'Моя команда (откроет бота)' },
+  { command: 'reviews', description: 'Отзывы обо мне (откроет бота)' },
+  { command: 'help', description: 'Все команды бота' },
 ]
 
 // Stripe statuses
