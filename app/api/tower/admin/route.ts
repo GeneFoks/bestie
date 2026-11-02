@@ -2,20 +2,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import {
   getDb, getStripe, tg, webhookSecret, resolveChatId, findPrice, ensurePrices, portalConfigId,
-  PLANS, SITE, TOWER_CHAT, TOWER_EVENT_TYPES,
+  createJoinRequestLink, knownChatIds,
+  PLANS, SITE, TOWER_CHAT, TOWER_CHAT_IS_ID, TOWER_EVENT_TYPES, GROUP_URL, GROUP_URL_FROM_ENV,
+  GROUP_URL_ENV_INVALID, GROUP_URL_IS_BOT_FALLBACK, JOIN_LINK_NAME,
+  TOWER_ALLOWED_UPDATES, TOWER_COMMANDS, TOWER_GROUP_COMMANDS,
 } from '@/lib/tower'
+import { adminCommunity, adminReviews, setReviewHidden } from '@/lib/tower-teams'
 
 // Admin status + one-click setup for @TowerCrewBot («Вышки в США»).
 // Auth: Authorization: Bearer <Supabase access token> of a users.is_admin = true account.
 export const dynamic = 'force-dynamic'
 
 const WEBHOOK_PATH = '/api/tower/telegram'
-const ALLOWED_UPDATES = ['message', 'chat_join_request', 'my_chat_member']
-const COMMANDS = [
-  { command: 'start', description: 'Начать / статус подписки' },
-  { command: 'status', description: 'Статус подписки' },
-  { command: 'manage', description: 'Управлять подпиской (тариф, карта, отмена)' },
-]
 
 async function requireAdmin(req) {
   const token = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '').trim()
@@ -57,9 +55,33 @@ async function stripeWebhookEndpoints(fix = false) {
 export async function GET(req: NextRequest) {
   try {
     if (!(await requireAdmin(req))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+    // Reviews only (filter by person / «Ещё»): ?view=reviews&q=<id|@username>&before=<updated_at>
+    const sp = req.nextUrl.searchParams
+    if (sp.get('view') === 'reviews') {
+      try {
+        const r = await adminReviews({ q: sp.get('q') || '', before: sp.get('before') || '' })
+        return NextResponse.json(r, { status: r.error ? 400 : 200 })
+      } catch (e) {
+        return NextResponse.json({ error: e?.message || 'error' }, { status: 500 })
+      }
+    }
+
     const db = getDb()
     const expectedUrl = `${SITE}${WEBHOOK_PATH}`
-    const out: any = { site: SITE, towerChat: TOWER_CHAT, expectedWebhook: expectedUrl, stripeMode: stripeMode() }
+    const out: any = {
+      site: SITE,
+      towerChat: TOWER_CHAT,
+      towerChatIsId: TOWER_CHAT_IS_ID,
+      groupUrl: GROUP_URL,
+      groupUrlFromEnv: GROUP_URL_FROM_ENV,
+      // TOWER_GROUP_URL is set but is not an invite link (https://t.me/+…).
+      groupUrlEnvInvalid: GROUP_URL_ENV_INVALID,
+      // Numeric TOWER_CHAT, no valid TOWER_GROUP_URL → the bot links to itself.
+      groupUrlIsBotFallback: GROUP_URL_IS_BOT_FALLBACK,
+      expectedWebhook: expectedUrl,
+      stripeMode: stripeMode(),
+    }
 
     const [me, wh] = await Promise.all([tg('getMe'), tg('getWebhookInfo')])
     out.bot = me.ok
@@ -76,23 +98,33 @@ export async function GET(req: NextRequest) {
         }
       : { ok: false, error: wh.description }
 
+    // The group's numeric id as stored in our own rows — the reference for
+    // «is TOWER_CHAT really our group?» (e.g. a typo in a numeric TOWER_CHAT, or
+    // the group made private while TOWER_CHAT is still '@towerUSA').
+    const known = await knownChatIds()
+    out.knownChatIds = known || []
+
     let chatId = null
     try {
       chatId = await resolveChatId()
     } catch (e) {
       out.chat = { ok: false, error: e?.message }
     }
+    out.chatId = chatId
+    out.chatIdMismatch = !!chatId && !!known && known.length > 0 && !known.includes(String(chatId))
     if (chatId) {
       const [chat, cnt] = await Promise.all([
         tg('getChat', { chat_id: chatId }),
         tg('getChatMemberCount', { chat_id: chatId }),
       ])
+      out.isPublic = chat.ok ? !!chat.result.username : null
       out.chat = chat.ok
         ? {
             ok: true,
             id: chatId,
             title: chat.result.title,
             username: chat.result.username || null,
+            is_public: !!chat.result.username,
             join_by_request: !!chat.result.join_by_request,
             // Members allowed to add people directly → those skip the join request
             // (and payment) and, having no row, are never removed.
@@ -100,6 +132,26 @@ export async function GET(req: NextRequest) {
             members: cnt.ok ? cnt.result : null,
           }
         : { ok: false, id: chatId, error: chat.description }
+
+      // Is TOWER_GROUP_URL really a join-request link? editChatInviteLink only
+      // works on a non-primary, non-revoked link CREATED BY THE BOT — so it fails
+      // for the owner's / another admin's link, the primary link and a revoked
+      // one. Idempotent, and it turns approval back on if someone switched it off
+      // in Telegram. (member_limit is not allowed with creates_join_request.)
+      // Never log the link.
+      if (GROUP_URL_FROM_ENV && chat.ok) {
+        const v = await tg('editChatInviteLink', {
+          chat_id: chatId,
+          invite_link: GROUP_URL,
+          name: JOIN_LINK_NAME,
+          creates_join_request: true,
+        })
+        out.groupUrlCheck = {
+          ok: !!(v.ok && v.result?.creates_join_request === true && !v.result?.is_revoked && !v.result?.is_primary),
+          error: v.ok ? null : (v.description || 'editChatInviteLink failed'),
+        }
+      }
+
       if (me.ok) {
         const bm = await tg('getChatMember', { chat_id: chatId, user_id: me.result.id })
         const r = bm.ok ? bm.result : {}
@@ -153,6 +205,14 @@ export async function GET(req: NextRequest) {
     out.pendingJoinRequests = pendingJr?.count || 0
     out.botUsers = botUsers?.count || 0
 
+    // Teams and reviews (lib/migration_tower_teams.sql). Missing tables must
+    // not break the subscription status above.
+    try {
+      out.community = await adminCommunity()
+    } catch (e) {
+      out.community = { error: e?.message || 'error' }
+    }
+
     return NextResponse.json(out)
   } catch (e) {
     console.error('[tower/admin] GET error:', e?.message || e)
@@ -173,16 +233,30 @@ export async function POST(req: NextRequest) {
       const setWebhook = await tg('setWebhook', {
         url: `${SITE}${WEBHOOK_PATH}`,
         secret_token: secret,
-        allowed_updates: ALLOWED_UPDATES,
+        allowed_updates: TOWER_ALLOWED_UPDATES,
         drop_pending_updates: false,
       })
-      const setMyCommands = await tg('setMyCommands', { commands: COMMANDS })
-      console.log('[tower/admin] setup: webhook', setWebhook.ok, 'commands', setMyCommands.ok)
+      const setMyCommands = await tg('setMyCommands', { commands: TOWER_COMMANDS })
+      // Inside the group the «/» menu shows only /review and /profile.
+      const setGroupCommands = await tg('setMyCommands', {
+        commands: TOWER_GROUP_COMMANDS,
+        scope: { type: 'all_group_chats' },
+      })
+      console.log('[tower/admin] setup: webhook', setWebhook.ok, 'commands', setMyCommands.ok, 'group commands', setGroupCommands.ok)
       return NextResponse.json({
         ok: !!setWebhook.ok && !!setMyCommands.ok,
         setWebhook: { ok: !!setWebhook.ok, description: setWebhook.description || null },
         setMyCommands: { ok: !!setMyCommands.ok, description: setMyCommands.description || null },
+        setGroupCommands: { ok: !!setGroupCommands.ok, description: setGroupCommands.description || null },
       })
+    }
+
+    // «Скрыть» / «Показать» a review (hidden = not in the bot's lists or ratings).
+    if (action === 'review_hide') {
+      const r = await setReviewHidden(body?.id, !!body?.hidden)
+      if (!r.ok) return NextResponse.json({ ok: false, error: r.error }, { status: r.status || 400 })
+      console.log('[tower/admin] review_hide', r.id, r.hidden_at ? 'hidden' : 'shown', 'group message:', r.group_message || '—')
+      return NextResponse.json({ ok: true, id: r.id, hidden_at: r.hidden_at, group_message: r.group_message || null })
     }
 
     if (action === 'stripe') {
@@ -201,6 +275,27 @@ export async function POST(req: NextRequest) {
       }
       console.log('[tower/admin] stripe setup:', JSON.stringify({ prices, portal: portal.ok }))
       return NextResponse.json({ ok: true, prices, portal, webhooks })
+    }
+
+    // Invite link that creates join requests — needed before the group is made
+    // private (a private group has no t.me/<username> link to apply through).
+    if (action === 'invite_link') {
+      let chatId
+      try {
+        chatId = await resolveChatId()
+      } catch (e) {
+        return NextResponse.json({ ok: false, error: 'Группа не найдена: ' + (e?.message || 'unknown') }, { status: 500 })
+      }
+      const r = await createJoinRequestLink(chatId)
+      console.log('[tower/admin] invite_link:', r.ok ? 'created' : 'failed') // never log the link itself
+      if (!r.ok) return NextResponse.json({ ok: false, chat_id: chatId, error: r.error }, { status: 502 })
+      return NextResponse.json({
+        ok: true,
+        chat_id: chatId,
+        link: r.link,
+        name: r.name,
+        creates_join_request: r.creates_join_request,
+      })
     }
 
     return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
