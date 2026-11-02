@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { handleTowerStripeEvent } from '@/lib/tower'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' })
 
@@ -20,6 +21,16 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error('[webhook] signature error:', err.message)
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
+  }
+
+  // ── Paid Telegram group «Вышки в США» (metadata.kind = tg_group_sub) ──
+  // Handled in lib/tower.ts; everything else falls through to the switch below.
+  try {
+    const towerResult = await handleTowerStripeEvent(event)
+    if (towerResult) return NextResponse.json({ received: true })
+  } catch (err: any) {
+    console.error('[webhook] tower error:', err?.message || err)
+    return NextResponse.json({ error: 'tower' }, { status: 500 })
   }
 
   switch (event.type) {
