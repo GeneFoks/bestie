@@ -11,23 +11,52 @@
 // subscription ends (canceled / unpaid / expired) the person is removed
 // (ban + immediate unban, i.e. a kick, never a permanent ban).
 //
+// Public or private group: for a private group set TOWER_CHAT to the numeric
+// id and TOWER_GROUP_URL to a join-request invite link (see /admin/tower).
+//
 // Safety rules (enforced in syncSubscription):
 //   • Only people with a tg_subscriptions row are ever touched.
 //   • was_member_before = true → never kicked, at most demoted.
 //   • The creator and admins we did not promote are never kicked or demoted.
 //   • Someone banned by a human admin is never unbanned by us.
+//
+// Teams, profiles and reviews live in lib/tower-teams.ts (it imports this
+// file — never import it from here).
 // ============================================================================
 import crypto from 'crypto'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 
 // ── Config ──────────────────────────────────────────────────────────────────
+// TOWER_CHAT: '@towerUSA' (public group) or the numeric id, e.g. -1001234567890.
+// A PRIVATE group has no @username, so it must be the numeric id.
 export const TOWER_CHAT = String(process.env.TOWER_CHAT || '@towerUSA').trim()
+export const TOWER_CHAT_IS_ID = /^-?\d+$/.test(TOWER_CHAT)
 export const SITE = String(process.env.NEXT_PUBLIC_SITE_URL || 'https://bestiehere.com').replace(/\/+$/, '')
 export const GROUP_NAME = 'Вышки в США'
-export const GROUP_URL = /^-?\d+$/.test(TOWER_CHAT)
-  ? 'https://t.me/towerUSA'
-  : `https://t.me/${TOWER_CHAT.replace(/^@/, '')}`
+// TOWER_GROUP_URL: the link the bot hands out to apply to the group. For a
+// private group this is an invite link that creates join requests (made in
+// /admin/tower, which also checks it). Only invite-link forms are accepted
+// (t.me/+… or t.me/joinchat/…): a t.me/<username> link dies when the group goes
+// private, and the freed name can be taken by anyone.
+// Forgiving input: quotes, no scheme, http://, telegram.me → https://t.me/…
+const RAW_GROUP_URL = String(process.env.TOWER_GROUP_URL || '').trim()
+const ENV_GROUP_URL = RAW_GROUP_URL
+  .replace(/^['"\s]+|['"\s]+$/g, '')
+  .replace(/^(https?:\/\/)?(www\.)?(t\.me|telegram\.me)\//i, 'https://t.me/')
+  .replace(/\/+$/, '')
+export const GROUP_URL_FROM_ENV = /^https:\/\/t\.me\/(\+|joinchat\/)[\w-]+$/i.test(ENV_GROUP_URL)
+export const GROUP_URL_ENV_INVALID = !!RAW_GROUP_URL && !GROUP_URL_FROM_ENV
+// Numeric TOWER_CHAT without a valid TOWER_GROUP_URL: never guess t.me/towerUSA
+// (dead or someone else's once the group is private) — send people to the bot,
+// which shows their status / pay button. /admin/tower shows this as ❌.
+export const GROUP_URL_IS_BOT_FALLBACK = !GROUP_URL_FROM_ENV && TOWER_CHAT_IS_ID
+export const GROUP_URL = GROUP_URL_FROM_ENV
+  ? ENV_GROUP_URL
+  : TOWER_CHAT_IS_ID
+    ? 'https://t.me/TowerCrewBot?start=join'
+    : `https://t.me/${TOWER_CHAT.replace(/^@/, '')}`
+export const JOIN_LINK_NAME = 'Вступление через оплату'
 export const TOWER_KIND = 'tg_group_sub'
 export const GRACE_DAYS = 3
 export const ADMIN_TITLE = 'Реклама'
@@ -45,6 +74,27 @@ const LINK_TTL_SEC = { pay: 7 * 24 * 3600, manage: 24 * 3600 }
 const PAST_DUE_GIVEUP_DAYS = 7
 
 export const BANNED_TEXT = '⛔ Вы заблокированы в группе — оплата недоступна, напишите админу.'
+
+// Bot webhook setup (/admin/tower → «Подключить бота»). callback_query = inline
+// buttons (⭐ оценки, «Мои отзывы», «Моя команда» — lib/tower-teams.ts).
+export const TOWER_ALLOWED_UPDATES = ['message', 'chat_join_request', 'my_chat_member', 'callback_query']
+// Menu in the private chat with the bot (default scope).
+export const TOWER_COMMANDS = [
+  { command: 'start', description: 'Начать / статус подписки' },
+  { command: 'status', description: 'Статус подписки' },
+  { command: 'manage', description: 'Управлять подпиской (тариф, карта, отмена)' },
+  { command: 'profile', description: 'Мой профиль: команда, рейтинг, отзывы' },
+  { command: 'myteam', description: 'Моя команда' },
+  { command: 'crew', description: 'Команда: create · join НАЗВАНИЕ · leave · kick @username' },
+  { command: 'review', description: 'Оставить отзыв: /review @username' },
+  { command: 'reviews', description: 'Отзывы обо мне' },
+  { command: 'help', description: 'Все команды бота' },
+]
+// Menu inside the group: only what works there.
+export const TOWER_GROUP_COMMANDS = [
+  { command: 'review', description: 'Ответь на сообщение: /review 5 текст — отзыв человеку' },
+  { command: 'profile', description: 'Профиль (ответом на сообщение — профиль человека)' },
+]
 
 // Stripe statuses
 const ACTIVE_STATUSES = ['active', 'trialing']                 // full access
@@ -172,24 +222,55 @@ export async function botUsername() {
   return me?.username || 'TowerCrewBot'
 }
 
+// Group chat ids already in our own rows (newest first, as strings).
+// null = the database could not answer. Never throws.
+export async function knownChatIds() {
+  try {
+    const db = getDb()
+    const [a, b] = await Promise.all([
+      db.from('tg_subscriptions').select('chat_id').order('updated_at', { ascending: false }).limit(50),
+      db.from('tg_join_requests').select('chat_id').order('requested_at', { ascending: false }).limit(50),
+    ])
+    if (a.error || b.error) return null
+    const ids = [...(a.data || []), ...(b.data || [])]
+      .map((r) => (r?.chat_id == null ? '' : String(r.chat_id)))
+      .filter(Boolean)
+    return Array.from(new Set(ids))
+  } catch {
+    return null
+  }
+}
+
 let chatIdCache = null
 export async function resolveChatId() {
   if (chatIdCache) return chatIdCache
-  if (/^-?\d+$/.test(TOWER_CHAT)) {
+  if (TOWER_CHAT_IS_ID) {
     chatIdCache = Number(TOWER_CHAT)
     return chatIdCache
   }
   const r = await tg('getChat', { chat_id: TOWER_CHAT })
   if (!r.ok || !r.result?.id) throw new Error('getChat failed: ' + (r.description || 'unknown'))
-  chatIdCache = r.result.id
-  return chatIdCache
+  // Fail closed: once the group goes private its @username is free and can be
+  // taken by another chat. If our own rows know the group and this is not it,
+  // never use it. (Cached only after the check could run.)
+  const known = await knownChatIds()
+  if (known && known.length && !known.includes(String(r.result.id))) {
+    throw new Error('TOWER_CHAT ' + TOWER_CHAT + ' указывает на другой чат — задайте числовой TOWER_CHAT')
+  }
+  if (known) chatIdCache = r.result.id
+  return r.result.id
 }
 
+// Works for a public group (@username) and a private one (numeric id only —
+// a private group's updates carry no username). Always compares by numeric id,
+// never trusts a username match on its own.
 export async function isTowerChat(chat) {
-  if (!chat) return false
-  if (chat.username && ('@' + chat.username).toLowerCase() === TOWER_CHAT.toLowerCase()) return true
+  if (!chat || chat.id == null) return false
+  const id = Number(chat.id)
+  if (!Number.isFinite(id)) return false
+  if (TOWER_CHAT_IS_ID) return id === Number(TOWER_CHAT)
   try {
-    return chat.id === (await resolveChatId())
+    return id === Number(await resolveChatId())
   } catch {
     return false
   }
@@ -224,9 +305,24 @@ export async function demote(chatId, userId) {
   return { ok: !!r.ok, error: r.ok ? undefined : r.description, transient: isTransient(r) }
 }
 
-// NOTE: the bot never creates invite links — a plain link skips the join
-// request, so whoever got it would be inside without paying. Everyone gets in
-// through a join request, approved only for their own active subscription.
+// NOTE: the bot never creates plain invite links — those skip the join request,
+// so whoever got one would be inside without paying. Everyone gets in through a
+// join request, approved only for their own active subscription. The one link
+// it makes (admin-only, for a PRIVATE group) creates join requests, and is
+// revoked at once if Telegram did not honour that.
+export async function createJoinRequestLink(chatId) {
+  const r = await tg('createChatInviteLink', {
+    chat_id: chatId,
+    name: JOIN_LINK_NAME,
+    creates_join_request: true, // member_limit is not allowed together with this
+  })
+  if (!r.ok || !r.result?.invite_link) return { ok: false, error: r.description || 'createChatInviteLink failed' }
+  if (!r.result.creates_join_request) {
+    const rv = await tg('revokeChatInviteLink', { chat_id: chatId, invite_link: r.result.invite_link })
+    return { ok: false, error: 'Telegram создал ссылку без одобрения заявок' + (rv.ok ? ' — она сразу отозвана' : ' — отзовите её вручную') }
+  }
+  return { ok: true, link: r.result.invite_link, name: r.result.name || JOIN_LINK_NAME, creates_join_request: true }
+}
 
 // Banned by a human admin (not our own 60-second kick, which we lift right away).
 export function isBannedByAdmin(m) {

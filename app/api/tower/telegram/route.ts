@@ -5,6 +5,10 @@ import {
   resolveChatId, isTowerChat, botUsername, memberStatus, isBannedByAdmin, loadRow, enforceActive,
   isActiveStatus, isLiveStatus, PLANS, GROUP_NAME, GROUP_URL, ADMIN_TITLE, BANNED_TEXT,
 } from '@/lib/tower'
+import {
+  handleTeamsPrivate, handleGroupCommand, handleCallback, parseGroupCommand, profileAfterStart,
+  upsertPerson, HELP_TEXT, TEAMS_ERROR_TEXT,
+} from '@/lib/tower-teams'
 
 // Webhook for @TowerCrewBot («Вышки в США»). Registered from /admin/tower.
 export const dynamic = 'force-dynamic'
@@ -24,6 +28,9 @@ async function onJoinRequest(jr) {
   const userId = from.id
   const dmTo = jr.user_chat_id || userId
   const now = new Date().toISOString()
+
+  // For @username → id lookups (/review @username). Never throws.
+  await upsertPerson(from)
 
   await db.from('tg_join_requests').upsert({
     chat_id: chatId,
@@ -83,12 +90,14 @@ async function upsertBotUser(from) {
   }, { onConflict: 'telegram_user_id' })
 }
 
+// Returns { isMember } — /start then adds the profile card for group members.
 async function onStatus(from) {
   const chatId = await resolveChatId()
   const row = await loadRow(chatId, from.id)
   const link = { u: from.id, c: chatId, n: from.first_name, un: from.username }
   const m = await memberStatus(chatId, from.id)
   const banned = isBannedByAdmin(m)
+  const res = { isMember: !!(m.ok && m.isMember) }
 
   if (row && row.stripe_subscription_id && isLiveStatus(row.status)) {
     const label = PLANS[row.plan]?.label || 'Basic'
@@ -109,6 +118,7 @@ async function onStatus(from) {
       // (No invite links — those would let anyone in without paying.)
       const out = await enforceActive(row, { actions: [] }, { silent: true })
       if (out.inGroup) {
+        res.isMember = true
         text += `\n\nЗаявка в группу одобрена 🎉`
         buttons.unshift([{ text: '👉 Открыть группу', url: GROUP_URL }])
       } else {
@@ -119,12 +129,12 @@ async function onStatus(from) {
       buttons.unshift([{ text: '👉 Открыть группу', url: GROUP_URL }])
     }
     await dm(from.id, text, buttons)
-    return
+    return res
   }
 
   if (banned) {
     await dm(from.id, BANNED_TEXT)
-    return
+    return res
   }
 
   if (m.ok && m.isMember) {
@@ -133,7 +143,7 @@ async function onStatus(from) {
       `Хотите значок админа «${ADMIN_TITLE}» и публиковать рекламу? ` +
       `Тариф <b>Admin — $${PLANS.admin.priceUsd}/мес</b>.`,
       [[{ text: `⭐ Тариф Admin — $${PLANS.admin.priceUsd}/мес`, url: payUrl(link) }]])
-    return
+    return res
   }
 
   await dm(from.id,
@@ -144,6 +154,7 @@ async function onStatus(from) {
       [{ text: '💳 Выбрать тариф и оплатить', url: payUrl(link) }],
       [{ text: '👥 Открыть группу', url: GROUP_URL }],
     ])
+  return res
 }
 
 async function onManage(from) {
@@ -167,13 +178,36 @@ async function onPrivateMessage(msg) {
   const words = text.split(/\s+/)
   const cmd = words[0].split('@')[0].toLowerCase()
   await upsertBotUser(from)
-  // t.me/<bot>?start=manage (from the web pages) arrives as "/start manage".
-  if (cmd === '/manage' || (cmd === '/start' && words[1] === 'manage')) return onManage(from)
-  if (cmd === '/start' || cmd === '/status') return onStatus(from)
-  await dm(from.id,
-    `Я бот группы «${GROUP_NAME}».\n\n` +
-    `/status — статус подписки\n` +
-    `/manage — управлять подпиской (тариф, карта, отмена)`)
+  // Teams, profiles, reviews (lib/tower-teams.ts): their commands, deep links
+  // (/start review_<id>) and multi-step answers. false = not theirs → the
+  // subscription flow below runs exactly as before.
+  try {
+    if (await handleTeamsPrivate(msg, cmd, words)) return
+  } catch (e) {
+    console.error('[tower/telegram] teams failed:', e?.message || e)
+    await dm(from.id, TEAMS_ERROR_TEXT)
+    return
+  }
+  // Never leave the person without a reply (e.g. the group cannot be found
+  // right now). dm() never throws.
+  let status = null
+  try {
+    // t.me/<bot>?start=manage (from the web pages) arrives as "/start manage".
+    if (cmd === '/manage' || (cmd === '/start' && words[1] === 'manage')) return await onManage(from)
+    if (cmd === '/start' || cmd === '/status') status = await onStatus(from)
+  } catch (e) {
+    console.error('[tower/telegram] status/manage failed:', e?.message || e)
+    await dm(from.id,
+      `⚠️ Бот сейчас не может проверить подписку на «${GROUP_NAME}». ` +
+      `Мы уже чиним — попробуйте чуть позже или напишите админу.`)
+    return
+  }
+  if (status) {
+    // /start for a group member: the profile card right after the subscription message.
+    if (cmd === '/start' && status.isMember) await profileAfterStart(from)
+    return
+  }
+  await dm(from.id, HELP_TEXT)
 }
 
 // ── Entry ───────────────────────────────────────────────────────────────────
@@ -198,7 +232,22 @@ export async function POST(req: NextRequest) {
       if (await isTowerChat(update.chat_join_request.chat)) kind = 'join'
     } else if (update.message) {
       const msg = update.message
-      if (msg.chat?.type === 'private' && msg.from && !msg.from.is_bot && typeof msg.text === 'string') kind = 'private'
+      const type = msg.chat?.type
+      if (type === 'private' && msg.from && !msg.from.is_bot && typeof msg.text === 'string') {
+        kind = 'private'
+      } else if ((type === 'supergroup' || type === 'group') && msg.from && !msg.from.is_bot && !msg.sender_chat) {
+        // The bot is an admin → it gets EVERY group message. Fast path: only
+        // /review /отзыв /profile /профиль (optionally @<this bot>) do any work;
+        // everything else returns here with no DB call.
+        const gc = parseGroupCommand(msg.text)
+        if (gc && (!gc.bot || gc.bot.toLowerCase() === String(await botUsername()).toLowerCase()) &&
+            await isTowerChat(msg.chat)) {
+          kind = 'group'
+        }
+      }
+    } else if (update.callback_query) {
+      const cq = update.callback_query
+      if (cq.id && cq.from && !cq.from.is_bot) kind = 'callback'
     } else if (update.my_chat_member) {
       const mcm = update.my_chat_member
       console.log('[tower/telegram] my_chat_member', mcm.chat?.id, mcm.chat?.title || '', mcm.new_chat_member?.status)
@@ -215,6 +264,8 @@ export async function POST(req: NextRequest) {
 
     if (kind === 'join') await onJoinRequest(update.chat_join_request)
     else if (kind === 'private') await onPrivateMessage(update.message)
+    else if (kind === 'group') await handleGroupCommand(update.message)
+    else if (kind === 'callback') await handleCallback(update.callback_query)
   } catch (e) {
     console.error('[tower/telegram] error:', e?.message || e)
   }
