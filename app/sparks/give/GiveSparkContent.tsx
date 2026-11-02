@@ -88,12 +88,13 @@ export default function GiveSparkContent() {
             .eq('receiver_id', recipientData.id)
           setAlreadyGiven(given?.map(s => s.spark_type) || [])
 
-          // Relationship gate: a mutual knock (match) OR a real session
-          // (booking accepted/completed). Mirrors can_message in the DB.
+          // Relationship gate: a mutual knock (match), a real session
+          // (booking accepted/completed), or the same past group session.
+          // Mirrors require_confirmed_session in lib/migration_sparks_group_gate.sql.
           const uid = session.user.id
           const rid = recipientData.id
           try {
-            const [{ data: knock }, { data: sess }] = await Promise.all([
+            const [{ data: knock }, { data: sess }, { data: metAtEvent, error: metErr }] = await Promise.all([
               supabase.from('knocks').select('id')
                 .eq('is_mutual', true)
                 .or(`and(sender_id.eq.${uid},receiver_id.eq.${rid}),and(sender_id.eq.${rid},receiver_id.eq.${uid})`)
@@ -102,8 +103,10 @@ export default function GiveSparkContent() {
                 .in('status', ['accepted', 'completed'])
                 .or(`and(seeker_id.eq.${uid},provider_id.eq.${rid}),and(seeker_id.eq.${rid},provider_id.eq.${uid})`)
                 .limit(1),
+              supabase.rpc('shared_group_session', { p_a: uid, p_b: rid }),
             ])
-            setHasRelationship((knock?.length || 0) > 0 || (sess?.length || 0) > 0)
+            // If the RPC isn't deployed yet, fail open — the DB still enforces the rule.
+            setHasRelationship((knock?.length || 0) > 0 || (sess?.length || 0) > 0 || metAtEvent === true || !!metErr)
           } catch {
             // Fail open — the DB still enforces the rule on insert.
             setHasRelationship(true)
@@ -147,7 +150,7 @@ export default function GiveSparkContent() {
       const msg =
         err.code === '23505' ? 'You already gave one of these Sparks.'
         : (err.message || '').includes('spark_score_too_low') ? 'Complete your profile to give Sparks.'
-        : (err.message || '').includes('spark_no_relationship') ? 'You can only Spark someone you matched with (mutual knock) or had a session with.'
+        : (err.message || '').includes('spark_no_relationship') ? 'You can only Spark someone you matched with, had a session with, or met at an event.'
         : err.code === '23514' ? 'One of these Spark types isn’t enabled yet. Try a different one.'
         // Surface the real reason while we debug this.
         : `Couldn’t send: ${err.message || 'unknown error'}${err.code ? ` (${err.code})` : ''}`
@@ -250,7 +253,7 @@ export default function GiveSparkContent() {
         <p style={{ fontSize: '48px', marginBottom: '16px' }}>🤝</p>
         <h2 style={{ fontFamily: 'DM Serif Display, serif', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '8px' }}>Connect first to give Sparks</h2>
         <p style={{ fontSize: '15px', color: 'var(--text-muted)', marginBottom: '24px', lineHeight: 1.5 }}>
-          Sparks are a personal endorsement. You can Spark <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{recipient.full_name}</span> once you’ve matched (you both knocked) or had a session together.
+          Sparks are a personal endorsement. You can Spark <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{recipient.full_name}</span> once you’ve matched (you both knocked), had a session together, or were at the same event.
         </p>
         <ButtonLink href={`/${recipient.username}`} variant="primary">
           Go to their profile to knock →
