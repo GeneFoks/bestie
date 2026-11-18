@@ -8,6 +8,7 @@ import { ActivityIcon } from '@/lib/activityIcons'
 import { PageLoader } from '@/components/Loading'
 import { showToast } from '@/components/Toast'
 import LocationPicker from '@/components/LocationPicker'
+import { safeNext } from '@/lib/safe-next'
 import { Zap, Gamepad2, BookOpen, Palette, Heart, Moon, Coffee, MapPin, Camera, Sparkles } from 'lucide-react'
 
 const ACTIVITY_GROUPS = [
@@ -66,6 +67,19 @@ const LABELS = Object.fromEntries(
 
 const STEP_TITLES = ['Add your photo', 'Where are you?', 'What are you into?']
 
+// Carried intent from signup / login (?next= → localStorage bestie_next), e.g.
+// "Register your camp" → /crews/new or a Telegram link (/tower/link?t=…).
+// Same-site relative paths only. Returns the path and clears it, or null.
+function takeNext() {
+  try {
+    const raw = localStorage.getItem('bestie_next')
+    if (raw === null) return null
+    localStorage.removeItem('bestie_next')
+    return safeNext(raw)
+  } catch {}
+  return null
+}
+
 export default function OnboardingPage() {
   const router = useRouter()
   const [step, setStep] = useState(1)
@@ -91,7 +105,9 @@ export default function OnboardingPage() {
         .select('full_name, avatar_url, city, country, onboarding_completed')
         .eq('id', user.id).single()
 
-      if (profile?.onboarding_completed) { router.push('/dashboard'); return }
+      // Already onboarded (e.g. back from Google / the email link) → still
+      // deliver a carried ?next= before the dashboard.
+      if (profile?.onboarding_completed) { router.push(takeNext() || '/dashboard'); return }
 
       setForm(f => ({
         ...f,
@@ -167,9 +183,8 @@ export default function OnboardingPage() {
     if (error) { console.error(error); showToast("Couldn't save your profile — try again", { type: 'error' }); return }
     // Carried intent (e.g. "Register your camp" → /crews/new) wins: deliver
     // the user where they were heading before signup. The test can wait.
-    const next = typeof window !== 'undefined' ? localStorage.getItem('bestie_next') : null
-    if (next && next.startsWith('/') && !next.startsWith('//')) {
-      localStorage.removeItem('bestie_next')
+    const next = takeNext()
+    if (next) {
       router.push(next)
       return
     }

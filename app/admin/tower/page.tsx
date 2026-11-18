@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
 import { confirmSheet } from '@/components/ConfirmSheet'
+import { fmtWorkDate } from '@/lib/tower-app-shared'
 
 const GOLD = '#D4AF37'
 const font = 'Plus Jakarta Sans, sans-serif'
@@ -87,6 +88,14 @@ export default function AdminTowerPage() {
       })
       if (!ok) return
     }
+    if (action === 'pin_app') {
+      const ok = await confirmSheet({
+        title: 'Закрепить кнопку приложения?',
+        body: 'Бот отправит в группу одно сообщение с кнопкой «Открыть приложение» и закрепит его без уведомления. Повторное нажатие обновит это же сообщение.',
+        confirmLabel: 'Закрепить',
+      })
+      if (!ok) return
+    }
     setBusy(action)
     const h = await authHeader()
     if (!h) { setBusy(''); return }
@@ -156,6 +165,10 @@ export default function AdminTowerPage() {
               ...prev.community,
               totals: { ...totals, hidden: Math.max(0, (totals.hidden || 0) + (now ? 1 : 0) - (was ? 1 : 0)) },
               reviews: prev.community.reviews.map((x) => (x.id === r.id ? { ...x, hidden_at: data.hidden_at || null } : x)),
+              // A hidden review leaves «Спорные отзывы».
+              disputed: Array.isArray(prev.community.disputed)
+                ? prev.community.disputed.filter((x) => !(now && x.id === r.id))
+                : prev.community.disputed,
             },
           }
         })
@@ -242,6 +255,14 @@ export default function AdminTowerPage() {
   const callbacksOn = !!i.webhook?.ok && (!Array.isArray(allowedUpdates) || allowedUpdates.includes('callback_query'))
   const personLabel = (p) => (p ? `${p.name}${p.username && p.name !== '@' + p.username ? ' (@' + p.username + ')' : ''}` : '—')
   const td = { padding: '9px 10px', borderBottom: '1px solid var(--border)', verticalAlign: 'top' }
+  // Clean group chat + Mini App (lib/migration_tower_miniapp.sql)
+  const br = i.botRights || {}
+  const cleanOk = !!br.can_delete_messages && !!br.can_pin_messages
+  const mini = i.miniApp || {}
+  const miniOk = !!mini.schema && !!mini.menuButton?.ok && !mini.siteIsWww && !mini.envInvalid
+  const pinned = mini.pinned && mini.pinned.message_id ? mini.pinned : null
+  const cDisputed = Array.isArray(community.disputed) ? community.disputed : []
+  const whereLabel = (r) => [r?.work_place, fmtWorkDate(r?.work_month, r?.work_year)].filter(Boolean).join(' · ')
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: font }}>
@@ -322,6 +343,26 @@ export default function AdminTowerPage() {
             <br />Назначать админов: {i.botRights?.can_promote_members ? '✅' : '❌'}
             {i.botRights?.error ? <><br />{i.botRights.error}</> : null}
           </Check>
+          <Check ok={cleanOk} title="Чистота чата">
+            Удаление сообщений: {br.can_delete_messages ? '✅' : '❌'}
+            <br />Закрепление сообщений: {br.can_pin_messages ? '✅' : '❌'}
+            {!cleanOk ? (
+              <><br />Без этого бот не может убирать команды людей из чата. Включите: Telegram → группа → Управление группой → Администраторы → TowerCrew Bot → «Удаление сообщений» и «Закрепление сообщений».</>
+            ) : null}
+          </Check>
+          <Check ok={miniOk} title="Мини-приложение">
+            Адрес: {mini.url || '—'}
+            <br />Кнопка в личке бота: {mini.menuButton?.ok ? 'настроена' : 'не настроена — нажмите «Подключить бота»'}
+            <br />TOWER_MINIAPP_URL: {mini.envUrl || 'не задан — кнопки в группе ведут в личку бота'}
+            {mini.envInvalid ? ' ❌ не распознан (нужен вид https://t.me/TowerCrewBot)' : ''}
+            <br />Кнопка в группе ведёт на: {mini.groupButtonUrl || '—'}
+            {mini.siteIsWww ? <><br />❌ NEXT_PUBLIC_SITE_URL с www — Telegram требует адрес без редиректа: https://bestiehere.com</> : null}
+            <br />База: {mini.schema ? 'обновлена' : '❌ выполните в Supabase lib/migration_tower_miniapp.sql'}
+            <br />Закреплённая кнопка в группе: {pinned ? `сообщение #${pinned.message_id}` : 'нет'}
+            <br /><span style={{ color: 'var(--text-dim)' }}>
+              Чтобы приложение открывалось прямо в группе: @BotFather → @TowerCrewBot → Bot Settings → Configure Mini App → Enable, URL = {mini.url || '—'}; затем в Netlify TOWER_MINIAPP_URL=https://t.me/TowerCrewBot и redeploy.
+            </span>
+          </Check>
           <Check ok={pricesOk} title="Тарифы в Stripe">
             Basic: {prices.basic?.ok ? `${prices.basic.id} · $${(prices.basic.unit_amount || 0) / 100}${prices.basic.livemode ? ' · live' : ' · test'}` : `нет (${prices.basic?.lookupKey || 'tower_basic_monthly'})`}
             <br />Admin: {prices.admin?.ok ? `${prices.admin.id} · $${(prices.admin.unit_amount || 0) / 100}${prices.admin.livemode ? ' · live' : ' · test'}` : `нет (${prices.admin?.lookupKey || 'tower_admin_monthly'})`}
@@ -342,6 +383,9 @@ export default function AdminTowerPage() {
           </button>
           <button onClick={() => run('stripe')} disabled={!!busy} style={{ padding: '12px 18px', borderRadius: '12px', border: '1px solid rgba(212,175,55,0.45)', background: 'rgba(212,175,55,0.12)', color: GOLD, fontWeight: 700, fontSize: '14px', cursor: busy ? 'wait' : 'pointer', fontFamily: font, opacity: busy && busy !== 'stripe' ? 0.5 : 1 }}>
             {busy === 'stripe' ? 'Настраиваем…' : 'Настроить Stripe (тарифы, портал, события)'}
+          </button>
+          <button onClick={() => run('pin_app')} disabled={!!busy} style={{ padding: '12px 18px', borderRadius: '12px', border: '1px solid rgba(212,175,55,0.45)', background: 'rgba(212,175,55,0.12)', color: GOLD, fontWeight: 700, fontSize: '14px', cursor: busy ? 'wait' : 'pointer', fontFamily: font, opacity: busy && busy !== 'pin_app' ? 0.5 : 1 }}>
+            {busy === 'pin_app' ? 'Закрепляем…' : `Закрепить кнопку приложения в группе${pinned ? ` (сообщение #${pinned.message_id})` : ''}`}
           </button>
           <button onClick={() => { setRv(null); setRq(''); setLoading(true); load() }} disabled={!!busy} style={{ padding: '12px 18px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--surface-1)', color: 'var(--text-muted)', fontWeight: 600, fontSize: '14px', cursor: 'pointer', fontFamily: font }}>
             Обновить
@@ -482,15 +526,17 @@ export default function AdminTowerPage() {
           Команды и отзывы
         </h2>
         <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 12px', lineHeight: 1.55 }}>
-          Команды (/crew), профили (/profile) и отзывы (/review) в боте. Вступление в команду — по заявке, её подтверждает лидер.
-          Скрытый отзыв не виден в боте и не входит в рейтинг, а его подтверждение в группе бот меняет на «🙈 Отзыв скрыт модератором».
-          Бот ничего не делает с участниками группы: «исключить» в команде убирает человека только из команды.
-          После обновления бота ещё раз выполните в Supabase lib/migration_tower_teams.sql (повторный запуск безопасен).
+          Рейтинг, отзывы и команды — в мини-приложении бота (/tower/app). Отзыв оставляется по шагам: где и когда работали, оценки по пунктам, «работал бы снова».
+          Писать отзывы могут только те, кто привязал профиль Бести, заполнил анкету (имя, фото, город) и оформил подписку Basic или Admin.
+          Команды людей в группе бот удаляет, а его короткие ответы с кнопкой приложения исчезают через минуту. Новые отзывы в группу не публикуются;
+          у старых сообщений бота «Скрыть» меняет текст на «🙈 Отзыв скрыт модератором».
+          Вступление в команду — по заявке, её подтверждает лидер. Бот ничего не делает с участниками группы: «исключить» в команде убирает человека только из команды.
+          После обновления бота выполните в Supabase lib/migration_tower_miniapp.sql (повторный запуск безопасен).
         </p>
 
         <div style={{ background: 'var(--surface-1)', border: `1px solid ${callbacksOn ? 'rgba(52,211,153,0.35)' : 'rgba(255,120,87,0.35)'}`, borderRadius: '14px', padding: '12px 14px', marginBottom: '12px', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.55 }}>
-          {callbacksOn ? '✅' : '❗'} После деплоя нажмите «Подключить бота (webhook)» ещё раз — бот начнёт получать нажатия кнопок
-          (⭐ оценки, «Мои отзывы», «Моя команда») и обновит меню команд (/profile, /myteam, /crew, /review, /reviews, /help).
+          {callbacksOn ? '✅' : '❗'} После деплоя нажмите «Подключить бота (webhook)» ещё раз — бот обновит меню команд (/app, /profile, /review, /access, /link …),
+          поставит кнопку «Рейтинг» (открывает приложение) в личке с ботом и будет получать нажатия кнопок («Работали вместе?», «Проверить снова», заявки в команды).
           {' '}{callbacksOn ? 'Кнопки сейчас доходят до бота.' : 'Сейчас нажатия кнопок до бота не доходят.'}
         </div>
 
@@ -526,6 +572,45 @@ export default function AdminTowerPage() {
                   <td style={td}>{t.members}</td>
                   <td style={td}>{t.rating != null ? `⭐ ${Number(t.rating).toFixed(1)} (оценены ${t.rated})` : 'нет оценок'}</td>
                   <td style={{ ...td, color: 'var(--text-dim)' }}>{fmt(t.created_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* ── Спорные отзывы ─────────────────────────────────────────── */}
+        <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', margin: '18px 0 4px' }}>
+          Спорные отзывы{cDisputed.length ? ` (${cDisputed.length})` : ''}
+        </h3>
+        <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 10px', lineHeight: 1.55 }}>
+          Человек ответил боту «Не работали» на вопрос «Вы работали вместе?». Отзыв не скрывается сам — решите вы.
+        </p>
+        <div style={{ overflowX: 'auto', border: `1px solid ${cDisputed.length ? 'rgba(251,191,36,0.45)' : 'var(--border)'}`, borderRadius: '14px', background: 'var(--surface-1)', marginBottom: '18px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', minWidth: '720px' }}>
+            <thead>
+              <tr style={{ textAlign: 'left', color: 'var(--text-dim)' }}>
+                {['Дата спора', 'Автор → кому', 'Оценка', 'Объект', 'Текст', ''].map((h, idx) => (
+                  <th key={h || 'd-action-' + idx} style={{ padding: '10px', borderBottom: '1px solid var(--border)', fontWeight: 600 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {cDisputed.length === 0 ? (
+                <tr><td colSpan={6} style={{ padding: '18px', textAlign: 'center', color: 'var(--text-dim)' }}>Спорных отзывов нет</td></tr>
+              ) : cDisputed.map((r) => (
+                <tr key={r.id} style={{ color: 'var(--text-primary)' }}>
+                  <td style={{ ...td, color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>{fmt(r.disputed_at)}</td>
+                  <td style={td}>{personLabel(r.author)} → <b>{personLabel(r.target)}</b></td>
+                  <td style={{ ...td, whiteSpace: 'nowrap' }}>{'⭐'.repeat(Math.max(0, Math.min(5, Number(r.rating) || 0)))}</td>
+                  <td style={td}>{whereLabel(r) || '—'}</td>
+                  <td style={{ ...td, maxWidth: '280px', whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: r.text ? 'var(--text-primary)' : 'var(--text-dim)' }}>
+                    {r.text || '— без текста'}
+                  </td>
+                  <td style={{ ...td, whiteSpace: 'nowrap' }}>
+                    <button onClick={() => toggleReview(r)} disabled={!!hiding} style={{ ...smallBtn, cursor: hiding ? 'wait' : 'pointer' }}>
+                      {hiding === r.id ? '…' : 'Скрыть'}
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -576,6 +661,13 @@ export default function AdminTowerPage() {
                   <td style={{ ...td, whiteSpace: 'nowrap' }}>{'⭐'.repeat(Math.max(0, Math.min(5, Number(r.rating) || 0)))}</td>
                   <td style={{ ...td, maxWidth: '320px', whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: r.text ? 'var(--text-primary)' : 'var(--text-dim)' }}>
                     {r.text || '— без текста'}
+                    {r.work_place ? (
+                      <div style={{ color: 'var(--text-muted)', marginTop: '2px' }}>
+                        📍 {whereLabel(r)}
+                        {r.confirmed_at ? <span style={{ color: '#34D399' }}> · ✓ подтверждён</span> : null}
+                        {r.disputed_at ? <span style={{ color: '#FBBF24' }}> · ⚠ спорный</span> : null}
+                      </div>
+                    ) : null}
                     {r.hidden_at ? <div style={{ color: 'var(--coral)', marginTop: '2px' }}>скрыт {fmt(r.hidden_at)}</div> : null}
                   </td>
                   <td style={{ ...td, whiteSpace: 'nowrap' }}>

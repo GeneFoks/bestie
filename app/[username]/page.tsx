@@ -16,6 +16,8 @@ import BadgeCrest from '@/components/BadgeCrest'
 import ActionBadge from '@/components/ActionBadge'
 import { SparkIcon } from '@/lib/sparkIcons'
 import MutualFriends from '@/components/MutualFriends'
+import TowerReputation from '@/components/TowerReputation'
+import TowerLinkControl from '@/components/TowerLinkControl'
 import { getAvatarFrame } from '@/lib/avatarFrame'
 import CompatibilityScore from './CompatibilityScore'
 import StickyBookCTA from './StickyBookCTA'
@@ -476,6 +478,12 @@ export default async function ProfilePage({ params }) {
             </div>
           </div>
         )}
+
+        {/* TOWER REPUTATION — rating from the Telegram group «Вышки в США»
+            (only when the person linked Telegram and isn't hidden) + the
+            owner's own link status row. */}
+        <TowerReputation userId={profile.id} />
+        <OwnerOnly ownerId={profile.id}><TowerLinkControl compact /></OwnerOnly>
 
         {/* MUTUAL FRIENDS — social proof */}
         <MutualFriends profileId={profile.id} />

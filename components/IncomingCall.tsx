@@ -2,12 +2,15 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Phone, PhoneOff } from 'lucide-react'
 
 export default function IncomingCall() {
   const router = useRouter()
+  const pathname = usePathname()
+  // Telegram Mini App («Вышки в США»): no Bestie call listener there.
+  const inMiniApp = !!pathname?.startsWith('/tower/app')
   const [call, setCall] = useState<any>(null)
   const [caller, setCaller] = useState<any>(null)
   const [acting, setActing] = useState(false)
@@ -25,6 +28,7 @@ export default function IncomingCall() {
   }, [call])
 
   useEffect(() => {
+    if (inMiniApp) return
     const setup = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
@@ -71,7 +75,7 @@ export default function IncomingCall() {
       if (channelRef.current) supabase.removeChannel(channelRef.current)
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
     }
-  }, [])
+  }, [inMiniApp])
 
   const dismiss = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current)
@@ -105,7 +109,7 @@ export default function IncomingCall() {
     dismiss()
   }
 
-  if (!call || !caller) return null
+  if (inMiniApp || !call || !caller) return null
 
   return (
     <div

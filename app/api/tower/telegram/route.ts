@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server'
 import {
-  getDb, dm, esc, fmtDate, webhookSecret, safeEqual, payUrl, portalUrl,
+  getDb, dm, esc, fmtDate, webhookSecret, safeEqual, payUrl, portalUrl, tg, getBot, appUrl, cleanupEphemeral,
   resolveChatId, isTowerChat, botUsername, memberStatus, isBannedByAdmin, loadRow, enforceActive,
   isActiveStatus, isLiveStatus, PLANS, GROUP_NAME, GROUP_URL, ADMIN_TITLE, BANNED_TEXT,
 } from '@/lib/tower'
@@ -17,7 +17,7 @@ const ok = () => NextResponse.json({ ok: true })
 
 const PLANS_TEXT =
   `<b>Тарифы:</b>\n` +
-  `• <b>Basic — $${PLANS.basic.priceUsd}/мес</b> — доступ в группу\n` +
+  `• <b>Basic — $${PLANS.basic.priceUsd}/мес</b> — доступ в группу и отзывы коллегам\n` +
   `• <b>Admin — $${PLANS.admin.priceUsd}/мес</b> — доступ + значок админа «${ADMIN_TITLE}» и можно публиковать рекламу`
 
 // ── chat_join_request ───────────────────────────────────────────────────────
@@ -137,12 +137,20 @@ async function onStatus(from) {
     return res
   }
 
+  // In the group without a plan (an old member): both plans are offered. Paying
+  // never risks their place — checkout records was_member_before, so when the
+  // subscription ends they are at most demoted, never removed.
   if (m.ok && m.isMember) {
     await dm(from.id,
-      `Вы уже в группе «${GROUP_NAME}» ✅ Платить ничего не нужно.\n\n` +
-      `Хотите значок админа «${ADMIN_TITLE}» и публиковать рекламу? ` +
-      `Тариф <b>Admin — $${PLANS.admin.priceUsd}/мес</b>.`,
-      [[{ text: `⭐ Тариф Admin — $${PLANS.admin.priceUsd}/мес`, url: payUrl(link) }]])
+      `Вы в группе «${GROUP_NAME}» ✅\n\n` +
+      `Подписка нужна, чтобы оставлять отзывы коллегам:\n` +
+      `• <b>Basic — $${PLANS.basic.priceUsd}/мес</b> — отзывы коллегам\n` +
+      `• <b>Admin — $${PLANS.admin.priceUsd}/мес</b> — отзывы + значок админа «${ADMIN_TITLE}» и можно публиковать рекламу\n\n` +
+      `Из группы никого не удаляем — оформить можно когда удобно.`,
+      [
+        [{ text: '💳 Оформить подписку', url: payUrl(link) }],
+        [{ text: '🗼 Открыть приложение', web_app: { url: appUrl('me') } }],
+      ])
     return res
   }
 
@@ -162,6 +170,16 @@ async function onManage(from) {
   const row = await loadRow(chatId, from.id)
   const link = { u: from.id, c: chatId, n: from.first_name, un: from.username }
   if (row?.stripe_customer_id && row?.stripe_subscription_id) {
+    // Ended → the portal alone is a dead end (nothing to manage): a new one too.
+    if (!isLiveStatus(row.status)) {
+      await dm(from.id,
+        `Подписка на «${GROUP_NAME}» закончилась. Оформить новую — кнопкой ниже; счета и карта — в управлении.`,
+        [
+          [{ text: '💳 Оформить подписку заново', url: payUrl(link) }],
+          [{ text: '⚙️ Управлять подпиской', url: portalUrl(link) }],
+        ])
+      return
+    }
     await dm(from.id,
       `⚙️ Управление подпиской: смена тарифа (Basic ↔ Admin), карта, счета, отмена.`,
       [[{ text: '⚙️ Управлять подпиской', url: portalUrl(link) }]])
@@ -207,7 +225,7 @@ async function onPrivateMessage(msg) {
     if (cmd === '/start' && status.isMember) await profileAfterStart(from)
     return
   }
-  await dm(from.id, HELP_TEXT)
+  await dm(from.id, HELP_TEXT, [[{ text: '🗼 Открыть приложение', web_app: { url: appUrl('home') } }]])
 }
 
 // ── Entry ───────────────────────────────────────────────────────────────────
@@ -218,6 +236,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false }, { status: 401 })
   }
 
+  // The bot's short group replies are deleted after ~60 s: due ones go away on
+  // every update (the bot gets every group message, chatter included).
+  // Throttled inside, never throws; waited for at most 3 s at the end.
+  const sweep = cleanupEphemeral().catch(() => null)
+  try {
+    return await handleUpdate(req)
+  } finally {
+    let timer
+    await Promise.race([sweep, new Promise((r) => { timer = setTimeout(r, 3000) })])
+    clearTimeout(timer)
+  }
+}
+
+async function handleUpdate(req: NextRequest) {
   let update
   try {
     update = await req.json()
@@ -235,9 +267,18 @@ export async function POST(req: NextRequest) {
       const type = msg.chat?.type
       if (type === 'private' && msg.from && !msg.from.is_bot && typeof msg.text === 'string') {
         kind = 'private'
+      } else if ((type === 'supergroup' || type === 'group') && msg.pinned_message && msg.from?.is_bot) {
+        // «TowerCrew Bot закрепил(а) …» after «Закрепить кнопку приложения» —
+        // the service message is removed (needs «Удаление сообщений»).
+        const me = await getBot()
+        if (me && msg.from.id === me.id && await isTowerChat(msg.chat)) {
+          const d = await tg('deleteMessage', { chat_id: msg.chat.id, message_id: msg.message_id })
+          if (!d.ok) console.warn('[tower/telegram] pin notice not deleted:', d.description)
+        }
+        return ok()
       } else if ((type === 'supergroup' || type === 'group') && msg.from && !msg.from.is_bot && !msg.sender_chat) {
-        // The bot is an admin → it gets EVERY group message. Fast path: only
-        // /review /отзыв /profile /профиль (optionally @<this bot>) do any work;
+        // The bot is an admin → it gets EVERY group message. Fast path: only our
+        // commands (/review /profile /app … optionally @<this bot>) do any work;
         // everything else returns here with no DB call.
         const gc = parseGroupCommand(msg.text)
         if (gc && (!gc.bot || gc.bot.toLowerCase() === String(await botUsername()).toLowerCase()) &&

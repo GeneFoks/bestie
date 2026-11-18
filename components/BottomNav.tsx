@@ -58,6 +58,9 @@ export default function BottomNav() {
 
   const LINKS = loggedIn ? AUTH_LINKS : GUEST_LINKS
 
+  // The Telegram Mini App («Вышки в США») has its own tab bar.
+  if (path?.startsWith('/tower/app')) return null
+
   return (
     <>
       <style>{`

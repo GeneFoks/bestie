@@ -2,6 +2,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ''
@@ -72,8 +73,12 @@ export function requestPushWhenReady() {
 export default function PWARegister() {
   const [offerVisible, setOfferVisible] = useState(false)
   const [sheetIn, setSheetIn] = useState(false)
+  const pathname = usePathname()
+  // Telegram Mini App («Вышки в США»): no service worker, no push offer.
+  const inMiniApp = !!pathname?.startsWith('/tower/app')
 
   useEffect(() => {
+    if (inMiniApp) return
     // Register service worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {})
@@ -112,7 +117,7 @@ export default function PWARegister() {
       authSub.unsubscribe()
       window.removeEventListener('bestie:push-value-moment', maybeOffer)
     }
-  }, [])
+  }, [inMiniApp])
 
   // Slide the sheet in on the next frame once it mounts
   useEffect(() => {
@@ -145,7 +150,7 @@ export default function PWARegister() {
     } catch {/* silent */}
   }
 
-  if (!offerVisible) return null
+  if (inMiniApp || !offerVisible) return null
 
   return (
     <div

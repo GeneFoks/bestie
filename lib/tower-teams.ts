@@ -7,24 +7,37 @@
 //
 // Rebuilds the features of the original (lost) Python bot with the same
 // commands and wording: /crew create · join · leave · kick, /profile, /myteam,
-// /review, /reviews, /help. In the group: reply to someone's message with
-// "/review 5 текст" or "/profile".
+// /review, /reviews, /help. Reviews are written in the Mini App (/tower/app,
+// lib/tower-app.ts): a step-by-step form; /review in the bot or the group
+// only opens it.
 //
 // /crew join НАЗВАНИЕ sends a request; the team's leader accepts or declines it
 // (buttons, or /crew accept ID · /crew decline ID). A kick or a decline blocks
-// new requests to that team for 7 days.
+// new requests to that team for 7 days. The same team rules serve the Mini App
+// (createTeam, requestJoinTeam, leaveTeam, decideJoin are exported).
 //
 // Safety: nothing here kicks, bans, restricts, promotes / demotes, approves or
 // declines anyone in the Telegram group, or touches subscriptions. /crew kick
 // removes a person from a TEAM (a row in tg_team_members) — never from the
-// group. The only message calls in the group are deleteMessage on the bot
-// command itself and on / edits of the bot's OWN review confirmations.
+// group. In the group the bot only deletes the command messages and posts one
+// short reply with an «open the app» button, which it deletes after ~60 s
+// (tg_ephemeral_messages). No review, profile or team text goes to the group.
 //
-// Tables + functions: lib/migration_tower_teams.sql.
+// Reviews are written ONLY through storeReview(), which always runs the review
+// gate first (lib/tower-access.ts requireReviewer: Bestie link + filled
+// profile + paid plan).
+//
+// Tables + functions: lib/migration_tower_teams.sql, lib/migration_tower_miniapp.sql.
 // ============================================================================
 import {
   tg, dm, esc, fmtDate, getDb, resolveChatId, memberStatus, botUsername, GROUP_NAME,
+  appUrl, appLink, rememberEphemeral, miniappSchemaReady,
 } from '@/lib/tower'
+import {
+  requireReviewer, reviewerStatus, invalidateReviewer, sendGate, sendLinkButton, gateText, gateButtons,
+  SCHEMA_BOT,
+} from '@/lib/tower-access'
+import { validateWizard, fmtWorkDate, START_PARAM_RE } from '@/lib/tower-app-shared'
 
 const HOUR = 3600 * 1000
 const STATE_TTL_MS = 15 * 60 * 1000         // a multi-step answer must come within 15 min
@@ -47,7 +60,12 @@ const ADMIN_PAGE = 50
 const SKIP_RE = /^(—|–|-|−|―|нет|пропустить|skip)$/i
 // Zero-width / bidi / control characters — invisible in a team name.
 const INVISIBLE_RE = new RegExp('[\\p{Cf}\\p{Cc}]', 'gu')
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const REVIEW_COLS = 'id, rating, text, hidden_at, created_at, updated_at, notified_at, group_chat_id, group_message_id'
+// + the review wizard columns (lib/migration_tower_miniapp.sql). Only read
+// after the review gate passed, which requires that migration.
+export const REVIEW_COLS_V2 = REVIEW_COLS +
+  ', author_telegram_id, target_telegram_id, work_place, work_month, work_year, scores, would_work_again, confirmed_at, disputed_at'
 
 // ── Texts ───────────────────────────────────────────────────────────────────
 const CHECK_FAILED = '⚠️ Не удалось проверить участие в группе — попробуй чуть позже.'
@@ -57,12 +75,14 @@ const LIMIT_TEXT = `Лимит — ${MAX_REVIEWS_PER_DAY} новых отзыв�
 const EDIT_LIMIT_TEXT = `Лимит — ${MAX_EDITS_PER_DAY} изменённых отзывов в сутки. Попробуй завтра.`
 const BOT_REVIEW = '🤖 Ботам отзывы не оставляют.'
 const FORWARDED_TEXT = 'это пересланное сообщение — ответь на сообщение самого человека.'
+const HIDDEN_PERSON_TEXT = '🙈 Этот человек скрыл свой рейтинг и отзывы.'
+const IN_APP_TEXT = 'Отзывы теперь — в приложении 👇'
 
 const REVIEW_HOW =
   'Как оставить отзыв:\n' +
-  '• в группе — ответь на сообщение человека:\n<code>/review 5 отличный монтажник</code>\n' +
-  '• здесь — <code>/review @username</code>\n\n' +
-  'Оценка от 1 до 5, потом текст (можно без текста).'
+  '• в приложении: /app → найди человека → «Оставить отзыв»\n' +
+  '• здесь: <code>/review @username</code>\n' +
+  '• в группе: ответь на сообщение человека командой <code>/review</code>'
 
 const CREW_HELP =
   '👷 <b>Команды</b>\n\n' +
@@ -75,18 +95,17 @@ const CREW_HELP =
 
 export const HELP_TEXT =
   `Я бот группы «${GROUP_NAME}».\n\n` +
+  '🗼 <b>Рейтинг, отзывы и команды — в приложении:</b> /app\n' +
+  '(кнопка «Рейтинг» внизу чата тоже открывает его)\n\n' +
   '👤 <b>Профиль и отзывы</b>\n' +
-  '/profile — мой профиль: команда, рейтинг, отзывы\n' +
+  '/profile — мой профиль\n' +
   '/reviews — отзывы обо мне\n' +
   '/review @username — оставить отзыв\n' +
-  'В группе — ответь на сообщение человека:\n<code>/review 5 отличный монтажник</code>\n' +
-  'или <code>/profile</code> — профиль человека\n\n' +
+  '/access — что нужно, чтобы оставлять отзывы\n' +
+  '/link — привязать профиль Бести\n\n' +
   '👷 <b>Команды</b>\n' +
   '/myteam — моя команда\n' +
-  '<code>/crew create</code> — создать команду\n' +
-  '<code>/crew join НАЗВАНИЕ</code> — заявка в команду (лидер подтверждает)\n' +
-  '<code>/crew leave</code> — выйти из команды (или отменить заявку)\n' +
-  '<code>/crew kick @username</code> — исключить участника (только лидер)\n\n' +
+  '<code>/crew create</code> · <code>/crew join НАЗВАНИЕ</code> · <code>/crew leave</code> · <code>/crew kick @username</code>\n\n' +
   '💳 <b>Подписка</b>\n' +
   '/status — статус подписки\n' +
   '/manage — управлять подпиской (тариф, карта, отмена)\n\n' +
@@ -96,7 +115,26 @@ export const TEAMS_ERROR_TEXT = '⚠️ Команды и отзывы сейч�
 
 function unknownUser(u) {
   return `Не знаю @${esc(u)} — бот ещё не видел этого человека.\n\n` +
-    'Ответь на его сообщение в группе командой:\n<code>/review 5 текст</code>'
+    'Ответь на его сообщение в группе командой <code>/review</code> — или найди его в приложении: /app'
+}
+
+// ── Mini App buttons (web_app works only in the private chat) ──────────────
+const APP_DM_TEXT = {
+  home: `🗼 Рейтинг, отзывы и команды «${GROUP_NAME}» — в приложении 👇`,
+  teams: '👷 Команды — в приложении 👇',
+  me: '👤 Твой профиль и отзывы — в приложении 👇',
+}
+const appButton = (param = 'home', text = '🗼 Открыть приложение') => [[{ text, web_app: { url: appUrl(param) } }]]
+const reviewButton = (targetId, text = '📝 Оставить отзыв') => appButton('review_' + Number(targetId), text)
+
+// /app, /rating, /start app[_<param>] → a web_app button into the right screen.
+export async function sendAppButton(from, param = 'home') {
+  const p = START_PARAM_RE.test(String(param)) ? String(param) : 'home'
+  const text = p.startsWith('person_') ? '👤 Профиль — в приложении 👇'
+    : p.startsWith('review_') ? '📝 Отзыв — в приложении 👇'
+    : p.startsWith('team_') ? '👷 Команда — в приложении 👇'
+    : (APP_DM_TEXT[p] || APP_DM_TEXT.home)
+  return dm(from.id, text, appButton(p))
 }
 
 // ── Small helpers ───────────────────────────────────────────────────────────
@@ -210,6 +248,23 @@ async function peopleByIds(ids) {
     for (const p of data || []) map[String(p.telegram_user_id)] = p
   }
   return map
+}
+
+// Ids (as strings) of people who turned off «Показывать меня в рейтинге»;
+// `selfId` always sees their own. No Mini App migration yet → nobody is hidden.
+// A failed read hides everyone (never leak a hidden rating).
+async function hiddenIds(ids, selfId = null) {
+  const list = uniq(ids).filter((id) => Number(id) !== Number(selfId))
+  const out = new Set()
+  if (!list.length || !(await miniappSchemaReady())) return out
+  for (let i = 0; i < list.length; i += 150) {
+    const { data, error } = await getDb().from('tg_people')
+      .select('telegram_user_id').eq('hidden_from_rating', true)
+      .in('telegram_user_id', list.slice(i, i + 150))
+    if (error) { list.forEach((id) => out.add(String(id))); return out }
+    for (const p of data || []) out.add(String(p.telegram_user_id))
+  }
+  return out
 }
 
 // Most recently seen holder of the username (usernames move between people).
@@ -365,8 +420,8 @@ async function teamLeaderId(teamId) {
 async function requireMember(uid) {
   const chatId = await resolveChatId()
   const m = await memberStatus(chatId, uid)
-  if (!m.ok) return { ok: false, chatId, text: CHECK_FAILED }
-  if (!m.isMember) return { ok: false, chatId, text: ONLY_MEMBERS }
+  if (!m.ok) return { ok: false, chatId, code: 'check_failed', text: CHECK_FAILED }
+  if (!m.isMember) return { ok: false, chatId, code: 'not_member', text: ONLY_MEMBERS }
   return { ok: true, chatId }
 }
 
@@ -433,7 +488,7 @@ const PROFILE_BUTTONS = [[
 
 async function sendOwnProfile(from) {
   const d = await profileData(from.id)
-  await dm(from.id, profileText(from.id, d, from), PROFILE_BUTTONS)
+  await dm(from.id, profileText(from.id, d, from), [...PROFILE_BUTTONS, ...appButton('me')])
 }
 
 // /start for a group member: the card right after the subscription message.
@@ -484,7 +539,8 @@ async function sendMyTeam(from) {
     await dm(from.id,
       'Ты пока не в команде.' + pending + '\n\n' +
       'Создать свою: <code>/crew create</code>\n' +
-      'Вступить: <code>/crew join НАЗВАНИЕ</code>')
+      'Вступить: <code>/crew join НАЗВАНИЕ</code>',
+      appButton('teams', '👷 Команды в приложении'))
     return
   }
   const leaderView = mine.role === 'leader'
@@ -507,7 +563,7 @@ async function sendMyTeam(from) {
   ]
   if (leaderView) footer.push('Исключить: <code>/crew kick @username</code> (или id из списка)')
   footer.push('Выйти: <code>/crew leave</code>')
-  await dm(from.id, fit(lines, 3500) + '\n' + footer.join('\n'))
+  await dm(from.id, fit(lines, 3500) + '\n' + footer.join('\n'), appButton('teams', '👷 Команды в приложении'))
 }
 
 // ── /crew ───────────────────────────────────────────────────────────────────
@@ -567,24 +623,60 @@ async function crewDescStep(from, raw, st) {
     await setState(from.id, 'crew_desc', { name })
     return dm(from.id, `Описание слишком длинное (максимум ${MAX_DESC} символов). Напиши покороче (или — чтобы пропустить):`)
   }
-  const chatId = await resolveChatId()
-  if (await membershipOf(from.id)) {
+  const r = await createTeam(from, name, description)
+  if (!r.ok) {
+    if (r.code === 'name_taken' || r.code === 'name_invalid') {
+      await setState(from.id, 'crew_name', {})
+      return dm(from.id, r.text)
+    }
     await clearState(from.id)
-    return dm(from.id, 'Ты уже в команде. Посмотреть: /myteam')
+    return dm(from.id, r.text)
   }
+  await clearState(from.id)
+  await dm(from.id,
+    `✅ Команда <b>${esc(r.team.name)}</b> создана!\n\n` +
+    'Чтобы добавить участника, дай ему написать боту:\n' +
+    `<code>/crew join ${esc(r.team.name)}</code>\n\n` +
+    'Заявка придёт сюда — останется нажать «Принять».',
+    appButton('teams', '👷 Команды в приложении'))
+}
+
+// The one place a team is created (bot and Mini App). Group members only; one
+// team per person; name 2–40 (cleaned, unique per group), description ≤ 500.
+// → { ok:true, team:{ id, name } } | { ok:false, code, text (HTML), name? }
+//   code: not_member | check_failed | in_team | name_invalid | desc_long | name_taken
+export async function createTeam(from, rawName, rawDesc) {
+  const gate = await requireMember(from.id)
+  if (!gate.ok) return { ok: false, code: gate.code, text: gate.text }
+  const mine = await membershipOf(from.id)
+  if (mine) {
+    const cur = await teamById(mine.team_id)
+    return {
+      ok: false, code: 'in_team', name: cur?.name || '—',
+      text: `Ты уже в команде <b>${esc(cur?.name || '—')}</b>.\n` +
+        'Чтобы создать новую, сначала выйди: <code>/crew leave</code>',
+    }
+  }
+  const name = cleanName(rawName)
+  const problem = nameProblem(name)
+  if (problem) return { ok: false, code: 'name_invalid', text: problem }
+  const d = String(rawDesc ?? '').trim()
+  const description = d || null
+  if (description && cpLen(description) > MAX_DESC) {
+    return { ok: false, code: 'desc_long', text: `Описание слишком длинное (максимум ${MAX_DESC} символов). Напиши покороче (или — чтобы пропустить):` }
+  }
+  const taken = { ok: false, code: 'name_taken', name, text: `Команда <b>${esc(name)}</b> уже есть. Придумай другое название (или /cancel):` }
+  if (await teamByName(gate.chatId, name)) return taken
   const db = getDb()
   const { data: team, error } = await db.from('tg_teams').insert({
-    chat_id: chatId,
+    chat_id: gate.chatId,
     name,
     name_key: nameKey(name),
     description,
     leader_telegram_id: from.id,
   }).select('id, name').single()
   if (error) {
-    if (error.code === '23505') {
-      await setState(from.id, 'crew_name', {})
-      return dm(from.id, `Команда <b>${esc(name)}</b> уже есть. Придумай другое название (или /cancel):`)
-    }
+    if (error.code === '23505') return taken
     throw new Error('tg_teams insert: ' + error.message)
   }
   const { error: mErr } = await db.from('tg_team_members').insert({
@@ -594,16 +686,12 @@ async function crewDescStep(from, raw, st) {
   })
   if (mErr) {
     await db.from('tg_teams').delete().eq('id', team.id)
-    await clearState(from.id)
-    if (mErr.code === '23505') return dm(from.id, 'Ты уже в другой команде. Сначала выйди: <code>/crew leave</code>')
+    if (mErr.code === '23505') {
+      return { ok: false, code: 'in_team', name: '', text: 'Ты уже в другой команде. Сначала выйди: <code>/crew leave</code>' }
+    }
     throw new Error('tg_team_members insert: ' + mErr.message)
   }
-  await clearState(from.id)
-  await dm(from.id,
-    `✅ Команда <b>${esc(team.name)}</b> создана!\n\n` +
-    'Чтобы добавить участника, дай ему написать боту:\n' +
-    `<code>/crew join ${esc(team.name)}</code>\n\n` +
-    'Заявка придёт сюда — останется нажать «Принять».')
+  return { ok: true, team: { id: team.id, name: team.name } }
 }
 
 // A request, not an instant join: the leader decides. Kick / decline → no new
@@ -614,44 +702,80 @@ async function crewJoin(from, arg) {
   if (!name) return dm(from.id, 'Напиши название команды:\n<code>/crew join НАЗВАНИЕ</code>')
   const gate = await requireMember(from.id)
   if (!gate.ok) return dm(from.id, gate.text)
-  const [team, mine] = await Promise.all([teamByName(gate.chatId, name), membershipOf(from.id)])
-  if (mine) {
-    if (team && mine.team_id === team.id) return dm(from.id, `Ты уже в команде <b>${esc(team.name)}</b> ✅`)
-    const cur = await teamById(mine.team_id)
-    return dm(from.id,
-      `Ты уже в команде <b>${esc(cur?.name || '—')}</b>.\n` +
-      'Чтобы перейти в другую, сначала выйди: <code>/crew leave</code>')
+  const team = await teamByName(gate.chatId, name)
+  if (!team) {
+    const mine = await membershipOf(from.id)
+    if (mine) {
+      const cur = await teamById(mine.team_id)
+      return dm(from.id,
+        `Ты уже в команде <b>${esc(cur?.name || '—')}</b>.\n` +
+        'Чтобы перейти в другую, сначала выйди: <code>/crew leave</code>')
+    }
+    return dm(from.id, `Команда <b>${esc(name)}</b> не найдена. Проверь название — его можно узнать у лидера.`)
   }
-  if (!team) return dm(from.id, `Команда <b>${esc(name)}</b> не найдена. Проверь название — его можно узнать у лидера.`)
+  const r = await requestJoinTeam(from, team)
+  await dm(from.id, r.text)
+}
+
+// Mini App «Подать заявку»: by team id.
+export async function requestJoinById(from, teamId) {
+  const id = String(teamId || '').toLowerCase()
+  if (!UUID_RE.test(id)) return { ok: false, code: 'not_found', text: 'Команда не найдена.' }
+  const gate = await requireMember(from.id)
+  if (!gate.ok) return { ok: false, code: gate.code, text: gate.text }
+  const team = await teamById(id)
+  if (!team || Number(team.chat_id) !== Number(gate.chatId)) return { ok: false, code: 'not_found', text: 'Команда не найдена.' }
+  return requestJoinTeam(from, team)
+}
+
+// The join request itself (the caller checked group membership). The leader
+// gets a DM with ✅/❌ buttons; if that DM can't be delivered the request is
+// dropped again.
+// → { ok:true, code:'join_ok', name, text } | { ok:false, code, text (HTML), name?, until? }
+//   code: already_here | in_team | pending_here | kicked | declined | daily |
+//         pending_other | no_leader | leader_unreachable
+export async function requestJoinTeam(from, team) {
   const tName = esc(team.name)
+  const mine = await membershipOf(from.id)
+  if (mine) {
+    if (mine.team_id === team.id) return { ok: false, code: 'already_here', name: team.name, text: `Ты уже в команде <b>${tName}</b> ✅` }
+    const cur = await teamById(mine.team_id)
+    return {
+      ok: false, code: 'in_team', name: cur?.name || '—',
+      text: `Ты уже в команде <b>${esc(cur?.name || '—')}</b>.\n` +
+        'Чтобы перейти в другую, сначала выйди: <code>/crew leave</code>',
+    }
+  }
 
   const reqs = await requestsOf(from.id)
   const here = reqs.find((r) => r.team_id === team.id)
   if (here) {
     if (here.status === 'pending' && ageMs(here.requested_at) < REQUEST_TTL_MS) {
-      return dm(from.id, `⏳ Заявка в команду <b>${tName}</b> уже у лидера — жди ответа.`)
+      return { ok: false, code: 'pending_here', name: team.name, text: `⏳ Заявка в команду <b>${tName}</b> уже у лидера — жди ответа.` }
     }
     if ((here.status === 'kicked' || here.status === 'declined') && ageMs(here.updated_at) < REJOIN_AFTER_MS) {
       const until = fmtDate(new Date(Date.parse(here.updated_at) + REJOIN_AFTER_MS).toISOString())
-      return dm(from.id, here.status === 'kicked'
-        ? `Лидер исключил тебя из команды <b>${tName}</b> — новую заявку можно подать с ${until}.`
-        : `Лидер отклонил твою заявку в команду <b>${tName}</b> — новую можно подать с ${until}.`)
+      return here.status === 'kicked'
+        ? { ok: false, code: 'kicked', name: team.name, until, text: `Лидер исключил тебя из команды <b>${tName}</b> — новую заявку можно подать с ${until}.` }
+        : { ok: false, code: 'declined', name: team.name, until, text: `Лидер отклонил твою заявку в команду <b>${tName}</b> — новую можно подать с ${until}.` }
     }
     if (ageMs(here.requested_at) < REREQUEST_MS) {
-      return dm(from.id, `Заявку в команду <b>${tName}</b> можно отправлять не чаще раза в сутки.`)
+      return { ok: false, code: 'daily', name: team.name, text: `Заявку в команду <b>${tName}</b> можно отправлять не чаще раза в сутки.` }
     }
   }
   const other = reqs.find((r) => r.team_id !== team.id && r.status === 'pending' && ageMs(r.requested_at) < REQUEST_TTL_MS)
   if (other) {
     const ot = await teamById(other.team_id)
     if (ot) {
-      return dm(from.id,
-        `У тебя уже есть заявка в команду <b>${esc(ot.name)}</b> — дождись ответа лидера ` +
-        'или отмени её: <code>/crew leave</code>')
+      return {
+        ok: false, code: 'pending_other', name: ot.name,
+        text: `У тебя уже есть заявка в команду <b>${esc(ot.name)}</b> — дождись ответа лидера ` +
+          'или отмени её: <code>/crew leave</code>',
+      }
     }
   }
   const leaderId = await teamLeaderId(team.id)
-  if (!leaderId) return dm(from.id, `У команды <b>${tName}</b> сейчас нет лидера — вступить нельзя.`)
+  if (!leaderId) return { ok: false, code: 'no_leader', name: team.name, text: `У команды <b>${tName}</b> сейчас нет лидера — вступить нельзя.` }
 
   const db = getDb()
   const now = new Date().toISOString()
@@ -677,16 +801,18 @@ async function crewJoin(from, arg) {
   if (!sent.ok) {
     await db.from('tg_team_requests').delete()
       .eq('team_id', team.id).eq('telegram_user_id', from.id).eq('status', 'pending')
-    return dm(from.id,
-      `Не удалось отправить заявку лидеру команды <b>${tName}</b> — похоже, он не запускал бота или заблокировал его. ` +
-      'Попроси лидера написать боту /start.')
+    return {
+      ok: false, code: 'leader_unreachable', name: team.name,
+      text: `Не удалось отправить заявку лидеру команды <b>${tName}</b> — похоже, он не запускал бота или заблокировал его. ` +
+        'Попроси лидера написать боту /start.',
+    }
   }
-  await dm(from.id, `📨 Заявка в команду <b>${tName}</b> отправлена лидеру. Как только он ответит — я напишу.`)
+  return { ok: true, code: 'join_ok', name: team.name, text: `📨 Заявка в команду <b>${tName}</b> отправлена лидеру. Как только он ответит — я напишу.` }
 }
 
 // Accept / decline a join request. Only the team's current leader (by role).
 // → { text, answer, keep } (keep = leave the buttons, e.g. Telegram didn't answer).
-async function decideJoin(leader, teamId, uid, accept) {
+export async function decideJoin(leader, teamId, uid, accept) {
   const db = getDb()
   const [team, lead] = await Promise.all([
     teamById(teamId),
@@ -763,39 +889,57 @@ async function crewDecide(from, arg, accept) {
 // on the team: the earliest-joined member becomes leader; nobody left → the
 // team is deleted. Not in a team → cancels a pending join request.
 async function crewLeave(from) {
+  const r = await leaveTeam(from)
+  await dm(from.id, r.text)
+}
+
+// A pending join request → cancelled. → { ok:true, code:'cancelled', teamName, text } | null
+export async function cancelJoinRequest(from) {
+  try {
+    const { data: pend } = await getDb().from('tg_team_requests')
+      .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+      .eq('telegram_user_id', from.id).eq('status', 'pending')
+      .select('team_id')
+    if (pend && pend.length) {
+      const t = await teamById(pend[0].team_id)
+      const teamName = t?.name || '—'
+      return { ok: true, code: 'cancelled', teamName, name: teamName, text: `Заявка в команду <b>${esc(teamName)}</b> отменена.` }
+    }
+  } catch {}
+  return null
+}
+
+// Leave the team (the heir / leader DMs are sent here); not in a team → cancels
+// a pending join request.
+// → { ok:true, code:'cancelled'|'deleted'|'handover'|'left', text, teamName, heirName? }
+//   | { ok:false, code:'not_in_team', text }
+export async function leaveTeam(from) {
   const db = getDb()
+  const notIn = { ok: false, code: 'not_in_team', text: 'Ты не в команде.' }
   const mine = await membershipOf(from.id)
-  if (!mine) {
-    try {
-      const { data: pend } = await db.from('tg_team_requests')
-        .update({ status: 'cancelled', updated_at: new Date().toISOString() })
-        .eq('telegram_user_id', from.id).eq('status', 'pending')
-        .select('team_id')
-      if (pend && pend.length) {
-        const t = await teamById(pend[0].team_id)
-        return dm(from.id, `Заявка в команду <b>${esc(t?.name || '—')}</b> отменена.`)
-      }
-    } catch {}
-    return dm(from.id, 'Ты не в команде.')
-  }
+  if (!mine) return (await cancelJoinRequest(from)) || notIn
   const { data: res, error } = await db.rpc('tg_team_leave', { p_uid: from.id })
   if (error) throw new Error('tg_team_leave: ' + error.message)
-  if (!res || !res.left) return dm(from.id, 'Ты не в команде.')
-  const tName = esc(res.team_name || '—')
+  if (!res || !res.left) return notIn
+  const teamName = res.team_name || '—'
+  const tName = esc(teamName)
   if (res.deleted) {
-    return dm(from.id, `Ты вышел из команды <b>${tName}</b>. В ней никого не осталось — команда удалена.`)
+    return { ok: true, code: 'deleted', teamName, name: teamName, text: `Ты вышел из команды <b>${tName}</b>. В ней никого не осталось — команда удалена.` }
   }
   if (res.new_leader) {
     const heirId = Number(res.new_leader)
     const people = await peopleByIds([heirId])
-    await dm(from.id, `Ты вышел из команды <b>${tName}</b>. Новый лидер — ${fullNameHtml(people[String(heirId)], heirId)}.`)
     await dm(heirId, `👑 ${fullNameHtml(from)} вышел(а) из команды <b>${tName}</b> — теперь ты лидер.\n\nКоманда: /myteam`)
-    return
+    return {
+      ok: true, code: 'handover', teamName, name: teamName,
+      heirName: plainName(people[String(heirId)], heirId),
+      text: `Ты вышел из команды <b>${tName}</b>. Новый лидер — ${fullNameHtml(people[String(heirId)], heirId)}.`,
+    }
   }
-  await dm(from.id, `Ты вышел из команды <b>${tName}</b>.`)
   if (res.leader && Number(res.leader) !== Number(from.id)) {
     await dm(Number(res.leader), `👷 ${fullNameHtml(from)} вышел(а) из команды <b>${tName}</b>.`)
   }
+  return { ok: true, code: 'left', teamName, name: teamName, text: `Ты вышел из команды <b>${tName}</b>.` }
 }
 
 // @username → team members who hold it NOW in Telegram (tg_people may be
@@ -899,9 +1043,9 @@ async function checkPair(chatId, authorId, targetId) {
   return { ok: true, targetUser: tu }
 }
 
-async function existingReview(authorId, targetId) {
+async function existingReview(authorId, targetId, cols = REVIEW_COLS) {
   const { data, error } = await getDb().from('tg_reviews')
-    .select(REVIEW_COLS)
+    .select(cols)
     .eq('author_telegram_id', authorId).eq('target_telegram_id', targetId).maybeSingle()
   if (error) throw new Error('tg_reviews read: ' + error.message)
   return data
@@ -937,78 +1081,214 @@ async function editBlock(prev, authorId) {
   return null
 }
 
-// One review per author → target: an edit replaces rating (+ text unless keepText).
-// New reviews: max 10 per day (checked here AND by a DB trigger, so parallel
-// requests can't get past it). Edits: one per 10 min per review, max 20 changed
-// reviews per day. Hidden stays hidden after an edit.
-// → { ok, created, prev, row, hidden } | { ok:false, text }
-async function storeReview({ chatId, authorId, targetId, rating, text = null, keepText = false }) {
+// A CHECK constraint failed: a wizard column, or the author = target check.
+function checkViolation(error) {
+  return /work_|scores|would_/.test(error?.message || '')
+    ? { ok: false, code: 'invalid', text: 'Проверь поля отзыва.' }
+    : { ok: false, code: 'self', text: SELF_REVIEW }
+}
+
+// THE only place a review is written (insert, rating, text, wizard fields).
+// First the review gate (Bestie link + filled profile + paid plan) — nothing
+// gets around it. One review per author → target: an edit replaces rating
+// (+ text unless keepText, + the wizard fields when given). New reviews: max
+// 10 per day (checked here AND by a DB trigger, so parallel requests can't get
+// past it). Edits: one per 10 min per review, max 20 changed reviews per day.
+// Hidden stays hidden after an edit. A changed «где / когда» clears the
+// reviewed person's «работали вместе?» answer.
+// wizard = { work_place, work_month, work_year, scores, would_work_again }
+// → { ok, created, prev, row, hidden, placeChanged }
+//   | { ok:false, code:'gate'|'edit_block'|'limit'|'invalid'|'self', text, gate?, status? }
+async function storeReview({ chatId, authorId, targetId, rating, text = null, keepText = false, wizard = null }: any) {
+  const g = await requireReviewer(authorId)
+  if (!g.ok) return { ok: false, gate: true, code: 'gate', text: g.text, status: g.status }
   const db = getDb()
   const now = new Date().toISOString()
+  const cols = wizard ? REVIEW_COLS_V2 : REVIEW_COLS
+  const w = wizard
+    ? {
+        work_place: wizard.work_place,
+        work_month: wizard.work_month,
+        work_year: wizard.work_year,
+        scores: wizard.scores,
+        would_work_again: wizard.would_work_again,
+      }
+    : null
   const fields: any = { rating, updated_at: now }
   if (!keepText) fields.text = text || null
+  if (w) Object.assign(fields, w)
   const update = async (prev) => {
-    const { data, error } = await db.from('tg_reviews').update(fields)
+    const placeChanged = !!w && !!prev && (prev.work_place !== w.work_place ||
+      Number(prev.work_month) !== w.work_month || Number(prev.work_year) !== w.work_year)
+    // A new place drops the old «да, работали», but never the «не работали»
+    // dispute — only the reviewed person's own «Да» clears that.
+    const patch = placeChanged ? { ...fields, confirmed_at: null } : fields
+    const { data, error } = await db.from('tg_reviews').update(patch)
       .eq('author_telegram_id', authorId).eq('target_telegram_id', targetId)
-      .select(REVIEW_COLS)
-    if (error) throw new Error('tg_reviews update: ' + error.message)
+      .select(cols)
+    if (error) {
+      if (error.code === '23514') return checkViolation(error)
+      throw new Error('tg_reviews update: ' + error.message)
+    }
     const row = (data && data[0]) || prev
-    return { ok: true, created: false, prev, row, hidden: !!(row?.hidden_at || prev?.hidden_at) }
+    return { ok: true, created: false, prev, row, hidden: !!(row?.hidden_at || prev?.hidden_at), placeChanged }
   }
-  const prev = await existingReview(authorId, targetId)
+  const prev = await existingReview(authorId, targetId, cols)
   if (prev) {
     const block = await editBlock(prev, authorId)
-    if (block) return { ok: false, text: block }
+    if (block) return { ok: false, code: 'edit_block', text: block }
     return update(prev)
   }
-  if (await overDailyLimit(authorId)) return { ok: false, text: LIMIT_TEXT }
+  if (await overDailyLimit(authorId)) return { ok: false, code: 'limit', text: LIMIT_TEXT }
   const { data: row, error } = await db.from('tg_reviews').insert({
     chat_id: chatId,
     target_telegram_id: targetId,
     author_telegram_id: authorId,
     rating,
     text: keepText ? null : (text || null),
+    ...(w || {}),
     created_at: now,
     updated_at: now,
-  }).select(REVIEW_COLS).single()
+  }).select(cols).single()
   if (error) {
     if (error.code === '23505') {
       // Saved by a parallel request a moment ago → update that row (re-read, so
       // callers see hidden_at).
-      return update(await existingReview(authorId, targetId))
+      return update(await existingReview(authorId, targetId, cols))
     }
-    if (error.code === '23514') return { ok: false, text: SELF_REVIEW }
-    if (error.code === 'P0001' && /tg_reviews_daily_limit/.test(error.message || '')) return { ok: false, text: LIMIT_TEXT }
+    if (error.code === '23514') return checkViolation(error)
+    if (error.code === 'P0001' && /tg_reviews_daily_limit/.test(error.message || '')) return { ok: false, code: 'limit', text: LIMIT_TEXT }
     throw new Error('tg_reviews insert: ' + error.message)
   }
-  return { ok: true, created: true, prev: null, row, hidden: false }
+  return { ok: true, created: true, prev: null, row, hidden: false, placeChanged: false }
 }
 
-async function confirmPrivate(from, targetId, tu, rating, text) {
-  const r = (await ratingsFor([targetId]))[String(targetId)]
-  await dm(from.id,
-    `✅ Отзыв о ${fullNameHtml(tu, targetId)} сохранён: ${stars(rating)}` +
-    (text ? `\n«${esc(cpSlice(text, 300))}»` : '') +
-    `\n\n⭐ Рейтинг: ${fmtRating(r)}`)
+// The Mini App review wizard (lib/tower-app.ts) → validated, gated, stored,
+// the reviewed person notified. author = Telegram user from verified initData.
+// → { ok:true, created, reviewId, targetId, targetUser }
+//   | { ok:false, code:'invalid', text, field } | { ok:false, code:'gate', text, status }
+//   | { ok:false, code:'self'|'pair'|'edit_block'|'limit', text }   (text may be HTML)
+export async function storeWizardReview(author, input) {
+  // +14 h / 1 month of slack: the person's own month may be ahead of the server's.
+  const v = validateWizard(input, { nowMs: Date.now() + 14 * HOUR, slackMonths: 1 })
+  if (!v.ok) return { ok: false, code: 'invalid', text: v.error, field: v.field }
+  const x = v.value
+  const targetId = x.targetId
+  if (Number(targetId) === Number(author.id)) return { ok: false, code: 'self', text: SELF_REVIEW }
+  // Early (nice error before the Telegram calls); storeReview checks again
+  // (10-second cache → cheap).
+  const g = await requireReviewer(author.id)
+  if (!g.ok) return { ok: false, code: 'gate', text: g.text, status: g.status }
+  const chatId = await resolveChatId()
+  const pair = await checkPair(chatId, author.id, targetId)
+  if (!pair.ok) return { ok: false, code: 'pair', text: pair.text }
+  const res = await storeReview({
+    chatId,
+    authorId: author.id,
+    targetId,
+    rating: x.rating,
+    text: x.text,
+    wizard: {
+      work_place: x.workPlace,
+      work_month: x.workMonth,
+      work_year: x.workYear,
+      scores: x.scores,
+      would_work_again: x.wouldWorkAgain,
+    },
+  })
+  if (!res.ok) {
+    const out: any = { ok: false, code: res.code || 'error', text: res.text }
+    if (res.status) out.status = res.status
+    return out
+  }
+  try {
+    await notifyReview(res.row, targetId, author, {
+      created: res.created,
+      ratingChanged: !res.created && Number(res.prev?.rating) !== x.rating,
+      placeChanged: !!res.placeChanged,
+    })
+  } catch (e) {
+    console.warn('[tower/teams] review notify failed:', e?.message || e)
+  }
+  return { ok: true, created: res.created, reviewId: res.row?.id || null, targetId, targetUser: pair.targetUser || null }
 }
 
-async function notifyTarget(targetId, author, rating, text, created) {
-  return dm(targetId,
-    `${created ? '⭐ Новый отзыв о тебе' : '✏️ Отзыв о тебе обновлён'} — от ${fullNameHtml(author)}: ${stars(rating)}` +
-    (text ? `\n«${esc(cpSlice(text, 300))}»` : '') +
-    '\n\nВсе отзывы: /reviews')
+// «Работали вместе?» buttons under the DM to the reviewed person.
+const workButtons = (id) => [[
+  { text: '✅ Да, работали', callback_data: `wc:${id}:y` },
+  { text: '❌ Не работали', callback_data: `wc:${id}:n` },
+]]
+
+function whereText(row) {
+  const date = fmtWorkDate(row?.work_month, row?.work_year)
+  return [row?.work_place ? esc(row.work_place) : '', date].filter(Boolean).join(', ')
 }
 
-// The reviewed person hears about a NEW review, and about a changed rating at
-// most once a day per review. Text-only edits and hidden reviews: no DM.
-async function notifyReview(row, targetId, author, { created = false, ratingChanged = false } = {}) {
+// ask = add «Вы работали вместе?» + the ✅/❌ buttons.
+async function notifyTarget(targetId, author, row, created, ask) {
+  const quote = row.text ? `\n«${esc(cpSlice(row.text, 300))}»` : ''
+  const date = fmtWorkDate(row.work_month, row.work_year)
+  let text
+  if (created && row.work_place) {
+    text = `⭐ <b>Коллега оставил тебе отзыв:</b> объект <b>${esc(row.work_place)}</b>${date ? ', ' + date : ''}.\n` +
+      (ask ? 'Вы работали вместе?\n' : '') +
+      `\nОт: ${fullNameHtml(author)} · ${stars(row.rating)}` + quote
+  } else if (created) {
+    text = `⭐ Новый отзыв о тебе — от ${fullNameHtml(author)}: ${stars(row.rating)}` + quote
+  } else {
+    text = `✏️ Отзыв о тебе обновлён — от ${fullNameHtml(author)}: ${stars(row.rating)}` +
+      (row.work_place ? `\nОбъект: ${whereText(row)}` : '') + quote +
+      (ask ? '\n\nВы работали вместе?' : '')
+  }
+  const buttons = ask && row.id ? workButtons(row.id) : []
+  buttons.push([{ text: '🗼 Все отзывы обо мне', web_app: { url: appUrl('me') } }])
+  return dm(targetId, text, buttons)
+}
+
+// The reviewed person hears about a NEW review (with «Вы работали вместе?»),
+// and about a changed rating or place at most once a day per review.
+// Text-only edits and hidden reviews: no DM.
+async function notifyReview(row, targetId, author, { created = false, ratingChanged = false, placeChanged = false } = {}) {
   if (!row || row.hidden_at) return
-  if (!created && !(ratingChanged && ageMs(row.notified_at) >= NOTIFY_EVERY_MS)) return
-  const r = await notifyTarget(targetId, author, row.rating, row.text, created)
+  // A changed place is always asked again (edits are already limited to one
+  // per 10 min), so an author can't quietly move a review past its target.
+  const ask = !!row.work_place && !row.confirmed_at && (created || placeChanged)
+  if (!created && !placeChanged && !(ratingChanged && ageMs(row.notified_at) >= NOTIFY_EVERY_MS)) return
+  const r = await notifyTarget(targetId, author, row, created, ask)
   if (r?.ok && row.id) {
     const { error } = await getDb().from('tg_reviews')
       .update({ notified_at: new Date().toISOString() }).eq('id', row.id)
     if (error) console.warn('[tower/teams] notified_at:', error.message)
+  }
+}
+
+// The reviewed person's answer to «Вы работали вместе?» (bot button or Mini
+// App). The latest answer wins. NEVER deletes or hides the review: «Не
+// работали» only puts it on /admin/tower «Спорные отзывы» for the owner.
+// → { ok:true, confirmed, disputed, authorId, review:{ work_place, work_month, work_year } }
+//   | { ok:false, code:'bad_request'|'not_found'|'not_target'|'schema', text }
+export async function confirmReview(tgId, reviewId, worked) {
+  const id = String(reviewId || '').toLowerCase()
+  if (!UUID_RE.test(id)) return { ok: false, code: 'bad_request', text: 'Отзыв не найден.' }
+  if (!(await miniappSchemaReady())) return { ok: false, code: 'schema', text: SCHEMA_BOT }
+  const db = getDb()
+  const { data: rv, error } = await db.from('tg_reviews')
+    .select('id, author_telegram_id, target_telegram_id, hidden_at, work_place, work_month, work_year')
+    .eq('id', id).maybeSingle()
+  if (error) throw new Error('tg_reviews read: ' + error.message)
+  if (!rv || rv.hidden_at) return { ok: false, code: 'not_found', text: 'Отзыв уже недоступен.' }
+  if (Number(rv.target_telegram_id) !== Number(tgId)) return { ok: false, code: 'not_target', text: 'Это не твой отзыв' }
+  const now = new Date().toISOString()
+  const patch = worked ? { confirmed_at: now, disputed_at: null } : { disputed_at: now, confirmed_at: null }
+  const { error: uErr } = await db.from('tg_reviews').update(patch).eq('id', id)
+  if (uErr) throw new Error('tg_reviews update: ' + uErr.message)
+  console.log('[tower/teams] work confirm', id, worked ? 'yes' : 'no')
+  return {
+    ok: true,
+    confirmed: !!worked,
+    disputed: !worked,
+    authorId: Number(rv.author_telegram_id),
+    review: { work_place: rv.work_place || null, work_month: rv.work_month ?? null, work_year: rv.work_year ?? null },
   }
 }
 
@@ -1037,12 +1317,15 @@ async function settlePendingText(from) {
   await finishPendingReview(from, st)
 }
 
-// /review @username, /review <id>, deep link /start review_<id>.
+// /review @username, /review <id>, deep links /start review_<id> · app_review_<id>.
+// Checks first (gate, membership, limits), then a web_app button into the
+// Mini App review form — the form saves through storeWizardReview().
 // opts.username: the @username that was resolved (re-checked against Telegram).
-// opts.inline: { rating, text } from "/review @username 5 текст" → saved at once.
 async function beginReview(from, targetId, opts: any = {}) {
-  if (!targetId) return dm(from.id, REVIEW_HOW)
+  if (!targetId) return dm(from.id, REVIEW_HOW, appButton('home'))
   if (Number(targetId) === Number(from.id)) return dm(from.id, SELF_REVIEW)
+  const g = await requireReviewer(from.id)
+  if (!g.ok) return sendGate(from, g.status)
   const chatId = await resolveChatId()
   const pair = await checkPair(chatId, from.id, targetId)
   if (!pair.ok) return dm(from.id, pair.text)
@@ -1051,18 +1334,6 @@ async function beginReview(from, targetId, opts: any = {}) {
   if (opts.username && String(tu.username || '').toLowerCase() !== String(opts.username).toLowerCase()) {
     return dm(from.id, unknownUser(opts.username))
   }
-  if (opts.inline) {
-    const res = await storeReview({
-      chatId, authorId: from.id, targetId, rating: opts.inline.rating, text: opts.inline.text,
-    })
-    if (!res.ok) return dm(from.id, res.text)
-    await confirmPrivate(from, targetId, tu, opts.inline.rating, opts.inline.text)
-    await notifyReview(res.row, targetId, from, {
-      created: res.created,
-      ratingChanged: !res.created && Number(res.prev?.rating) !== Number(opts.inline.rating),
-    })
-    return
-  }
   const prev = await existingReview(from.id, targetId)
   if (prev) {
     const block = await editBlock(prev, from.id)
@@ -1070,53 +1341,30 @@ async function beginReview(from, targetId, opts: any = {}) {
   } else if (await overDailyLimit(from.id)) {
     return dm(from.id, LIMIT_TEXT)
   }
-  await setState(from.id, 'review_stars', { t: Number(targetId) })
-  const row = [1, 2, 3, 4, 5].map((n) => ({ text: `⭐${n}`, callback_data: `rv:${Number(targetId)}:${n}` }))
   await dm(from.id,
-    `Оценка для ${fullNameHtml(tu, targetId)} (нажми ⭐ или напиши цифру 1–5):` +
-    (prev ? `\n\nТвоя прошлая оценка: ${stars(prev.rating)} — новая её заменит.` : ''),
-    [row])
+    `📝 Отзыв: ${fullNameHtml(tu, targetId)} — открой форму, это займёт минуту 👇` +
+    (prev ? '\n\nТвой прошлый отзыв заменится новым.' : ''),
+    reviewButton(targetId))
 }
 
+// An inline rating («/review @username 5 текст») is ignored: every review goes
+// through the form.
 async function reviewCommand(from, rest) {
-  const m = /^(\S+)\s*([\s\S]*)$/.exec(rest || '')
-  if (!m) return dm(from.id, REVIEW_HOW)
+  const m = /^(\S+)/.exec(String(rest || '').trim())
+  if (!m) return dm(from.id, REVIEW_HOW, appButton('home'))
   const who = m[1]
-  const inline = parseRating(m[2])
   if (/^@[A-Za-z0-9_]{4,32}$/.test(who)) {
     const uname = who.slice(1)
     const p = await personByUsername(uname)
     if (!p) return dm(from.id, unknownUser(uname))
-    return beginReview(from, Number(p.telegram_user_id), { username: uname, inline })
+    return beginReview(from, Number(p.telegram_user_id), { username: uname })
   }
-  if (/^\d{4,15}$/.test(who)) return beginReview(from, Number(who), { inline })
-  await dm(from.id, REVIEW_HOW)
-}
-
-// Step 2 (after the stars): the optional text. raw '' / «—» = no text.
-async function reviewTextStep(from, raw, st) {
-  const targetId = Number(st.data?.t)
-  const rating = Number(st.data?.s)
-  if (!targetId || !(rating >= 1 && rating <= 5)) {
-    await clearState(from.id)
-    return dm(from.id, 'Что-то пошло не так — начни заново: /review @username')
-  }
-  const t = String(raw || '').trim()
-  const text = !t || SKIP_RE.test(t) ? null : cleanText(t)
-  const { data, error } = await getDb().from('tg_reviews')
-    .update({ text, updated_at: new Date().toISOString() })
-    .eq('author_telegram_id', from.id).eq('target_telegram_id', targetId)
-    .select(REVIEW_COLS)
-  if (error) throw new Error('tg_reviews update: ' + error.message)
-  await clearState(from.id)
-  if (!data || !data.length) return dm(from.id, 'Отзыв не найден — начни заново: /review @username')
-  const people = await peopleByIds([targetId])
-  const tp = people[String(targetId)] || { telegram_user_id: targetId }
-  await confirmPrivate(from, targetId, tp, data[0].rating || rating, text)
-  await notifyReview(data[0], targetId, from, { created: !!st.data?.n, ratingChanged: !!st.data?.ch })
+  if (/^\d{4,15}$/.test(who)) return beginReview(from, Number(who))
+  await dm(from.id, REVIEW_HOW, appButton('home'))
 }
 
 // buttons: new inline keyboard; omitted → the old buttons are removed.
+// true also when the text was already the same («message is not modified»).
 async function editCallbackMessage(cq, text, buttons = null) {
   const msg = cq?.message
   if (!msg?.chat?.id || !msg.message_id) return false
@@ -1129,79 +1377,49 @@ async function editCallbackMessage(cq, text, buttons = null) {
   }
   if (buttons && buttons.length) params.reply_markup = { inline_keyboard: buttons }
   const r = await tg('editMessageText', params)
-  return !!r.ok
+  return !!r.ok || /not modified/i.test(r.description || '')
 }
 
-// Saves the stars — from a ⭐ button (opts.cq) or a typed «5» / «5 текст».
-// With text → done; without → the optional text step (with «Без текста ✅»).
-async function applyStars(from, targetId, rating, opts: any = {}) {
-  const cq = opts.cq || null
-  const say = async (text, buttons = null) => {
-    if (!(cq && (await editCallbackMessage(cq, text, buttons)))) await dm(from.id, text, buttons)
-  }
-  const chatId = await resolveChatId()
-  const pair = await checkPair(chatId, from.id, targetId)
-  if (!pair.ok) {
-    await clearState(from.id)
-    await say(pair.text)
-    return ''
-  }
-  const tu = pair.targetUser || { id: targetId }
-  const text = opts.text || null
-  const res = await storeReview({ chatId, authorId: from.id, targetId, rating, text, keepText: !text })
-  if (!res.ok) {
-    await clearState(from.id)
-    await say(res.text)
-    return ''
-  }
-  const ratingChanged = !res.created && Number(res.prev?.rating) !== Number(rating)
-  if (text) {
-    await clearState(from.id)
-    await confirmPrivate(from, targetId, tu, rating, text)
-    await notifyReview(res.row, targetId, from, { created: res.created, ratingChanged })
-    return 'Сохранено ✅'
-  }
-  await setState(from.id, 'review_text', {
-    t: Number(targetId),
-    s: rating,
-    n: res.created ? 1 : 0,
-    ch: res.created || ratingChanged ? 1 : 0,
-  })
-  await say(
-    `Оценка для ${fullNameHtml(tu, targetId)}: ${stars(rating)} — сохранена ✅\n\n` +
-    'Напиши пару слов (или — чтобы пропустить)',
-    [[{ text: 'Без текста ✅', callback_data: `rvs:${Number(targetId)}` }]])
-  return 'Сохранено ✅'
+// rv:<targetId>:<stars> / rvs:<targetId> — the ⭐ buttons of the old flow
+// (still in people's chats). Reviews are written in the app now.
+async function onOldReviewButton(from, cq, targetId) {
+  const st = await clearState(from.id)
+  if (st) await finishPendingReview(from, st)
+  const buttons = reviewButton(targetId)
+  if (!(await editCallbackMessage(cq, IN_APP_TEXT, buttons))) await dm(from.id, IN_APP_TEXT, buttons)
+  return 'Откроем приложение'
 }
 
-// rv:<targetId>:<stars> — only the person whose /review started it (the state
-// is keyed by the presser's id).
-async function onStarPress(from, cq, targetId, rating) {
-  const st = await getState(from.id)
-  if (st?.expired) await finishPendingReview(from, st)
-  const live = st && !st.expired ? st : null
-  // A second tap right after the first one: already saved, keep the message.
-  if (live && live.state === 'review_text' && Number(live.data?.t) === Number(targetId)) {
-    return 'Оценка уже сохранена — напиши пару слов'
+// wc:<reviewId>:y|n — the reviewed person's «Вы работали вместе?».
+async function onWorkConfirm(from, cq, reviewId, yes) {
+  const r = await confirmReview(from.id, reviewId, yes)
+  if (!r.ok) {
+    if (r.code === 'not_target') return 'Это не твой отзыв'
+    if (r.code === 'not_found' || r.code === 'bad_request') {
+      await editCallbackMessage(cq, 'Отзыв уже недоступен.')
+      return 'Отзыв недоступен'
+    }
+    return r.text || 'Не получилось'
   }
-  if (!live || live.state !== 'review_stars' || Number(live.data?.t) !== Number(targetId)) {
-    await editCallbackMessage(cq, 'Эта оценка уже неактуальна. Начни заново: /review @username')
-    return 'Уже неактуально — начни заново'
+  const where = whereText(r.review)
+  if (yes) {
+    await editCallbackMessage(cq,
+      `Подтверждено ✅\nУ отзыва${where ? ` (${where})` : ''} стоит отметка «работали вместе».`,
+      reviewButton(r.authorId, '⭐ Оставить встречный отзыв'))
+    return 'Подтверждено ✅'
   }
-  return applyStars(from, targetId, rating, { cq })
+  await editCallbackMessage(cq, 'Отмечено: вы не работали вместе. Модератор посмотрит этот отзыв.')
+  return 'Отмечено'
 }
 
-// rvs:<targetId> — «Без текста ✅»: finish the review without text.
-async function onSkipText(from, cq, targetId) {
-  const st = await getState(from.id)
-  if (st?.expired) await finishPendingReview(from, st)
-  if (!st || st.expired || st.state !== 'review_text' || Number(st.data?.t) !== Number(targetId)) {
-    await editCallbackMessage(cq, 'Оценка сохранена ✅')
-    return 'Уже сохранено'
-  }
-  await editCallbackMessage(cq, 'Оценка сохранена ✅ — без текста')
-  await reviewTextStep(from, '', st)
-  return 'Сохранено ✅'
+// acc:check — «🔄 Проверить снова» under the checklist.
+async function onAccessCheck(from, cq) {
+  invalidateReviewer(from.id)
+  const st = await reviewerStatus(from.id, { fresh: true })
+  const text = gateText(st)
+  const buttons = await gateButtons(st, from)
+  if (!(await editCallbackMessage(cq, text, buttons))) await dm(from.id, text, buttons)
+  return 'Обновлено'
 }
 
 // tj:<teamId>:<uid>:y|n — the leader's answer to a join request.
@@ -1217,6 +1435,7 @@ async function sendReviewsOf(viewer, targetId) {
   if (!self) {
     const gate = await requireMember(viewer.id)
     if (!gate.ok) return dm(viewer.id, gate.text)
+    if ((await hiddenIds([targetId])).size) return dm(viewer.id, HIDDEN_PERSON_TEXT)
   }
   const db = getDb()
   const [{ data: rows, error }, ratings, tPeople] = await Promise.all([
@@ -1246,12 +1465,10 @@ async function sendReviewsOf(viewer, targetId) {
     }
     if (r && r.count > list.length) lines.push('', `Показаны последние ${list.length} из ${r.count}.`)
   }
-  const bot = await botUsername()
-  const link = `https://t.me/${bot}?start=review_${Number(targetId)}`
   const tail = self
-    ? ['', 'Попроси коллег оставить отзыв — дай им ссылку:', link]
+    ? ['', 'Попроси коллег оставить отзыв — дай им ссылку:', await appLink('review_' + Number(targetId))]
     : []
-  const buttons = self ? null : [[{ text: '⭐ Оставить отзыв', url: link }]]
+  const buttons = self ? appButton('me') : reviewButton(targetId, '⭐ Оставить отзыв')
   await dm(viewer.id, fit(lines, 3600) + (tail.length ? '\n' + tail.join('\n') : ''), buttons)
 }
 
@@ -1267,24 +1484,19 @@ const PRIVATE_COMMANDS = {
   '/reviews': 'reviews', '/отзывы': 'reviews',
   '/help': 'help', '/помощь': 'help',
   '/cancel': 'cancel', '/отмена': 'cancel',
+  '/app': 'app', '/rating': 'app', '/рейтинг': 'app', '/приложение': 'app',
+  '/link': 'link', '/привязать': 'link',
+  '/access': 'access', '/доступ': 'access',
 }
 
 // What to say when a step ran out and the person answers anyway.
+// (review_* steps are from the old ⭐ flow — reviews are in the app now.)
 async function expiredText(st) {
   if (st.state === 'crew_name' || st.state === 'crew_desc') {
     return '⏱ Время вышло — команда не создана. Начни заново: <code>/crew create</code>'
   }
-  if (st.state === 'review_text' || st.state === 'review_stars') {
-    const t = Number(st.data?.t)
-    let again = '/review @username'
-    try {
-      const p = t ? (await peopleByIds([t]))[String(t)] : null
-      if (p?.username) again = '/review @' + p.username
-    } catch {}
-    return st.state === 'review_text'
-      ? `⏱ Время вышло. Оценка сохранена, текст можно добавить: <code>${esc(again)}</code>`
-      : `⏱ Время вышло — начни заново: <code>${esc(again)}</code>`
-  }
+  if (st.state === 'review_text') return '⏱ Время вышло. Оценка сохранена. Отзывы теперь — в приложении: /app'
+  if (st.state === 'review_stars') return '⏱ Время вышло. Отзывы теперь — в приложении: /app'
   return '⏱ Время вышло — начни заново.'
 }
 
@@ -1309,18 +1521,33 @@ export async function handleTeamsPrivate(msg, cmd, words) {
     if (kind === 'crew_join') { await crewCommand(from, ('join ' + rest).trim()); return true }
     if (kind === 'review') { await reviewCommand(from, rest); return true }
     if (kind === 'reviews') { await sendReviewsOf(from, from.id); return true }
-    if (kind === 'help') { await dm(from.id, HELP_TEXT); return true }
+    if (kind === 'help') { await dm(from.id, HELP_TEXT, appButton('home')); return true }
     if (kind === 'cancel') { await dm(from.id, cancelled ? 'Отменено ✅' : 'Нечего отменять 🙂'); return true }
+    if (kind === 'app') { await sendAppButton(from, 'home'); return true }
+    if (kind === 'link') { await sendLinkButton(from); return true }
+    if (kind === 'access') { await sendGate(from); return true }
     if (cmd === '/start') {
       const p = String(words?.[1] || '')
-      // From the group: «эта команда работает в личке» → t.me/<bot>?start=help
-      if (p === 'help') { await dm(from.id, HELP_TEXT); return true }
-      // Buttons under the group's «this works in the DM» replies
+      // Old group buttons / shared links → t.me/<bot>?start=help
+      if (p === 'help') { await dm(from.id, HELP_TEXT, appButton('home')); return true }
+      // The review gate checklist (group «нужен доступ» button) and the Bestie link
+      if (p === 'access') { await sendGate(from); return true }
+      if (p === 'link') { await sendLinkButton(from); return true }
+      // Old buttons under the group's «this works in the DM» replies
       if (p === 'crew_create') { await crewCommand(from, 'create'); return true }
       if (p === 'crew') { await crewCommand(from, ''); return true }
       if (p === 'myteam') { await sendMyTeam(from); return true }
       if (p === 'myreviews') { await sendReviewsOf(from, from.id); return true }
-      let m = /^review_(\d{1,15})$/.exec(p)
+      // Group url buttons without TOWER_MINIAPP_URL: /start app[_<param>]
+      let m = /^app(?:_([A-Za-z0-9_-]{1,60}))?$/.exec(p)
+      if (m) {
+        const sub = m[1] || ''
+        const rv = /^review_(\d{1,15})$/.exec(sub)
+        if (rv) await beginReview(from, Number(rv[1]))
+        else await sendAppButton(from, START_PARAM_RE.test(sub) ? sub : 'home')
+        return true
+      }
+      m = /^review_(\d{1,15})$/.exec(p)
       if (m) { await beginReview(from, Number(m[1])); return true }
       m = /^reviews_(\d{1,15})$/.exec(p)
       if (m) { await sendReviewsOf(from, Number(m[1])); return true }
@@ -1338,14 +1565,13 @@ export async function handleTeamsPrivate(msg, cmd, words) {
   }
   if (st.state === 'crew_name') await crewNameStep(from, text)
   else if (st.state === 'crew_desc') await crewDescStep(from, text, st)
-  else if (st.state === 'review_text') await reviewTextStep(from, text, st)
-  else if (st.state === 'review_stars') {
-    // A typed «5» or «5 отличный монтажник» works like the ⭐ buttons
-    // (also when button presses don't reach the bot).
-    const parsed = parseRating(text)
-    const targetId = Number(st.data?.t)
-    if (parsed && targetId) await applyStars(from, targetId, parsed.rating, { text: parsed.text })
-    else await dm(from.id, 'Выбери оценку кнопкой ⭐ или напиши цифру 1–5 (или /cancel)')
+  else if (st.state === 'review_text' || st.state === 'review_stars') {
+    // A step of the old ⭐ flow (started before the update): an already saved
+    // rating is announced, then the form in the app.
+    await finishPendingReview(from, st)
+    await clearState(from.id)
+    const t = Number(st.data?.t)
+    await dm(from.id, IN_APP_TEXT, t ? reviewButton(t) : appButton('home'))
   } else {
     await clearState(from.id)
     return false
@@ -1354,8 +1580,9 @@ export async function handleTeamsPrivate(msg, cmd, words) {
 }
 
 // ── callback_query ──────────────────────────────────────────────────────────
-// 'rv:<targetId>:<stars>', 'rvs:<targetId>', 'tj:<teamId>:<uid>:y|n',
-// 'me:reviews', 'me:team'. Always answered.
+// 'tj:<teamId>:<uid>:y|n', 'wc:<reviewId>:y|n', 'acc:check', 'me:reviews',
+// 'me:team'; old 'rv:<targetId>:<stars>' / 'rvs:<targetId>' → the app.
+// Always answered.
 export async function handleCallback(cq) {
   const from = cq.from
   const data = String(cq.data || '')
@@ -1370,12 +1597,14 @@ export async function handleCallback(cq) {
       await settlePendingText(from)
       if (data === 'me:reviews') await sendReviewsOf(from, from.id)
       else await sendMyTeam(from)
-    } else if ((m = /^rv:(\d{1,15}):([1-5])$/.exec(data))) {
-      answer = await onStarPress(from, cq, Number(m[1]), Number(m[2]))
-    } else if ((m = /^rvs:(\d{1,15})$/.exec(data))) {
-      answer = await onSkipText(from, cq, Number(m[1]))
+    } else if ((m = /^rv:(\d{1,15}):([1-5])$/.exec(data)) || (m = /^rvs:(\d{1,15})$/.exec(data))) {
+      answer = await onOldReviewButton(from, cq, Number(m[1]))
     } else if ((m = /^tj:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}):(\d{1,15}):([yn])$/i.exec(data))) {
       answer = await onJoinDecision(from, cq, m[1].toLowerCase(), Number(m[2]), m[3].toLowerCase() === 'y')
+    } else if ((m = /^wc:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}):([yn])$/i.exec(data))) {
+      answer = await onWorkConfirm(from, cq, m[1].toLowerCase(), m[2].toLowerCase() === 'y')
+    } else if (data === 'acc:check') {
+      answer = await onAccessCheck(from, cq)
     }
   } catch (e) {
     console.error('[tower/teams] callback failed:', e?.message || e)
@@ -1387,13 +1616,22 @@ export async function handleCallback(cq) {
 }
 
 // ── Group commands ──────────────────────────────────────────────────────────
+// The group chat stays clean: people work in the Mini App (it opens over the
+// chat and closes when done), not through bot messages. For every command of
+// ours typed in the group the bot
+//   • deletes the command message (needs «Удаление сообщений»; skipped silently
+//     without it),
+//   • answers in the DM with a web_app button (when the person started the bot),
+//   • posts at most ONE short reply with an «open the app» url button, deleted
+//     after ~60 s (tg_ephemeral_messages, lib/tower.ts).
+// No review, profile or team text is posted in the group.
+//
 // The bot is an admin, so it gets EVERY group message. This is the fast path:
 // a pure string check, no network, no DB.
-const GROUP_CMD_RE = /^\/(review|отзыв|profile|профиль)(?:@([A-Za-z0-9_]{3,64}))?(?=\s|$)/i
-// Our private-chat commands typed in the group (with or without @bot) → a
-// pointer to the private chat with a button that starts the right action.
-// People type «/crew create» right in the group; silence there is a dead end.
-const GROUP_DM_RE = /^\/(crew|бригада|crewcreate|createcrew|crewjoin|joincrew|myteam|team|команда|reviews|отзывы|help|помощь)(?:@([A-Za-z0-9_]{3,64}))?(?=\s|$)/i
+const GROUP_CMD_RE = /^\/(review|отзыв|profile|профиль|app|rating|рейтинг|приложение)(?:@([A-Za-z0-9_]{3,64}))?(?=\s|$)/i
+// Our private-chat commands typed in the group (with or without @bot) → the
+// matching screen of the app. Silence there would be a dead end.
+const GROUP_DM_RE = /^\/(crew|бригада|crewcreate|createcrew|crewjoin|joincrew|myteam|team|команда|reviews|отзывы|help|помощь|access|доступ|link|привязать)(?:@([A-Za-z0-9_]{3,64}))?(?=\s|$)/i
 // Generic names other bots also use → only with our @bot suffix.
 const GROUP_DM_SUFFIX_RE = /^\/(start|status|manage)@([A-Za-z0-9_]{3,64})(?=\s|$)/i
 export function parseGroupCommand(text) {
@@ -1402,7 +1640,7 @@ export function parseGroupCommand(text) {
   if (m) {
     const w = m[1].toLowerCase()
     return {
-      cmd: w === 'review' || w === 'отзыв' ? 'review' : 'profile',
+      cmd: w === 'review' || w === 'отзыв' ? 'review' : w === 'profile' || w === 'профиль' ? 'profile' : 'app',
       bot: m[2] || '',
       rest: text.slice(m[0].length).trim(),
     }
@@ -1437,6 +1675,9 @@ async function groupSend(msg, text, replyToId = null, buttons = null) {
   return r
 }
 
+// The text of the bot's OLD public review posts (before the Mini App). New
+// reviews are never posted; this only re-renders old posts on moderation
+// (syncGroupMessage).
 function groupReviewText(tu, author, rating, text, edited, r) {
   return `${stars(rating)} <b>${nameHtml(tu)}</b> — отзыв от ${nameHtml(author)}${edited ? ' (обновлён)' : ''}` +
     (text ? `\n«${esc(cpSlice(text, 300))}»` : '') +
@@ -1468,27 +1709,6 @@ async function takeGroupSlot(uid) {
   }
 }
 
-// The bot's latest group confirmation of a review: the previous one is removed
-// (one per review in the chat), and «Скрыть» in /admin/tower edits this one.
-async function rememberGroupMessage(res, chatId, sent) {
-  try {
-    const mid = sent?.ok ? sent.result?.message_id : null
-    const row = res?.row
-    if (!mid || !row?.id) return
-    const { error } = await getDb().from('tg_reviews')
-      .update({ group_chat_id: chatId, group_message_id: mid }).eq('id', row.id)
-    if (error) console.warn('[tower/teams] group_message_id:', error.message)
-    if (row.group_chat_id && row.group_message_id &&
-        !(Number(row.group_chat_id) === Number(chatId) && Number(row.group_message_id) === Number(mid))) {
-      // The bot's own old message. May fail after 48 h without the delete right — fine.
-      const d = await tg('deleteMessage', { chat_id: row.group_chat_id, message_id: row.group_message_id })
-      if (!d.ok) console.warn('[tower/teams] old confirmation not deleted:', d.description)
-    }
-  } catch (e) {
-    console.warn('[tower/teams] remember group message:', e?.message || e)
-  }
-}
-
 export async function handleGroupCommand(msg) {
   const gc = parseGroupCommand(msg?.text)
   if (!gc || !msg.from) return
@@ -1507,117 +1727,295 @@ export async function handleGroupCommand(msg) {
     upsertPerson(from),
     target && !target.is_bot ? upsertPerson(target) : null,
   ])
-  if (!(await takeGroupSlot(from.id))) {
-    // Too fast → no answer. A bare command is removed (nothing typed is lost).
-    if (!gc.rest) await tg('deleteMessage', { chat_id: msg.chat.id, message_id: msg.message_id })
-    return
-  }
   const ctx: any = { msg, from, replied, target, forwarded, deleted: false }
-  // Keep the chat clean: a command that did its job is removed. A malformed
-  // one stays (with its text) and the hint replies to it. Without the right to
-  // delete, answers go as a reply to the command itself.
+  // The command message goes away (needs «Удаление сообщений»; without it the
+  // delete fails silently and the reply goes under the command).
   ctx.clean = async () => {
     const r = await tg('deleteMessage', { chat_id: msg.chat.id, message_id: msg.message_id })
     ctx.deleted = !!r.ok
   }
-  ctx.replyTo = (id) => (ctx.deleted ? id : msg.message_id)
+  if (!(await takeGroupSlot(from.id))) {
+    // Too fast → no answer, the command is removed.
+    await ctx.clean()
+    return
+  }
+  await ctx.clean()
   try {
-    if (gc.cmd === 'dm_only') await groupDmOnly(ctx, gc)
-    else if (gc.cmd === 'profile') await groupProfile(ctx)
-    else await groupReview(ctx, gc.rest)
+    const r = await groupRoute(ctx, gc)
+    let dmOk = false
+    if (r.gate) {
+      const d = await sendGate(from, r.gate)
+      dmOk = !!d?.ok
+    } else if (r.dm) {
+      const d = await dm(from.id, r.dm.text, [[{ text: r.dm.button, web_app: { url: appUrl(r.param) } }]])
+      dmOk = !!d.ok
+    }
+    // A reply that can't be scheduled for deletion would stay forever → when the
+    // DM already answered, say nothing in the group.
+    if (dmOk && !(await miniappSchemaReady())) return
+    const url = r.botUrl || await appLink(r.param)
+    const sent = await groupSend(msg,
+      dmOk ? r.group + (r.gate ? '' : '\n<i>Ответ — в личке с ботом.</i>') : (r.groupNoDm || r.group),
+      ctx.deleted ? null : msg.message_id,
+      [[{ text: r.button, url }]])
+    if (sent.ok && sent.result?.message_id) await rememberEphemeral(msg.chat.id, sent.result.message_id)
   } catch (e) {
     console.error('[tower/teams] group command failed:', e?.message || e)
-    await groupSend(msg, `${mention(from)}: ${TEAMS_ERROR_TEXT}`, ctx.replyTo(null))
+    const sent = await groupSend(msg, `${mention(from)}: ${TEAMS_ERROR_TEXT}`, ctx.deleted ? null : msg.message_id)
+    if (sent.ok && sent.result?.message_id) await rememberEphemeral(msg.chat.id, sent.result.message_id)
   }
 }
 
-async function groupReview(ctx, rest) {
-  const { msg, from, replied, target } = ctx
-  const hint =
-    `${mention(from)}, чтобы оставить отзыв, ответь на сообщение человека:\n` +
-    '<code>/review 5 отличный монтажник</code>\n(оценка от 1 до 5, потом текст)'
-  if (!replied) return groupSend(msg, hint, ctx.replyTo(null))
-  if (ctx.forwarded) return groupSend(msg, `${mention(from)}, ${FORWARDED_TEXT}`, ctx.replyTo(null))
-  if (!target || target.is_bot) return groupSend(msg, `${mention(from)}, отзыв можно оставить только человеку 🙂`, ctx.replyTo(null))
-  if (Number(target.id) === Number(from.id)) return groupSend(msg, `${mention(from)}, себе отзыв оставить нельзя 🙂`, ctx.replyTo(null))
-  const parsed = parseRating(rest)
-  if (!parsed) {
-    // E.g. «/review@TowerCrewBot» from the «/» menu: show the format for THIS
-    // person + a button into the private ⭐ flow.
-    const bot = await botUsername()
-    return groupSend(msg,
-      `${mention(from)}, поставь оценку ${nameHtml(target)}: <code>/review 5 текст</code> ответом на сообщение — или кнопкой ниже`,
-      ctx.replyTo(null),
-      [[{ text: '⭐ Оценить', url: `https://t.me/${bot}?start=review_${Number(target.id)}` }]])
-  }
+// What a group command answers. → { param, group (HTML), button, dm?: { text, button }, botUrl? }
+// param = the Mini App screen (start param) for the url button and the DM's web_app button.
+async function groupRoute(ctx, gc) {
+  const { from, replied, target, forwarded } = ctx
+  const me = mention(from)
+  const OPEN = '🗼 Открыть приложение'
+  const notPerson = !!replied && (!target || target.is_bot)
+  const self = !!target && Number(target.id) === Number(from.id)
 
-  const chatId = msg.chat.id
-  const pair = await checkPair(chatId, from.id, target.id)
-  if (!pair.ok) return groupSend(msg, `${mention(from)}: ${pair.text}`, ctx.replyTo(null))
-  const res = await storeReview({ chatId, authorId: from.id, targetId: target.id, rating: parsed.rating, text: parsed.text })
-  if (!res.ok) return groupSend(msg, `${mention(from)}: ${res.text}`, ctx.replyTo(null))
-  await ctx.clean()
-  // A review an admin hid never goes back to the chat, even after an edit.
-  if (res.hidden) return groupSend(msg, `${mention(from)}: ✅ сохранено`, ctx.replyTo(null))
-
-  const tu = pair.targetUser || target
-  const r = (await ratingsFor([target.id]))[String(target.id)]
-  const sent = await groupSend(msg,
-    groupReviewText(tu, from, parsed.rating, parsed.text, !res.created, r),
-    ctx.replyTo(replied.message_id))
-  await rememberGroupMessage(res, chatId, sent)
-}
-
-async function groupProfile(ctx) {
-  const { msg, from, replied, target } = ctx
-  if (ctx.forwarded) return groupSend(msg, `${mention(from)}, ${FORWARDED_TEXT}`, ctx.replyTo(null))
-  if (replied && (!target || target.is_bot)) {
-    return groupSend(msg, `${mention(from)}, профиль есть только у людей 🙂`, ctx.replyTo(null))
-  }
-  const who = target || from
-  const d = await profileData(who.id)
-  const bot = await botUsername()
-  const row = []
-  if (Number(who.id) !== Number(from.id)) {
-    row.push({ text: '⭐ Оставить отзыв', url: `https://t.me/${bot}?start=review_${Number(who.id)}` })
-  }
-  row.push({ text: '📝 Отзывы', url: `https://t.me/${bot}?start=reviews_${Number(who.id)}` })
-  await ctx.clean()
-  await groupSend(msg, profileText(who.id, d, who), ctx.replyTo(target ? replied.message_id : null), [row])
-}
-
-// /crew create, /myteam, /help … in the group → «it works in the DM» + a
-// button that opens the bot right at that action.
-function dmOnlyTarget(name, rest) {
-  const sub = String(rest || '').split(/\s+/)[0].toLowerCase()
-  if (name === 'crewcreate' || name === 'createcrew' ||
-      ((name === 'crew' || name === 'бригада') && (sub === 'create' || sub === 'new' || sub === 'создать'))) {
-    return { what: 'создать команду можно в личке со мной', start: 'crew_create', button: '👷 Создать команду' }
-  }
-  if (name === 'crewjoin' || name === 'joincrew' ||
-      ((name === 'crew' || name === 'бригада') && (sub === 'join' || sub === 'вступить'))) {
+  if (gc.cmd === 'review') {
+    if (forwarded) return { param: 'home', group: `${me}, ${FORWARDED_TEXT}`, button: OPEN }
+    if (notPerson) return { param: 'home', group: `${me}, отзыв можно оставить только человеку 🙂`, button: OPEN }
+    if (self) return { param: 'me', group: `${me}, себе отзыв оставить нельзя 🙂`, button: '👤 Мой профиль' }
+    if (!target) {
+      return { param: 'home', group: `${me}, найди человека в приложении и нажми «Оставить отзыв» 👇`, button: '📝 Оставить отзыв' }
+    }
+    // No access yet → the checklist goes to DM instead of a form they can't send.
+    const g = await requireReviewer(from.id)
+    if (!g.ok) {
+      const bot = await botUsername()
+      return {
+        param: 'me',
+        group: `${me}, чтобы оставлять отзывы, нужен доступ — что сделать, бот написал в личку 👇`,
+        groupNoDm: `${me}, чтобы оставлять отзывы, нужен доступ — нажми кнопку, бот покажет, что сделать 👇`,
+        button: '🔑 Как получить доступ',
+        botUrl: `https://t.me/${bot}?start=access`,
+        gate: g.status,
+      }
+    }
     return {
-      what: 'вступить в команду можно в личке со мной: напиши там <code>/crew join Название</code>',
-      start: 'crew', button: '👷 Открыть бота',
+      param: 'review_' + Number(target.id),
+      group: `${me}, отзыв: ${nameHtml(target)} — в приложении 👇`,
+      button: '📝 Оставить отзыв',
+      dm: { text: `📝 Отзыв: ${fullNameHtml(target)} — открой форму, это займёт минуту 👇`, button: '📝 Оставить отзыв' },
     }
   }
-  if (name === 'crew' || name === 'бригада') return { what: 'команды — в личке со мной', start: 'crew', button: '👷 Команды' }
-  if (name === 'myteam' || name === 'team' || name === 'команда') {
-    return { what: 'твоя команда — в личке со мной', start: 'myteam', button: '👷 Моя команда' }
+
+  if (gc.cmd === 'profile') {
+    if (forwarded) return { param: 'home', group: `${me}, ${FORWARDED_TEXT}`, button: OPEN }
+    if (notPerson) return { param: 'home', group: `${me}, профиль есть только у людей 🙂`, button: OPEN }
+    if (target && !self) {
+      const hidden = (await hiddenIds([target.id])).size > 0
+      return {
+        param: 'person_' + Number(target.id),
+        group: `${me}, профиль ${nameHtml(target)} — в приложении 👇`,
+        button: '👤 Открыть профиль',
+        dm: {
+          text: hidden ? HIDDEN_PERSON_TEXT : profileText(target.id, await profileData(target.id), target),
+          button: '👤 Открыть профиль',
+        },
+      }
+    }
+    return {
+      param: 'me',
+      group: `${me}, твой профиль — в приложении 👇`,
+      button: '👤 Мой профиль',
+      dm: { text: profileText(from.id, await profileData(from.id), from), button: '👤 Мой профиль' },
+    }
   }
-  if (name === 'reviews' || name === 'отзывы') {
-    return { what: 'отзывы о тебе — в личке со мной', start: 'myreviews', button: '📝 Мои отзывы' }
+
+  if (gc.cmd === 'app') {
+    return {
+      param: 'home',
+      group: `${me}, рейтинг, отзывы и команды — в приложении 👇`,
+      button: OPEN,
+      dm: { text: APP_DM_TEXT.home, button: OPEN },
+    }
   }
-  return { what: 'все команды бота — в личке со мной', start: 'help', button: '💬 Открыть бота' }
+
+  // dm_only: our private-chat commands typed in the group
+  const n = gc.name || ''
+  if (['crew', 'бригада', 'crewcreate', 'createcrew', 'crewjoin', 'joincrew', 'myteam', 'team', 'команда'].includes(n)) {
+    return {
+      param: 'teams',
+      group: `${me}, команды — в приложении 👇`,
+      button: '👷 Команды',
+      dm: { text: APP_DM_TEXT.teams, button: '👷 Команды' },
+    }
+  }
+  if (n === 'reviews' || n === 'отзывы') {
+    return {
+      param: 'me',
+      group: `${me}, отзывы о тебе — в приложении 👇`,
+      button: '📝 Мои отзывы',
+      dm: { text: APP_DM_TEXT.me, button: '📝 Мои отзывы' },
+    }
+  }
+  if (n === 'help' || n === 'помощь') {
+    return {
+      param: 'home',
+      group: `${me}, все команды — в личке, а рейтинг — в приложении 👇`,
+      button: OPEN,
+      dm: { text: HELP_TEXT, button: OPEN },
+    }
+  }
+  const bot = await botUsername()
+  // /link · /access: the personal link and checklist only ever go to the DM.
+  if (n === 'access' || n === 'доступ') {
+    return {
+      param: 'me',
+      group: `${me}, что нужно для отзывов — бот написал в личку 👇`,
+      groupNoDm: `${me}, что нужно для отзывов — нажми кнопку, бот покажет 👇`,
+      button: '🔑 Доступ к отзывам',
+      botUrl: `https://t.me/${bot}?start=access`,
+      gate: await reviewerStatus(from.id, { fresh: true }),
+    }
+  }
+  if (n === 'link' || n === 'привязать') {
+    return {
+      param: 'me',
+      group: `${me}, привязать профиль Бести — в личке с ботом 👇`,
+      button: '🔗 Привязать Бести',
+      botUrl: `https://t.me/${bot}?start=link`,
+    }
+  }
+  // /start · /status · /manage with @bot: the subscription lives in the bot DM.
+  return {
+    param: 'home',
+    group: `${me}, подписка — в личке с ботом 👇`,
+    button: '💬 Открыть бота',
+    botUrl: `https://t.me/${bot}?start=${n === 'manage' ? 'manage' : 'join'}`,
+  }
 }
 
-async function groupDmOnly(ctx, gc) {
-  const { msg, from } = ctx
-  const bot = await botUsername()
-  const t = dmOnlyTarget(gc?.name || '', gc?.rest || '')
-  await ctx.clean()
-  await groupSend(msg, `${mention(from)}, ${t.what} 👇`, ctx.replyTo(null),
-    [[{ text: t.button, url: `https://t.me/${bot}?start=${t.start}` }]])
+// ── Team views (Mini App «Команды», /admin/tower) ──────────────────────────
+const round1 = (x) => Math.round(Number(x || 0) * 10) / 10
+
+function personView(people, ratings, id, hidden = null) {
+  const p = people[String(id)]
+  // Someone who hid their rating shows up by name only.
+  const r = hidden?.has(String(id)) ? null : ratings[String(id)]
+  return {
+    id: Number(id),
+    name: plainName(p, id),
+    username: p?.username || null,
+    avg: r && r.count ? round1(r.avg) : null,
+    count: r?.count || 0,
+  }
+}
+
+// Every team: rating desc (no rating last), then members desc.
+// → [{ id, name, description, members, rating, rated, leader:{ id, name, username }, created_at }]
+export async function teamsList() {
+  const db = getDb()
+  const { data, error } = await db.from('tg_teams')
+    .select('id, name, description, leader_telegram_id, created_at')
+    .order('created_at', { ascending: false }).limit(200)
+  if (error) throw new Error('tg_teams: ' + error.message)
+  const teams = data || []
+  const [members, ratings] = await Promise.all([
+    pagedRows(() => db.from('tg_team_members').select('team_id, telegram_user_id, role')
+      .order('team_id', { ascending: true }).order('telegram_user_id', { ascending: true })),
+    allRatings(),
+  ])
+  const byTeam = {}
+  const leaderOf = {}
+  members.forEach((m) => {
+    (byTeam[m.team_id] = byTeam[m.team_id] || []).push(m.telegram_user_id)
+    if (m.role === 'leader') leaderOf[m.team_id] = m.telegram_user_id
+  })
+  const people = await peopleByIds(teams.map((t) => leaderOf[t.id] || t.leader_telegram_id))
+  const who = whoFrom(people)
+  const list = teams.map((t) => {
+    const ids = byTeam[t.id] || []
+    const tr = teamRating(ids, ratings)
+    return {
+      id: t.id,
+      name: t.name,
+      description: t.description || null,
+      leader: who(leaderOf[t.id] || t.leader_telegram_id),
+      members: ids.length,
+      rating: tr ? round1(tr.avg) : null,
+      rated: tr ? tr.rated : 0,
+      created_at: t.created_at,
+    }
+  })
+  list.sort((a, b) => {
+    if ((a.rating == null) !== (b.rating == null)) return a.rating == null ? 1 : -1
+    if (a.rating != null && b.rating !== a.rating) return b.rating - a.rating
+    return b.members - a.members
+  })
+  return list
+}
+
+// The viewer's own team (members + the leader's pending requests) or their
+// pending join request.
+// → { mine: null | { team:{ id, name, description }, role, rating:{ avg, rated }|null,
+//       members:[{ id, name, username, role, avg, count }],
+//       requests:[{ id, name, username, avg, count, requestedAt }] },
+//     pending: null | { teamId, teamName, requestedAt } }
+export async function myTeamView(uid) {
+  const mine = await membershipOf(uid)
+  const team = mine ? await teamById(mine.team_id) : null
+  if (!team) {
+    let pending = null
+    try {
+      const p = (await requestsOf(uid)).find((r) => r.status === 'pending' && ageMs(r.requested_at) < REQUEST_TTL_MS)
+      const pt = p ? await teamById(p.team_id) : null
+      if (pt) pending = { teamId: pt.id, teamName: pt.name, requestedAt: p.requested_at }
+    } catch {}
+    return { mine: null, pending }
+  }
+  const leader = mine.role === 'leader'
+  const [members, reqs] = await Promise.all([teamMembers(team.id), leader ? pendingRequests(team.id) : []])
+  const ids = members.map((m) => m.telegram_user_id)
+  const reqIds = reqs.map((r) => r.telegram_user_id)
+  const [people, ratings, hidden] = await Promise.all([
+    peopleByIds([...ids, ...reqIds]), ratingsFor([...ids, ...reqIds]), hiddenIds([...ids, ...reqIds], uid),
+  ])
+  const tr = teamRating(ids, ratings)
+  const sorted = members.slice().sort((a, b) => (a.role === 'leader' ? 0 : 1) - (b.role === 'leader' ? 0 : 1))
+  return {
+    mine: {
+      team: { id: team.id, name: team.name, description: team.description || null },
+      role: mine.role,
+      rating: tr ? { avg: round1(tr.avg), rated: tr.rated } : null,
+      members: sorted.map((m) => ({ ...personView(people, ratings, m.telegram_user_id, hidden), role: m.role })),
+      requests: reqs.map((r) => ({ ...personView(people, ratings, r.telegram_user_id, hidden), requestedAt: r.requested_at })),
+    },
+    pending: null,
+  }
+}
+
+// One team for the Mini App. → { team, rating, members, viewer } | null
+export async function teamDetail(teamId, viewerId) {
+  const id = String(teamId || '').toLowerCase()
+  if (!UUID_RE.test(id)) return null
+  const team = await teamById(id)
+  if (!team) return null
+  const [members, mine, reqs] = await Promise.all([
+    teamMembers(id),
+    viewerId ? membershipOf(viewerId) : null,
+    viewerId ? requestsOf(viewerId) : [],
+  ])
+  const ids = members.map((m) => m.telegram_user_id)
+  const [people, ratings, hidden] = await Promise.all([peopleByIds(ids), ratingsFor(ids), hiddenIds(ids, viewerId)])
+  const tr = teamRating(ids, ratings)
+  const sorted = members.slice().sort((a, b) => (a.role === 'leader' ? 0 : 1) - (b.role === 'leader' ? 0 : 1))
+  const inThisTeam = !!mine && mine.team_id === id
+  return {
+    team: { id: team.id, name: team.name, description: team.description || null, created_at: team.created_at },
+    rating: tr ? { avg: round1(tr.avg), rated: tr.rated } : null,
+    members: sorted.map((m) => ({ ...personView(people, ratings, m.telegram_user_id, hidden), role: m.role })),
+    viewer: {
+      inThisTeam,
+      inOtherTeam: !!mine && mine.team_id !== id,
+      isLeader: inThisTeam && mine.role === 'leader',
+      pendingHere: (reqs || []).some((r) => r.team_id === id && r.status === 'pending' && ageMs(r.requested_at) < REQUEST_TTL_MS),
+    },
+  }
 }
 
 // ── Admin (/admin/tower) ────────────────────────────────────────────────────
@@ -1649,8 +2047,10 @@ export async function adminReviews({ q = '', before = '' }: any = {}) {
   }
   const b = String(before || '').trim()
   if (b && !TS_RE.test(b)) return { error: 'Bad cursor' }
+  const v2 = await miniappSchemaReady()
   let query = db.from('tg_reviews')
-    .select('id, author_telegram_id, target_telegram_id, rating, text, created_at, updated_at, hidden_at')
+    .select('id, author_telegram_id, target_telegram_id, rating, text, created_at, updated_at, hidden_at' +
+      (v2 ? ', work_place, work_month, work_year, would_work_again, confirmed_at, disputed_at' : ''))
   if (uid) query = query.or(`target_telegram_id.eq.${uid},author_telegram_id.eq.${uid}`)
   if (b) query = query.lt('updated_at', b)
   const { data, error } = await query.order('updated_at', { ascending: false }).limit(ADMIN_PAGE + 1)
@@ -1673,38 +2073,64 @@ export async function adminReviews({ q = '', before = '' }: any = {}) {
       created_at: r.created_at,
       updated_at: r.updated_at,
       hidden_at: r.hidden_at || null,
+      work_place: r.work_place || null,
+      work_month: r.work_month ?? null,
+      work_year: r.work_year ?? null,
+      would_work_again: typeof r.would_work_again === 'boolean' ? r.would_work_again : null,
+      confirmed_at: r.confirmed_at || null,
+      disputed_at: r.disputed_at || null,
     })),
     more: all.length > ADMIN_PAGE,
     user: uid ? who(uid) : null,
   }
 }
 
+// «Спорные отзывы»: the reviewed person answered «Не работали». Never hidden
+// automatically — the owner decides («Скрыть» = setReviewHidden).
+export async function adminDisputed() {
+  if (!(await miniappSchemaReady())) return { reviews: [] }
+  const { data, error } = await getDb().from('tg_reviews')
+    .select('id, author_telegram_id, target_telegram_id, rating, text, work_place, work_month, work_year, created_at, updated_at, disputed_at')
+    .not('disputed_at', 'is', null)
+    .is('hidden_at', null)
+    .order('disputed_at', { ascending: false })
+    .limit(50)
+  if (error) throw new Error('tg_reviews: ' + error.message)
+  const rows = data || []
+  const people = await peopleByIds([...rows.map((r) => r.author_telegram_id), ...rows.map((r) => r.target_telegram_id)])
+  const who = whoFrom(people)
+  return {
+    reviews: rows.map((r) => ({
+      id: r.id,
+      author: who(r.author_telegram_id),
+      target: who(r.target_telegram_id),
+      rating: r.rating,
+      text: r.text || null,
+      work_place: r.work_place || null,
+      work_month: r.work_month ?? null,
+      work_year: r.work_year ?? null,
+      created_at: r.created_at,
+      updated_at: r.updated_at,
+      disputed_at: r.disputed_at,
+      hidden_at: null,
+    })),
+  }
+}
+
 export async function adminCommunity() {
   const db = getDb()
-  const [teamsQ, latest, teamsCount, reviewsCount, hiddenCount, peopleCount] = await Promise.all([
-    db.from('tg_teams').select('id, name, description, leader_telegram_id, created_at')
-      .order('created_at', { ascending: false }).limit(200),
+  const [teams, latest, teamsCount, reviewsCount, hiddenCount, peopleCount, disputed] = await Promise.all([
+    teamsList(),
     adminReviews({}),
     db.from('tg_teams').select('id', { count: 'exact', head: true }),
     db.from('tg_reviews').select('id', { count: 'exact', head: true }),
     db.from('tg_reviews').select('id', { count: 'exact', head: true }).not('hidden_at', 'is', null),
     db.from('tg_people').select('telegram_user_id', { count: 'exact', head: true }),
+    adminDisputed().catch((e) => {
+      console.warn('[tower/teams] disputed reviews:', e?.message || e)
+      return { reviews: [] }
+    }),
   ])
-  if (teamsQ.error) throw new Error('tg_teams: ' + teamsQ.error.message)
-  const teams = teamsQ.data || []
-  const [members, ratings] = await Promise.all([
-    pagedRows(() => db.from('tg_team_members').select('team_id, telegram_user_id, role')
-      .order('team_id', { ascending: true }).order('telegram_user_id', { ascending: true })),
-    allRatings(),
-  ])
-  const byTeam = {}
-  const leaderOf = {}
-  members.forEach((m) => {
-    (byTeam[m.team_id] = byTeam[m.team_id] || []).push(m.telegram_user_id)
-    if (m.role === 'leader') leaderOf[m.team_id] = m.telegram_user_id
-  })
-  const people = await peopleByIds(teams.map((t) => leaderOf[t.id] || t.leader_telegram_id))
-  const who = whoFrom(people)
   return {
     totals: {
       teams: teamsCount.count || 0,
@@ -1712,22 +2138,10 @@ export async function adminCommunity() {
       hidden: hiddenCount.count || 0,
       people: peopleCount.count || 0,
     },
-    teams: teams.map((t) => {
-      const ids = byTeam[t.id] || []
-      const tr = teamRating(ids, ratings)
-      return {
-        id: t.id,
-        name: t.name,
-        description: t.description || null,
-        leader: who(leaderOf[t.id] || t.leader_telegram_id),
-        members: ids.length,
-        rating: tr ? Math.round(tr.avg * 10) / 10 : null,
-        rated: tr ? tr.rated : 0,
-        created_at: t.created_at,
-      }
-    }),
+    teams,
     reviews: latest.reviews || [],
     reviewsMore: !!latest.more,
+    disputed: disputed.reviews || [],
   }
 }
 
@@ -1785,3 +2199,11 @@ export async function setReviewHidden(id, hidden) {
   }
   return { ok: true, id: data.id, hidden_at: data.hidden_at, group_message: groupMessage }
 }
+
+// ── For the Mini App (lib/tower-app.ts) — same rules, no copies ─────────────
+export {
+  pagedRows, peopleByIds, plainName, membershipOf, teamById, teamMembers, profileData,
+  checkPair, existingReview, editBlock, overDailyLimit, cleanName, nameProblem, teamRating,
+  allRatings, requireMember, SELF_REVIEW, LIMIT_TEXT, CHECK_FAILED,
+}
+export const TEAM_LIMITS = { NAME_MIN, NAME_MAX, MAX_DESC }

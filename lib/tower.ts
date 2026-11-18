@@ -20,12 +20,14 @@
 //   • The creator and admins we did not promote are never kicked or demoted.
 //   • Someone banned by a human admin is never unbanned by us.
 //
-// Teams, profiles and reviews live in lib/tower-teams.ts (it imports this
-// file — never import it from here).
+// Teams, profiles and reviews live in lib/tower-teams.ts, the review gate and
+// the Telegram ↔ Bestie link in lib/tower-access.ts, the Mini App endpoints in
+// lib/tower-app.ts (they import this file — never import them from here).
 // ============================================================================
 import crypto from 'crypto'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { START_PARAM_RE } from '@/lib/tower-app-shared'
 
 // ── Config ──────────────────────────────────────────────────────────────────
 // TOWER_CHAT: '@towerUSA' (public group) or the numeric id, e.g. -1001234567890.
@@ -56,6 +58,41 @@ export const GROUP_URL = GROUP_URL_FROM_ENV
   : TOWER_CHAT_IS_ID
     ? 'https://t.me/TowerCrewBot?start=join'
     : `https://t.me/${TOWER_CHAT.replace(/^@/, '')}`
+
+// Mini App (/tower/app). TOWER_MINIAPP_URL: the BotFather direct link of the
+// Main Mini App (https://t.me/TowerCrewBot) or of a named one
+// (https://t.me/TowerCrewBot/app). Set → url buttons in the group open the app
+// right over the chat; not set → they open the bot DM, which answers with a
+// web_app button. Forgiving input, like TOWER_GROUP_URL.
+const RAW_MINIAPP_URL = String(process.env.TOWER_MINIAPP_URL || '').trim()
+const ENV_MINIAPP_URL = RAW_MINIAPP_URL
+  .replace(/^['"\s]+|['"\s]+$/g, '')
+  .replace(/^(https?:\/\/)?(www\.)?(t\.me|telegram\.me)\//i, 'https://t.me/')
+  .replace(/[?#].*$/, '')
+  .replace(/\/+$/, '')
+export const MINIAPP_URL_FROM_ENV = /^https:\/\/t\.me\/[A-Za-z0-9_]{5,32}(\/[A-Za-z0-9_]{3,64})?$/.test(ENV_MINIAPP_URL)
+export const MINIAPP_URL_ENV_INVALID = !!RAW_MINIAPP_URL && !MINIAPP_URL_FROM_ENV
+export const MINIAPP_URL = MINIAPP_URL_FROM_ENV ? ENV_MINIAPP_URL : ''
+export const APP_PATH = '/tower/app'
+
+// web_app button URL (private chats only). The route goes in ?go= — an inline
+// web_app launch carries no start_param.
+export function appUrl(param = '') {
+  const p = START_PARAM_RE.test(String(param)) && param !== 'home' ? String(param) : ''
+  return `${SITE}${APP_PATH}${p ? '?go=' + p : ''}`
+}
+
+// url button for the GROUP (and shareable links): opens the Mini App in place
+// when TOWER_MINIAPP_URL is set, else the bot DM (/start app_<param>).
+export async function appLink(param = 'home') {
+  const p = START_PARAM_RE.test(String(param)) ? String(param) : 'home'
+  if (MINIAPP_URL) return `${MINIAPP_URL}?startapp=${p}`
+  return `https://t.me/${await botUsername()}?start=${p === 'home' ? 'app' : 'app_' + p}`
+}
+
+// The «Рейтинг» button left of the message field in the bot DM (setChatMenuButton).
+export const TOWER_MENU_BUTTON = { type: 'web_app', text: 'Рейтинг', web_app: { url: `${SITE}${APP_PATH}` } }
+
 export const JOIN_LINK_NAME = 'Вступление через оплату'
 export const TOWER_KIND = 'tg_group_sub'
 export const GRACE_DAYS = 3
@@ -65,9 +102,10 @@ export const PLANS = {
   admin: { lookupKey: 'tower_admin_monthly', label: 'Admin', priceUsd: 30 },
 }
 
-// Signed links have a purpose: 'pay' (choose a plan → Checkout) or 'manage'
-// (Stripe Customer Portal). A forwarded pay link must never open someone's portal.
-const LINK_TTL_SEC = { pay: 7 * 24 * 3600, manage: 24 * 3600 }
+// Signed links have a purpose: 'pay' (choose a plan → Checkout), 'manage'
+// (Stripe Customer Portal) or 'link' (/tower/link: tie this Telegram to a
+// Bestie profile, 30 min). A forwarded pay link must never open someone's portal.
+const LINK_TTL_SEC = { pay: 7 * 24 * 3600, manage: 24 * 3600, link: 30 * 60 }
 
 // past_due with an open invoice Stripe stopped retrying for this long → treat as unpaid
 // (covers the account-wide «leave subscription past-due» setting).
@@ -81,24 +119,24 @@ export const TOWER_ALLOWED_UPDATES = ['message', 'chat_join_request', 'my_chat_m
 // Menu in the private chat with the bot (default scope).
 export const TOWER_COMMANDS = [
   { command: 'start', description: 'Начать / статус подписки' },
-  { command: 'status', description: 'Статус подписки' },
-  { command: 'manage', description: 'Управлять подпиской (тариф, карта, отмена)' },
+  { command: 'app', description: 'Открыть приложение: рейтинг, отзывы, команды' },
   { command: 'profile', description: 'Мой профиль: команда, рейтинг, отзывы' },
-  { command: 'myteam', description: 'Моя команда' },
-  { command: 'crew', description: 'Команда: create · join НАЗВАНИЕ · leave · kick @username' },
   { command: 'review', description: 'Оставить отзыв: /review @username' },
   { command: 'reviews', description: 'Отзывы обо мне' },
+  { command: 'access', description: 'Что нужно, чтобы оставлять отзывы' },
+  { command: 'link', description: 'Привязать профиль Бести' },
+  { command: 'myteam', description: 'Моя команда' },
+  { command: 'crew', description: 'Команда: create · join НАЗВАНИЕ · leave · kick @username' },
+  { command: 'status', description: 'Статус подписки' },
+  { command: 'manage', description: 'Управлять подпиской (тариф, карта, отмена)' },
   { command: 'help', description: 'Все команды бота' },
 ]
-// Menu inside the group (the «/» button): a cheat sheet of what the bot does.
-// review/profile work right here; the rest answer with a button into the DM.
+// Menu inside the group (the «/» button). Kept minimal: every command opens
+// the Mini App — the group chat stays clean (lib/tower-teams.ts).
 export const TOWER_GROUP_COMMANDS = [
-  { command: 'review', description: 'Отзыв: ответь на сообщение — /review 5 текст' },
-  { command: 'profile', description: 'Профиль: рейтинг и отзывы (ответом — профиль человека)' },
-  { command: 'crew', description: 'Команды: создать, вступить (откроет бота)' },
-  { command: 'myteam', description: 'Моя команда (откроет бота)' },
-  { command: 'reviews', description: 'Отзывы обо мне (откроет бота)' },
-  { command: 'help', description: 'Все команды бота' },
+  { command: 'app', description: 'Рейтинг, отзывы и команды — откроет приложение' },
+  { command: 'review', description: 'Отзыв (ответом на сообщение) — откроет приложение' },
+  { command: 'profile', description: 'Профиль человека (ответом) — откроет приложение' },
 ]
 
 // Stripe statuses
@@ -358,7 +396,7 @@ export function safeEqual(a, b) {
 
 // Signed link payload: { u: telegram user id, c: chat id, k: purpose, n?: first name, un?: username, e: expiry }
 export function signLink({ u, c, n, un }: any, purpose = 'pay') {
-  const k = purpose === 'manage' ? 'manage' : 'pay'
+  const k = purpose === 'manage' ? 'manage' : purpose === 'link' ? 'link' : 'pay'
   const payload: any = { u: Number(u), c: Number(c), k, e: Math.floor(Date.now() / 1000) + LINK_TTL_SEC[k] }
   if (n) payload.n = String(n).slice(0, 64)
   if (un) payload.un = String(un).slice(0, 64)
@@ -396,6 +434,73 @@ export function portalUrl(link) {
 // Web pages never carry a portal link — they send people to /manage in the bot.
 export async function manageInBotUrl() {
   return `https://t.me/${await botUsername()}?start=manage`
+}
+
+// ── Mini App auth: Telegram WebApp initData ─────────────────────────────────
+// core.telegram.org/bots/webapps — never log initData.
+// secret = HMAC_SHA256(key "WebAppData", bot token); hash = hex(HMAC_SHA256(secret,
+// data_check_string)); data_check_string = every field except "hash", sorted by
+// key, "k=v" joined by "\n". Newer clients add "signature" (Ed25519, for third
+// parties) — accepted both included and excluded.
+export const INITDATA_MAX_AGE_SEC = 24 * 3600
+
+// → { user, authDate, startParam, chatType } | null. Never throws.
+export function verifyInitData(initData, maxAgeSec = INITDATA_MAX_AGE_SEC) {
+  try {
+    const token = botToken()
+    if (!token || typeof initData !== 'string' || !initData || initData.length > 8192) return null
+    const params = new URLSearchParams(initData)
+    const hash = String(params.get('hash') || '').toLowerCase()
+    if (!/^[0-9a-f]{64}$/.test(hash)) return null
+    const pairs = []
+    const seen = new Set()
+    let dup = false
+    params.forEach((v, k) => {
+      if (k === 'hash') return
+      if (seen.has(k)) dup = true
+      seen.add(k)
+      pairs.push([k, v])
+    })
+    if (dup) return null
+    const secret = crypto.createHmac('sha256', 'WebAppData').update(token).digest()
+    const matches = (list) => {
+      const dcs = list.slice()
+        .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
+        .map(([k, v]) => `${k}=${v}`)
+        .join('\n')
+      return safeEqual(crypto.createHmac('sha256', secret).update(dcs).digest('hex'), hash)
+    }
+    const ok = matches(pairs) ||
+      (seen.has('signature') && matches(pairs.filter(([k]) => k !== 'signature')))
+    if (!ok) return null
+
+    const authDate = Number(params.get('auth_date'))
+    const now = Math.floor(Date.now() / 1000)
+    if (!Number.isFinite(authDate) || authDate <= 0) return null
+    if (now - authDate > maxAgeSec) return null
+    if (authDate - now > 300) return null
+
+    let u = null
+    try { u = JSON.parse(params.get('user') || '') } catch { return null }
+    if (!u || typeof u !== 'object' || !Number.isSafeInteger(u.id) || u.id <= 0 || u.is_bot) return null
+    const str = (s, n = 64) => (typeof s === 'string' && s.trim() ? s.slice(0, n) : null)
+    const user = {
+      id: u.id,
+      first_name: str(u.first_name) || '',
+      last_name: str(u.last_name),
+      username: typeof u.username === 'string' && /^[A-Za-z0-9_]{1,64}$/.test(u.username) ? u.username : null,
+      language_code: str(u.language_code, 16),
+    }
+    const sp = String(params.get('start_param') || '')
+    return {
+      user,
+      authDate,
+      startParam: START_PARAM_RE.test(sp) ? sp : '',
+      chatType: String(params.get('chat_type') || ''),
+    }
+  } catch {
+    return null
+  }
 }
 
 // ── Stripe prices / portal ──────────────────────────────────────────────────
@@ -536,6 +641,43 @@ export async function findLiveTowerSub(customerId, chatId, userId, excludeId = n
     Number(x.metadata?.telegram_user_id) === Number(userId) &&
     isLiveStatus(x.status))
   return live.find((x) => isActiveStatus(x.status)) || live[0] || null
+}
+
+// ── Membership (paid plan) — the review gate (lib/tower-access.ts) ──────────
+// Same definition as the paywall: a Stripe subscription that is still billing
+// (active / trialing / past_due) and not removed. Group membership without a
+// plan does not count.
+export function isMembershipRow(row) {
+  if (!row || !row.stripe_subscription_id) return false
+  if (row.plan !== 'basic' && row.plan !== 'admin') return false
+  if (row.removed_at) return false
+  if (!isLiveStatus(row.status)) return false
+  // missed «ended» webhook: period long over (the sweep re-checks such rows)
+  if (row.paid_until && Date.parse(row.paid_until) < Date.now() - GRACE_DAYS * 86400000) return false
+  return true
+}
+
+// → { member: true|false|null (null = couldn't check), plan }. Never throws.
+export async function hasMembership(tgId) {
+  try {
+    const chatId = await resolveChatId()
+    const row = await loadRow(chatId, tgId)
+    if (isMembershipRow(row)) return { member: true, plan: row.plan }
+    // Paid a moment ago, webhook not landed yet (same idea as the checkout).
+    // Only for rows touched in the last 2 h → no Stripe call for old canceled rows.
+    const recent = !!row && Date.now() - Date.parse(row.updated_at || '') < 2 * 3600 * 1000
+    if (row?.stripe_customer_id && recent && !(row.stripe_subscription_id && isLiveStatus(row.status))) {
+      const live = await findLiveTowerSub(row.stripe_customer_id, chatId, tgId)
+      if (live && isActiveStatus(live.status)) {
+        try { await syncSubscription(live) } catch {}
+        const again = await loadRow(chatId, tgId).catch(() => null)
+        return { member: true, plan: again?.plan || 'basic' }
+      }
+    }
+    return { member: false, plan: null }
+  } catch {
+    return { member: null, plan: null }
+  }
 }
 
 // past_due normally means Stripe is still retrying → keep access. But with the
@@ -814,7 +956,7 @@ export async function enforceActive(row, out: any = { actions: [] }, opts: any =
           ? `Вам выдан значок админа «${ADMIN_TITLE}» — можно публиковать рекламу.`
           : `Значок админа «${ADMIN_TITLE}» появится чуть позже.`)
       }
-      lines.push('', 'Управлять подпиской: /manage')
+      lines.push('', 'Отзывы коллегам — в приложении: /app', 'Управлять подпиской: /manage')
       await dm(userId, lines.join('\n'), [[{ text: '👉 Открыть группу', url: GROUP_URL }]])
     } else if (promotedNow && hadApproved) {
       // Upgrade Basic → Admin later on. (If approved_at was just claimed by a
@@ -968,4 +1110,186 @@ export async function handleTowerStripeEvent(event) {
     status: result?.status, plan: result?.plan, actions: result?.actions, stale: result?.stale, skipped: result?.skipped,
   }))
   return true
+}
+
+// ── Mini App migration probe (lib/migration_tower_miniapp.sql) ──────────────
+// Every new feature checks this first and degrades safely without it.
+const MISSING_CODES = ['42P01', '42703', 'PGRST200', 'PGRST204', 'PGRST205']
+const isMissingSchema = (e) => !!e && (MISSING_CODES.includes(e.code) ||
+  /does not exist|schema cache/i.test(String(e.message || '')))
+let schemaReady = false
+let schemaMissingAt = 0
+let schemaProbe = null
+
+// true once the miniapp migration is applied (cached for good); false for 60 s
+// when a table/column is missing; false WITHOUT caching on other DB errors. Never throws.
+export async function miniappSchemaReady() {
+  if (schemaReady) return true
+  if (schemaMissingAt && Date.now() - schemaMissingAt < 60 * 1000) return false
+  if (!schemaProbe) {
+    const probe = (async () => {
+      try {
+        const db = getDb()
+        const res = await Promise.all([
+          db.from('tg_bestie_links').select('telegram_user_id, user_id').limit(1),
+          db.from('tg_people').select('hidden_from_rating, skills, state').limit(1),
+          db.from('tg_reviews').select('work_place, work_month, work_year, scores, would_work_again, confirmed_at, disputed_at').limit(1),
+          db.from('tg_ephemeral_messages').select('message_id').limit(1),
+          db.from('tg_bot_settings').select('key').limit(1),
+        ])
+        const errors = res.map((r) => r.error).filter(Boolean)
+        if (!errors.length) {
+          schemaReady = true
+          return true
+        }
+        if (errors.some(isMissingSchema)) schemaMissingAt = Date.now()
+        else console.warn('[tower] schema probe:', errors[0]?.message)
+        return false
+      } catch {
+        return false
+      }
+    })()
+    // One probe at a time per instance; cleared once it settled.
+    schemaProbe = probe
+    probe.then(() => { if (schemaProbe === probe) schemaProbe = null })
+  }
+  return schemaProbe
+}
+
+// ── Small key → value store (tg_bot_settings) ───────────────────────────────
+export async function getSetting(key) {
+  try {
+    const { data, error } = await getDb().from('tg_bot_settings').select('value').eq('key', key).maybeSingle()
+    if (error) return { ok: false, error: error.message }
+    return { ok: true, value: data ? data.value : null }
+  } catch (e) {
+    return { ok: false, error: e?.message || 'error' }
+  }
+}
+
+export async function setSetting(key, value) {
+  try {
+    const { error } = await getDb().from('tg_bot_settings')
+      .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' })
+    return error ? { ok: false, error: error.message } : { ok: true }
+  } catch (e) {
+    return { ok: false, error: e?.message || 'error' }
+  }
+}
+
+// ── Short-lived bot replies in the group ────────────────────────────────────
+// The webhook is serverless, so «delete in 60 s» is a row in
+// tg_ephemeral_messages; due rows are removed lazily on every incoming update
+// (the bot gets every group message) and by the daily sweep. A bot may always
+// delete its own messages (< 48 h) — no admin right needed for these.
+export const EPHEMERAL_TTL_SEC = 60
+const EPHEMERAL_THROTTLE_MS = 20 * 1000
+let ephemeralDueAt = 0   // earliest due time of a reply THIS instance scheduled
+let ephemeralRanAt = 0
+
+// → true when scheduled. Never throws.
+export async function rememberEphemeral(chatId, messageId, ttlSec = EPHEMERAL_TTL_SEC) {
+  try {
+    if (!chatId || !messageId) return false
+    const due = Date.now() + Math.max(1, Number(ttlSec) || EPHEMERAL_TTL_SEC) * 1000
+    const { error } = await getDb().from('tg_ephemeral_messages').upsert({
+      chat_id: chatId,
+      message_id: messageId,
+      delete_after: new Date(due).toISOString(),
+    }, { onConflict: 'chat_id,message_id' })
+    if (error) {
+      if (!isMissingSchema(error)) console.warn('[tower] ephemeral insert:', error.message)
+      return false
+    }
+    if (!ephemeralDueAt || due < ephemeralDueAt) ephemeralDueAt = due
+    return true
+  } catch {
+    return false
+  }
+}
+
+// Deletes due bot replies. Throttled per instance: skips if it ran < 20 s ago, unless this
+// instance scheduled a message that is now due; force = no throttle. Never throws.
+export async function cleanupEphemeral({ max = 5, force = false }: any = {}) {
+  try {
+    const now = Date.now()
+    const hinted = !!ephemeralDueAt && ephemeralDueAt <= now
+    if (!force && !hinted && now - ephemeralRanAt < EPHEMERAL_THROTTLE_MS) {
+      return { deleted: 0, dropped: 0, skipped: true }
+    }
+    ephemeralRanAt = now
+    if (hinted) ephemeralDueAt = 0
+    if (!(await miniappSchemaReady())) return { deleted: 0, dropped: 0, skipped: true }
+    const db = getDb()
+    const { data, error } = await db.from('tg_ephemeral_messages')
+      .select('chat_id, message_id, delete_after')
+      .lte('delete_after', new Date(now).toISOString())
+      .order('delete_after', { ascending: true })
+      .limit(Math.max(1, Math.min(100, Number(max) || 5)))
+    if (error || !data || !data.length) return { deleted: 0, dropped: 0 }
+    let deleted = 0
+    let dropped = 0
+    await Promise.all(data.map(async (r) => {
+      // Telegram first: an instance frozen in between never loses a row it still
+      // has to act on (a double delete is harmless).
+      const d = await tg('deleteMessage', { chat_id: r.chat_id, message_id: r.message_id })
+      if (d.ok) deleted += 1
+      else if (isTransient(d)) return // Telegram down → keep the row for the next run
+      const { error: e } = await db.from('tg_ephemeral_messages')
+        .delete().eq('chat_id', r.chat_id).eq('message_id', r.message_id)
+      if (!e && !d.ok) dropped += 1 // already gone / too old to delete
+    }))
+    return { deleted, dropped }
+  } catch {
+    return { deleted: 0, dropped: 0 }
+  }
+}
+
+// ── «Закрепить кнопку приложения в группе» (/admin/tower) ───────────────────
+// One message with the open-app url button, pinned without a notification.
+// Pressed again → the stored message is edited, never a second one posted.
+export const PIN_TEXT = '🗼 Рейтинг, отзывы и команды «Вышки в США» — откройте приложение 👇'
+
+// → { ok, message_id, edited, pinned, pinError, error? }
+export async function pinAppMessage() {
+  const st = await getSetting('pinned_app_message')
+  if (!st.ok) return { ok: false, error: 'Сначала выполните в Supabase lib/migration_tower_miniapp.sql' }
+  let chatId
+  try {
+    chatId = await resolveChatId()
+  } catch (e) {
+    return { ok: false, error: 'Группа не найдена: ' + (e?.message || 'unknown') }
+  }
+  const url = await appLink('home')
+  const reply_markup = { inline_keyboard: [[{ text: '🗼 Открыть приложение', url }]] }
+  const prev = st.value && typeof st.value === 'object' ? st.value : null
+  let messageId = null
+  let edited = false
+  if (prev && Number(prev.chat_id) === Number(chatId) && Number(prev.message_id) > 0) {
+    const e = await tg('editMessageText', {
+      chat_id: chatId,
+      message_id: Number(prev.message_id),
+      text: PIN_TEXT,
+      reply_markup,
+      link_preview_options: { is_disabled: true },
+    })
+    if (e.ok || /not modified/i.test(e.description || '')) {
+      messageId = Number(prev.message_id)
+      edited = true
+    }
+  }
+  if (!messageId) {
+    const s = await tg('sendMessage', {
+      chat_id: chatId,
+      text: PIN_TEXT,
+      reply_markup,
+      link_preview_options: { is_disabled: true },
+    })
+    if (!s.ok || !s.result?.message_id) return { ok: false, error: s.description || 'sendMessage failed' }
+    messageId = s.result.message_id
+    const w = await setSetting('pinned_app_message', { chat_id: chatId, message_id: messageId })
+    if (!w.ok) console.warn('[tower] pinned message not stored:', w.error)
+  }
+  const p = await tg('pinChatMessage', { chat_id: chatId, message_id: messageId, disable_notification: true })
+  return { ok: true, message_id: messageId, edited, pinned: !!p.ok, pinError: p.ok ? null : (p.description || null) }
 }
