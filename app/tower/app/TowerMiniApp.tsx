@@ -29,6 +29,7 @@ import ReviewWizard from './ReviewWizard'
 import TeamScreen from './TeamScreen'
 import CreateTeamScreen from './CreateTeamScreen'
 import { GateScreen } from './GateChecklist'
+import WelcomeScreen, { welcomeSeen } from './WelcomeScreen'
 import s from './miniapp.module.css'
 
 // Captured before anything can touch the URL (the hash carries tgWebAppData).
@@ -125,6 +126,7 @@ export default function TowerMiniApp({ openUrl = 'https://t.me/TowerCrewBot?star
   const [resumeTick, setResumeTick] = useState(0)
   const [waReady, setWaReady] = useState(false)
   const [kb, setKb] = useState(false)
+  const [welcome, setWelcome] = useState(false)
 
   const phaseRef = useRef('boot')
   const initRef = useRef('')
@@ -308,9 +310,13 @@ export default function TowerMiniApp({ openUrl = 'https://t.me/TowerCrewBot?star
     }
     lastMeAt.current = Date.now()
     setMeData(r)
-    setPhase('ready')
     const raw = startRawRef.current
     startRawRef.current = ''
+    // First open from the group / menu → the welcome cards. A deep link (review,
+    // person, team) goes straight to its screen.
+    const sp = raw ? parseStartParam(raw) : null
+    if ((!sp || sp.screen === 'home') && !welcomeSeen()) setWelcome(true)
+    setPhase('ready')
     if (raw) route(raw, r.me)
   }, [api, fail, route, setPhase])
 
@@ -411,6 +417,7 @@ export default function TowerMiniApp({ openUrl = 'https://t.me/TowerCrewBot?star
     toast,
     resumeTick,
     inTelegram: waReady,
+    showWelcome: () => setWelcome(true),
   }), [api, meData, refreshMe, push, pop, back, replaceTop, setTab, registerBack, addOverlay, removeOverlay, toast, resumeTick, waReady])
 
   const renderScreen = (e, top) => {
@@ -441,7 +448,10 @@ export default function TowerMiniApp({ openUrl = 'https://t.me/TowerCrewBot?star
         {phase === 'boot' && <Splash />}
         {phase === 'browser' && <OpenInTelegram openUrl={openUrl} />}
         {phase === 'error' && <ErrorScreen err={err} onRetry={retry} />}
-        {phase === 'ready' && (
+        {phase === 'ready' && welcome && (
+          <WelcomeScreen gateOk={!!meData?.gate?.ok} onDone={() => setWelcome(false)} />
+        )}
+        {phase === 'ready' && !welcome && (
           <>
             <div className={nav === 'pop' && onTabs ? s.slideBack : undefined} style={{ display: onTabs ? 'block' : 'none' }}>
               {TABS.map((t) => (visited[t.id] ? (

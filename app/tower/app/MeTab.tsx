@@ -16,7 +16,7 @@ import s from './miniapp.module.css'
 
 export default function MeTab({ visible }) {
   const {
-    api, meData, setMeData, refreshMe, push, setTab, openLink, openTg, toast, haptic,
+    api, meData, setMeData, refreshMe, push, setTab, openLink, openTg, toast, haptic, showWelcome,
   } = useApp()
   const me = meData?.me
   const gate = meData?.gate
@@ -329,6 +329,9 @@ export default function MeTab({ visible }) {
 
       <button type="button" className={s.footerLink} onClick={() => openTg(me.botLinks?.manage)} data-track="tower_me_manage">
         Подписка: управлять в боте
+      </button>
+      <button type="button" className={s.footerLink} style={{ marginTop: 4 }} onClick={() => showWelcome?.()} data-track="tower_me_welcome">
+        Как это работает
       </button>
 
       <Sheet open={sheet} onClose={() => setSheet(false)} title="Штат, где работаешь">

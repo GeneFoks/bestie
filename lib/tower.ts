@@ -956,8 +956,11 @@ export async function enforceActive(row, out: any = { actions: [] }, opts: any =
           ? `Вам выдан значок админа «${ADMIN_TITLE}» — можно публиковать рекламу.`
           : `Значок админа «${ADMIN_TITLE}» появится чуть позже.`)
       }
-      lines.push('', 'Отзывы коллегам — в приложении: /app', 'Управлять подпиской: /manage')
-      await dm(userId, lines.join('\n'), [[{ text: '👉 Открыть группу', url: GROUP_URL }]])
+      lines.push('', '🗼 Рейтинг, отзывы и команды — в приложении группы (кнопка ниже или /app).', 'Управлять подпиской: /manage')
+      await dm(userId, lines.join('\n'), [
+        [{ text: '👉 Открыть группу', url: GROUP_URL }],
+        [{ text: '🗼 Открыть приложение', web_app: { url: appUrl('home') } }],
+      ])
     } else if (promotedNow && hadApproved) {
       // Upgrade Basic → Admin later on. (If approved_at was just claimed by a
       // concurrent call, that call sends the welcome — no second message.)
@@ -1248,7 +1251,20 @@ export async function cleanupEphemeral({ max = 5, force = false }: any = {}) {
 // ── «Закрепить кнопку приложения в группе» (/admin/tower) ───────────────────
 // One message with the open-app url button, pinned without a notification.
 // Pressed again → the stored message is edited, never a second one posted.
-export const PIN_TEXT = '🗼 Рейтинг, отзывы и команды «Вышки в США» — откройте приложение 👇'
+// Doubles as the group announcement of the app (plain text, no parse_mode).
+export const PIN_TEXT = [
+  '🗼 Мужики, у группы теперь своё приложение!',
+  '',
+  'Рейтинг, отзывы и команды — в одном окне прямо в Telegram. Жмёшь кнопку внизу — оно открывается поверх чата, закрыл — и ты снова в группе. Команды в чате больше не нужны.',
+  '',
+  '⭐ Рейтинг — видно, кто реально толковый. Поиск по имени, навыкам и штату.',
+  '📝 Отзывы — поработал с человеком, оцени: безопасность, качество, темп, документы, работа в команде. Человек подтверждает, что вы правда работали вместе.',
+  '👷 Команды — собери свою или попросись в чужую.',
+  '',
+  'Чтобы отзывы были честными, писать их могут только те, у кого есть профиль на Бести, заполнена анкета и оформлена подписка. Смотреть рейтинг могут все.',
+  '',
+  'Кнопка всегда здесь, в закрепе 👇',
+].join('\n')
 
 // → { ok, message_id, edited, pinned, pinError, error? }
 export async function pinAppMessage() {
