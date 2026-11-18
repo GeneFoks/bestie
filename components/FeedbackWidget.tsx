@@ -29,7 +29,7 @@ export default function FeedbackWidget() {
   }, [])
 
   // Stay out of immersive surfaces
-  if (pathname?.startsWith('/world') || pathname?.startsWith('/call')) return null
+  if (pathname?.startsWith('/world') || pathname?.startsWith('/call') || pathname?.startsWith('/tower/app')) return null
 
   const send = async () => {
     if (message.trim().length < 3 || sending) return

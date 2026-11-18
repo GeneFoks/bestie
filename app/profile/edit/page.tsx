@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase'
 import { PageLoader } from '@/components/Loading'
 import ThemeToggle from '@/components/ThemeToggle'
 import LocationPicker from '@/components/LocationPicker'
+import TowerLinkControl from '@/components/TowerLinkControl'
 
 const ACTIVITY_GROUPS = [
   {
@@ -156,7 +157,7 @@ export default function EditProfilePage() {
   useEffect(() => {
     const load = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) { router.push('/login'); return }
+      if (!session) { router.push('/login?next=' + encodeURIComponent('/profile/edit')); return }
       setUserId(session.user.id)
       const [{ data }, { data: crews }] = await Promise.all([
         supabase.from('users').select('*, activity_packages(*)').eq('id', session.user.id).single(),
@@ -485,6 +486,9 @@ export default function EditProfilePage() {
             </p>
           </div>
         </div>
+
+        {/* Telegram «Вышки в США» — link status (saves on its own, not via handleSave) */}
+        <div id="telegram" style={{ scrollMarginTop: '80px' }}><TowerLinkControl /></div>
 
         {/* Privacy */}
         <div style={sectionStyle}>

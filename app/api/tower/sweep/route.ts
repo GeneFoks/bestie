@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb, getStripe, syncSubscription, safeEqual, GRACE_DAYS } from '@/lib/tower'
+import { getDb, getStripe, syncSubscription, safeEqual, cleanupEphemeral, GRACE_DAYS } from '@/lib/tower'
 
 /**
  * Daily safety net for the «Вышки в США» paid group
@@ -17,6 +17,9 @@ import { getDb, getStripe, syncSubscription, safeEqual, GRACE_DAYS } from '@/lib
  * error below), so rows that stay candidates rotate to the back and never
  * starve newer ones.
  *
+ * Also removes the bot's short group replies that are overdue (normally they
+ * go on the next incoming update — this covers a quiet group).
+ *
  * Auth: x-cron-secret must match INTERNAL_API_SECRET.
  */
 export const dynamic = 'force-dynamic'
@@ -31,6 +34,9 @@ export async function POST(req: NextRequest) {
   if (!secret || !safeEqual(req.headers.get('x-cron-secret') || '', secret)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  let ephemeral = null
+  try { ephemeral = await cleanupEphemeral({ max: 50, force: true }) } catch {}
 
   const started = Date.now()
   const cutoff = new Date(started - GRACE_DAYS * 86400000).toISOString()
@@ -51,7 +57,7 @@ export async function POST(req: NextRequest) {
     .limit(MAX_ROWS)
   if (error) {
     console.error('[tower/sweep] query:', error.message)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: error.message, ephemeral }, { status: 500 })
   }
 
   const todo = data || []
@@ -82,6 +88,6 @@ export async function POST(req: NextRequest) {
     }))
   }
 
-  console.log('[tower/sweep]', JSON.stringify(counts))
-  return NextResponse.json({ ok: true, ...counts, ran_at: new Date().toISOString() })
+  console.log('[tower/sweep]', JSON.stringify({ ...counts, ephemeral }))
+  return NextResponse.json({ ok: true, ...counts, ephemeral, ran_at: new Date().toISOString() })
 }

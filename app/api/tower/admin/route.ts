@@ -5,7 +5,8 @@ import {
   createJoinRequestLink, knownChatIds,
   PLANS, SITE, TOWER_CHAT, TOWER_CHAT_IS_ID, TOWER_EVENT_TYPES, GROUP_URL, GROUP_URL_FROM_ENV,
   GROUP_URL_ENV_INVALID, GROUP_URL_IS_BOT_FALLBACK, JOIN_LINK_NAME,
-  TOWER_ALLOWED_UPDATES, TOWER_COMMANDS, TOWER_GROUP_COMMANDS,
+  TOWER_ALLOWED_UPDATES, TOWER_COMMANDS, TOWER_GROUP_COMMANDS, TOWER_MENU_BUTTON,
+  MINIAPP_URL, MINIAPP_URL_ENV_INVALID, APP_PATH, appLink, miniappSchemaReady, getSetting, pinAppMessage,
 } from '@/lib/tower'
 import { adminCommunity, adminReviews, setReviewHidden } from '@/lib/tower-teams'
 
@@ -161,10 +162,44 @@ export async function GET(req: NextRequest) {
           can_invite_users: !!r.can_invite_users,
           can_restrict_members: !!r.can_restrict_members,
           can_promote_members: !!r.can_promote_members,
+          // Clean group chat: delete people's commands / pin the app button.
+          can_delete_messages: !!r.can_delete_messages,
+          can_pin_messages: !!r.can_pin_messages,
           error: bm.ok ? null : bm.description,
         }
       }
     }
+
+    // Mini App (/tower/app): migration, the «Рейтинг» menu button in the bot
+    // DM, where the group buttons lead, the pinned app message.
+    const miniApp: any = {
+      url: `${SITE}${APP_PATH}`,
+      siteIsWww: /^https:\/\/www\./i.test(SITE),
+      envUrl: MINIAPP_URL || null,
+      envInvalid: MINIAPP_URL_ENV_INVALID,
+    }
+    try { miniApp.schema = await miniappSchemaReady() } catch { miniApp.schema = false }
+    try { miniApp.groupButtonUrl = await appLink('home') } catch { miniApp.groupButtonUrl = null }
+    try {
+      const mb = await tg('getChatMenuButton', {})
+      miniApp.menuButton = mb.ok
+        ? {
+            ok: mb.result?.type === 'web_app' && mb.result?.web_app?.url === `${SITE}${APP_PATH}`,
+            type: mb.result?.type || null,
+            text: mb.result?.text || null,
+            url: mb.result?.web_app?.url || null,
+          }
+        : { ok: false, error: mb.description || null }
+    } catch (e) {
+      miniApp.menuButton = { ok: false, error: e?.message || 'error' }
+    }
+    try {
+      const pin = await getSetting('pinned_app_message')
+      miniApp.pinned = pin.ok ? (pin.value || null) : null
+    } catch {
+      miniApp.pinned = null
+    }
+    out.miniApp = miniApp
 
     out.prices = {}
     for (const plan of Object.keys(PLANS)) {
@@ -237,18 +272,29 @@ export async function POST(req: NextRequest) {
         drop_pending_updates: false,
       })
       const setMyCommands = await tg('setMyCommands', { commands: TOWER_COMMANDS })
-      // Inside the group the «/» menu shows only /review and /profile.
+      // Inside the group the «/» menu shows only /app, /review and /profile.
       const setGroupCommands = await tg('setMyCommands', {
         commands: TOWER_GROUP_COMMANDS,
         scope: { type: 'all_group_chats' },
       })
-      console.log('[tower/admin] setup: webhook', setWebhook.ok, 'commands', setMyCommands.ok, 'group commands', setGroupCommands.ok)
+      // The «Рейтинг» button in the bot DM opens the Mini App (default for all private chats).
+      const setMenuButton = await tg('setChatMenuButton', { menu_button: TOWER_MENU_BUTTON })
+      console.log('[tower/admin] setup: webhook', setWebhook.ok, 'commands', setMyCommands.ok,
+        'group commands', setGroupCommands.ok, 'menu button', setMenuButton.ok)
       return NextResponse.json({
         ok: !!setWebhook.ok && !!setMyCommands.ok,
         setWebhook: { ok: !!setWebhook.ok, description: setWebhook.description || null },
         setMyCommands: { ok: !!setMyCommands.ok, description: setMyCommands.description || null },
         setGroupCommands: { ok: !!setGroupCommands.ok, description: setGroupCommands.description || null },
+        setMenuButton: { ok: !!setMenuButton.ok, description: setMenuButton.description || null },
       })
+    }
+
+    // «Закрепить кнопку приложения в группе»: one message, edited on repeat.
+    if (action === 'pin_app') {
+      const r = await pinAppMessage()
+      console.log('[tower/admin] pin_app', r.ok, r.pinned)
+      return NextResponse.json(r, { status: r.ok ? 200 : 502 })
     }
 
     // «Скрыть» / «Показать» a review (hidden = not in the bot's lists or ratings).

@@ -1,11 +1,12 @@
 ﻿// @ts-nocheck
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 import { showToast } from '@/components/Toast'
+import { safeNext } from '@/lib/safe-next'
 
 // Feature flag: Google OAuth ships dark until the provider is configured in
 // Supabase and NEXT_PUBLIC_GOOGLE_AUTH=1 is set in Netlify.
@@ -22,7 +23,10 @@ function GoogleGLogo() {
   )
 }
 
-async function handleGoogleSignIn() {
+async function handleGoogleSignIn(next) {
+  // OAuth comes back to /onboarding, which delivers bestie_next (same as signup).
+  const n = safeNext(next)
+  if (n) { try { localStorage.setItem('bestie_next', n) } catch {} }
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo: window.location.origin + '/onboarding' },
@@ -36,6 +40,25 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [nextParam, setNextParam] = useState('')
+
+  // Read on the client (no useSearchParams → no Suspense boundary needed).
+  useEffect(() => {
+    try {
+      const n = new URLSearchParams(window.location.search).get('next')
+      const s = safeNext(n)
+      if (s) setNextParam(s)
+    } catch {}
+  }, [])
+
+  // «Sign up» keeps ?next= so a new account comes back here too. The target
+  // goes through router.push, not the href: a ?next= can carry a personal
+  // signed token (/tower/link?t=…) and click analytics records hrefs.
+  const goSignup = (e) => {
+    if (!nextParam) return
+    e.preventDefault()
+    router.push('/signup?next=' + encodeURIComponent(nextParam))
+  }
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -48,7 +71,7 @@ export default function LoginPage() {
       setLoading(false)
     } else {
       const next = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('next') : null
-      router.push(next && next.startsWith('/') ? next : '/dashboard')
+      router.push(safeNext(next) || '/dashboard')
     }
   }
 
@@ -62,7 +85,7 @@ export default function LoginPage() {
         <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '20px', padding: '32px' }}>
           {GOOGLE_AUTH_ENABLED && (
             <>
-              <button type="button" onClick={handleGoogleSignIn} style={{ width: '100%', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '10px 16px', borderRadius: '12px', background: '#FCFCFC', border: 'none', color: '#1F1F1F', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
+              <button type="button" onClick={() => handleGoogleSignIn(nextParam)} style={{ width: '100%', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '10px 16px', borderRadius: '12px', background: '#FCFCFC', border: 'none', color: '#1F1F1F', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
                 <GoogleGLogo /> Continue with Google
               </button>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
@@ -90,7 +113,7 @@ export default function LoginPage() {
             </Button>
           </form>
           <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: 'var(--text-muted)' }}>
-            Don't have an account? <Link href="/signup" style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>Sign up</Link>
+            Don't have an account? <Link href="/signup" onClick={goSignup} style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 600 }}>Sign up</Link>
           </p>
         </div>
       </div>

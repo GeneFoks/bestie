@@ -7,6 +7,7 @@
 // the share-icon instructions instead. '✕' snoozes for 14 days.
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 
 const VISITS_KEY = 'bestie_visit_count'
 const VISIT_SESSION_KEY = 'bestie_visit_counted'
@@ -28,8 +29,12 @@ function isIOS() {
 export default function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState(null)
   const [mode, setMode] = useState(null) // null | 'native' | 'ios'
+  const pathname = usePathname()
+  // The Telegram Mini App («Вышки в США») is not the Bestie PWA.
+  const inMiniApp = !!pathname?.startsWith('/tower/app')
 
   useEffect(() => {
+    if (inMiniApp) return
     if (typeof window === 'undefined') return
     if (isStandalone()) return
 
@@ -67,7 +72,7 @@ export default function InstallPrompt() {
       window.removeEventListener('beforeinstallprompt', onBeforeInstall)
       window.removeEventListener('appinstalled', onInstalled)
     }
-  }, [])
+  }, [inMiniApp])
 
   const snooze = () => {
     try {
@@ -86,7 +91,7 @@ export default function InstallPrompt() {
     setMode(null)
   }
 
-  if (!mode) return null
+  if (inMiniApp || !mode) return null
 
   return (
     <div

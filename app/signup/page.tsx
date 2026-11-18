@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { showToast } from '@/components/Toast'
+import { safeNext } from '@/lib/safe-next'
 
 // Feature flag: Google OAuth ships dark until the provider is configured in
 // Supabase and NEXT_PUBLIC_GOOGLE_AUTH=1 is set in Netlify.
@@ -45,10 +46,8 @@ function SignupForm() {
     // Intent carry-through: ?next=/crews/new (e.g. "Register your camp" on the
     // playa) survives signup + onboarding and lands the user where they meant
     // to go. Same-site relative paths only.
-    const next = searchParams.get('next')
-    if (next && next.startsWith('/') && !next.startsWith('//')) {
-      localStorage.setItem('bestie_next', next)
-    }
+    const next = safeNext(searchParams.get('next'))
+    if (next) localStorage.setItem('bestie_next', next)
   }, [searchParams])
 
   const handleSignup = async (e) => {
