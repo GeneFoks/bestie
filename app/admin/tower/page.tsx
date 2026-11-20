@@ -96,6 +96,14 @@ export default function AdminTowerPage() {
       })
       if (!ok) return
     }
+    if (action === 'remind_pending') {
+      const ok = await confirmSheet({
+        title: 'Напомнить заявкам об оплате?',
+        body: 'Бот напишет в личку тем, чья заявка в группу ждёт оплаты и кто запускал бота: что внутри группы, тарифы, кнопки «Оплатить» и «Посмотреть приложение». Каждому — один раз.',
+        confirmLabel: 'Отправить',
+      })
+      if (!ok) return
+    }
     setBusy(action)
     const h = await authHeader()
     if (!h) { setBusy(''); return }
@@ -478,6 +486,37 @@ export default function AdminTowerPage() {
           <pre style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '12px', padding: '12px', fontSize: '12px', color: 'var(--text-muted)', overflowX: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-word', marginBottom: '18px' }}>
             {lastResult.action} → HTTP {lastResult.status}{'\n'}{JSON.stringify(lastResult.data, null, 2)}
           </pre>
+        ) : null}
+
+        {i.money && !i.money.error ? (
+          <div style={{ background: 'var(--surface-1)', border: '1px solid rgba(52,211,153,0.35)', borderRadius: '14px', padding: '16px', marginBottom: '18px' }}>
+            <p style={{ margin: '0 0 10px', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
+              💵 Деньги и воронка
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '18px', marginBottom: '12px' }}>
+              {[
+                ['В месяц', `$${i.money.mrr}`],
+                ['Платят сейчас', `${i.money.payingNow} (Basic ${i.money.active.basic} · Admin ${i.money.active.admin})`],
+                ['Платили хоть раз', i.money.everPaid],
+                ['Отменили', i.money.cancelled],
+              ].map(([k, v]) => (
+                <div key={k}>
+                  <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{k}</div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>{v}</div>
+                </div>
+              ))}
+            </div>
+            <p style={{ margin: '0 0 12px', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.55 }}>
+              Заявки в группу: всего {i.money.joins.total} · оплатили и вошли {i.money.joins.paid} · ждут оплаты {i.money.joins.pending}
+              {i.money.joins.total ? ` · конверсия ${Math.round((i.money.joins.paid / i.money.joins.total) * 100)}%` : ''}
+            </p>
+            <button onClick={() => run('remind_pending')} disabled={!!busy} style={{ padding: '10px 16px', borderRadius: '12px', border: '1px solid rgba(52,211,153,0.45)', background: 'rgba(52,211,153,0.12)', color: 'var(--green)', fontWeight: 700, fontSize: '14px', cursor: busy ? 'wait' : 'pointer', fontFamily: font, opacity: busy && busy !== 'remind_pending' ? 0.5 : 1 }}>
+              {busy === 'remind_pending' ? 'Отправляем…' : 'Напомнить заявкам об оплате'}
+            </button>
+            <p style={{ margin: '8px 0 0', fontSize: '12px', color: 'var(--text-dim)', lineHeight: 1.55 }}>
+              Бот может написать только тем, кто нажимал у него «Запустить» (Telegram даёт писать по заявке лишь 5 минут). Каждому — один раз.
+            </p>
+          </div>
         ) : null}
 
         <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 10px' }}>
