@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import {
   getDb, dm, esc, fmtDate, webhookSecret, safeEqual, payUrl, portalUrl, tg, getBot, appUrl, cleanupEphemeral,
   resolveChatId, isTowerChat, botUsername, memberStatus, isBannedByAdmin, loadRow, enforceActive,
-  isActiveStatus, isLiveStatus, PLANS, GROUP_NAME, GROUP_URL, ADMIN_TITLE, BANNED_TEXT,
+  isActiveStatus, isLiveStatus, PLANS, GROUP_NAME, GROUP_URL, ADMIN_TITLE, BANNED_TEXT, ABOUT_TEXT, PLANS_TEXT,
 } from '@/lib/tower'
 import {
   handleTeamsPrivate, handleGroupCommand, handleCallback, parseGroupCommand, profileAfterStart,
@@ -14,17 +14,6 @@ import {
 export const dynamic = 'force-dynamic'
 
 const ok = () => NextResponse.json({ ok: true })
-
-// What a newcomer pays for — shown before the pay button.
-const ABOUT_TEXT =
-  `<b>Что внутри:</b>\n` +
-  `💬 Группа монтажников вышек в США — общение, работа, вопросы по объектам.\n` +
-  `🗼 Приложение группы — рейтинг монтажников, отзывы коллег и команды. Видно, кто реально толковый и с кем стоит работать. ` +
-  `Его можно посмотреть прямо сейчас — кнопка ниже.`
-const PLANS_TEXT =
-  `<b>Тарифы:</b>\n` +
-  `• <b>Basic — $${PLANS.basic.priceUsd}/мес</b> — группа и приложение: рейтинг, отзывы коллегам, команды\n` +
-  `• <b>Admin — $${PLANS.admin.priceUsd}/мес</b> — всё из Basic + значок админа «${ADMIN_TITLE}» и можно публиковать рекламу`
 
 // ── chat_join_request ───────────────────────────────────────────────────────
 async function onJoinRequest(jr) {

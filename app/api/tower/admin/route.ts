@@ -7,6 +7,7 @@ import {
   GROUP_URL_ENV_INVALID, GROUP_URL_IS_BOT_FALLBACK, JOIN_LINK_NAME,
   TOWER_ALLOWED_UPDATES, TOWER_COMMANDS, TOWER_GROUP_COMMANDS, TOWER_MENU_BUTTON,
   MINIAPP_URL, MINIAPP_URL_ENV_INVALID, APP_PATH, appLink, miniappSchemaReady, getSetting, pinAppMessage,
+  remindPendingJoins, moneyStats,
 } from '@/lib/tower'
 import { adminCommunity, adminReviews, setReviewHidden } from '@/lib/tower-teams'
 
@@ -239,6 +240,11 @@ export async function GET(req: NextRequest) {
     out.rows = rows || []
     out.pendingJoinRequests = pendingJr?.count || 0
     out.botUsers = botUsers?.count || 0
+    try {
+      out.money = await moneyStats()
+    } catch (e) {
+      out.money = { error: e?.message || 'error' }
+    }
 
     // Teams and reviews (lib/migration_tower_teams.sql). Missing tables must
     // not break the subscription status above.
@@ -294,6 +300,12 @@ export async function POST(req: NextRequest) {
     if (action === 'pin_app') {
       const r = await pinAppMessage()
       console.log('[tower/admin] pin_app', r.ok, r.pinned)
+      return NextResponse.json(r, { status: r.ok ? 200 : 502 })
+    }
+
+    // «Напомнить заявкам»: the current pitch to pending requesters the bot can reach.
+    if (action === 'remind_pending') {
+      const r = await remindPendingJoins()
       return NextResponse.json(r, { status: r.ok ? 200 : 502 })
     }
 

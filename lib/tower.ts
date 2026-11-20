@@ -1257,6 +1257,112 @@ export async function cleanupEphemeral({ max = 5, force = false }: any = {}) {
   }
 }
 
+// ── What a newcomer pays for (join request DM, /start, reminders) ───────────
+export const ABOUT_TEXT =
+  `<b>Что внутри:</b>\n` +
+  `💬 Группа монтажников вышек в США — общение, работа, вопросы по объектам.\n` +
+  `🗼 Приложение группы — рейтинг монтажников, отзывы коллег и команды. Видно, кто реально толковый и с кем стоит работать. ` +
+  `Его можно посмотреть прямо сейчас — кнопка ниже.`
+export const PLANS_TEXT =
+  `<b>Тарифы:</b>\n` +
+  `• <b>Basic — $${PLANS.basic.priceUsd}/мес</b> — группа и приложение: рейтинг, отзывы коллегам, команды\n` +
+  `• <b>Admin — $${PLANS.admin.priceUsd}/мес</b> — всё из Basic + значок админа «${ADMIN_TITLE}» и можно публиковать рекламу`
+
+// ── «Напомнить заявкам» (/admin/tower) ──────────────────────────────────────
+// People whose join request is still pending (they never paid). Telegram lets
+// the bot write to them only within 5 minutes of the request — after that, only
+// if they pressed «Запустить» in the bot. Those get the current pitch once;
+// ids already reminded are kept in tg_bot_settings, so a repeat press never
+// sends a second message to the same person.
+// → { ok, pending, reachable, sent, failed, already } | { ok:false, error }
+export async function remindPendingJoins() {
+  const st = await getSetting('pending_reminded')
+  if (!st.ok) return { ok: false, error: 'Сначала выполните в Supabase lib/migration_tower_miniapp.sql' }
+  const done = new Set(Array.isArray(st.value?.ids) ? st.value.ids.map(String) : [])
+  const db = getDb()
+  let chatId
+  try {
+    chatId = await resolveChatId()
+  } catch (e) {
+    return { ok: false, error: 'Группа не найдена: ' + (e?.message || 'unknown') }
+  }
+  const { data: pending, error } = await db.from('tg_join_requests')
+    .select('telegram_user_id, username, first_name')
+    .eq('chat_id', chatId).eq('status', 'pending').limit(1000)
+  if (error) return { ok: false, error: 'tg_join_requests: ' + error.message }
+  const ids = (pending || []).map((r) => r.telegram_user_id)
+  const { data: started, error: bErr } = ids.length
+    ? await db.from('tg_bot_users').select('telegram_user_id').in('telegram_user_id', ids).is('blocked_at', null)
+    : { data: [], error: null }
+  if (bErr) return { ok: false, error: 'tg_bot_users: ' + bErr.message }
+  const reachable = new Set((started || []).map((r) => String(r.telegram_user_id)))
+  let sent = 0
+  let failed = 0
+  let already = 0
+  for (const r of pending || []) {
+    const id = String(r.telegram_user_id)
+    if (!reachable.has(id)) continue
+    if (done.has(id)) { already += 1; continue }
+    // Paid in the meantime (the row just wasn't flipped) → no pitch.
+    const row = await loadRow(chatId, r.telegram_user_id)
+    if (row && row.stripe_subscription_id && isActiveStatus(row.status)) continue
+    const link = { u: r.telegram_user_id, c: chatId, n: r.first_name, un: r.username }
+    const hello = r.first_name ? `👋 ${esc(r.first_name)}, привет!` : '👋 Привет!'
+    const d = await dm(r.telegram_user_id,
+      `${hello}\n\nВы подавали заявку в группу <b>«${GROUP_NAME}»</b> — она всё ещё ждёт оплаты.\n\n` +
+      `${ABOUT_TEXT}\n\n${PLANS_TEXT}\n\nПосле оплаты заявка одобрится автоматически.`,
+      [
+        [{ text: '💳 Выбрать тариф и оплатить', url: payUrl(link) }],
+        [{ text: '🗼 Посмотреть приложение', web_app: { url: appUrl('home') } }],
+      ])
+    if (d.ok) { sent += 1; done.add(id) } else failed += 1
+  }
+  if (sent) {
+    const w = await setSetting('pending_reminded', { ids: Array.from(done) })
+    if (!w.ok) console.warn('[tower] pending_reminded not stored:', w.error)
+  }
+  console.log('[tower] remind pending joins: pending', ids.length, 'reachable', reachable.size, 'sent', sent, 'failed', failed)
+  return { ok: true, pending: ids.length, reachable: reachable.size, sent, failed, already }
+}
+
+// ── Money (/admin/tower «Деньги и воронка») ──────────────────────────────────
+// Live subscriptions only (test mode rows are left out).
+// → { mrr, active:{ basic, admin }, payingNow, everPaid, cancelled, joins:{ total, paid, pending } }
+export async function moneyStats() {
+  const db = getDb()
+  const [{ data: subs, error: sErr }, { data: joins, error: jErr }] = await Promise.all([
+    db.from('tg_subscriptions')
+      .select('telegram_user_id, plan, status, paid_until, approved_at, was_member_before, livemode, stripe_subscription_id')
+      .eq('livemode', true).limit(10000),
+    db.from('tg_join_requests').select('telegram_user_id, status').limit(10000),
+  ])
+  if (sErr) throw new Error('tg_subscriptions: ' + sErr.message)
+  if (jErr) throw new Error('tg_join_requests: ' + jErr.message)
+  const active = { basic: 0, admin: 0 }
+  const everPaid = new Set()
+  let cancelled = 0
+  for (const s of subs || []) {
+    if (!s.stripe_subscription_id) continue
+    if (s.paid_until) everPaid.add(String(s.telegram_user_id))
+    if (isActiveStatus(s.status)) active[s.plan === 'admin' ? 'admin' : 'basic'] += 1
+    else if (s.status === 'canceled') cancelled += 1
+  }
+  const j = { total: 0, paid: 0, pending: 0 }
+  for (const r of joins || []) {
+    j.total += 1
+    if (r.status === 'approved') j.paid += 1
+    else if (r.status === 'pending') j.pending += 1
+  }
+  return {
+    mrr: active.basic * PLANS.basic.priceUsd + active.admin * PLANS.admin.priceUsd,
+    active,
+    payingNow: active.basic + active.admin,
+    everPaid: everPaid.size,
+    cancelled,
+    joins: j,
+  }
+}
+
 // ── «Закрепить кнопку приложения в группе» (/admin/tower) ───────────────────
 // One message with the open-app url button, pinned without a notification.
 // Pressed again → the stored message is edited, never a second one posted.
