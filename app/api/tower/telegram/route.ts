@@ -15,10 +15,16 @@ export const dynamic = 'force-dynamic'
 
 const ok = () => NextResponse.json({ ok: true })
 
+// What a newcomer pays for — shown before the pay button.
+const ABOUT_TEXT =
+  `<b>Что внутри:</b>\n` +
+  `💬 Группа монтажников вышек в США — общение, работа, вопросы по объектам.\n` +
+  `🗼 Приложение группы — рейтинг монтажников, отзывы коллег и команды. Видно, кто реально толковый и с кем стоит работать. ` +
+  `Его можно посмотреть прямо сейчас — кнопка ниже.`
 const PLANS_TEXT =
   `<b>Тарифы:</b>\n` +
-  `• <b>Basic — $${PLANS.basic.priceUsd}/мес</b> — доступ в группу и отзывы коллегам\n` +
-  `• <b>Admin — $${PLANS.admin.priceUsd}/мес</b> — доступ + значок админа «${ADMIN_TITLE}» и можно публиковать рекламу`
+  `• <b>Basic — $${PLANS.basic.priceUsd}/мес</b> — группа и приложение: рейтинг, отзывы коллегам, команды\n` +
+  `• <b>Admin — $${PLANS.admin.priceUsd}/мес</b> — всё из Basic + значок админа «${ADMIN_TITLE}» и можно публиковать рекламу`
 
 // ── chat_join_request ───────────────────────────────────────────────────────
 async function onJoinRequest(jr) {
@@ -71,11 +77,13 @@ async function onJoinRequest(jr) {
 
   await dm(dmTo,
     `${hello}\n\n` +
-    `Группа <b>«${GROUP_NAME}»</b> — платная.\n\n` +
+    `Группа <b>«${GROUP_NAME}»</b> — по подписке.\n\n` +
+    `${ABOUT_TEXT}\n\n` +
     `${PLANS_TEXT}\n\n` +
     `После оплаты заявка одобрится автоматически — ничего ждать не нужно.`,
     [
       [{ text: '💳 Выбрать тариф и оплатить', url: payUrl(link) }],
+      [{ text: '🗼 Посмотреть приложение', web_app: { url: appUrl('home') } }],
       [{ text: '▶️ Запустить бота (чтобы получать уведомления)', url: `https://t.me/${bot}?start=join` }],
     ])
 }
@@ -155,11 +163,13 @@ async function onStatus(from) {
   }
 
   await dm(from.id,
-    `Группа <b>«${GROUP_NAME}»</b> — платная.\n\n` +
+    `Группа <b>«${GROUP_NAME}»</b> — по подписке.\n\n` +
+    `${ABOUT_TEXT}\n\n` +
     `${PLANS_TEXT}\n\n` +
     `Подайте заявку в группу и оплатите — заявка одобрится автоматически.`,
     [
       [{ text: '💳 Выбрать тариф и оплатить', url: payUrl(link) }],
+      [{ text: '🗼 Посмотреть приложение', web_app: { url: appUrl('home') } }],
       [{ text: '👥 Открыть группу', url: GROUP_URL }],
     ])
   return res
