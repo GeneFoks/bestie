@@ -115,7 +115,7 @@ export const BANNED_TEXT = '⛔ Вы заблокированы в группе 
 
 // Bot webhook setup (/admin/tower → «Подключить бота»). callback_query = inline
 // buttons (⭐ оценки, «Мои отзывы», «Моя команда» — lib/tower-teams.ts).
-export const TOWER_ALLOWED_UPDATES = ['message', 'chat_join_request', 'my_chat_member', 'callback_query']
+export const TOWER_ALLOWED_UPDATES = ['message', 'edited_message', 'chat_join_request', 'my_chat_member', 'callback_query']
 // Menu in the private chat with the bot (default scope).
 export const TOWER_COMMANDS = [
   { command: 'start', description: 'Начать / статус подписки' },
@@ -953,7 +953,7 @@ export async function enforceActive(row, out: any = { actions: [] }, opts: any =
       ]
       if (row.plan === 'admin') {
         lines.push(promotedNow
-          ? `Вам выдан значок админа «${ADMIN_TITLE}» — можно публиковать рекламу.`
+          ? `Вам выдан значок админа «${ADMIN_TITLE}» — можно публиковать вакансии и рекламу.`
           : `Значок админа «${ADMIN_TITLE}» появится чуть позже.`)
       }
       lines.push(
@@ -974,7 +974,7 @@ export async function enforceActive(row, out: any = { actions: [] }, opts: any =
       // Upgrade Basic → Admin later on. (If approved_at was just claimed by a
       // concurrent call, that call sends the welcome — no second message.)
       await dm(userId,
-        `Тариф <b>Admin</b> активен ✅\nВам выдан значок админа «${ADMIN_TITLE}» — можно публиковать рекламу в «${GROUP_NAME}».`,
+        `Тариф <b>Admin</b> активен ✅\nВам выдан значок админа «${ADMIN_TITLE}» — можно публиковать вакансии и рекламу в «${GROUP_NAME}».`,
         [[{ text: '👉 Открыть группу', url: GROUP_URL }]])
     }
   }
@@ -1266,7 +1266,7 @@ export const ABOUT_TEXT =
 export const PLANS_TEXT =
   `<b>Тарифы:</b>\n` +
   `• <b>Basic — $${PLANS.basic.priceUsd}/мес</b> — группа и приложение: рейтинг, отзывы коллегам, команды\n` +
-  `• <b>Admin — $${PLANS.admin.priceUsd}/мес</b> — всё из Basic + значок админа «${ADMIN_TITLE}» и можно публиковать рекламу`
+  `• <b>Admin — $${PLANS.admin.priceUsd}/мес</b> — всё из Basic + можно публиковать вакансии и рекламу (без Admin бот их удаляет) и значок «${ADMIN_TITLE}»`
 
 // ── «Напомнить заявкам» (/admin/tower) ──────────────────────────────────────
 // People whose join request is still pending (they never paid). Telegram lets
