@@ -78,7 +78,7 @@ export default function AdminTowerPage() {
   }
   useEffect(() => { load() }, [])
 
-  const run = async (action) => {
+  const run = async (action, extra = {}) => {
     if (busy) return
     if (action === 'stripe') {
       const ok = await confirmSheet({
@@ -111,7 +111,7 @@ export default function AdminTowerPage() {
       const res = await fetch('/api/tower/admin', {
         method: 'POST',
         headers: { ...h, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action }),
+        body: JSON.stringify({ action, ...extra }),
       })
       const data = await res.json().catch(() => ({}))
       setLastResult({ action, status: res.status, data })
@@ -516,6 +516,48 @@ export default function AdminTowerPage() {
             <p style={{ margin: '8px 0 0', fontSize: '12px', color: 'var(--text-dim)', lineHeight: 1.55 }}>
               Бот может написать только тем, кто нажимал у него «Запустить» (Telegram даёт писать по заявке лишь 5 минут). Каждому — один раз.
             </p>
+          </div>
+        ) : null}
+
+        {i.ads && !i.ads.error ? (
+          <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '14px', padding: '16px', marginBottom: '18px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '8px' }}>
+              <p style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                🧹 Вакансии и реклама — только с Admin {i.ads.enabled ? '✅' : '⏸'}
+              </p>
+              <button onClick={() => run('ads_filter', { enabled: !i.ads.enabled })} disabled={!!busy} style={{ padding: '8px 14px', borderRadius: '10px', border: '1px solid var(--border)', background: 'var(--surface-2)', color: 'var(--text-muted)', fontWeight: 600, fontSize: '13px', cursor: busy ? 'wait' : 'pointer', fontFamily: font }}>
+                {i.ads.enabled ? 'Выключить фильтр' : 'Включить фильтр'}
+              </button>
+            </div>
+            <p style={{ margin: '0 0 12px', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.55 }}>
+              Бот удаляет вакансии («требуются», «ищем монтажников», ставки с контактами), продажи и рекламу с контактами и ссылки на другие группы — если у автора нет тарифа Admin и он не админ группы.
+              Автору бот возвращает текст в личку с кнопкой «Оформить Admin». «Ищу работу» и обычное общение не трогает.
+            </p>
+            {(i.ads.removed || []).length ? (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', minWidth: '560px' }}>
+                  <thead>
+                    <tr style={{ textAlign: 'left', color: 'var(--text-dim)' }}>
+                      {['Когда', 'Кто', 'Почему', 'Текст'].map((h) => (
+                        <th key={h} style={{ padding: '8px', borderBottom: '1px solid var(--border)', fontWeight: 600 }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {i.ads.removed.slice(0, 20).map((a, n) => (
+                      <tr key={n} style={{ color: 'var(--text-muted)', verticalAlign: 'top' }}>
+                        <td style={{ padding: '8px', whiteSpace: 'nowrap' }}>{fmt(a.at)}</td>
+                        <td style={{ padding: '8px' }}>{a.name || '—'}{a.username ? ` (@${a.username})` : ''}</td>
+                        <td style={{ padding: '8px', whiteSpace: 'nowrap' }}>{a.reason}</td>
+                        <td style={{ padding: '8px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{a.text || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-dim)' }}>Удалённых сообщений пока нет.</p>
+            )}
           </div>
         ) : null}
 

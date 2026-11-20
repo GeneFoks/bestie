@@ -10,6 +10,7 @@ import {
   remindPendingJoins, moneyStats,
 } from '@/lib/tower'
 import { adminCommunity, adminReviews, setReviewHidden } from '@/lib/tower-teams'
+import { adsFilterEnabled, setAdsFilter, adsRemovedLog } from '@/lib/tower-ads'
 
 // Admin status + one-click setup for @TowerCrewBot («Вышки в США»).
 // Auth: Authorization: Bearer <Supabase access token> of a users.is_admin = true account.
@@ -245,6 +246,11 @@ export async function GET(req: NextRequest) {
     } catch (e) {
       out.money = { error: e?.message || 'error' }
     }
+    try {
+      out.ads = { enabled: await adsFilterEnabled(), removed: await adsRemovedLog() }
+    } catch (e) {
+      out.ads = { error: e?.message || 'error' }
+    }
 
     // Teams and reviews (lib/migration_tower_teams.sql). Missing tables must
     // not break the subscription status above.
@@ -301,6 +307,14 @@ export async function POST(req: NextRequest) {
       const r = await pinAppMessage()
       console.log('[tower/admin] pin_app', r.ok, r.pinned)
       return NextResponse.json(r, { status: r.ok ? 200 : 502 })
+    }
+
+    // Vacancies/ads filter on/off (lib/tower-ads.ts).
+    if (action === 'ads_filter') {
+      const r = await setAdsFilter(!!body?.enabled)
+      if (!r.ok) return NextResponse.json({ ok: false, error: r.error || 'setting not saved' }, { status: 502 })
+      console.log('[tower/admin] ads filter', body?.enabled ? 'on' : 'off')
+      return NextResponse.json({ ok: true, enabled: !!body?.enabled })
     }
 
     // «Напомнить заявкам»: the current pitch to pending requesters the bot can reach.

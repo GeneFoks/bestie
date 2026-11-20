@@ -9,6 +9,7 @@ import {
   handleTeamsPrivate, handleGroupCommand, handleCallback, parseGroupCommand, profileAfterStart,
   upsertPerson, HELP_TEXT, TEAMS_ERROR_TEXT,
 } from '@/lib/tower-teams'
+import { looksLikeAd, handleAdMessage, sendAdsInfo } from '@/lib/tower-ads'
 
 // Webhook for @TowerCrewBot («Вышки в США»). Registered from /admin/tower.
 export const dynamic = 'force-dynamic'
@@ -142,7 +143,7 @@ async function onStatus(from) {
       `Вы в группе «${GROUP_NAME}» ✅\n\n` +
       `Подписка нужна, чтобы оставлять отзывы коллегам:\n` +
       `• <b>Basic — $${PLANS.basic.priceUsd}/мес</b> — отзывы коллегам\n` +
-      `• <b>Admin — $${PLANS.admin.priceUsd}/мес</b> — отзывы + значок админа «${ADMIN_TITLE}» и можно публиковать рекламу\n\n` +
+      `• <b>Admin — $${PLANS.admin.priceUsd}/мес</b> — отзывы + можно публиковать вакансии и рекламу (без Admin бот их удаляет) и значок «${ADMIN_TITLE}»\n\n` +
       `Из группы никого не удаляем — оформить можно когда удобно.`,
       [
         [{ text: '💳 Оформить подписку', url: payUrl(link) }],
@@ -211,6 +212,8 @@ async function onPrivateMessage(msg) {
   try {
     // t.me/<bot>?start=manage (from the web pages) arrives as "/start manage".
     if (cmd === '/manage' || (cmd === '/start' && words[1] === 'manage')) return await onManage(from)
+    // From the group reply «Как разместить объявление» (lib/tower-ads.ts).
+    if (cmd === '/start' && words[1] === 'ads') { await sendAdsInfo(from); return }
     if (cmd === '/start' || cmd === '/status') status = await onStatus(from)
   } catch (e) {
     console.error('[tower/telegram] status/manage failed:', e?.message || e)
@@ -259,8 +262,17 @@ async function handleUpdate(req: NextRequest) {
   try {
     // Classify first — group chatter, channel posts etc. are dropped with no DB writes.
     let kind = null
+    let adReason = ''
     if (update.chat_join_request) {
       if (await isTowerChat(update.chat_join_request.chat)) kind = 'join'
+    } else if (update.edited_message) {
+      // An innocent message edited into an ad goes the same way.
+      const msg = update.edited_message
+      const type = msg.chat?.type
+      if ((type === 'supergroup' || type === 'group') && !(msg.from?.is_bot && !msg.sender_chat)) {
+        const v = looksLikeAd(msg.text || msg.caption)
+        if (v.ad && await isTowerChat(msg.chat)) { kind = 'ad'; adReason = v.reason }
+      }
     } else if (update.message) {
       const msg = update.message
       const type = msg.chat?.type
@@ -285,6 +297,13 @@ async function handleUpdate(req: NextRequest) {
           kind = 'group'
         }
       }
+      // Vacancies / ads without the Admin plan (lib/tower-ads.ts). A cheap text
+      // check first; only a hit touches Telegram or the DB. Posts «as a channel»
+      // come from a service bot account with sender_chat set — checked too.
+      if (!kind && (type === 'supergroup' || type === 'group') && !(msg.from?.is_bot && !msg.sender_chat)) {
+        const v = looksLikeAd(msg.text || msg.caption)
+        if (v.ad && await isTowerChat(msg.chat)) { kind = 'ad'; adReason = v.reason }
+      }
     } else if (update.callback_query) {
       const cq = update.callback_query
       if (cq.id && cq.from && !cq.from.is_bot) kind = 'callback'
@@ -305,6 +324,7 @@ async function handleUpdate(req: NextRequest) {
     if (kind === 'join') await onJoinRequest(update.chat_join_request)
     else if (kind === 'private') await onPrivateMessage(update.message)
     else if (kind === 'group') await handleGroupCommand(update.message)
+    else if (kind === 'ad') await handleAdMessage(update.message || update.edited_message, adReason)
     else if (kind === 'callback') await handleCallback(update.callback_query)
   } catch (e) {
     console.error('[tower/telegram] error:', e?.message || e)
